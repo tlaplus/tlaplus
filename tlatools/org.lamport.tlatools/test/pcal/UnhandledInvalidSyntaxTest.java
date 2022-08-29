@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,56 +25,64 @@
  ******************************************************************************/
 package pcal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import util.ToolIO;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Test;
-
-import util.ToolIO;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class UnhandledInvalidSyntaxTest extends PCalTest {
 
-	@Test
-	public void test1() throws IOException {
-		assertEquals(trans.STATUS_EXIT_WITH_ERRORS, trans.runMe(new String[] {"-nocfg", 
-							writeTempFile("MissingSemicolonTest1", 
-				"---- MODULE algo ----\n" + 
-				"(*\n" + 
-				" --algorithm algo\n" + 
-				" begin\n" + 
-				" await;\n" +
-				" end algorithm;\n" +
-				"*)\n" + 
-				"===="
-			)}));
-		
-		assertTrue(Arrays.toString(ToolIO.getAllMessages()),
-				Arrays.asList(ToolIO.getAllMessages()).contains("\nUnrecoverable error:\n"
-					+ " -- Unknown error at or before\n"
-					+ "    line 5, column 2.\n"));
-	}
-	
-	@Test
-	public void test2() throws IOException {
-		assertEquals(trans.STATUS_EXIT_WITH_ERRORS, trans.runMe(new String[] {"-nocfg", 
-							writeTempFile("MissingSemicolonTest2", 
-				"---- MODULE algo ----\n" + 
-				"(*\n" + 
-				" --algorithm algo\n" + 
-				" begin\n" + 
-				" if TRUE then\n" + // missing semicolon
-				" end if;\n" +
-				" end algorithm;\n" +
-				"*)\n" + 
-				"===="
-			)}));
-		
-		assertTrue(Arrays.toString(ToolIO.getAllMessages()),
-				Arrays.asList(ToolIO.getAllMessages()).contains("\nUnrecoverable error:\n"
-					+ " -- Unknown error at or before\n"
-					+ "    line 6, column 8.\n"));
-	}
+    @Test
+    public void test1() throws IOException {
+        assertEquals(trans.STATUS_EXIT_WITH_ERRORS, new trans().runMe(new String[]{"-nocfg",
+                writeTempFile("MissingSemicolonTest1",
+                        """
+                                ---- MODULE algo ----
+                                (*
+                                 --algorithm algo
+                                 begin
+                                 await;
+                                 end algorithm;
+                                *)
+                                ===="""
+                )}));
+
+        assertTrue(Arrays.toString(ToolIO.getAllMessages()),
+                Arrays.asList(ToolIO.getAllMessages()).contains("""
+
+                        Unrecoverable error:
+                         -- Unknown error at or before
+                            line 5, column 2.
+                        """));
+    }
+
+    @Test
+    public void test2() throws IOException {
+        // missing semicolon
+        assertEquals(trans.STATUS_EXIT_WITH_ERRORS, new trans().runMe(new String[]{"-nocfg",
+                writeTempFile("MissingSemicolonTest2",
+                        """
+                                ---- MODULE algo ----
+                                (*
+                                 --algorithm algo
+                                 begin
+                                 if TRUE then
+                                 end if;
+                                 end algorithm;
+                                *)
+                                ===="""
+                )}));
+
+        assertTrue(Arrays.toString(ToolIO.getAllMessages()),
+                Arrays.asList(ToolIO.getAllMessages()).contains("""
+
+                        Unrecoverable error:
+                         -- Unknown error at or before
+                            line 6, column 8.
+                        """));
+    }
 }

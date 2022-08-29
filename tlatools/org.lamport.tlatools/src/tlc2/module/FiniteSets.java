@@ -15,19 +15,15 @@ import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.Value;
 
-public class FiniteSets implements ValueConstants
-{
-	public static final long serialVersionUID = 20160822L;
+public class FiniteSets implements ValueConstants {
+    public static final long serialVersionUID = 20160822L;
 
-    public static IBoolValue IsFiniteSet(Value val)
-    {
+    public static IBoolValue IsFiniteSet(final Value val) {
         return val.isFinite() ? BoolValue.ValTrue : BoolValue.ValFalse;
     }
 
-    public static IntValue Cardinality(Value val)
-    {
-        if (val instanceof Enumerable)
-        {
+    public static IntValue Cardinality(final Value val) {
+        if (val instanceof Enumerable) {
             return IntValue.gen(val.size());
         }
         throw new EvalException(EC.TLC_MODULE_COMPUTING_CARDINALITY, Values.ppr(val.toString()));
@@ -90,12 +86,12 @@ public class FiniteSets implements ValueConstants
       ValueVec vals = new ValueVec();
       for (int i = 0; i < tv.size(); i++) {
         if (!set.member(tv.elems[i])) {
-    vals.addElement(tv.elems[i]);
+    vals.add(tv.elems[i]);
         }
       }
       Value[] elems = new Value[vals.size()];
       for (int i = 0; i < vals.size(); i++) {
-        elems[i] = vals.elementAt(i);
+        elems[i] = vals.get(i);
       }
       return new TupleValue(elems);
     }
@@ -108,12 +104,12 @@ public class FiniteSets implements ValueConstants
       ValueVec vals = new ValueVec();
       for (int i = 0; i < tv.size(); i++) {
         if (set.member(tv.elems[i])) {
-    vals.addElement(tv.elems[i]);
+    vals.add(tv.elems[i]);
         }
       }
       Value[] elems = new Value[vals.size()];
       for (int i = 0; i < vals.size(); i++) {
-        elems[i] = vals.elementAt(i);
+        elems[i] = vals.get(i);
       }
       return new TupleValue(elems);
     }

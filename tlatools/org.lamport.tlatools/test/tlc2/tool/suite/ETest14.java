@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,22 +25,21 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertTrue;
+
 public class ETest14 extends SuiteETestCase {
 
-	public ETest14() {
-		super(ExitStatus.VIOLATION_ASSUMPTION);
-	}
+    public ETest14() {
+        super(ExitStatus.VIOLATION_ASSUMPTION);
+    }
 
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.toString(), recorder.recordedWithSubStringValue(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
-				"Attempted to compute the value of an expression of form\nCHOOSE x \\in S: P, but no element of S satisfied P.\nline 5, col 7 to line 5, col 28 of module etest14"));
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.toString(), recorder.recordedWithSubStringValue(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
+                "Attempted to compute the value of an expression of form\nCHOOSE x \\in S: P, but no element of S satisfied P.\nline 5, col 7 to line 5, col 28 of module etest14"));
+    }
 }

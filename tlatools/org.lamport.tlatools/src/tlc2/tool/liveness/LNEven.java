@@ -18,115 +18,130 @@ import util.Assert;
  * @version $Id$
  */
 class LNEven extends LiveExprNode {
-	private static final String EVENTUALLY = "<>";
-	private final LiveExprNode body;
+    private static final String EVENTUALLY = "<>";
+    private final LiveExprNode body;
 
-	public LNEven(LiveExprNode body) {
-		this.body = body;
-	}
+    public LNEven(final LiveExprNode body) {
+        this.body = body;
+    }
 
-	public final LiveExprNode getBody() {
-		return this.body;
-	}
+    public final LiveExprNode getBody() {
+        return this.body;
+    }
 
-	public final int getLevel() {
-		return LevelConstants.TemporalLevel;
-	}
+    @Override
+    public final int getLevel() {
+        return LevelConstants.TemporalLevel;
+    }
 
-	public final boolean containAction() {
-		return this.body.containAction();
-	}
-	
-	@Override
-	public final boolean isPositiveForm() {
-		return this.body.isPositiveForm();
-	}
+    @Override
+    public final boolean containAction() {
+        return this.body.containAction();
+    }
 
-	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
-		Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);
-		return false; // make compiler happy
-	}
+    @Override
+    public final boolean isPositiveForm() {
+        return this.body.isPositiveForm();
+    }
 
-	public final void toString(StringBuffer sb, String padding) {
-		sb.append(EVENTUALLY);
-		this.getBody().toString(sb, padding + "  ");
-	}
-	
-	public LiveExprNode getEABody() {
-		LiveExprNode evenBody = getBody();
-		if (evenBody instanceof LNAll) {
-			return ((LNAll) evenBody).getBody();
-		}
-		return super.getEABody();
-	}
+    @Override
+    public final boolean eval(final ITool tool, final TLCState s1, final TLCState s2) {
+        Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);
+        return false; // make compiler happy
+    }
 
-	public void extractPromises(TBPar promises) {
-		LNEven lne = (LNEven) this;
-		if (!promises.member(lne)) {
-			promises.addElement(lne);
-		}
-		lne.getBody().extractPromises(promises);
-	}
+    @Override
+    public final void toString(final StringBuilder sb, final String padding) {
+        sb.append(EVENTUALLY);
+        this.getBody().toString(sb, padding + "  ");
+    }
 
-	public int tagExpr(int tag) {
-		return getBody().tagExpr(tag);
-	}
+    @Override
+    public LiveExprNode getEABody() {
+        final LiveExprNode evenBody = getBody();
+        if (evenBody instanceof LNAll lna) {
+            return lna.getBody();
+        }
+        return super.getEABody();
+    }
 
-	public final LiveExprNode makeBinary() {
-		return new LNEven(getBody().makeBinary());
-	}
+    @Override
+    public void extractPromises(final TBPar promises) {
+        final LNEven lne = this;
+        if (!promises.member(lne)) {
+            promises.add(lne);
+        }
+        lne.getBody().extractPromises(promises);
+    }
 
-	public LiveExprNode flattenSingleJunctions() {
-		return new LNEven(getBody().flattenSingleJunctions());
-	}
+    @Override
+    public int tagExpr(final int tag) {
+        return getBody().tagExpr(tag);
+    }
 
-	public LiveExprNode simplify() {
-		LiveExprNode body1 = getBody().simplify();
-		if (body1 instanceof LNEven) {
-			body1 = ((LNEven) body1).getBody();
-		}
-		return new LNEven(body1);
-	}
+    @Override
+    public final LiveExprNode makeBinary() {
+        return new LNEven(getBody().makeBinary());
+    }
 
-	public boolean isGeneralTF() {
-		LiveExprNode evenBody = getBody();
-		if (evenBody instanceof LNAll) {
-			return false;
-		}
-		return super.isGeneralTF();
-	}
+    @Override
+    public LiveExprNode flattenSingleJunctions() {
+        return new LNEven(getBody().flattenSingleJunctions());
+    }
 
-	public LiveExprNode pushNeg() {
-		return new LNAll(getBody().pushNeg());
-	}
+    @Override
+    public LiveExprNode simplify() {
+        LiveExprNode body1 = getBody().simplify();
+        if (body1 instanceof LNEven lne) {
+            body1 = lne.getBody();
+        }
+        return new LNEven(body1);
+    }
 
-	/**
-	 * This method pushes a negation all the way down to the atoms. It is
-	 * currently not used.
-	 */
-	public LiveExprNode pushNeg(boolean hasNeg) {
-		if (hasNeg) {
-			return new LNAll(getBody().pushNeg(true));
-		} else {
-			return new LNEven(getBody().pushNeg(false));
-		}
-	}
+    @Override
+    public boolean isGeneralTF() {
+        final LiveExprNode evenBody = getBody();
+        if (evenBody instanceof LNAll) {
+            return false;
+        }
+        return super.isGeneralTF();
+    }
 
-	/**
-	 * This method returns true or false for whether two LiveExprNodes are
-	 * syntactically equal.
-	 */
-	public boolean equals(LiveExprNode exp) {
-		if (exp instanceof LNEven) {
-			return getBody().equals(((LNEven) exp).getBody());
-		}
-		return false;
-	}
+    @Override
+    public LiveExprNode pushNeg() {
+        return new LNAll(getBody().pushNeg());
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
-	 */
-	public String toDotViz() {
-		return EVENTUALLY + getBody().toDotViz();
-	}
+    /**
+     * This method pushes a negation all the way down to the atoms. It is
+     * currently not used.
+     */
+    @Override
+    public LiveExprNode pushNeg(final boolean hasNeg) {
+        if (hasNeg) {
+            return new LNAll(getBody().pushNeg(true));
+        } else {
+            return new LNEven(getBody().pushNeg(false));
+        }
+    }
+
+    /**
+     * This method returns true or false for whether two LiveExprNodes are
+     * syntactically equal.
+     */
+    @Override
+    public boolean equals(final LiveExprNode exp) {
+        if (exp instanceof LNEven lne) {
+            return getBody().equals(lne.getBody());
+        }
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+     */
+    @Override
+    public String toDotViz() {
+        return EVENTUALLY + getBody().toDotViz();
+    }
 }

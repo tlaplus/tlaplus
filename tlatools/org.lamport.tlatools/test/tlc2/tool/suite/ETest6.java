@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,25 +25,24 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertTrue;
+
 public class ETest6 extends SuiteETestCase {
 
-	public ETest6() {
-		super(ExitStatus.FAILURE_SPEC_EVAL);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
-				"In evaluation, the identifier x is either undefined or not an operator.\nline 16, col 23 to line 16, col 23 of module etest6"));
+    public ETest6() {
+        super(ExitStatus.FAILURE_SPEC_EVAL);
+    }
 
-		assertUncovered("line 13, col 14 to line 13, col 43 of module etest6: 0\n"
-				+ "line 19, col 13 to line 19, col 23 of module etest6: 0");
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL,
+                "In evaluation, the identifier x is either undefined or not an operator.\nline 16, col 23 to line 16, col 23 of module etest6"));
+
+        assertUncovered("line 13, col 14 to line 13, col 43 of module etest6: 0\n"
+                + "line 19, col 13 to line 19, col 23 of module etest6: 0");
+    }
 }

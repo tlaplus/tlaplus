@@ -34,34 +34,32 @@ import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntervalValue;
 
 @State(Scope.Benchmark)
 public class IntervalValueBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
-	
-	@Param({"16", "18", "20", "22"})
-	public int size;
-	
-	@Param({"10", "12", "14", "16"})
-	public int numOfElements;
+        FP64.Init();
+    }
 
-	public Enumerable intervalValue;
-	
-	@Setup(Level.Invocation)
-	public void setup() {
-		intervalValue = (Enumerable) new IntervalValue(1, 1 << size).normalize();
-	}
-	
-	@Benchmark
-	public Enumerable randomSubset() {
-		return intervalValue.getRandomSubset(1 << numOfElements);
-	}
+    @Param({"16", "18", "20", "22"})
+    public int size;
+
+    @Param({"10", "12", "14", "16"})
+    public int numOfElements;
+
+    public Enumerable intervalValue;
+
+    @Setup(Level.Invocation)
+    public void setup() {
+        intervalValue = (Enumerable) new IntervalValue(1, 1 << size).normalize();
+    }
+
+    @Benchmark
+    public Enumerable randomSubset() {
+        return intervalValue.getRandomSubset(1 << numOfElements);
+    }
 }

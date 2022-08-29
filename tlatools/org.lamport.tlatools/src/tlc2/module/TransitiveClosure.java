@@ -5,81 +5,63 @@
 
 package tlc2.module;
 
-import java.util.Hashtable;
-
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
-import tlc2.util.Vect;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.TupleValue;
-import tlc2.value.impl.Value;
-import tlc2.value.impl.ValueEnumeration;
-import tlc2.value.impl.ValueVec;
+import tlc2.value.impl.*;
 
-public class TransitiveClosure implements ValueConstants
-{
-	public static final long serialVersionUID = 20160822L;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+public class TransitiveClosure implements ValueConstants {
+    public static final long serialVersionUID = 20160822L;
 
     /* Implement the Warshall algorithm for transitive closure. */
-    public static Value Warshall(Value rel)
-    {
-        if (!(rel instanceof Enumerable))
-        {
-            throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "TransitiveClosure",
-                    "an enumerable set", Values.ppr(rel.toString()) });
+    public static Value Warshall(final Value rel) {
+        if (!(rel instanceof Enumerable)) {
+            throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[]{"TransitiveClosure",
+                    "an enumerable set", Values.ppr(rel.toString())});
         }
-        int maxLen = 2 * rel.size();
-        boolean[][] matrix = new boolean[maxLen][maxLen];
-        ValueEnumeration elems = ((Enumerable) rel).elements();
-        Vect<Value> elemList = new Vect<>();
-        Hashtable<Value, Integer> fps = new Hashtable<>();
+        final int maxLen = 2 * rel.size();
+        final boolean[][] matrix = new boolean[maxLen][maxLen];
+        final ValueEnumeration elems = ((Enumerable) rel).elements();
+        final ArrayList<Value> elemList = new ArrayList<>();
+        final Hashtable<Value, Integer> fps = new Hashtable<>();
         int cnt = 0;
-        Value elem = null;
-        while ((elem = elems.nextElement()) != null)
-        {
-            TupleValue tv = (TupleValue) elem.toTuple();
-            if (tv == null || tv.size() != 2)
-            {
+        Value elem;
+        while ((elem = elems.nextElement()) != null) {
+            final TupleValue tv = (TupleValue) elem.toTuple();
+            if (tv == null || tv.size() != 2) {
                 throw new EvalException(EC.TLC_MODULE_TRANSITIVE_CLOSURE, Values.ppr(elem.toString()));
             }
-            Value elem1 = tv.elems[0];
-            Value elem2 = tv.elems[1];
+            final Value elem1 = tv.elems[0];
+            final Value elem2 = tv.elems[1];
             int num1 = cnt;
             Integer num = fps.get(elem1);
-            if (num == null)
-            {
-                fps.put(elem1, new Integer(cnt));
-                elemList.addElement(elem1);
+            if (num == null) {
+                fps.put(elem1, cnt);
+                elemList.add(elem1);
                 cnt++;
-            } else
-            {
-                num1 = num.intValue();
+            } else {
+                num1 = num;
             }
             int num2 = cnt;
             num = fps.get(elem2);
-            if (num == null)
-            {
-                fps.put(elem2, new Integer(cnt));
-                elemList.addElement(elem2);
+            if (num == null) {
+                fps.put(elem2, cnt);
+                elemList.add(elem2);
                 cnt++;
-            } else
-            {
-                num2 = num.intValue();
+            } else {
+                num2 = num;
             }
             matrix[num1][num2] = true;
         }
 
-        for (int y = 0; y < cnt; y++)
-        {
-            for (int x = 0; x < cnt; x++)
-            {
-                if (matrix[x][y])
-                {
-                    for (int z = 0; z < cnt; z++)
-                    {
+        for (int y = 0; y < cnt; y++) {
+            for (int x = 0; x < cnt; x++) {
+                if (matrix[x][y]) {
+                    for (int z = 0; z < cnt; z++) {
                         if (matrix[y][z])
                             matrix[x][z] = true;
                     }
@@ -87,17 +69,14 @@ public class TransitiveClosure implements ValueConstants
             }
         }
 
-        ValueVec newElems = new ValueVec();
-        for (int i = 0; i < cnt; i++)
-        {
-            for (int j = 0; j < cnt; j++)
-            {
-                if (matrix[i][j])
-                {
-                	Value elem1 = elemList.elementAt(i);
-                	Value elem2 = elemList.elementAt(j);
-                	Value newElem = new TupleValue(elem1, elem2);
-                    newElems.addElement(newElem);
+        final ValueVec newElems = new ValueVec();
+        for (int i = 0; i < cnt; i++) {
+            for (int j = 0; j < cnt; j++) {
+                if (matrix[i][j]) {
+                    final Value elem1 = elemList.get(i);
+                    final Value elem2 = elemList.get(j);
+                    final Value newElem = new TupleValue(elem1, elem2);
+                    newElems.add(newElem);
                 }
             }
         }

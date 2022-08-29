@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,57 +26,57 @@
 
 package tlc2.tool.liveness;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
+import tlc2.tool.ModelCheckerTestCase;
+import tlc2.tool.TLCStateInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
-import tlc2.output.EC.ExitStatus;
-import tlc2.tool.TLCStateInfo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ChooseTableauSymmetryTestA extends ModelCheckerTestCase {
 
-	public ChooseTableauSymmetryTestA() {
-		super("ChooseTableauSymmetryMCa", "symmetry", ExitStatus.VIOLATION_LIVENESS);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "6", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    public ChooseTableauSymmetryTestA() {
+        super("ChooseTableauSymmetryMCa", "symmetry", ExitStatus.VIOLATION_LIVENESS);
+    }
 
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "6", "0"));
+        assertFalse(recorder.recorded(EC.GENERAL));
 
-		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(7);
-		// Trace prefix
-		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
-		expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"ready\")");
-		expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"busy\")");
-		expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
-		expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"busy\")");
-		
-		final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add(isExtendedTLCState()
-				? "<Init line 5, col 9 to line 5, col 37 of module ChooseTableauSymmetry>"
-				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Busy line 10, col 12 to line 11, col 46 of module ChooseTableauSymmetry>");
-		expectedActions.add("<Done line 13, col 12 to line 14, col 47 of module ChooseTableauSymmetry>");
-		
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
-		
-		assertBackToState(3, "<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+        // Assert it has found the temporal violation and also a counter example
+        assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+        assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-	assertZeroUncovered();
-	}
+        // Assert the error trace
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+        final List<String> expectedTrace = new ArrayList<>(7);
+        // Trace prefix
+        expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"ready\")");
+        expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"ready\")");
+        expectedTrace.add("arr = (a :> \"busy\" @@ b :> \"busy\")");
+        expectedTrace.add("arr = (a :> \"done\" @@ b :> \"busy\")");
+        expectedTrace.add("arr = (a :> \"ready\" @@ b :> \"busy\")");
+
+        final List<String> expectedActions = new ArrayList<>();
+        expectedActions.add(isExtendedTLCState()
+                ? "<Init line 5, col 9 to line 5, col 37 of module ChooseTableauSymmetry>"
+                : TLCStateInfo.INITIAL_PREDICATE);
+        expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+        expectedActions.add("<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+        expectedActions.add("<Busy line 10, col 12 to line 11, col 46 of module ChooseTableauSymmetry>");
+        expectedActions.add("<Done line 13, col 12 to line 14, col 47 of module ChooseTableauSymmetry>");
+
+        assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
+
+        assertBackToState(3, "<Ready line 7, col 13 to line 8, col 47 of module ChooseTableauSymmetry>");
+
+        assertZeroUncovered();
+    }
 }

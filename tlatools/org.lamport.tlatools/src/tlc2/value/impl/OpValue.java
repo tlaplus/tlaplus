@@ -13,15 +13,17 @@ import tlc2.util.Context;
 
 public abstract class OpValue extends Value implements Applicable {
 
-	// Allow sub-classes to override.
-	public Value eval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
-			final TLCState s1, final int control, final CostModel cm) {
-		final Value[] argVals = new Value[args.length];
-		// evaluate the operator's arguments:
-		for (int i = 0; i < args.length; i++) {
-			argVals[i] = tool.eval(args[i], c, s0, s1, control, cm);
-		}
-		// evaluate the operator:
-		return this.apply(argVals, control);
-	}
+    private static final long serialVersionUID = -5571735573122262202L;
+
+    // Allow sub-classes to override.
+    public Value eval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+                      final TLCState s1, final int control, final CostModel cm) {
+        final Value[] argVals = new Value[args.length];
+        // evaluate the operator's arguments:
+        for (int i = 0; i < args.length; i++) {
+            argVals[i] = tool.eval(args[i], c, s0, s1, control, cm);
+        }
+        // evaluate the operator:
+        return this.apply(argVals, control);
+    }
 }

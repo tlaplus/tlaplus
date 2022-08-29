@@ -25,27 +25,27 @@
  ******************************************************************************/
 package tlc2.util;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Random;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+
 public class FP64Test {
 
-	@Before
-	public void setup() {
-		FP64.Init();
-	}
-	
-	@Test
-	public void testExtendLongInt() {
-		final Random random = new Random();
-		for (int i = 0; i < 1000; i++) {
-			final long fp = random.nextLong();
-			final int x = random.nextInt();
-			assertEquals(FP64.Extend(fp, x), FP64.ExtendLoop(fp, x));
-		}
-	}
+    @Before
+    public void setup() {
+        FP64.Init();
+    }
+
+    @Test
+    public void testExtendLongInt() {
+        final Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            final long fp = random.nextLong();
+            final int x = random.nextInt();
+            assertEquals(FP64.Extend(fp, x), FP64.ExtendLoop(fp, x));
+        }
+    }
 }

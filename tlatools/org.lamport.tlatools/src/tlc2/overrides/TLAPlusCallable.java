@@ -2,7 +2,7 @@
  * Copyright (c) 2020 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,48 +25,48 @@
  ******************************************************************************/
 package tlc2.overrides;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
- * @see MethodValue.
+ * @see tlc2.value.impl.MethodValue
  */
 @Retention(RUNTIME)
 @Target(METHOD)
 public @interface TLAPlusCallable {
 
-	/**
-	 * @return The identifier of a TLA+ state or action predicate. 
-	 */
-	String definition();
+    /**
+     * @return The identifier of a TLA+ state or action predicate.
+     */
+    String definition();
 
-	/**
-	 * @return The name of the TLA+ module declaring the definition above.
-	 */
-	String module();
+    /**
+     * @return The name of the TLA+ module declaring the definition above.
+     */
+    String module();
 
-	/**
-	 * @return The minimum level that will be assigned to the OpDefNode that
-	 *         represents the EvaluatingValue in the semantic graph. Unless
-	 *         the actual level checking in Spec.getLevelBound assigns a
-	 *         greater value, the OpDefNode is a constant-level expression if
-	 *         0 causing it to be eagerly evaluated in 
-	 *         SpecProcessor.processConstantDefns.
-	 * @see tla2sany.semantic.LevelNode.getLevel()
-	 * @see tlc2.tool.impl.Spec.getLevelBound(SemanticNode, Context)
-	 * @see tlc2.value.impl.EvaluatingValue
-	 * @see tlc2.tool.impl.SpecProcessor.processConstantDefns()
-	 */
-	int minLevel() default 0;
-	
-	/**
-	 * @return true if a warning should be printed when a EV cannot be mapped to the
-	 *         given TLA+ definition in module.
-	 * @see Evaluation#definition()
-	 * @see Evaluation#module()
-	 */
-	boolean warn() default true;
+    /**
+     * @return The minimum level that will be assigned to the OpDefNode that
+     * represents the EvaluatingValue in the semantic graph. Unless
+     * the actual level checking in Spec.getLevelBound assigns a
+     * greater value, the OpDefNode is a constant-level expression if
+     * 0 causing it to be eagerly evaluated in
+     * SpecProcessor.processConstantDefns.
+     * @see tla2sany.semantic.LevelNode#getLevel()
+     * @see tlc2.tool.impl.Tool#getLevelBound
+     * @see tlc2.value.impl.EvaluatingValue
+     * @see tlc2.tool.impl.SpecProcessor#processConstantDefns
+     */
+    int minLevel() default 0;
+
+    /**
+     * @return true if a warning should be printed when a EV cannot be mapped to the
+     * given TLA+ definition in module.
+     * @see Evaluation#definition()
+     * @see Evaluation#module()
+     */
+    boolean warn() default true;
 }

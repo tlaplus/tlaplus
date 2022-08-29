@@ -8,67 +8,58 @@ import java.util.Hashtable;
 /**
  * Each instance of this class basically is a map from ModulePointer objects to
  * ModuleRelatives objects.
- *
+ * <p>
  * It is primarily a wrapper for a Hashtable, with the added benefit of type checking
  */
 
 class ModuleRelationships {
 
-  // Maps ModulePointer objects to ModuleRelatives objects
-  private Hashtable modRelHashtable = new Hashtable();
+    // Maps ModulePointer objects to ModuleRelatives objects
+    private final Hashtable<ModulePointer, ModuleRelatives> modRelHashtable = new Hashtable<>();
 
-/*
-  ModuleRelatives getRelatives(ModulePointer modulePointer) { 
-    return modulePointer.getRelatives(); //(ModuleRelatives)modRelHashtable.get(modulePointer); 
-  }
-*/
-
-  void putRelatives (ModulePointer modulePointer, ModuleRelatives relatives) {
-    modRelHashtable.put(modulePointer, relatives);
-  } // end putRelatives()
+    void putRelatives(final ModulePointer modulePointer, final ModuleRelatives relatives) {
+        modRelHashtable.put(modulePointer, relatives);
+    } // end putRelatives()
 
 
-  ModuleContext getContext(ModulePointer module) {
-    return module.getRelatives().context;
-  } // end getContext()
-
-
-  Enumeration<ModulePointer> getKeys() { return modRelHashtable.keys(); }  
-
-
-  // Add the entries from otherMR into THIS; they are assumed not to overlap.
-  void union(ModuleRelationships otherMR) {
-
-    Enumeration otherKeys = otherMR.getKeys();
-
-    while ( otherKeys.hasMoreElements() ) {
-      ModulePointer key = (ModulePointer)otherKeys.nextElement();
-
-      if (key.getRelatives() == null ) { 
-        this.putRelatives( key, key.getRelatives() );
-      }
+    Enumeration<ModulePointer> getKeys() {
+        return modRelHashtable.keys();
     }
 
-  } // end union()
+
+    // Add the entries from otherMR into THIS; they are assumed not to overlap.
+    void union(final ModuleRelationships otherMR) {
+
+        final Enumeration<ModulePointer> otherKeys = otherMR.getKeys();
+
+        while (otherKeys.hasMoreElements()) {
+            final ModulePointer key = otherKeys.nextElement();
+
+            if (key.getRelatives() == null) {
+                this.putRelatives(key, key.getRelatives());
+            }
+        }
+
+    } // end union()
 
 
-  public String toString() {
+    public String toString() {
 
-    String ret = "";
+        final StringBuilder ret = new StringBuilder();
 
-    Enumeration e = modRelHashtable.keys();
-    while ( e.hasMoreElements()) {
+        final Enumeration<ModulePointer> e = modRelHashtable.keys();
+        while (e.hasMoreElements()) {
 
-      ModulePointer   modPtr    = (ModulePointer)e.nextElement();
+            final ModulePointer modPtr = e.nextElement();
 
-      ret = ret + "\n----------- Module '" + modPtr.getName() + "'\n";
-      ret = ret + modPtr.getRelatives().toString(); 
-      ret = ret + "-----------" + "\n";  
+            ret.append("\n----------- Module '").append(modPtr.getName()).append("'\n");
+            ret.append(modPtr.getRelatives().toString());
+            ret.append("-----------").append("\n");
 
-    } // end while 
+        } // end while
 
-    return ret;
+        return ret.toString();
 
-  } // end toString()
+    } // end toString()
 
 } // end class

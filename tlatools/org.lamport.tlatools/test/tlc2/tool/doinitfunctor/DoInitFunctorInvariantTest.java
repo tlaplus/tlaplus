@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,30 +26,27 @@
 
 package tlc2.tool.doinitfunctor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.ModelCheckerTestCase;
+
+import static org.junit.Assert.*;
 
 public class DoInitFunctorInvariantTest extends ModelCheckerTestCase {
-	
-	public DoInitFunctorInvariantTest() {
-		super("DoInitFunctorInvariant", "DoInitFunctor", ExitStatus.VIOLATION_SAFETY);
-	}
 
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.TLC_STATS));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    public DoInitFunctorInvariantTest() {
+        super("DoInitFunctorInvariant", "DoInitFunctor", ExitStatus.VIOLATION_SAFETY);
+    }
 
-		// Test that TLC - with continuation disabled - stops after finding the first inv violation/finds exactly one violation.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
-		assertEquals(1, recorder.getRecords(EC.TLC_INVARIANT_VIOLATED_INITIAL).size());
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.TLC_STATS));
+        assertFalse(recorder.recorded(EC.GENERAL));
+
+        // Test that TLC - with continuation disabled - stops after finding the first inv violation/finds exactly one violation.
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_INVARIANT_VIOLATED_INITIAL, "NotNine", "x = 9\n"));
+        assertEquals(1, recorder.getRecords(EC.TLC_INVARIANT_VIOLATED_INITIAL).size());
+    }
 }

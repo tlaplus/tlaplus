@@ -1,4 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.drivers;
 
-public class SemanticException extends Exception {}
+public class SemanticException extends Exception {
+
+    private static final long serialVersionUID = 5101697823732743568L;
+}

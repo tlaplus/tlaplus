@@ -10,61 +10,70 @@ import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 
 class LNNext extends LiveExprNode {
-	private final LiveExprNode body;
+    private final LiveExprNode body;
 
-	public LNNext(LiveExprNode body) {
-		this.body = body;
-	}
+    public LNNext(final LiveExprNode body) {
+        this.body = body;
+    }
 
-	public final LiveExprNode getBody() {
-		return this.body;
-	}
+    public final LiveExprNode getBody() {
+        return this.body;
+    }
 
-	public final int getLevel() {
-		return LevelConstants.ActionLevel;
-	}
+    @Override
+    public final int getLevel() {
+        return LevelConstants.ActionLevel;
+    }
 
-	public final boolean containAction() {
-		return this.body.containAction();
-	}
-	
-	@Override
-	public final boolean isPositiveForm() {
-		return this.body.isPositiveForm();
-	}
+    @Override
+    public final boolean containAction() {
+        return this.body.containAction();
+    }
 
-	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
-		return this.body.eval(tool, s2, TLCState.Empty);
-	}
+    @Override
+    public final boolean isPositiveForm() {
+        return this.body.isPositiveForm();
+    }
 
-	public final void toString(StringBuffer sb, String padding) {
-		sb.append("()");
-		this.getBody().toString(sb, padding + "  ");
-	}
+    @Override
+    public final boolean eval(final ITool tool, final TLCState s1, final TLCState s2) {
+        return this.body.eval(tool, s2, tool.getEmptyState());
+    }
 
-	public void extractPromises(TBPar promises) {
-		getBody().extractPromises(promises);
-	}
+    @Override
+    public final void toString(final StringBuilder sb, final String padding) {
+        sb.append("()");
+        this.getBody().toString(sb, padding + "  ");
+    }
 
-	public final LiveExprNode makeBinary() {
-		return new LNNext(getBody().makeBinary());
-	}
+    @Override
+    public void extractPromises(final TBPar promises) {
+        getBody().extractPromises(promises);
+    }
 
-	public LiveExprNode flattenSingleJunctions() {
-		return new LNNext(getBody().flattenSingleJunctions());
-	}
+    @Override
+    public final LiveExprNode makeBinary() {
+        return new LNNext(getBody().makeBinary());
+    }
 
-	public boolean equals(LiveExprNode exp) {
-		if (exp instanceof LNNext) {
-			return getBody().equals(((LNNext) exp).getBody());
-		}
-		return false;
-	}
+    @Override
+    public LiveExprNode flattenSingleJunctions() {
+        return new LNNext(getBody().flattenSingleJunctions());
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
-	 */
-	public String toDotViz() {
-		return "()" + getBody().toDotViz();
-	}
+    @Override
+    public boolean equals(final LiveExprNode exp) {
+        if (exp instanceof LNNext lnn) {
+            return getBody().equals(lnn.getBody());
+        }
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+     */
+    @Override
+    public String toDotViz() {
+        return "()" + getBody().toDotViz();
+    }
 }

@@ -24,89 +24,95 @@ import util.WrongInvocationException;
  * @version $Id$
  */
 public class LNAction extends LiveExprNode {
-	private final ExprNode body;
-	private final ExprNode subscript;
-	private final boolean isBox; // <A>_v: A /\ v'!=v or [A]_v: A \/ v'=v
-	private final Context con;
-	private int tag;
+    private final ExprNode body;
+    private final ExprNode subscript;
+    private final boolean isBox; // <A>_v: A /\ v'!=v or [A]_v: A \/ v'=v
+    private final Context con;
+    private int tag;
 
-	public LNAction(ExprNode body, Context con, ExprNode subscript, boolean isBox) {
-		this.body = body;
-		this.subscript = subscript;
-		this.isBox = isBox;
-		this.con = con;
-	}
+    public LNAction(final ExprNode body, final Context con, final ExprNode subscript, final boolean isBox) {
+        this.body = body;
+        this.subscript = subscript;
+        this.isBox = isBox;
+        this.con = con;
+    }
 
-	public LNAction(ExprNode body, Context con) {
-		this.body = body;
-		this.subscript = null;
-		this.isBox = false;
-		this.con = con;
-	}
+    public LNAction(final ExprNode body, final Context con) {
+        this.body = body;
+        this.subscript = null;
+        this.isBox = false;
+        this.con = con;
+    }
 
-	public final int getTag() {
-		return this.tag;
-	}
+    public final int getTag() {
+        return this.tag;
+    }
 
-	public final void setTag(int t) {
-		this.tag = t;
-	}
+    public final void setTag(final int t) {
+        this.tag = t;
+    }
 
-	public final int getLevel() {
-		return LevelConstants.ActionLevel;
-	}
+    @Override
+    public final int getLevel() {
+        return LevelConstants.ActionLevel;
+    }
 
-	@Override
-	public final boolean containAction() {
-		return true;
-	}
+    @Override
+    public final boolean containAction() {
+        return true;
+    }
 
-	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
-		if (this.subscript != null) {
-			IValue v1 = tool.eval(this.subscript, con, s1, TLCState.Empty, EvalControl.Clear);
-			IValue v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);
-			boolean isStut = v1.equals(v2);
-			if (this.isBox) {
-				if (isStut) {
-					return true;
-				}
-			} else {
-				if (isStut) {
-					return false;
-				}
-			}
-		}
-		IValue val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);
-		if (!(val instanceof IBoolValue)) {
-			Assert.fail(EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE);
-		}
-		return ((IBoolValue) val).getVal();
-	}
+    @Override
+    public final boolean eval(final ITool tool, final TLCState s1, final TLCState s2) {
+        if (this.subscript != null) {
+            final IValue v1 = tool.eval(this.subscript, con, s1, tool.getEmptyState(), EvalControl.Clear);
+            final IValue v2 = tool.eval(this.subscript, con, s2, null, EvalControl.Clear);
+            final boolean isStut = v1.equals(v2);
+            if (this.isBox) {
+                if (isStut) {
+                    return true;
+                }
+            } else {
+                if (isStut) {
+                    return false;
+                }
+            }
+        }
+        final IValue val = tool.eval(this.body, con, s1, s2, EvalControl.Clear);
+        if (!(val instanceof IBoolValue)) {
+            Assert.fail(EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE);
+        }
+        return ((IBoolValue) val).getVal();
+    }
 
-	public final void toString(StringBuffer sb, String padding) {
-		if (this.subscript == null) {
-			this.body.toString(sb, padding);
-		} else {
-			sb.append((this.isBox) ? "[" : "<");
-			this.body.toString(sb, padding + " ");
-			sb.append(((this.isBox) ? "]_" : ">_") + this.subscript);
-		}
-	}
+    @Override
+    public final void toString(final StringBuilder sb, final String padding) {
+        if (this.subscript == null) {
+            this.body.toString(sb, padding);
+        } else {
+            sb.append((this.isBox) ? "[" : "<");
+            this.body.toString(sb, padding + " ");
+            sb.append((this.isBox) ? "]_" : ">_").append(this.subscript);
+        }
+    }
 
-	public int tagExpr(int tag) {
-		setTag(tag);
-		return tag + 1;
-	}
+    @Override
+    public int tagExpr(final int tag) {
+        setTag(tag);
+        return tag + 1;
+    }
 
-	public LiveExprNode makeBinary() {
-		// We do not deal with actions:
-		throw new WrongInvocationException("LiveExprNode.makeBinary: TLC encounters actions.");
-	}
+    @Override
+    public LiveExprNode makeBinary() {
+        // We do not deal with actions:
+        throw new WrongInvocationException("LiveExprNode.makeBinary: TLC encounters actions.");
+    }
 
-	public boolean equals(LiveExprNode exp) {
-		if (exp instanceof LNAction) {
-			return getTag() == ((LNAction) exp).getTag();
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(final LiveExprNode exp) {
+        if (exp instanceof LNAction lna) {
+            return getTag() == lna.getTag();
+        }
+        return false;
+    }
 }

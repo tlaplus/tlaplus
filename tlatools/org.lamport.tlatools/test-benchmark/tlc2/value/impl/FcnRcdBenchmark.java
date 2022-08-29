@@ -45,31 +45,24 @@ import tlc2.value.RandomEnumerableValues;
 @State(Scope.Benchmark)
 public class FcnRcdBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
-	
-	@Param({"0", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"})
-	public int size;
+        FP64.Init();
+    }
 
-	public FcnRcdValue fcnRcd;
-		
-	@Setup(Level.Iteration)
-	public void setup() {
-		Value[] domain = new Value[size];
-		Value[] range = new Value[size];
-		for (int i = 0; i < domain.length; i++) {
-			// Use values as domain for which equality checking isn't effectively for free. 
-			domain[i] = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-//			domain[i] = IntValue.gen(i);
-			range[i] = IntValue.gen(i);
-		}
-		Collections.shuffle(Arrays.asList(domain));
-		fcnRcd = (FcnRcdValue) new FcnRcdValue(domain, range, false).normalize();
-	}
+    @Param({"0", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024", "2048", "4096", "8192"})
+    public int size;
+
+    public FcnRcdValue fcnRcd;
+
+    public static void main(final String[] args) throws RunnerException {
+        final Options opt = new OptionsBuilder()
+                .include(FcnRcdBenchmark.class.getSimpleName())
+                .build();
+        new Runner(opt).run();
+    }
 
 //	@Benchmark
 //	public Value[] fcnRcdValueSelectIndex() {
@@ -82,32 +75,39 @@ public class FcnRcdBenchmark {
 //		return values;
 //	}
 
-	@Benchmark
-	public Value[] fcnRcdValueSelectNoIndex() {
-		Value[] values = new Value[size];
-		for (int i = 0; i < values.length; i++) {
-			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-			values[i] = fcnRcd.selectLinearSearch(domain);
+    @Setup(Level.Iteration)
+    public void setup() {
+        final Value[] domain = new Value[size];
+        final Value[] range = new Value[size];
+        for (int i = 0; i < domain.length; i++) {
+            // Use values as domain for which equality checking isn't effectively for free.
+            domain[i] = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
+//			domain[i] = IntValue.gen(i);
+            range[i] = IntValue.gen(i);
+        }
+        Collections.shuffle(Arrays.asList(domain));
+        fcnRcd = (FcnRcdValue) new FcnRcdValue(domain, range, false).normalize();
+    }
+
+    @Benchmark
+    public Value[] fcnRcdValueSelectNoIndex() {
+        final Value[] values = new Value[size];
+        for (int i = 0; i < values.length; i++) {
+            final Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
+            values[i] = fcnRcd.selectLinearSearch(domain);
 //			values[i] = fcnRcd.selectNoIndex(IntValue.gen(i));
-		}
-		return values;
-	}
-	
-	@Benchmark
-	public Value[] fcnRcdValueSelectBinarySearch() {
-		Value[] values = new Value[size];
-		for (int i = 0; i < values.length; i++) {
-			Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
-			values[i] = fcnRcd.selectBinarySearch(domain);
+        }
+        return values;
+    }
+
+    @Benchmark
+    public Value[] fcnRcdValueSelectBinarySearch() {
+        final Value[] values = new Value[size];
+        for (int i = 0; i < values.length; i++) {
+            final Value domain = new StringValue("asdfghjkoiuytrewqzxcvbn" + i);
+            values[i] = fcnRcd.selectBinarySearch(domain);
 //			values[i] = fcnRcd.selectNoIndex(IntValue.gen(i));
-		}
-		return values;
-	}
-	
-    public static void main(String[] args) throws RunnerException {
-        final Options opt = new OptionsBuilder()
-                .include(FcnRcdBenchmark.class.getSimpleName())
-                .build();
-        new Runner(opt).run();
+        }
+        return values;
     }
 }

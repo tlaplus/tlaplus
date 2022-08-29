@@ -38,47 +38,47 @@ import tlc2.value.RandomEnumerableValues;
 @State(Scope.Benchmark)
 public class SetOfFcnsBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
-	
-	@Param({"10", "12", "14", "16"})
-	public int numOfElements;
-	
-	@Param({"16", "32", "46"})
-	public int sizeT;
-	
-	@Param({"8", "16", "46"})
-	public int sizeS;
+        FP64.Init();
+    }
 
-	// 08x16 ~= 2^32 = 4294967296
-	// 16x16 = 2^64  = 10^19
-	// 16x32 ~= 2^128 ~= 10^38
-	// 46x46 ~= 2^256 ~= 10^77
-	
-	public Enumerable setOfFcns;
-		
-	@Setup(Level.Invocation)
-	public void setup() {
-		if ((sizeS == 8 && sizeT == 16)
-				|| (sizeS == 16 && sizeT == 16)
-				|| (sizeS == 16 && sizeT == 32)
-				|| (sizeS == 46 && sizeT == 46)) {
-			final Value domain = new IntervalValue(1, sizeS);
-			final Value range = new IntervalValue(1, sizeT);
-			setOfFcns = (Enumerable) new SetOfFcnsValue(domain, range).normalize();
-		} else {
-			// This appears to be the only way to skip permutations from the parameter space
-			// sizeS X sizeT X numOfElements.
-			System.exit(0);
-		}
-	}
+    @Param({"10", "12", "14", "16"})
+    public int numOfElements;
 
-	@Benchmark
-	public Enumerable randomSubset() {
-		return setOfFcns.getRandomSubset(1 << numOfElements);
-	}
+    @Param({"16", "32", "46"})
+    public int sizeT;
+
+    @Param({"8", "16", "46"})
+    public int sizeS;
+
+    // 08x16 ~= 2^32 = 4294967296
+    // 16x16 = 2^64  = 10^19
+    // 16x32 ~= 2^128 ~= 10^38
+    // 46x46 ~= 2^256 ~= 10^77
+
+    public Enumerable setOfFcns;
+
+    @Setup(Level.Invocation)
+    public void setup() {
+        if ((sizeS == 8 && sizeT == 16)
+                || (sizeS == 16 && sizeT == 16)
+                || (sizeS == 16 && sizeT == 32)
+                || (sizeS == 46 && sizeT == 46)) {
+            final Value domain = new IntervalValue(1, sizeS);
+            final Value range = new IntervalValue(1, sizeT);
+            setOfFcns = (Enumerable) new SetOfFcnsValue(domain, range).normalize();
+        } else {
+            // This appears to be the only way to skip permutations from the parameter space
+            // sizeS X sizeT X numOfElements.
+            System.exit(0);
+        }
+    }
+
+    @Benchmark
+    public Enumerable randomSubset() {
+        return setOfFcns.getRandomSubset(1 << numOfElements);
+    }
 }

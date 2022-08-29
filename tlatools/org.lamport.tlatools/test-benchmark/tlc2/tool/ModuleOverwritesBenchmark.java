@@ -44,55 +44,55 @@ import util.UniqueString;
 @State(Scope.Benchmark)
 public class ModuleOverwritesBenchmark {
 
-	/*
-	 * Run with: java -jar target/benchmarks.jar -wi 2 -i 2 -f2 -rf json -rff
-	 * ModuleOverwritesBenchmark-$(de +%s)-$(git rev-parse --short HEAD).json
-	 * -jvmArgsPrepend "-Xms8192m -Xmx8192m" -jvmArgsAppend
-	 * "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model tlc2.tool.ModuleOverwritesBenchmark "
-	 */
-	
-	private static final String BASE_PATH = System
-			.getProperty(ModuleOverwritesBenchmark.class.getName() + ".base");
+    /*
+     * Run with: java -jar target/benchmarks.jar -wi 2 -i 2 -f2 -rf json -rff
+     * ModuleOverwritesBenchmark-$(de +%s)-$(git rev-parse --short HEAD).json
+     * -jvmArgsPrepend "-Xms8192m -Xmx8192m" -jvmArgsAppend
+     * "-Dtlc2.tool.ModuleOverwritesBenchmark.base=/home/markus/src/TLA/tla/tlatools/test-model tlc2.tool.ModuleOverwritesBenchmark "
+     */
 
-	private static final ITool tool;
-	private static final TLCStateMut state;
+    private static final String BASE_PATH = System
+            .getProperty(ModuleOverwritesBenchmark.class.getName() + ".base");
 
-	static {
-		String dir = BASE_PATH + File.separator + "ModuleOverwrites";
-		System.err.println(dir);
-		ToolIO.setUserDir(dir);
+    private static final ITool tool;
+    private static final TLCStateMut state;
 
-		tool = new FastTool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
+    static {
+        final String dir = BASE_PATH + File.separator + "ModuleOverwrites";
+        System.err.println(dir);
+        ToolIO.setUserDir(dir);
 
-		state = (TLCStateMut) tool.getInitStates().elementAt(0);
-	}
+        tool = new FastTool("", "ModuleOverwrites", "ModuleOverwrites", new SimpleFilenameToStream());
 
-	@Benchmark
-	public boolean aNoModuleOverwrite() {
-		shuffleValues();
-		return tool.isValid(tool.getInvariants()[0], state);
-	}
+        state = (TLCStateMut) tool.getInitStates().get(0);
+    }
 
-	@Benchmark
-	public boolean bModuleOverwrite() {
-		shuffleValues();
-		return tool.isValid(tool.getInvariants()[1], state);
-	}
+    private static final void shuffleValues() {
+        final FcnRcdValue frv = (FcnRcdValue) state.getVals().get(UniqueString.uniqueStringOf("t"));
 
-	@Benchmark
-	public boolean cModuleOverwriteLinear() {
-		shuffleValues();
-		return tool.isValid(tool.getInvariants()[2], state);
-	}
+        final List<Value> values = Arrays.asList(frv.values);
+        Collections.shuffle(values);
 
-	private static final void shuffleValues() {
-		final FcnRcdValue frv = (FcnRcdValue) state.getVals().get(UniqueString.uniqueStringOf("t"));
+        for (int i = 0; i < values.size(); i++) {
+            frv.values[i] = values.get(i);
+        }
+    }
 
-		final List<Value> values = Arrays.asList(frv.values);
-		Collections.shuffle(values);
+    @Benchmark
+    public boolean aNoModuleOverwrite() {
+        shuffleValues();
+        return tool.isValid(tool.getInvariants()[0], state);
+    }
 
-		for (int i = 0; i < values.size(); i++) {
-			frv.values[i] = values.get(i);
-		}
-	}
+    @Benchmark
+    public boolean bModuleOverwrite() {
+        shuffleValues();
+        return tool.isValid(tool.getInvariants()[1], state);
+    }
+
+    @Benchmark
+    public boolean cModuleOverwriteLinear() {
+        shuffleValues();
+        return tool.isValid(tool.getInvariants()[2], state);
+    }
 }

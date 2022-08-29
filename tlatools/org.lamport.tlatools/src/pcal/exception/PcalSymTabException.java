@@ -4,14 +4,17 @@ package pcal.exception;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class PcalSymTabException extends UnrecoverableException
-{
+public class PcalSymTabException extends UnrecoverableException {
 
     /**
-     * @param message
+     *
      */
-    public PcalSymTabException(String message)
-    {
+    private static final long serialVersionUID = -3358103337832290610L;
+
+    /**
+     *
+     */
+    public PcalSymTabException(final String message) {
         super(message);
     }
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,41 +26,43 @@
 
 package tlc2.tool.liveness.simulation;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
+import org.junit.experimental.categories.Category;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.TTraceModelCheckerTestCase;
+import util.TTraceTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class StutteringTest_TTraceTest extends TTraceModelCheckerTestCase {
 
-	public StutteringTest_TTraceTest() {
-		super(StutteringTest.class, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
-	}
+    public StutteringTest_TTraceTest() {
+        super(StutteringTest.class, "CodePlexBug08", ExitStatus.VIOLATION_LIVENESS);
+    }
 
-	@Test
-	public void testSpec() {
-		// Simulation has finished and generated states
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    @Category(TTraceTest.class)
+    @Test
+    public void testSpec() {
+        // Simulation has finished and generated states
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
 
-		// Assert it has found the temporal violation and also a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+        // Assert it has found the temporal violation and also a counter example
+        assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+        assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-		// Assert an error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+        // Assert an error trace
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 
-		// The actual trace differs at each simulation due to its random
-		// selection of the next state.
+        // The actual trace differs at each simulation due to its random
+        // selection of the next state.
 
-		// Assert the error trace contains a stuttering step at position 5
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
+        // Assert the error trace contains a stuttering step at position 5
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT3));
 
-		// Assert the error trace does NOT show back to state X
-		assertFalse("Trace shows \"Back to state...\"", recorder.recorded(EC.TLC_BACK_TO_STATE));
-	}
+        // Assert the error trace does NOT show back to state X
+        assertFalse("Trace shows \"Back to state...\"", recorder.recorded(EC.TLC_BACK_TO_STATE));
+    }
 }

@@ -1,351 +1,372 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
-import java.util.HashSet;
-import java.util.Iterator;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
 import util.WrongInvocationException;
 
-/***************************************************************************
-* Note: The SANY1 level checking algorithm is specified in the file        *
-* LevelSpec.tla.  The handling of recursive operators is explained in the  *
-* file level-checking-proposal.txt.  Both of these files are appended as   *
-* comments at the end of this file.                                        *
-***************************************************************************/
+import java.util.HashSet;
 
 /***************************************************************************
-* This abstract class is extended by every class of node that has a        *
-* level.  There are a number of computations that are performed for        *
-* different node types, such as adding the levelParams of all descendant   *
-* nodes to the levelParams of the current node.  These operations should   *
-* have been defined as static methods in some concrete class.  However,    *
-* that was not done.  So, a lot of copying and pasting went on in the      *
-* concrement implementation of the level-computing methods in this class.  *
-*                                                                          *
-* The getLevelParams(), getLevelConstraints(), and                         *
-* getArgLevelConstraints() methods return information for all parameters,  *
-* including local parameters that are internal to subnodes of the current  *
-* node.  These are passed up right to the top--that is, to the values      *
-* returned by these methods for a module node.  Since parameters are       *
-* identified by node and not by name, there is no name conflict involved   *
-* with having constraints for different parameters with the same name.     *
-* Moreover, I think it is necessary to make these internal local           *
-* parameters visible at the module level in order to do level checking of  *
-* occurrences of operators imported by instantiation.  (However, I've      *
-* forgotten the algorithm for such level checking, which is in             *
-* LevelSpec.tla.)                                                          *
-*                                                                          *
-* This information for internal parameters could also be useful to a       *
-* tool.  For example, level information for an ASSUME/PROVE inside a       *
-* theorem is visible at the module level.  A tool can therefore use the    *
-* level information of the module to check if a substitution in a theorem  *
-* is level-correct.                                                        *
-***************************************************************************/
+ * Note: The SANY1 level checking algorithm is specified in the file        *
+ * LevelSpec.tla.  The handling of recursive operators is explained in the  *
+ * file level-checking-proposal.txt.  Both of these files are appended as   *
+ * comments at the end of this file.                                        *
+ ***************************************************************************/
+
+/***************************************************************************
+ * This abstract class is extended by every class of node that has a        *
+ * level.  There are a number of computations that are performed for        *
+ * different node types, such as adding the levelParams of all descendant   *
+ * nodes to the levelParams of the current node.  These operations should   *
+ * have been defined as static methods in some concrete class.  However,    *
+ * that was not done.  So, a lot of copying and pasting went on in the      *
+ * concrement implementation of the level-computing methods in this class.  *
+ *                                                                          *
+ * The getLevelParams(), getLevelConstraints(), and                         *
+ * getArgLevelConstraints() methods return information for all parameters,  *
+ * including local parameters that are internal to subnodes of the current  *
+ * node.  These are passed up right to the top--that is, to the values      *
+ * returned by these methods for a module node.  Since parameters are       *
+ * identified by node and not by name, there is no name conflict involved   *
+ * with having constraints for different parameters with the same name.     *
+ * Moreover, I think it is necessary to make these internal local           *
+ * parameters visible at the module level in order to do level checking of  *
+ * occurrences of operators imported by instantiation.  (However, I've      *
+ * forgotten the algorithm for such level checking, which is in             *
+ * LevelSpec.tla.)                                                          *
+ *                                                                          *
+ * This information for internal parameters could also be useful to a       *
+ * tool.  For example, level information for an ASSUME/PROVE inside a       *
+ * theorem is visible at the module level.  A tool can therefore use the    *
+ * level information of the module to check if a substitution in a theorem  *
+ * is level-correct.                                                        *
+ ***************************************************************************/
 
 public class LevelNode extends SemanticNode {
 
-  LevelNode(int kind, TreeNode stn) {
-    super(kind, stn);
-   }
+    /***************************************************************************
+     * The level parameters.                                                    *
+     *                                                                          *
+     * They are given common default values for convenience.                    *
+     *                                                                          *
+     * Note: In SANY1, each subclass declared these fields for itself if it     *
+     * needed them.  In most cases where it didn't need them, they acted as if  *
+     * these parameters had the default values.                                 *
+     ***************************************************************************/
+    public boolean levelCorrect = true;
+    public int level = ConstantLevel;
+    public HashSet<SymbolNode> levelParams = new HashSet<>();
+    public SetOfLevelConstraints levelConstraints = new SetOfLevelConstraints();
+    public SetOfArgLevelConstraints argLevelConstraints = new SetOfArgLevelConstraints();
+    public HashSet<ArgLevelParam> argLevelParams = new HashSet<>();
+    /***************************************************************************
+     * The following HashSets are used in computing Leibnizity.                 *
+     *                                                                          *
+     *  - allParams :        The set of all parameters that appear within the   *
+     *                       node.                                              *
+     *  - nonLeibnizParams : The subset of allParams of parameters that         *
+     *                       appear in a non-Leibniz argument of some           *
+     *                       operator.                                          *
+     *                                                                          *
+     * See the file leibniz-checking.txt, appended below, for an explanation    *
+     * of Leibnizity and Leibniz checking.                                      *
+     ***************************************************************************/
+    public HashSet<SymbolNode> allParams = new HashSet<>();
+    public HashSet<SymbolNode> nonLeibnizParams = new HashSet<>();
+    public int levelChecked = 0;
 
-/***************************************************************************
-* The level parameters.                                                    *
-*                                                                          *
-* They are given common default values for convenience.                    *
-*                                                                          *
-* Note: In SANY1, each subclass declared these fields for itself if it     *
-* needed them.  In most cases where it didn't need them, they acted as if  *
-* these parameters had the default values.                                 *
-***************************************************************************/
-public boolean                   levelCorrect        = true ;
-public int                       level               = ConstantLevel ;
-public HashSet<SymbolNode>       levelParams         = new HashSet<>() ;
-public SetOfLevelConstraints     levelConstraints    = new SetOfLevelConstraints();
-public SetOfArgLevelConstraints  argLevelConstraints = new SetOfArgLevelConstraints();
-public HashSet<ArgLevelParam>    argLevelParams      = new HashSet<>() ;
+    LevelNode(final int kind, final TreeNode stn) {
+        super(kind, stn);
+    }
+    /*************************************************************************
+     * The highest value of iter for which levelChecked(iter) has been        *
+     * invoked on this object--except for an OpDefNode not in a recursive     *
+     * section, which ignores invocations of levelChecked after the           *
+     * first one.                                                             *
+     *                                                                        *
+     * This is used to compute the levelData information only when it hasn't  *
+     * already been computed, and to prevent infinite recursion on            *
+     * recursively defined operators or functions.                            *
+     *************************************************************************/
 
-/***************************************************************************
-* The following HashSets are used in computing Leibnizity.                 *
-*                                                                          *
-*  - allParams :        The set of all parameters that appear within the   *
-*                       node.                                              *
-*  - nonLeibnizParams : The subset of allParams of parameters that         *
-*                       appear in a non-Leibniz argument of some           *
-*                       operator.                                          *
-*                                                                          *
-* See the file leibniz-checking.txt, appended below, for an explanation    *
-* of Leibnizity and Leibniz checking.                                      *
-***************************************************************************/
-public HashSet<SymbolNode>       allParams           = new HashSet<>() ;
-public HashSet<SymbolNode>       nonLeibnizParams    = new HashSet<>() ;
-
-public int levelChecked   = 0 ;
-  /*************************************************************************
-  * The highest value of iter for which levelChecked(iter) has been        *
-  * invoked on this object--except for an OpDefNode not in a recursive     *
-  * section, which ignores invocations of levelChecked after the           *
-  * first one.                                                             *
-  *                                                                        *
-  * This is used to compute the levelData information only when it hasn't  *
-  * already been computed, and to prevent infinite recursion on            *
-  * recursively defined operators or functions.                            *
-  *************************************************************************/
-
-
-  /**
-   * Check whether an expr or opArg is level correct, and if so,
-   * calculates the level information for the expression. Returns
-   * true iff this is level correct.
-   */
-  public boolean levelCheck(int iter) {
-    /***********************************************************************
-    * This is called for a node n to calculate the level information for   *
-    * n and all its descendants.  It should be overridden by each          *
-    * subclass to perform the level checking appropriate for the class of  *
-    * node.  It is this method that computes the objects levelData field.  *
-    *                                                                      *
-    * The method returns true iff n and all of its descendants are level   *
-    * correct.  However, this value is apparently never used.  Instead,    *
-    * level errors should be reported using errors.addError.               *
-    *                                                                      *
-    * To handle recursive definitions, level checking must be performed    *
-    * more than once.  To handle this, successive calls are with larger    *
-    * values of iter.                                                      *
-    *                                                                      *
-    * Note: Except for those objects whose level values are initialized    *
-    * when the object is constructed, levelCheck must be called on an      *
-    * object before any of the methods getLevel(), getLevelParams(),       *
-    * getLevelConstraints() getArgLevelConstraints(), or                   *
-    * getArgLevelParams() is called on it.  This is not a concern for      *
-    * tools that use the level information provided by SANY. However, it   *
-    * is crucial that this requirement be obeyed during level checking.    *
-    ***********************************************************************/
-      throw new WrongInvocationException("Level checking of " + kinds[this.getKind()] +
-                 " node not implemented.");
-   }
-
-  public boolean levelCheckSubnodes(int iter, LevelNode[] sub) {
-    /***********************************************************************
-    * Performs levelCheck(iter) for a node whose level information is      *
-    * computed by combining the level information from the array sub of    *
-    * subnodes.                                                            *
-    *                                                                      *
-    * This method was added by LL on 22 Jul 2007.  It should have been     *
-    * written long ago and used in a number of places in which the same    *
-    * calculations are performed.                                          *
-    ***********************************************************************/
-    if (this.levelChecked >= iter) return this.levelCorrect;
-    this.levelChecked = iter ;
-    for (int i = 0; i < sub.length; i++ ) {
-      if (   (sub[i].getKind() != ModuleKind)
-//          && (sub[i].getKind() != InstanceKind)
-          && (sub[i].getKind() != ModuleInstanceKind)) {
-        /*******************************************************************
-        * Here are the exceptional cases:                                  *
-        *                                                                  *
-        *  - A module node should already have been level checked.         *
-        *    This method can be called for a module only when level        *
-        *    checking a USE, HIDE, or BY statement.                        *
-        *                                                                  *
-        *  - There is nothing to check in a ModuleInstanceNode.            *
-        *    This method is called for such a node only when               *
-        *    level-checking a proof.                                       *
-        *******************************************************************/
-        this.levelCorrect = sub[i].levelCheck(iter) && this.levelCorrect ;
-        if (this.level < sub[i].getLevel()) {this.level = sub[i].getLevel();};
-        this.levelParams.addAll(sub[i].getLevelParams());
-        this.levelConstraints.putAll(sub[i].getLevelConstraints());
-        this.argLevelConstraints.putAll(sub[i].getArgLevelConstraints());
-        this.argLevelParams.addAll(sub[i].getArgLevelParams());
-        this.allParams.addAll(sub[i].getAllParams());
-        this.nonLeibnizParams.addAll(sub[i].getNonLeibnizParams());
-       } ;
-     } ;
-    return this.levelCorrect ;
-   }
-
-  /*************************************************************************
-  * The following method adds to constrs a level constaint that the        *
-  * level of C < TemporalLevel for every declared CONSTANT C in the set    *
-  * params of nodes.                                                       *
-  *                                                                        *
-  * Called when level checking an ASSUME statement or an ASSUME/PROVE to   *
-  * prevent a declared constant that appears in it from being              *
-  * instantiated by a temporal formula.  Added by LL on 1 Mar 2009         *
-  *************************************************************************/
-  static void addTemporalLevelConstraintToConstants(
-                 HashSet<SymbolNode> params,
-                 SetOfLevelConstraints constrs ) {
-      Iterator<SymbolNode> iter = params.iterator();
-      while (iter.hasNext()) {
-        SymbolNode node = iter.next() ;
-        if (node.getKind() == ConstantDeclKind) {
-          constrs.put(node, Levels[ActionLevel]);
-         };
-       }
-   }
-/***************************************************************************
-* The checks in the following methods should probably be eliminated after  *
-* SANY2 is debugged.                                                       *
-*  <ul><li>0 for constant                                                  *
-*  <li>1 for non-primed variable                                           *
-*  <li>2 for primed variable                                               *
-*  <li>3 for temporal formula</ul>                                         *
-***************************************************************************/
-  public int getLevel(){
-    if (this.levelChecked == 0)
-      {throw new WrongInvocationException("getLevel called before levelCheck");};
-    return this.level;
-  }
-
-  public HashSet<SymbolNode> getLevelParams(){
-    /***********************************************************************
-    * Seems to return a HashSet of OpDeclNode objects.  Presumably, these  *
-    * are the parameters from the local context that contribute to the     *
-    * level of the object.                                                 *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getLevelParams called before levelCheck");};
-    return this.levelParams;
-   }
-
-  public HashSet<SymbolNode> getAllParams(){
-    /***********************************************************************
-    * Returns a HashSet of OpDeclNode objects, which are the parameters    *
-    * from the local context that appear within the object.                *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getAllParams called before levelCheck");};
-    return this.allParams;
-   }
-
-  public HashSet<SymbolNode> getNonLeibnizParams(){
-    /***********************************************************************
-    * Returns a HashSet of OpDeclNode objects, which is the subset of      *
-    * parameters returned by getAllParams() that appear within a           *
-    * nonLeibniz argument.                                                 *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getAllParams called before levelCheck");};
-    return this.nonLeibnizParams;
-   }
-
-  public SetOfLevelConstraints getLevelConstraints(){
-    /***********************************************************************
-    * This is a HashMap of elements whose key is a SymbolNode and whose    *
-    * value is an int.  An entry in this table means that the              *
-    * key/parameter must have a level <= the value/int.                    *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getLevelConstraints called before levelCheck");};
-    return this.levelConstraints;
-   }
-
-  public SetOfArgLevelConstraints getArgLevelConstraints() {
-    /***********************************************************************
-    * An element in this HashMap has key that is a ParamAndPosition and    *
-    * value that is an int.  Such an element with key k and value v means  *
-    * that the operator parameter described by the SymbolNode k.param      *
-    * must be able to accept an argument of level v in its argument        *
-    * number k.position.                                                   *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getArgLevelConstraints called before levelCheck");};
-    return this.argLevelConstraints;
-   }
-
-  public HashSet<ArgLevelParam> getArgLevelParams(){
-    /***********************************************************************
-    * Seems to return a HashSet of ArgLevelParam objects.  (See            *
-    * ArgLevelParam.java for an explanation of those objects.)             *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("getArgLevelParams called before levelCheck");};
-    return this.argLevelParams;}
-
-  public String defaultLevelDataToString() {
-    /***********************************************************************
-    * A printable representation of levelData.  Used to print debugging    *
-    * information.                                                         *
-    ***********************************************************************/
-    return
-       "Level:"                + this.getLevel()               + "\n" +
-       "LevelParams: "         + this.getLevelParams()         + "\n" +
-       "LevelConstraints: "    + this.getLevelConstraints()    + "\n" +
-       "ArgLevelConstraints: " + this.getArgLevelConstraints() + "\n" +
-       "ArgLevelParams: "      + ALPHashSetToString(this.getArgLevelParams()) + "\n" +
-       "AllParams: "           + HashSetToString(this.getAllParams()) + "\n" +
-       "NonLeibnizParams: "    + HashSetToString(this.getNonLeibnizParams()) ;
+    /*************************************************************************
+     * The following method adds to constrs a level constaint that the        *
+     * level of C < TemporalLevel for every declared CONSTANT C in the set    *
+     * params of nodes.                                                       *
+     *                                                                        *
+     * Called when level checking an ASSUME statement or an ASSUME/PROVE to   *
+     * prevent a declared constant that appears in it from being              *
+     * instantiated by a temporal formula.  Added by LL on 1 Mar 2009         *
+     *************************************************************************/
+    static void addTemporalLevelConstraintToConstants(
+            final HashSet<SymbolNode> params,
+            final SetOfLevelConstraints constrs) {
+        for (final SymbolNode node : params) {
+            if (node.getKind() == ConstantDeclKind) {
+                constrs.put(node, Levels[ActionLevel]);
+            }
+        }
     }
 
-  public static String HashSetToString(HashSet<? extends SymbolNode> hs) {
-    /***********************************************************************
-    * Converts a HashSet of SymbolNodes to a printable string.             *
-    ***********************************************************************/
-    String rval = "{" ;
-    boolean first = true ;
-    final Iterator<? extends SymbolNode> iter = hs.iterator();
-    while (iter.hasNext()) {
-      if (! first) {rval = rval + ", ";} ;
-      rval = rval + iter.next().getName() ;
-      first = false ;
-     } ;
-    rval = rval + "}" ;
-    return rval ;
-   }
+    public static String HashSetToString(final HashSet<? extends SymbolNode> hs) {
+        /***********************************************************************
+         * Converts a HashSet of SymbolNodes to a printable string.             *
+         ***********************************************************************/
+        final StringBuilder rval = new StringBuilder("{");
+        boolean first = true;
+        for (final SymbolNode h : hs) {
+            if (!first) {
+                rval.append(", ");
+            }
+            rval.append(h.getName());
+            first = false;
+        }
+        rval.append("}");
+        return rval.toString();
+    }
 
-  public static String ALPHashSetToString(HashSet<ArgLevelParam> hs) {
-    /***********************************************************************
-    * Converts a HashSet of ArgLevelParam objects to a printable string.   *
-    ***********************************************************************/
-    String rval = "{" ;
-    boolean first = true ;
-    Iterator<ArgLevelParam> iter = hs.iterator();
-    while (iter.hasNext()) {
-      if (! first) {rval = rval + ", ";} ;
-      ArgLevelParam alp = iter.next();
-      rval = rval + "<" + alp.op.getName() + ", " + alp.i + ", " +
-                     alp.param.getName() + ">" ;
-      first = false;
-     } ;
-    rval = rval + "}" ;
-    return rval ;
-   }
-  public String levelDataToString() {
-    /***********************************************************************
-    * Used to print out level information in debugging mode.  The default  *
-    * implementation just prints defaultLevelDataToString().  However,     *
-    * some nodes need to print additional level information.               *
-    ***********************************************************************/
-    if (this.levelChecked == 0)
-       {throw new WrongInvocationException("levelDataToString called before levelCheck");};
-    return this.defaultLevelDataToString() ;}
+    public static String ALPHashSetToString(final HashSet<ArgLevelParam> hs) {
+        /***********************************************************************
+         * Converts a HashSet of ArgLevelParam objects to a printable string.   *
+         ***********************************************************************/
+        final StringBuilder rval = new StringBuilder("{");
+        boolean first = true;
+        for (final ArgLevelParam h : hs) {
+            if (!first) {
+                rval.append(", ");
+            }
+            final ArgLevelParam alp = h;
+            rval.append("<").append(alp.op.getName()).append(", ").append(alp.i).append(", ").append(alp.param.getName()).append(">");
+            first = false;
+        }
+        rval.append("}");
+        return rval.toString();
+    }
+
+    /**
+     * Check whether an expr or opArg is level correct, and if so,
+     * calculates the level information for the expression. Returns
+     * true iff this is level correct.
+     */
+    public boolean levelCheck(final int iter) {
+        /***********************************************************************
+         * This is called for a node n to calculate the level information for   *
+         * n and all its descendants.  It should be overridden by each          *
+         * subclass to perform the level checking appropriate for the class of  *
+         * node.  It is this method that computes the objects levelData field.  *
+         *                                                                      *
+         * The method returns true iff n and all of its descendants are level   *
+         * correct.  However, this value is apparently never used.  Instead,    *
+         * level errors should be reported using errors.get().addError.               *
+         *                                                                      *
+         * To handle recursive definitions, level checking must be performed    *
+         * more than once.  To handle this, successive calls are with larger    *
+         * values of iter.                                                      *
+         *                                                                      *
+         * Note: Except for those objects whose level values are initialized    *
+         * when the object is constructed, levelCheck must be called on an      *
+         * object before any of the methods getLevel(), getLevelParams(),       *
+         * getLevelConstraints() getArgLevelConstraints(), or                   *
+         * getArgLevelParams() is called on it.  This is not a concern for      *
+         * tools that use the level information provided by SANY. However, it   *
+         * is crucial that this requirement be obeyed during level checking.    *
+         ***********************************************************************/
+        throw new WrongInvocationException("Level checking of " + kinds[this.getKind()] +
+                " node not implemented.");
+    }
+
+    public boolean levelCheckSubnodes(final int iter, final LevelNode[] sub) {
+        /***********************************************************************
+         * Performs levelCheck(iter) for a node whose level information is      *
+         * computed by combining the level information from the array sub of    *
+         * subnodes.                                                            *
+         *                                                                      *
+         * This method was added by LL on 22 Jul 2007.  It should have been     *
+         * written long ago and used in a number of places in which the same    *
+         * calculations are performed.                                          *
+         ***********************************************************************/
+        if (this.levelChecked >= iter) return this.levelCorrect;
+        this.levelChecked = iter;
+        /*******************************************************************
+         * Here are the exceptional cases:                                  *
+         *                                                                  *
+         *  - A module node should already have been level checked.         *
+         *    This method can be called for a module only when level        *
+         *    checking a USE, HIDE, or BY statement.                        *
+         *                                                                  *
+         *  - There is nothing to check in a ModuleInstanceNode.            *
+         *    This method is called for such a node only when               *
+         *    level-checking a proof.                                       *
+         *******************************************************************/
+        for (final LevelNode levelNode : sub) {
+            if ((levelNode.getKind() != ModuleKind)
+//          && (sub[i].getKind() != InstanceKind)
+                    && (levelNode.getKind() != ModuleInstanceKind)) {
+                /*******************************************************************
+                 * Here are the exceptional cases:                                  *
+                 *                                                                  *
+                 *  - A module node should already have been level checked.         *
+                 *    This method can be called for a module only when level        *
+                 *    checking a USE, HIDE, or BY statement.                        *
+                 *                                                                  *
+                 *  - There is nothing to check in a ModuleInstanceNode.            *
+                 *    This method is called for such a node only when               *
+                 *    level-checking a proof.                                       *
+                 *******************************************************************/
+                this.levelCorrect = levelNode.levelCheck(iter) && this.levelCorrect;
+                if (this.level < levelNode.getLevel()) {
+                    this.level = levelNode.getLevel();
+                }
+                this.levelParams.addAll(levelNode.getLevelParams());
+                this.levelConstraints.putAll(levelNode.getLevelConstraints());
+                this.argLevelConstraints.putAll(levelNode.getArgLevelConstraints());
+                this.argLevelParams.addAll(levelNode.getArgLevelParams());
+                this.allParams.addAll(levelNode.getAllParams());
+                this.nonLeibnizParams.addAll(levelNode.getNonLeibnizParams());
+            }
+        }
+        return this.levelCorrect;
+    }
+
+    /***************************************************************************
+     * The checks in the following methods should probably be eliminated after  *
+     * SANY2 is debugged.                                                       *
+     *  <ul><li>0 for constant                                                  *
+     *  <li>1 for non-primed variable                                           *
+     *  <li>2 for primed variable                                               *
+     *  <li>3 for temporal formula</ul>                                         *
+     ***************************************************************************/
+    public int getLevel() {
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getLevel called before levelCheck");
+        }
+        return this.level;
+    }
+
+    public HashSet<SymbolNode> getLevelParams() {
+        /***********************************************************************
+         * Seems to return a HashSet of OpDeclNode objects.  Presumably, these  *
+         * are the parameters from the local context that contribute to the     *
+         * level of the object.                                                 *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getLevelParams called before levelCheck");
+        }
+        return this.levelParams;
+    }
+
+    public HashSet<SymbolNode> getAllParams() {
+        /***********************************************************************
+         * Returns a HashSet of OpDeclNode objects, which are the parameters    *
+         * from the local context that appear within the object.                *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getAllParams called before levelCheck");
+        }
+        return this.allParams;
+    }
+
+    public HashSet<SymbolNode> getNonLeibnizParams() {
+        /***********************************************************************
+         * Returns a HashSet of OpDeclNode objects, which is the subset of      *
+         * parameters returned by getAllParams() that appear within a           *
+         * nonLeibniz argument.                                                 *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getAllParams called before levelCheck");
+        }
+        return this.nonLeibnizParams;
+    }
+
+    public SetOfLevelConstraints getLevelConstraints() {
+        /***********************************************************************
+         * This is a HashMap of elements whose key is a SymbolNode and whose    *
+         * value is an int.  An entry in this table means that the              *
+         * key/parameter must have a level <= the value/int.                    *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getLevelConstraints called before levelCheck");
+        }
+        return this.levelConstraints;
+    }
+
+    public SetOfArgLevelConstraints getArgLevelConstraints() {
+        /***********************************************************************
+         * An element in this HashMap has key that is a ParamAndPosition and    *
+         * value that is an int.  Such an element with key k and value v means  *
+         * that the operator parameter described by the SymbolNode k.param      *
+         * must be able to accept an argument of level v in its argument        *
+         * number k.position.                                                   *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getArgLevelConstraints called before levelCheck");
+        }
+        return this.argLevelConstraints;
+    }
+
+    public HashSet<ArgLevelParam> getArgLevelParams() {
+        /***********************************************************************
+         * Seems to return a HashSet of ArgLevelParam objects.  (See            *
+         * ArgLevelParam.java for an explanation of those objects.)             *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("getArgLevelParams called before levelCheck");
+        }
+        return this.argLevelParams;
+    }
+
+    public String defaultLevelDataToString() {
+        /***********************************************************************
+         * A printable representation of levelData.  Used to print debugging    *
+         * information.                                                         *
+         ***********************************************************************/
+        return
+                "Level:" + this.getLevel() + "\n" +
+                        "LevelParams: " + this.getLevelParams() + "\n" +
+                        "LevelConstraints: " + this.getLevelConstraints() + "\n" +
+                        "ArgLevelConstraints: " + this.getArgLevelConstraints() + "\n" +
+                        "ArgLevelParams: " + ALPHashSetToString(this.getArgLevelParams()) + "\n" +
+                        "AllParams: " + HashSetToString(this.getAllParams()) + "\n" +
+                        "NonLeibnizParams: " + HashSetToString(this.getNonLeibnizParams());
+    }
+
+    @Override
+    public String levelDataToString() {
+        /***********************************************************************
+         * Used to print out level information in debugging mode.  The default  *
+         * implementation just prints defaultLevelDataToString().  However,     *
+         * some nodes need to print additional level information.               *
+         ***********************************************************************/
+        if (this.levelChecked == 0) {
+            throw new WrongInvocationException("levelDataToString called before levelCheck");
+        }
+        return this.defaultLevelDataToString();
+    }
 
 
-  @Override
-  protected Element getSemanticElement(Document doc, SymbolContext context) {
-      // T.L. abstract method used to add data from subclasses
-      Element e = getLevelElement(doc, context); //SymbolElement.getLevelElement is not supposed to be called
-      try {
-        Element l = appendText(doc,"level",Integer.toString(getLevel()));
-        e.insertBefore(l,e.getFirstChild());
-      } catch (RuntimeException ee) {
-        // not sure it is legal for a LevelNode not to have level, debug it!
-      }
-      return e;
+    @Override
+    protected Element getSemanticElement(final Document doc, final SymbolContext context) {
+        // T.L. abstract method used to add data from subclasses
+        final Element e = getLevelElement(doc, context); //SymbolElement.getLevelElement is not supposed to be called
+        try {
+            final Element l = appendText(doc, "level", Integer.toString(getLevel()));
+            e.insertBefore(l, e.getFirstChild());
+        } catch (final RuntimeException ee) {
+            // not sure it is legal for a LevelNode not to have level, debug it!
+        }
+        return e;
     }
 
     /**
      * T.L. October 2014
      * Abstract method for subclasses of LevelNode to add their information
-     * */
-  protected Element getLevelElement(Document doc, SymbolContext context) {
-      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
+     */
+    protected Element getLevelElement(final Document doc, final SymbolContext context) {
+        throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
     }
 
 }
@@ -2377,7 +2398,6 @@ public int levelChecked   = 0 ;
 // =============================================================================
 
 // Last modified on Sun  1 March 2009 at 14:12:07 PST by lamport
-
 
 
 // File level-checking-proposal.txt

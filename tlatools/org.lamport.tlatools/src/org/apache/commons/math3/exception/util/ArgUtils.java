@@ -16,19 +16,20 @@
  */
 package org.apache.commons.math3.exception.util;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Utility class for transforming the list of arguments passed to
  * constructors of exceptions.
- *
  */
 public class ArgUtils {
     /**
      * Class contains only static methods.
      */
-    private ArgUtils() {}
+    private ArgUtils() {
+    }
 
     /**
      * Transform a multidimensional array into a one-dimensional list.
@@ -37,14 +38,12 @@ public class ArgUtils {
      * @return a list of all the {@code Object} instances contained in
      * {@code array}.
      */
-    public static Object[] flatten(Object[] array) {
-        final List<Object> list = new ArrayList<Object>();
+    public static Object[] flatten(final Object[] array) {
+        final List<Object> list = new ArrayList<>();
         if (array != null) {
-            for (Object o : array) {
-                if (o instanceof Object[]) {
-                    for (Object oR : flatten((Object[]) o)) {
-                        list.add(oR);
-                    }
+            for (final Object o : array) {
+                if (o instanceof Object[] objectArray) {
+                    list.addAll(Arrays.asList(flatten(objectArray)));
                 } else {
                     list.add(o);
                 }

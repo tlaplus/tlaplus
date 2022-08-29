@@ -15,65 +15,66 @@ import tlc2.value.impl.ValueEnumeration;
 import util.Assert;
 
 public final class ContextEnumerator implements IContextEnumerator {
-  private Context con;
-  private Object[] vars;
-  private ValueEnumeration[] enums;
-  private Value[] currentElems;
-  private boolean isDone;
-  
-  public ContextEnumerator(Object[] vars, ValueEnumeration[] enums, Context con) {
-    this.con = con;
-    this.vars = vars;
-    this.enums = enums;
-    this.currentElems = new Value[enums.length];
-    this.isDone = false;
-    for (int i = 0; i < enums.length; i++) {
-      this.currentElems[i] = this.enums[i].nextElement();
-      if (this.currentElems[i] == null) {
-	this.isDone = true;
-	break;
-      }
-    }
-  }
-  
-  @Override
-  public final Context nextElement() {
-      Context con1 = this.con;
-      if (this.isDone) return null;
-      for (int i = 0; i < enums.length; i++) {
-          if (this.vars[i] instanceof SymbolNode) {
-              con1 = con1.cons((SymbolNode)this.vars[i], this.currentElems[i]);
-          }
-          else {
-              SymbolNode[] varList = (SymbolNode[])this.vars[i];
-              Value argVal = this.currentElems[i];
-              if (!(argVal instanceof TupleValue)) {
-                  Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
-              }
-              Value[] valList = ((TupleValue)argVal).elems;
-              if (varList.length != valList.length) {
-                  Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
-              }
-              for (int j = 0; j < varList.length; j++) {
-                  con1 = con1.cons(varList[j], valList[j]);
-              }
-          }
-      }
-      for (int i = 0; i < enums.length; i++) {
-          this.currentElems[i] = this.enums[i].nextElement();
-          if (this.currentElems[i] != null) break;
-          if (i == this.enums.length - 1) {
-              this.isDone = true;
-              break;
-          }
-          this.enums[i].reset();
-          this.currentElems[i] = this.enums[i].nextElement();
-      }
-      return con1;
-  }
+    private final Context con;
+    private final Object[] vars;
+    private final ValueEnumeration[] enums;
+    private final Value[] currentElems;
+    private boolean isDone;
 
-  public final boolean isDone() {
-	return isDone;
-  }
+    public ContextEnumerator(final Object[] vars, final ValueEnumeration[] enums, final Context con) {
+        this.con = con;
+        this.vars = vars;
+        this.enums = enums;
+        this.currentElems = new Value[enums.length];
+        this.isDone = false;
+        for (int i = 0; i < enums.length; i++) {
+            this.currentElems[i] = this.enums[i].nextElement();
+            if (this.currentElems[i] == null) {
+                this.isDone = true;
+                break;
+            }
+        }
+    }
+
+    @Override
+    public boolean hasNext() {
+        return !isDone;
+    }
+
+    @Override
+    public Context next() {
+        Context con1 = this.con;
+
+        for (int i = 0; i < enums.length; i++) {
+            if (this.vars[i] instanceof SymbolNode symNode) {
+                con1 = con1.cons(symNode, this.currentElems[i]);
+            } else {
+                final SymbolNode[] varList = (SymbolNode[]) this.vars[i];
+                final Value argVal = this.currentElems[i];
+                if (!(argVal instanceof TupleValue)) {
+                    Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
+                }
+                final Value[] valList = ((TupleValue) argVal).elems;
+                if (varList.length != valList.length) {
+                    Assert.fail(EC.TLC_ARGUMENT_MISMATCH, varList[0].toString());
+                }
+                for (int j = 0; j < varList.length; j++) {
+                    con1 = con1.cons(varList[j], valList[j]);
+                }
+            }
+        }
+        for (int i = 0; i < enums.length; i++) {
+            this.currentElems[i] = this.enums[i].nextElement();
+            if (this.currentElems[i] != null) break;
+            if (i == this.enums.length - 1) {
+                this.isDone = true;
+                break;
+            }
+            this.enums[i].reset();
+            this.currentElems[i] = this.enums[i].nextElement();
+        }
+
+        return con1;
+    }
 }
 

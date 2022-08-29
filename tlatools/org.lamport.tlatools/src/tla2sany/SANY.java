@@ -8,8 +8,8 @@ package tla2sany;
 
 public class SANY {
 
-  public static final void main(String[] args) {
-    tla2sany.drivers.SANY.SANYmain(args);
-  }
-  
+    public static void main(final String[] args) {
+        tla2sany.drivers.SANY.SANYmain(args);
+    }
+
 }

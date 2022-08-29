@@ -12,38 +12,32 @@ import tlc2.value.impl.UserObj;
 import tlc2.value.impl.UserValue;
 import tlc2.value.impl.Value;
 
-public class AnySet extends UserObj
-{
-	public static final long serialVersionUID = 20160822L;
+public class AnySet extends UserObj {
+    public static final long serialVersionUID = 20160822L;
 
-    private final static Value AnySet = new UserValue(new AnySet());
+    private static final Value AnySet = new UserValue(new AnySet());
 
-    public static Value ANY()
-    {
+    public static Value ANY() {
         return AnySet;
     }
 
     @Override
-    public final int compareTo(Value val)
-    {
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "ANY", Values.ppr(val.toString()) });
+    public final int compareTo(final Value val) {
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[]{"ANY", Values.ppr(val.toString())});
     }
 
     @Override
-    public final boolean member(Value val)
-    {
+    public final boolean member(final Value val) {
         return true;
     }
 
     @Override
-    public final boolean isFinite()
-    {
+    public final boolean isFinite() {
         return false;
     }
 
     @Override
-    public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
-    {
+    public final StringBuilder toString(final StringBuilder sb, final int offset, final boolean swallow) {
         return sb.append("ANY");
     }
 }

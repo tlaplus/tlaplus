@@ -5,47 +5,39 @@
 
 package tlc2.tool.distributed;
 
+import tlc2.tool.TLCState;
+import tlc2.tool.WorkerException;
+
 import java.net.URI;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import tlc2.tool.TLCState;
-import tlc2.tool.WorkerException;
 
 /**
  * @author Simon Zambrovski
  * @version $Id$
  */
-public interface TLCWorkerRMI extends Remote {
+public interface TLCWorkerRMI extends Remote, AutoCloseable {
 
-	/**
-	 * @param states The initial states to work with
-	 * @return The next states for the initial state wet
-	 * @throws RemoteException
-	 * @throws WorkerException
-	 */
-	public NextStateResult getNextStates(TLCState[] states) throws RemoteException,
-			WorkerException;
-	
-	/**
-	 * @return true iff worker is still alive
-	 */
-	public boolean isAlive() throws RemoteException;
-	
-	/**
-	 * Kills/exits this worker
-	 * @throws RemoteException
-	 */
-	public void exit() throws RemoteException;
-	
-	/**
-	 * @return The {@link URI} address of this worker
-	 * @throws RemoteException
-	 */
-	public URI getURI() throws RemoteException;
+    /**
+     * @param states The initial states to work with
+     * @return The next states for the initial state wet
+     */
+    NextStateResult getNextStates(TLCState[] states) throws RemoteException,
+            WorkerException;
 
-	/**
-	 * @return The ratio of cache hits to cache misses
-	 */
-	public double getCacheRateRatio() throws RemoteException;
+    /**
+     * @return true iff worker is still alive
+     */
+    boolean isAlive() throws RemoteException;
+
+
+    /**
+     * @return The {@link URI} address of this worker
+     */
+    URI getURI() throws RemoteException;
+
+    /**
+     * @return The ratio of cache hits to cache misses
+     */
+    double getCacheRateRatio() throws RemoteException;
 }

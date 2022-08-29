@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,10 +25,9 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
-
 import tlc2.tool.TLCTrace;
+
+import java.rmi.RemoteException;
 
 /**
  * An FPSet whose methods are all no-ops.
@@ -36,96 +35,96 @@ import tlc2.tool.TLCTrace;
 @SuppressWarnings("serial")
 public class NoopFPSet extends FPSet {
 
-	protected NoopFPSet(FPSetConfiguration fpSetConfig) throws RemoteException {
-		super(fpSetConfig);
-	}
+    protected NoopFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+        super(fpSetConfig);
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
-	 */
-	@Override
-	public FPSet init(int numThreads, String metadir, String filename) throws IOException {
-		return this;
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#init(int, java.lang.String, java.lang.String)
+     */
+    @Override
+    public FPSet init(final int numThreads, final String metadir, final String filename) {
+        return this;
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#size()
-	 */
-	@Override
-	public long size() {
-		return 0;
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#size()
+     */
+    @Override
+    public long size() {
+        return 0;
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#put(long)
-	 */
-	@Override
-	public boolean put(long fp) throws IOException {
-		return false;
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#put(long)
+     */
+    @Override
+    public boolean put(final long fp) {
+        return false;
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#contains(long)
-	 */
-	@Override
-	public boolean contains(long fp) throws IOException {
-		return false;
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#contains(long)
+     */
+    @Override
+    public boolean contains(final long fp) {
+        return false;
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#checkFPs()
-	 */
-	@Override
-	public long checkFPs() throws IOException {
-		return 0;
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#checkFPs()
+     */
+    @Override
+    public long checkFPs() {
+        return 0;
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#beginChkpt()
-	 */
-	@Override
-	public void beginChkpt() throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#beginChkpt()
+     */
+    @Override
+    public void beginChkpt() {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#commitChkpt()
-	 */
-	@Override
-	public void commitChkpt() throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#commitChkpt()
+     */
+    @Override
+    public void commitChkpt() {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#recover()
-	 */
-	@Override
-	public void recover(TLCTrace trace) throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#recover()
+     */
+    @Override
+    public void recover(final TLCTrace trace) {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#recoverFP(long)
-	 */
-	@Override
-	public void recoverFP(long fp) throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#recoverFP(long)
+     */
+    @Override
+    public void recoverFP(final long fp) {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#beginChkpt(java.lang.String)
-	 */
-	@Override
-	public void beginChkpt(String filename) throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#beginChkpt(java.lang.String)
+     */
+    @Override
+    public void beginChkpt(final String filename) {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#commitChkpt(java.lang.String)
-	 */
-	@Override
-	public void commitChkpt(String filename) throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#commitChkpt(java.lang.String)
+     */
+    @Override
+    public void commitChkpt(final String filename) {
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.fp.FPSet#recover(java.lang.String)
-	 */
-	@Override
-	public void recover(String filename) throws IOException {
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.fp.FPSet#recover(java.lang.String)
+     */
+    @Override
+    public void recover(final String filename) {
+    }
 }

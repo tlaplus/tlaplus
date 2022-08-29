@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,9 +26,11 @@
 package tlc2.tool.suite;
 
 public class Test32 extends SuiteTestCase {
-	public Test32() {
-		super("3", "1", "0", "1", "line 23, col 17 to line 23, col 21 of module test32: 0\n" + 
-				"line 23, col 26 to line 23, col 29 of module test32: 0\n" + 
-				"line 27, col 23 to line 27, col 29 of module test32: 0\n");
-	}
+    public Test32() {
+        super("3", "1", "0", "1", """
+                line 23, col 17 to line 23, col 21 of module test32: 0
+                line 23, col 26 to line 23, col 29 of module test32: 0
+                line 27, col 23 to line 27, col 29 of module test32: 0
+                """);
+    }
 }

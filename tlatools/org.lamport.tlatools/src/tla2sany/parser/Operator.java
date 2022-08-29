@@ -4,79 +4,80 @@ package tla2sany.parser;
 
 // import tla2sany.error.*;
 /***************************************************************************
-* Unused import eliminated by LL on 2 Mar 2007                             *
-***************************************************************************/
+ * Unused import eliminated by LL on 2 Mar 2007                             *
+ ***************************************************************************/
 
 import util.UniqueString;
 
 public class Operator implements tla2sany.st.SyntaxTreeConstants {
 
-  private UniqueString Id;
-  private int Low;
-  private int High;
-  public int Associativity;
-  public int Fix;
+    private static Operator voidOperator = null;
+    public final int Associativity;
+    public final int Fix;
+    private final UniqueString Id;
+    private final int Low;
+    private final int High;
 
-  private static Operator voidOperator = null;
-  
-  // SZ Apr 16, 2009: changed to a method in order to avoid the usage
-  // of the unique string in the class loading time 
-  public synchronized static Operator VoidOperator()
-  {  
-      if (voidOperator == null) 
-      {
-          voidOperator = new Operator(UniqueString.uniqueStringOf("$$_void"), 0, 0, 
-                  Operators.assocNone, Operators.infix);
-      }
-      return voidOperator;
-  }
-  
-  public Operator( UniqueString id, int l, int h, int a, int f) {
-    Id = id; Low = l; High = h; Associativity = a; Fix = f;
-  }
+    public Operator(final UniqueString id, final int l, final int h, final int a, final int f) {
+        Id = id;
+        Low = l;
+        High = h;
+        Associativity = a;
+        Fix = f;
+    }
 
-  public Operator clone ( UniqueString name ) {
-    return new Operator( name, Low, High, Associativity, Fix);
-  }
+    // SZ Apr 16, 2009: changed to a method in order to avoid the usage
+    // of the unique string in the class loading time
+    public static synchronized Operator VoidOperator() {
+        if (voidOperator == null) {
+            voidOperator = new Operator(UniqueString.uniqueStringOf("$$_void"), 0, 0,
+                    Operators.assocNone, Operators.infix);
+        }
+        return voidOperator;
+    }
 
-  public String toString() {
-  switch ( Fix ) {
-    case 0 /* Operators.nofix   */ : return Id.toString() + ", nofix";
-    case 1 /* Operators.prefix  */ : return Id.toString() + ", prefix";
-    case 2 /* Operators.postfix */ : return Id.toString() + ", postfix";
-    case 3 /* Operators.infix   */ : return Id.toString() + ", infix";
-    case 4 /* Operators.nfix    */ : return Id.toString() + ", nfix";
-  }
-  return null;
-}
+    static boolean succ(final Operator left, final Operator right) {
+        return left.Low > right.High;
+    }
 
-  public final boolean isPrefix() {
-    return (Fix==Operators.prefix);
-  }
+    static boolean prec(final Operator left, final Operator right) {
+        return left.High < right.Low;
+    }
 
-  public final boolean isInfix() {
-    return ( Fix == Operators.infix || Fix == Operators.nfix );
-  }
+    static boolean samePrec(final Operator left, final Operator right) {
+        return ((left.High == right.High) && (left.Low == right.Low));
+    }
 
-  public final boolean isPostfix() {
-    return ( Fix == Operators.postfix );
-  }
+    public Operator clone(final UniqueString name) {
+        return new Operator(name, Low, High, Associativity, Fix);
+    }
 
-  public final boolean isNfix() {
-    return Fix == Operators.nfix ;
-  }
+    public String toString() {
+        return switch (Fix) {
+            case 0 /* Operators.nofix   */ -> Id.toString() + ", nofix";
+            case 1 /* Operators.prefix  */ -> Id.toString() + ", prefix";
+            case 2 /* Operators.postfix */ -> Id.toString() + ", postfix";
+            case 3 /* Operators.infix   */ -> Id.toString() + ", infix";
+            case 4 /* Operators.nfix    */ -> Id.toString() + ", nfix";
+            default -> null;
+        };
+    }
 
-  public final boolean isPrefixDecl() {
-    return ( Fix == Operators.prefix && Id.toString().endsWith(".") );
-  }
+    public final boolean isPrefix() {
+        return (Fix == Operators.prefix);
+    }
 
-  public final boolean assocLeft() {
-    return Associativity == Operators.assocLeft;
-  }
+    public final boolean isInfix() {
+        return (Fix == Operators.infix || Fix == Operators.nfix);
+    }
 
-  public final boolean assocRight() {
-    return Associativity == Operators.assocRight;
-  }
+    public final boolean isPostfix() {
+        return (Fix == Operators.postfix);
+    }
+
+    public final boolean isNfix() {
+        return Fix == Operators.nfix;
+    }
 
 /*
 (* Note that we can view a prefix or postfix operator as an infix          *)
@@ -86,19 +87,19 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
 (* a prefix or infix operator.                                             *)
 */
 
-  static final boolean succ( Operator left, Operator right) {
-      return left.Low > right.High;
-  }
+    public final boolean isPrefixDecl() {
+        return (Fix == Operators.prefix && Id.toString().endsWith("."));
+    }
 
-  static final boolean prec( Operator left, Operator right ) {
-    return left.High < right.Low;
-  }
+    public final boolean assocLeft() {
+        return Associativity == Operators.assocLeft;
+    }
 
-  static final boolean samePrec( Operator left, Operator right ) {
-    return ( (left.High == right.High) && (left.Low == right.Low) );
-  }
+    public final boolean assocRight() {
+        return Associativity == Operators.assocRight;
+    }
 
-  public final UniqueString getIdentifier() {
-    return Id;
-  }
+    public final UniqueString getIdentifier() {
+        return Id;
+    }
 }

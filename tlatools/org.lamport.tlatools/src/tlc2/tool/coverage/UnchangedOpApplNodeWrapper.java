@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,32 +25,31 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
+import tla2sany.semantic.OpApplNode;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import tla2sany.semantic.OpApplNode;
-
 public class UnchangedOpApplNodeWrapper extends OpApplNodeWrapper {
 
-	public UnchangedOpApplNodeWrapper(OpApplNode opApplNode, ActionWrapper root) {
-		super(opApplNode, root);
-	}
+    public UnchangedOpApplNodeWrapper(final OpApplNode opApplNode, final ActionWrapper root) {
+        super(opApplNode, root);
+    }
 
-	@Override
-	protected boolean isPrimed() {
-		return true;
-	}
+    @Override
+    protected boolean isPrimed() {
+        return true;
+    }
 
-	@Override
-	protected void print(int level, final Calculate fresh) {
-		final Set<Pair> collectedEvalCounts = new HashSet<>();
-		this.collectChildren(collectedEvalCounts, fresh);
-		collectedEvalCounts.remove(new Pair(0,0)); 
-		if (collectedEvalCounts.isEmpty()) {
-			printSelf(level++);
-			return;
-		} else {
-			printSelf(level, Math.max(getEvalCount(), collectedEvalCounts.iterator().next().primary));
-		}
-	}
+    @Override
+    protected void print(int level, final Calculate fresh) {
+        final Set<Pair> collectedEvalCounts = new HashSet<>();
+        this.collectChildren(collectedEvalCounts, fresh);
+        collectedEvalCounts.remove(new Pair(0, 0));
+        if (collectedEvalCounts.isEmpty()) {
+            printSelf(level++);
+        } else {
+            printSelf(level, Math.max(getEvalCount(), collectedEvalCounts.iterator().next().primary));
+        }
+    }
 }

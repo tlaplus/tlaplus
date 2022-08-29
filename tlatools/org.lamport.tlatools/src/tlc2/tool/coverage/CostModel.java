@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -29,73 +29,73 @@ import tla2sany.semantic.SemanticNode;
 
 public interface CostModel {
 
-	CostModel DO_NOT_RECORD = new CostModel() {
+    CostModel DO_NOT_RECORD = new CostModel() {
 
-		@Override
-		public final CostModel report() {
-			// no-op
-			return this;
-		}
+        @Override
+        public CostModel report() {
+            // no-op
+            return this;
+        }
 
-		@Override
-		public final CostModel get(final SemanticNode sn) {
-			return this;
-		}
-		
-		@Override
-		public final CostModel getRoot() {
-			return this;
-		}
+        @Override
+        public CostModel get(final SemanticNode sn) {
+            return this;
+        }
 
-		@Override
-		public final CostModel incInvocations() {
-			// no-op
-			return this;
-		}
+        @Override
+        public CostModel getRoot() {
+            return this;
+        }
 
-		@Override
-		public final CostModel incInvocations(final long value) {
-			// no-op
-			return this;
-		}
+        @Override
+        public CostModel incInvocations() {
+            // no-op
+            return this;
+        }
 
-		@Override
-		public final CostModel incSecondary() {
-			// no-op
-			return this;
-		}
+        @Override
+        public CostModel incInvocations(final long value) {
+            // no-op
+            return this;
+        }
 
-		@Override
-		public final CostModel incSecondary(long value) {
-			// no-op
-			return null;
-		}
+        @Override
+        public CostModel incSecondary() {
+            // no-op
+            return this;
+        }
 
-		@Override
-		public final CostModel getAndIncrement(SemanticNode eon) {
-			// no-op
-			return this;
-		}
-		
-		@Override
-		public final String toString() {
-			return "DO_NOT_RECORD";
-		}
-	};
+        @Override
+        public CostModel incSecondary(final long value) {
+            // no-op
+            return null;
+        }
 
-	CostModel incInvocations();
+        @Override
+        public CostModel getAndIncrement(final SemanticNode eon) {
+            // no-op
+            return this;
+        }
 
-	CostModel incInvocations(final long value);
+        @Override
+        public String toString() {
+            return "DO_NOT_RECORD";
+        }
+    };
 
-	CostModel incSecondary();
-	
-	CostModel incSecondary(final long value);
+    CostModel incInvocations();
 
-	CostModel report();
+    CostModel incInvocations(final long value);
 
-	CostModel get(final SemanticNode sn);
-	
-	CostModel getAndIncrement(final SemanticNode eon);
-	
-	CostModel getRoot();
+    CostModel incSecondary();
+
+    CostModel incSecondary(final long value);
+
+    CostModel report();
+
+    CostModel get(final SemanticNode sn);
+
+    CostModel getAndIncrement(final SemanticNode eon);
+
+    CostModel getRoot();
 }

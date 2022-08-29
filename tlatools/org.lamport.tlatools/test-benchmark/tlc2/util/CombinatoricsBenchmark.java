@@ -39,38 +39,38 @@ import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Benchmark)
 public class CombinatoricsBenchmark {
-	
-	private static List<BigInteger> bincoef;
-	private static List<BigInteger> slowBincoef;
 
-	static {
-		bincoef = new ArrayList<BigInteger>(187489);
-		slowBincoef = new ArrayList<BigInteger>(187489);
-	}
-	
-	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
-	public List<BigInteger> bigChoose() {
-		for (int n = Combinatorics.MAXCHOOSENUM + 1; n < Combinatorics.MAXCHOOSENUM << 3; n++) {
-			for (int k = Combinatorics.MAXCHOOSENUM + 1; k < Combinatorics.MAXCHOOSENUM << 3; k++) {
-				bincoef.add(Combinatorics.bigChoose(n, k));
-			}
-		}
-		return bincoef;
-	}
+    private static List<BigInteger> bincoef;
+    private static List<BigInteger> slowBincoef;
 
-	@Benchmark
-	@Warmup(iterations = 3, time = 1)
-	@Measurement(iterations = 3, time = 1)
-	@BenchmarkMode(Mode.Throughput)
-	public List<BigInteger> slowBigChoose() {
-		for (int n = Combinatorics.MAXCHOOSENUM + 1; n < Combinatorics.MAXCHOOSENUM << 3; n++) {
-			for (int k = Combinatorics.MAXCHOOSENUM + 1; k < Combinatorics.MAXCHOOSENUM << 3; k++) {
-				slowBincoef.add(Combinatorics.slowBigChoose(n, k));
-			}
-		}
-		return slowBincoef;
-	}
+    static {
+        bincoef = new ArrayList<BigInteger>(187489);
+        slowBincoef = new ArrayList<BigInteger>(187489);
+    }
+
+    @Benchmark
+    @Warmup(iterations = 3, time = 1)
+    @Measurement(iterations = 3, time = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public List<BigInteger> bigChoose() {
+        for (int n = Combinatorics.MAXCHOOSENUM + 1; n < Combinatorics.MAXCHOOSENUM << 3; n++) {
+            for (int k = Combinatorics.MAXCHOOSENUM + 1; k < Combinatorics.MAXCHOOSENUM << 3; k++) {
+                bincoef.add(Combinatorics.bigChoose(n, k));
+            }
+        }
+        return bincoef;
+    }
+
+    @Benchmark
+    @Warmup(iterations = 3, time = 1)
+    @Measurement(iterations = 3, time = 1)
+    @BenchmarkMode(Mode.Throughput)
+    public List<BigInteger> slowBigChoose() {
+        for (int n = Combinatorics.MAXCHOOSENUM + 1; n < Combinatorics.MAXCHOOSENUM << 3; n++) {
+            for (int k = Combinatorics.MAXCHOOSENUM + 1; k < Combinatorics.MAXCHOOSENUM << 3; k++) {
+                slowBincoef.add(Combinatorics.slowBigChoose(n, k));
+            }
+        }
+        return slowBincoef;
+    }
 }

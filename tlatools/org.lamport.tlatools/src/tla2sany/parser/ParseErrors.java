@@ -1,22 +1,28 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.parser;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public final class ParseErrors implements tla2sany.st.ParseErrors {
-  private Vector loe;
+    private final ArrayList<ParseError> loe;
 
-  ParseErrors() { loe = new Vector(); };
-  final boolean empty() { return loe.isEmpty(); }
+    ParseErrors() {
+        loe = new ArrayList<>();
+    }
 
-  final void push( ParseError pe ) {
-    loe.addElement( pe );
-  }
+    boolean empty() {
+        return loe.isEmpty();
+    }
 
-  public final tla2sany.st.ParseError[] errors() {
-    tla2sany.st.ParseError[] pes = new tla2sany.st.ParseError[ loe.size() ];
-    for (int lvi = 0; lvi < pes.length; lvi++ )
-      pes[ lvi ] = (ParseError)loe.elementAt( lvi );
-    return pes;
-  }
+    void push(final ParseError pe) {
+        loe.add(pe);
+    }
+
+    @Override
+    public tla2sany.st.ParseError[] errors() {
+        final tla2sany.st.ParseError[] pes = new tla2sany.st.ParseError[loe.size()];
+        for (int lvi = 0; lvi < pes.length; lvi++)
+            pes[lvi] = loe.get(lvi);
+        return pes;
+    }
 }

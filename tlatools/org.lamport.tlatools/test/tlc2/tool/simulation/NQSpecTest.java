@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,29 +26,31 @@
 
 package tlc2.tool.simulation;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import tlc2.TLC;
+import tlc2.output.EC;
+import tlc2.tool.ModelCheckerTestCase;
+import util.IndependentlyRunTest;
+import util.TLAConstants;
 
 import java.io.File;
 
-import org.junit.Test;
-
-import tlc2.TLC;
-import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-import util.TLAConstants;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class NQSpecTest extends ModelCheckerTestCase {
 
-	public NQSpecTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "simulation" + File.separator + "NQSpec", new String[] { "-simulate" });
-		TLC.setTraceNum(100);
-	}
+    public NQSpecTest() {
+        super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "simulation" + File.separator + "NQSpec", new String[]{"-simulate"});
+        TLC.setTraceNum(100);
+    }
 
-	@Test
-	public void testSpec() {
-		// Simulation has finished and generated states
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-	}
+    @Category(IndependentlyRunTest.class)
+    @Test
+    public void testSpec() {
+        // Simulation has finished and generated states
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
+    }
 }

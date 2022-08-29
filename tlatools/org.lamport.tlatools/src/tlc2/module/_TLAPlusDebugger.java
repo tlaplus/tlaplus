@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -31,12 +31,12 @@ import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Value;
 
 public class _TLAPlusDebugger {
-	
-	@TLAPlusOperator(identifier = "_debuggerInvariant", module = "_TLAPlusDebugger", minLevel = 1, warn = false)
-	public static Value _tlcDebugger() {
-		if (DebugTool.forceViolation()) {
-			return BoolValue.ValFalse;
-		}
-		return BoolValue.ValTrue;
-	}
+
+    @TLAPlusOperator(identifier = "_debuggerInvariant", module = "_TLAPlusDebugger", minLevel = 1, warn = false)
+    public static Value _tlcDebugger() {
+        if (DebugTool.forceViolation()) {
+            return BoolValue.ValFalse;
+        }
+        return BoolValue.ValTrue;
+    }
 }

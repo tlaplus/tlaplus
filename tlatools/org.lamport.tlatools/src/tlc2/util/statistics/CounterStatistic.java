@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -29,65 +29,65 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
 
 public abstract class CounterStatistic {
-	
-	public static CounterStatistic getInstance(final BooleanSupplier s) {
-		if (s.getAsBoolean()) {
-			return new LongAdderCounterStatistic();
-		} else {
-			return new NoopCounterStatistic();
-		}
-	}
-	
-	public abstract void increment();
-	
-	public abstract void add(final long evalCount);
 
-	public abstract long getCount();
+    private CounterStatistic() {
+        // private ctor
+    }
 
-	private CounterStatistic() {
-		// private ctor
-	}
+    public static CounterStatistic getInstance(final BooleanSupplier s) {
+        if (s.getAsBoolean()) {
+            return new LongAdderCounterStatistic();
+        } else {
+            return new NoopCounterStatistic();
+        }
+    }
 
-	private static class NoopCounterStatistic extends CounterStatistic {
-		
-		@Override
-		public final long getCount() {
-			return 0;
-		}
-		
-		@Override
-		public final void increment() {
-			// noop
-		}
-		
-		@Override
-		public void add(long evalCount) {
-			// noop
-		}
-	}
-	
-	private static class LongAdderCounterStatistic extends CounterStatistic {
+    public abstract void increment();
 
-		private final LongAdder adder = new LongAdder();
+    public abstract void add(final long evalCount);
 
-		@Override
-		public final long getCount() {
-			return this.adder.sum();
-		}
+    public abstract long getCount();
 
-		@Override
-		public final void increment() {
-			adder.increment();
-		}
+    private static class NoopCounterStatistic extends CounterStatistic {
 
-		@Override
-		public void add(long evalCount) {
-			adder.add(evalCount);
-		}
+        @Override
+        public final long getCount() {
+            return 0;
+        }
 
-		@Override
-		public String toString() {
-			return adder.toString();
-		}
-	}
+        @Override
+        public final void increment() {
+            // noop
+        }
+
+        @Override
+        public void add(final long evalCount) {
+            // noop
+        }
+    }
+
+    private static class LongAdderCounterStatistic extends CounterStatistic {
+
+        private final LongAdder adder = new LongAdder();
+
+        @Override
+        public final long getCount() {
+            return this.adder.sum();
+        }
+
+        @Override
+        public final void increment() {
+            adder.increment();
+        }
+
+        @Override
+        public void add(final long evalCount) {
+            adder.add(evalCount);
+        }
+
+        @Override
+        public String toString() {
+            return adder.toString();
+        }
+    }
 }

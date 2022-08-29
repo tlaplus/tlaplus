@@ -1,18 +1,18 @@
 package tlc2;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.Assert.assertEquals;
+
 public class REPLTest {
 
     @Test
     public void testProcessInput() throws IOException {
-        Path tempDir = Files.createTempDirectory("repltest");
+        final Path tempDir = Files.createTempDirectory("repltest");
         final REPL repl = new REPL(tempDir);
         String res;
 

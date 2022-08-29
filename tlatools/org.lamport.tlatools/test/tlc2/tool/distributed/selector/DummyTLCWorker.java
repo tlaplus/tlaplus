@@ -1,28 +1,31 @@
 package tlc2.tool.distributed.selector;
 
-import java.rmi.RemoteException;
-
 import tlc2.tool.TLCState;
-import tlc2.tool.TLCStateVec;
-import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.NextStateResult;
 import tlc2.tool.distributed.TLCWorkerRMI;
 import tlc2.tool.distributed.TLCWorkerSmartProxy;
-import tlc2.util.LongVec;
+
+import java.rmi.RemoteException;
 
 public class DummyTLCWorker extends TLCWorkerSmartProxy implements TLCWorkerRMI {
 
-	private long duration;
+    private final long duration;
 
-	public DummyTLCWorker(long duration) {
-		super(null);
-		this.duration = duration;
-	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.distributed.TLCWorkerSmartProxy#getNextStates(tlc2.tool.TLCState[])
-	 */
-	public NextStateResult getNextStates(TLCState[] states) throws RemoteException, WorkerException {
-		return new NextStateResult((TLCStateVec[]) null, (LongVec[]) null, duration, -1L);
-	}
+    public DummyTLCWorker(final long duration) {
+        super(null);
+        this.duration = duration;
+    }
+
+    /* (non-Javadoc)
+     * @see tlc2.tool.distributed.TLCWorkerSmartProxy#getNextStates(tlc2.tool.TLCState[])
+     */
+    @Override
+    public NextStateResult getNextStates(final TLCState[] states) throws RemoteException {
+        return new NextStateResult(null, null, duration, -1L);
+    }
+
+    @Override
+    public void close() {
+
+    }
 }

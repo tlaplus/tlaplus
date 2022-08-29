@@ -2,7 +2,7 @@
  * Copyright (c) 2017 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,26 +26,26 @@
 package tla2sany.drivers;
 
 import org.junit.Test;
-
 import tlc2.tool.CommonTestCase;
 import util.TestPrintStream;
 import util.ToolIO;
 
-public class IllegalOperatorTest  {
+public class IllegalOperatorTest {
 
-	@Test
-	public void test() {
-		final TestPrintStream testPrintStream = new TestPrintStream();
-		ToolIO.out = testPrintStream;
-		
-		SANY.SANYmain(
-				new String[] { CommonTestCase.BASE_PATH + "IllegalOperatorTest" });
-		
-		testPrintStream.assertSubstring("*** Errors: 1\n" + 
-				"\n" + 
-				"line 3, col 8 to line 3, col 11 of module IllegalOperatorTest\n" + 
-				"\n" + 
-				"Argument number 1 to operator 'D' \n" + 
-				"should be a 1-parameter operator.");
-	}
+    @Test
+    public void test() {
+        final TestPrintStream testPrintStream = new TestPrintStream();
+        ToolIO.out = testPrintStream;
+
+        SANY.SANYmain(
+                new String[]{CommonTestCase.TEST_MODEL_PATH + "IllegalOperatorTest"});
+
+        testPrintStream.assertSubstring("""
+                *** Errors: 1
+
+                line 3, col 8 to line 3, col 11 of module IllegalOperatorTest
+
+                Argument number 1 to operator 'D'\s
+                should be a 1-parameter operator.""");
+    }
 }

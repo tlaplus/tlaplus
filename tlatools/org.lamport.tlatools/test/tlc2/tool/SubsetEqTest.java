@@ -2,7 +2,7 @@
  * Copyright (c) 2017 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,35 +25,33 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import org.junit.Test;
+import tlc2.output.EC;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-
 public class SubsetEqTest extends ModelCheckerTestCase {
 
-	public SubsetEqTest() {
-		super("SubsetEq");
-	}
+    public SubsetEqTest() {
+        super("SubsetEq");
+    }
 
-	@Test
-	public void testSpec() {
-		// This is a performance test. With the original implementation - where
-		// TLC does not reduce (SUBSET A \subseteq SUBSET B) - the test takes
-		// forever to generate the successor state. Reduced to (A \subseteq B),
-		// the test completes within seconds.
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    @Test
+    public void testSpec() {
+        // This is a performance test. With the original implementation - where
+        // TLC does not reduce (SUBSET A \subseteq SUBSET B) - the test takes
+        // forever to generate the successor state. Reduced to (A \subseteq B),
+        // the test completes within seconds.
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertNoTESpec();
-		
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
-		// No error trace!
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+        assertNoTESpec();
 
-	assertZeroUncovered();
-	}
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+        // No error trace!
+        assertFalse(recorder.recorded(EC.TLC_STATE_PRINT2));
+
+        assertZeroUncovered();
+    }
 }

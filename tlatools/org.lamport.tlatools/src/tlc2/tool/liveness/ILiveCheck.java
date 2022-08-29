@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,101 +25,95 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
-import java.io.IOException;
-import java.util.function.Supplier;
-
 import tlc2.tool.ITool;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
 
+import java.io.IOException;
+import java.util.function.Supplier;
+
 public interface ILiveCheck {
 
-	/**
-	 * This method records that state is an initial state in the behavior graph.
-	 * It is called when a new initial state is generated.
-	 */
-	void addInitState(ITool tool, TLCState state, long stateFP);
+    /**
+     * This method records that state is an initial state in the behavior graph.
+     * It is called when a new initial state is generated.
+     */
+    void addInitState(ITool tool, TLCState state, long stateFP);
 
-	/**
-	 * This method adds new nodes into the behavior graph induced by s0. It is
-	 * called after the successors of s0 are computed.
-	 */
-	void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws IOException;
-	
-	/**
-	 * true iff a call to {@link ILiveCheck#check(ITool, boolean)} would indeed result in liveness checking.
-	 */
-	boolean doLiveCheck();
-	
-	/**
-	 * Check liveness properties for the current (potentially partial) state graph. Returns
-	 * true iff it finds no errors.
-	 * @param forceCheck
-	 *            Always checks liveness if true, otherwise heuristics about the
-	 *            partial graph are taken into account if it is worthwhile to
-	 *            check liveness.
-	 * 
-	 * @return <code>EC.NO_ERROR</code> iff it finds no errors or if liveness has not been checked
-	 *         on the partial graph because it was deemed worthless. Otherwise an EC.
-	 */
-	int check(ITool tool, boolean forceCheck) throws Exception;
+    /**
+     * This method adds new nodes into the behavior graph induced by s0. It is
+     * called after the successors of s0 are computed.
+     */
+    void addNextState(ITool tool, TLCState s0, long fp0, SetOfStates nextStates) throws Exception;
 
-	/**
-	 * No states can be added with add*State once finalCheck has been called.
-	 * 
-	 * @see ILiveCheck#check()
-   * @return an error code, or <code>EC.NO_ERROR</code> on success
-	 * @throws Exception
-	 */
-	int finalCheck(ITool tool) throws Exception;
+    /**
+     * true iff a call to {@link ILiveCheck#check(ITool, boolean)} would indeed result in liveness checking.
+     */
+    boolean doLiveCheck();
 
-	/* simulation mode */
-	
-	/**
-	 * This method is the mutual exclusive counterpart to addInitState and
-	 * addNextState. Where the two each take a single state and its successors,
-	 * checkTrace expects a sequence of TLCStates. The first state in this sequence
-	 * is seen as the init state whereas the remaining states in the sequence belong
-	 * to the behavior started by the init state.
-	 * <p>
-	 * checkTrace behaves similar to adding the sequence's first state with addInitState
-	 * and the others with addNextState. However, checkTrace is meant to be used
-	 * in simulation mode (see Simulator) only. Don't call check or finalCheck, it
-	 * is done as part of checkTrace.
-	 * <p>
-	 * checkTrace can be called multiple times until ILiveCheck has been closed (see close()).
-	 * @param trace
-	 * 
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	void checkTrace(ITool tool, final Supplier<StateVec> trace) throws IOException, InterruptedException;
-	
-	/* auxiliary methods */
-	
-	String getMetaDir();
+    /**
+     * Check liveness properties for the current (potentially partial) state graph. Returns
+     * true iff it finds no errors.
+     *
+     * @param forceCheck Always checks liveness if true, otherwise heuristics about the
+     *                   partial graph are taken into account if it is worthwhile to
+     *                   check liveness.
+     * @return <code>EC.NO_ERROR</code> iff it finds no errors or if liveness has not been checked
+     * on the partial graph because it was deemed worthless. Otherwise an EC.
+     */
+    int check(ITool tool, boolean forceCheck) throws Exception;
 
-	IBucketStatistics getOutDegreeStatistics();
+    /**
+     * No states can be added with add*State once finalCheck has been called.
+     *
+     * @return an error code, or <code>EC.NO_ERROR</code> on success
+     * @see ILiveCheck#check
+     */
+    int finalCheck(ITool tool) throws Exception;
 
-	ILiveChecker getChecker(int idx);
+    /* simulation mode */
 
-	int getNumChecker();
+    /**
+     * This method is the mutual exclusive counterpart to addInitState and
+     * addNextState. Where the two each take a single state and its successors,
+     * checkTrace expects a sequence of TLCStates. The first state in this sequence
+     * is seen as the init state whereas the remaining states in the sequence belong
+     * to the behavior started by the init state.
+     * <p>
+     * checkTrace behaves similar to adding the sequence's first state with addInitState
+     * and the others with addNextState. However, checkTrace is meant to be used
+     * in simulation mode (see Simulator) only. Don't call check or finalCheck, it
+     * is done as part of checkTrace.
+     * <p>
+     * checkTrace can be called multiple times until ILiveCheck has been closed (see close()).
+     */
+    void checkTrace(ITool tool, final Supplier<StateVec> trace) throws Exception;
 
-	/* Close all the files for disk graphs. */
-	void close() throws IOException;
+    /* auxiliary methods */
 
-	/* Checkpoint. */
-	void beginChkpt() throws IOException;
+    String getMetaDir();
 
-	void commitChkpt() throws IOException;
+    IBucketStatistics getOutDegreeStatistics();
 
-	void recover() throws IOException;
+    ILiveChecker getChecker(int idx);
 
-	IBucketStatistics calculateInDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException;
+    int getNumChecker();
 
-	IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException;
+    /* Close all the files for disk graphs. */
+    void close() throws IOException;
 
-	void reset() throws IOException;
+    /* Checkpoint. */
+    void beginChkpt() throws IOException;
+
+    void commitChkpt() throws IOException;
+
+    void recover() throws IOException;
+
+    IBucketStatistics calculateInDegreeDiskGraphs(IBucketStatistics aGraphStats);
+
+    IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats);
+
+    void reset() throws IOException;
 }

@@ -23,16 +23,19 @@ import java.io.OutputStream;
 /**
  * Classic splitter of OutputStream. Named after the unix 'tee' command. It
  * allows a stream to be branched off so there are now two streams.
- *
+ * <p>
  * This code is copy-and-pasted from commons-io 2.6
  */
 public class TeeOutputStream extends FilterOutputStream {
-    /** the second OutputStream to write to */
-    protected OutputStream branch; //TODO consider making this private
+    /**
+     * the second OutputStream to write to
+     */
+    protected final OutputStream branch; //TODO consider making this private
 
     /**
      * Constructs a TeeOutputStream.
-     * @param out the main OutputStream
+     *
+     * @param out    the main OutputStream
      * @param branch the second OutputStream
      */
     public TeeOutputStream(final OutputStream out, final OutputStream branch) {
@@ -42,6 +45,7 @@ public class TeeOutputStream extends FilterOutputStream {
 
     /**
      * Write the bytes to both streams.
+     *
      * @param b the bytes to write
      * @throws IOException if an I/O error occurs
      */
@@ -53,53 +57,55 @@ public class TeeOutputStream extends FilterOutputStream {
 
     /**
      * Write the specified bytes to both streams.
-     * @param b the bytes to write
+     *
+     * @param b   the bytes to write
      * @param off The start offset
      * @param len The number of bytes to write
      * @throws IOException if an I/O error occurs
      */
     @Override
     public synchronized void write(final byte[] b, final int off, final int len) throws IOException {
-    	out.write(b, off, len);
+        out.write(b, off, len);
         this.branch.write(b, off, len);
     }
 
     /**
      * Write a byte to both streams.
+     *
      * @param b the byte to write
      * @throws IOException if an I/O error occurs
      */
     @Override
     public synchronized void write(final int b) throws IOException {
-    	out.write(b);
+        out.write(b);
         this.branch.write(b);
     }
 
     /**
      * Flushes both streams.
+     *
      * @throws IOException if an I/O error occurs
      */
     @Override
     public void flush() throws IOException {
-    	out.flush();
+        out.flush();
         this.branch.flush();
     }
 
     /**
      * Closes both output streams.
-     *
+     * <p>
      * If closing the main output stream throws an exception, attempt to close the branch output stream.
-     *
+     * <p>
      * If closing the main and branch output streams both throw exceptions, which exceptions is thrown by this method is
      * currently unspecified and subject to change.
      *
-     * @throws IOException
-     *             if an I/O error occurs
+     * @throws IOException if an I/O error occurs
      */
     @Override
     public void close() throws IOException {
         try {
-        	out.close();
+            out.close();
         } finally {
             this.branch.close();
         }

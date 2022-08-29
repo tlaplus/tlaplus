@@ -1,4 +1,5 @@
-You can help make the TLA+ tools better by allowing TLC to collect execution statistics. Execution statistics are made [publicly available](https://exec-stats.tlapl.us) on the web and contain the following information:
+You can help make the TLA+ tools better by allowing TLC to collect execution statistics. Execution statistics are
+made [publicly available](https://exec-stats.tlapl.us) on the web and contain the following information:
 
 * Total number of cores and cores assigned to TLC
 * Heap and off-heap memory allocated to TLC

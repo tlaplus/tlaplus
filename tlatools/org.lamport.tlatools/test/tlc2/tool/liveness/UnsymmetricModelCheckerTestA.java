@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,54 +26,54 @@
 
 package tlc2.tool.liveness;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
+import tlc2.tool.ModelCheckerTestCase;
+import tlc2.tool.TLCStateInfo;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
-import tlc2.output.EC.ExitStatus;
-import tlc2.tool.TLCStateInfo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 
-	public UnsymmetricModelCheckerTestA() {
-		super("UnsymmetricMCA", "symmetry", ExitStatus.VIOLATION_LIVENESS);
-	}
+    public UnsymmetricModelCheckerTestA() {
+        super("UnsymmetricMCA", "symmetry", ExitStatus.VIOLATION_LIVENESS);
+    }
 
-	@Test
-	public void testSpec() {
-		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "2", "s", "1"));
-		
-		// ModelChecker has finished and generated the expected amount of states
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "2", "0"));
-	
-		// Assert it has found a temporal violation and a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(2);
-		expectedTrace.add("x = a");
-		expectedTrace.add("x = 1");
-		
-		final List<String> expectedActions = new ArrayList<>();
-		expectedActions.add(isExtendedTLCState()
-				? "<Init line 5, col 10 to line 5, col 16 of module Unsymmetric>"
-				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<NextA line 17, col 13 to line 19, col 36 of module Unsymmetric>");
+    @Test
+    public void testSpec() {
+        // ModelChecker intends to check liveness
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "2", "s", "1"));
 
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
+        // ModelChecker has finished and generated the expected amount of states
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "2", "0"));
 
-		assertBackToState(1);
+        // Assert it has found a temporal violation and a counter example
+        assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+        assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-		assertUncovered("line 19, col 31 to line 19, col 36 of module Unsymmetric: 0");
-	}
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+        final List<String> expectedTrace = new ArrayList<>(2);
+        expectedTrace.add("x = a");
+        expectedTrace.add("x = 1");
+
+        final List<String> expectedActions = new ArrayList<>();
+        expectedActions.add(isExtendedTLCState()
+                ? "<Init line 5, col 10 to line 5, col 16 of module Unsymmetric>"
+                : TLCStateInfo.INITIAL_PREDICATE);
+        expectedActions.add("<NextA line 17, col 13 to line 19, col 36 of module Unsymmetric>");
+
+        assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
+
+        assertBackToState(1);
+
+        assertUncovered("line 19, col 31 to line 19, col 36 of module Unsymmetric: 0");
+    }
 }

@@ -34,7 +34,6 @@ import java.io.IOException;
 import org.junit.Test;
 
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class Github525Test extends ModelCheckerTestCase {
 

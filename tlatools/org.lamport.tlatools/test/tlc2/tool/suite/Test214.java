@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,31 +25,32 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertFalse;
+
 public class Test214 extends SuiteETestCase {
 
-	public Test214() {
-		super(ExitStatus.ERROR_SPEC_PARSE);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertSubstring("Semantic errors:\n" + 
-				"\n" + 
-				"*** Errors: 1\n" + 
-				"\n" + 
-				"line 10, col 11 to line 10, col 14 of module test214\n" + 
-				"\n" + 
-				"The only expression allowed as a fact in a HIDE is \n" + 
-				"the name of a theorem, assumption, or step.\n" + 
-				"\n" + 
-				"\n");
-	}
+    public Test214() {
+        super(ExitStatus.ERROR_SPEC_PARSE);
+    }
+
+    @Test
+    public void testSpec() {
+        assertFalse(recorder.recorded(EC.GENERAL));
+        assertSubstring("""
+                Semantic errors:
+
+                *** Errors: 1
+
+                line 10, col 11 to line 10, col 14 of module test214
+
+                The only expression allowed as a fact in a HIDE is\s
+                the name of a theorem, assumption, or step.
+
+
+                """);
+    }
 }

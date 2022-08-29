@@ -17,14 +17,15 @@
 package org.apache.commons.math3.primes;
 
 
+import org.apache.commons.math3.util.FastMath;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
-
 /**
  * Utility methods to work on primes within the <code>int</code> range.
+ *
  * @since 3.2
  */
 class SmallPrimes {
@@ -64,7 +65,9 @@ class SmallPrimes {
             3449, 3457, 3461, 3463, 3467, 3469, 3491, 3499, 3511, 3517, 3527, 3529, 3533, 3539, 3541, 3547, 3557, 3559, 3571, 3581,
             3583, 3593, 3607, 3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671};
 
-    /** The last number in PRIMES. */
+    /**
+     * The last number in PRIMES.
+     */
     public static final int PRIMES_LAST = PRIMES[PRIMES.length - 1];
 
     /**
@@ -75,12 +78,13 @@ class SmallPrimes {
 
     /**
      * Extract small factors.
-     * @param n the number to factor, must be &gt; 0.
+     *
+     * @param n       the number to factor, must be &gt; 0.
      * @param factors the list where to add the factors.
      * @return the part of n which remains to be factored, it is either a prime or a semi-prime
      */
     public static int smallTrialDivision(int n, final List<Integer> factors) {
-        for (int p : PRIMES) {
+        for (final int p : PRIMES) {
             while (0 == n % p) {
                 n /= p;
                 factors.add(p);
@@ -91,12 +95,13 @@ class SmallPrimes {
 
     /**
      * Extract factors in the range <code>PRIME_LAST+2</code> to <code>maxFactors</code>.
-     * @param n the number to factorize, must be >= PRIME_LAST+2 and must not contain any factor below PRIME_LAST+2
+     *
+     * @param n         the number to factorize, must be >= PRIME_LAST+2 and must not contain any factor below PRIME_LAST+2
      * @param maxFactor the upper bound of trial division: if it is reached, the method gives up and returns n.
-     * @param factors the list where to add the factors.
-     * @return  n or 1 if factorization is completed.
+     * @param factors   the list where to add the factors.
+     * @return n or 1 if factorization is completed.
      */
-    public static int boundedTrialDivision(int n, int maxFactor, List<Integer> factors) {
+    public static int boundedTrialDivision(int n, final int maxFactor, final List<Integer> factors) {
         int f = PRIMES_LAST + 2;
         // no check is done about n >= f
         while (f <= maxFactor) {
@@ -121,11 +126,12 @@ class SmallPrimes {
 
     /**
      * Factorization by trial division.
+     *
      * @param n the number to factor
      * @return the list of prime factors of n
      */
-    public static List<Integer> trialDivision(int n){
-        final List<Integer> factors = new ArrayList<Integer>(32);
+    public static List<Integer> trialDivision(int n) {
+        final List<Integer> factors = new ArrayList<>(32);
         n = smallTrialDivision(n, factors);
         if (1 == n) {
             return factors;
@@ -160,17 +166,17 @@ class SmallPrimes {
         if (n >= 25326001) {
             t = 4;
         } // works up to 3.2 billion, int range stops at 2.7 so we are safe :-)
-        BigInteger br = BigInteger.valueOf(r);
-        BigInteger bn = BigInteger.valueOf(n);
+        final BigInteger br = BigInteger.valueOf(r);
+        final BigInteger bn = BigInteger.valueOf(n);
 
         for (int i = 0; i < t; i++) {
-            BigInteger a = BigInteger.valueOf(SmallPrimes.PRIMES[i]);
-            BigInteger bPow = a.modPow(br, bn);
+            final BigInteger a = BigInteger.valueOf(SmallPrimes.PRIMES[i]);
+            final BigInteger bPow = a.modPow(br, bn);
             int y = bPow.intValue();
             if ((1 != y) && (y != nMinus1)) {
                 int j = 1;
                 while ((j <= s - 1) && (nMinus1 != y)) {
-                    long square = ((long) y) * y;
+                    final long square = ((long) y) * y;
                     y = (int) (square % n);
                     if (1 == y) {
                         return false;

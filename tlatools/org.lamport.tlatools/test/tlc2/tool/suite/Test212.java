@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,62 +25,62 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertFalse;
+
 public class Test212 extends SuiteETestCase {
 
-	public Test212() {
-		super(ExitStatus.ERROR_SPEC_PARSE);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertSubstring("Semantic errors:\n" + 
-				"\n" + 
-				"*** Errors: 6\n" + 
-				"\n" + 
-				"line 27, col 1 to line 27, col 62 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op2'.\n" + 
-				"\n" + 
-				"\n" + 
-				"line 28, col 1 to line 28, col 62 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op'.\n" + 
-				"\n" + 
-				"\n" + 
-				"line 29, col 1 to line 29, col 62 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op'.\n" + 
-				"\n" + 
-				"\n" + 
-				"line 30, col 1 to line 30, col 64 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op2'.\n" + 
-				"\n" + 
-				"\n" + 
-				"line 31, col 1 to line 31, col 63 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op2'.\n" + 
-				"\n" + 
-				"\n" + 
-				"line 32, col 1 to line 32, col 63 of module test212\n" + 
-				"\n" + 
-				"Error in instantiating module 'test212a':\n" + 
-				" A non-Leibniz operator substituted for 'Op2'.\n" + 
-				"\n" + 
-				"\n" + 
-				"");
-	}
+    public Test212() {
+        super(ExitStatus.ERROR_SPEC_PARSE);
+    }
+
+    @Test
+    public void testSpec() {
+        assertFalse(recorder.recorded(EC.GENERAL));
+        assertSubstring("""
+                Semantic errors:
+
+                *** Errors: 6
+
+                line 27, col 1 to line 27, col 62 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op2'.
+
+
+                line 28, col 1 to line 28, col 62 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op'.
+
+
+                line 29, col 1 to line 29, col 62 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op'.
+
+
+                line 30, col 1 to line 30, col 64 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op2'.
+
+
+                line 31, col 1 to line 31, col 63 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op2'.
+
+
+                line 32, col 1 to line 32, col 63 of module test212
+
+                Error in instantiating module 'test212a':
+                 A non-Leibniz operator substituted for 'Op2'.
+
+
+                """);
+    }
 }

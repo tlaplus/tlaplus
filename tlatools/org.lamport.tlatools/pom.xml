@@ -1,289 +1,1515 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-  xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<!--
+	<parent>
+		<artifactId>parent</artifactId>
+		<groupId>tlatoolbox</groupId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>-->
+	<groupId>tlatoolbox</groupId>
+	<artifactId>org.lamport.tlatools</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
-  <parent>
-    <artifactId>parent</artifactId>
-    <groupId>tlatoolbox</groupId>
-    <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
-  </parent>
-  <groupId>tlatoolbox</groupId>
-  <artifactId>org.lamport.tlatools</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
+	<organization>
+		<name>Microsoft Research Inria Joint Centre</name>
+		<url>http://msr-inria.inria.fr/</url>
+	</organization>
 
-  <properties>
-    <!-- tlatools is a non-standard maven project. Its heart is customBuild.xml written for ant          -->
-    <!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
-    <!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
-    <!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
-	<sonar.sources>src,src-aj</sonar.sources>
-	<sonar.tests>test,test-verify,test-long,test-concurrent</sonar.tests>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/tlaplus/tlaplus/issues</url>
+	</issueManagement>
 
-	<sonar.java.binaries>class</sonar.java.binaries>
-	<sonar.java.libraries>lib/*.jar</sonar.java.libraries>
-	
-	<sonar.java.test.binaries>class,test-class</sonar.java.test.binaries>
-	<sonar.java.test.libraries>lib/*.jar</sonar.java.test.libraries>
-	 
-	<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-	<sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
-	<sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
-	<sonar.jacoco.reportPaths>target/code-coverage.exec</sonar.jacoco.reportPaths>
-  </properties>
+	<scm>
+		<connection>scm:git:https://github.com/tlaplus/tlaplus</connection>
+		<developerConnection>scm:git:https://github.com/tlaplus/tlaplus</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 
+	<properties>
+		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
-    <build>
-    <plugins>
-		<!-- Delete the ../states/ folder created by the Ant JUnit tests as part 
-			of the maven-antrun-plugin of customBuild.xml. On the CI-machine, the ../states/ 
-			folder gradually grows to eventually fill-up the entire disk. -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-clean-plugin</artifactId>
-            <version>3.0.0</version>
-            <configuration>
-                <filesets>
-                    <fileset>
-                        <directory>../states/</directory>
-                        <includes>
-                            <include>**/*</include>
-                        </includes>
-                        <followSymlinks>false</followSymlinks>
-                    </fileset>
-                </filesets>
-            </configuration>
-        </plugin>
-        
-        <plugin>
-	    <groupId>org.apache.maven.plugins</groupId>
-	    <artifactId>maven-antrun-plugin</artifactId>
-	    <version>1.8</version>
-	    <executions>
-	    	<execution>
-	    		<id>compile</id>
-	    		<phase>compile</phase>
-	    		<configuration>
-	    			<tasks>
+		<!-- http://maven.apache.org/general.html#encoding-warning  -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-						<taskdef name="junit"
-							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
-							classpathref="maven.test.classpath" />
+		<!-- Report into the tlaplus organization at SonarQube. -->
+		<!-- Organizations support reporting different branches. -->
+		<sonar.organization>tlaplus</sonar.organization>
 
-		    			<property name="build.compiler" value="extJavac"/>
-		    			<property name="maven.test.skip" value="${maven.test.skip}"/>
-		    			<property name="maven.test.halt" value="${maven.test.halt}"/>
-	    				<ant antfile="customBuild.xml" inheritRefs="true">
-	    					<target name="default-maven" />
-	    				</ant>
-	    			</tasks>
-	    		</configuration>
-	    		<goals>
-	    			<goal>run</goal>
-	    		</goals>
-	    	</execution>
-	    	<!-- Run customBuild.xml's clean target -->
-	    	<execution>
-	    		<id>clean</id>
-	    		<phase>clean</phase>
-	    		<configuration>
-	    			<tasks>
+		<!-- tlatools is a non-standard maven project. Its heart is customBuild.xml written for ant          -->
+		<!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
+		<!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
+		<!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
+		<!--
+		<sonar.sources>src-aspectj</sonar.sources>
+		<sonar.tests>,test-verify,test-long,test-concurrent</sonar.tests>-->
 
-						<taskdef name="junit"
-							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
-							classpathref="maven.test.classpath" />
+		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+		<sonar.surefire.reportsPath>target/test-reports, target/test-reports/on-jar</sonar.surefire.reportsPath>
+		<sonar.login>e459e933ebed0530c8350662d4e147539dfe6a82</sonar.login>
 
-		    			<property name="build.compiler" value="extJavac"/>
-		    			<property name="maven.test.skip" value="${maven.test.skip}"/>
-		    			<property name="maven.test.halt" value="${maven.test.halt}"/>
-	    				<ant antfile="customBuild.xml" inheritRefs="true">
-	    					<target name="clean" />
-	    				</ant>
-	    			</tasks>
-	    		</configuration>
-	    		<goals>
-	    			<goal>run</goal>
-	    		</goals>
-	    	</execution>
-	   	 </executions>
-	  	</plugin>
-			<!-- Compile java sources and exclude aspects -->
-	      <plugin>
-	        <groupId>org.eclipse.tycho</groupId>
-	        <artifactId>tycho-compiler-plugin</artifactId>
-	        <version>${tycho-version}</version>
-	        <configuration>
-				<!-- Ignore compiler errors due to forbidden sun.misc.Unsafe imports -->
-				<!-- https://bugs.eclipse.org/369187 -->
-				<compilerArgument>-err:-forbidden</compilerArgument>
-	          <excludeResources>
-	            <exludeResource>**/*.aj</exludeResource>
-	          </excludeResources>
-	        </configuration>
-	      </plugin>
+		<class.src>${project.basedir}/src</class.src>
+		<class.src.aspectj>${project.basedir}/src-aspectj</class.src.aspectj>
+		<class.output>${project.build.directory}/class</class.output>
+		<test.src>${project.basedir}/test</test.src>
+		<test.src.benchmark>${project.basedir}/test-benchmark</test.src.benchmark>
+		<test.src.jpf>${project.basedir}/test-verify</test.src.jpf>
+		<test.output>${project.build.directory}/test-class</test.output>
+		<test.model>${project.basedir}/test-model</test.model>
+		<test.whitespacedirectory>${project.basedir}/TLA+ Tools</test.whitespacedirectory>
+		<test.model.output>${project.build.directory}/test-model</test.model.output>
+		<dist.output>${project.build.directory}/dist</dist.output>
+		<dist.name>tlatools</dist.name>
+		<benchmark.out>${project.build.directory}/benchmark</benchmark.out>
+	</properties>
 
-			<!-- Update the Manifest.mf packaged into the OSGi variant of tla2tools.jar 
-				which is embedded in the Toolbox. The standalone tla2tools.jar (see customBuild.xml) 
-				defines various properties in its manifest among which are the git revision 
-				and the implementation title. These two properties are read by TLCGlobals 
-				to determine TLCs revision. This is turn is reported as part of execution statistics.
-				To correctly report the TLC revision when it is launched from inside the Toolbox, the
-				embedded tla2tools.jar created here has to also include the two properties. -->
+	<build>
+		<directory>${project.basedir}/target</directory>
+		<sourceDirectory>${class.src}</sourceDirectory>
+		<outputDirectory>${class.output}</outputDirectory>
+
+		<testSourceDirectory>${test.src}</testSourceDirectory>
+		<testOutputDirectory>${test.output}</testOutputDirectory>
+		<resources>
+			<resource>
+				<directory>${class.src}</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/*.~*</exclude>
+					<exclude>**/*##*</exclude>
+					<exclude>**/*.09-09-07</exclude>
+					<exclude>**/*.09-07-02</exclude>
+					<exclude>**/*.11-02-10</exclude>
+					<exclude>**/*.jpg</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>${project.build.directory}/generated-resources</directory>
+			</resource>
+		</resources>
+		<testResources>
+			<testResource>
+				<directory>${test.src}</directory>
+				<includes>
+					<include>**/*.dot</include>
+					<include>**/*.dump</include>
+				</includes>
+			</testResource>
+		</testResources>
+		<plugins>
+			<!-- Enforce Version -->
+			<!-- Fail the build early and with a clear error message if the Java 17
+			dependency isn't satisfied. https://github.com/tlaplus/tlaplus/issues/278 -->
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.4</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
-						<phase>validate</phase>
+						<id>enforce-java</id>
 						<goals>
-							<goal>create</goal>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<version>17</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Clean -->
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>auto-clean</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+						<configuration>
+							<filesets>
+								<fileset>
+									<!-- Delete the ../states/ folder created by the Ant JUnit tests as part -->
+									<directory>${project.basedir}/states/</directory>
+									<includes>
+										<include>**/*</include>
+									</includes>
+									<followSymlinks>false</followSymlinks>
+								</fileset>
+								<fileset>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>**/*</include>
+									</includes>
+									<followSymlinks>false</followSymlinks>
+								</fileset>
+							</filesets>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Aggregate licenses -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<excludedScopes>test</excludedScopes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>download-licenses</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>download-licenses</goal>
 						</goals>
 					</execution>
 				</executions>
-				<configuration>
-					<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-				    <shortRevisionLength>7</shortRevisionLength>
-					<doCheck>false</doCheck>
-					<doUpdate>false</doUpdate>
-				</configuration>
 			</plugin>
-      		<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-packaging-plugin</artifactId>
-				<version>${tycho-version}</version>
+
+			<!-- Copy Resources -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<!-- here the phase you need -->
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${test.whitespacedirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${test.output}</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-test-model-resources</id>
+						<!-- here the phase you need -->
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${test.model.output}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${test.model}</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-package-resources</id>
+						<!-- here the phase you need -->
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${class.output}/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/generated-resources</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Run Unit Tests -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M7</version>
 				<configuration>
-					<archive>
-						<manifestEntries>
-							<Implementation-Title>TLA+ Tools</Implementation-Title>
-							<X-Git-ShortRevision>${buildNumber}</X-Git-ShortRevision>
-						</manifestEntries>
-					</archive>
+					<forkCount>4</forkCount>
+					<reuseForks>true</reuseForks>
+					<!--<threadCount>3</threadCount>-->
+					<useUnlimitedThreads>true</useUnlimitedThreads>
+					<argLine>-ea -XX:MaxDirectMemorySize=512k -XX:+UseParallelGC</argLine>
+					<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					<skip>true</skip>
+					<skipTests>${skip.surefire.tests}</skipTests>
+					<runOrder>alphabetical</runOrder>
+					<systemProperties>
+						<!-- Don't dump dot for unit tests to speed them up -->
+						<tlc2.test.dump>false</tlc2.test.dump>
+						<tlc2.tool.fp.FPSet.impl>tlc2.tool.fp.OffHeapDiskFPSet</tlc2.tool.fp.FPSet.impl>
+						<tlc2.tool.distributed.TLCWorker.threadCount>1</tlc2.tool.distributed.TLCWorker.threadCount>
+					</systemProperties>
+					<excludedGroups>util.DebuggerTest,util.LongTest,util.TTraceTest, util.IndependentlyRunTest, util.ConcurrentTest, util.IndependentlyRunTTraceTest</excludedGroups>
+					<reportsDirectory>${project.build.directory}/test-reports</reportsDirectory>
+					<!--<forkedProcessTimeoutInSeconds>20</forkedProcessTimeoutInSeconds>-->
+				</configuration>
+				<executions>
+					<execution>
+						<id>liveness</id>
+						
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<forkCount>1</forkCount>
+							<skip>false</skip>
+							<reuseForks>true</reuseForks>
+							<includes>
+								<include>tlc2/tool/liveness/**</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>concurrently-testable</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+
+							<includes>
+								<include>pcal/**</include>
+								<include>tla2sany/**</include>
+								<include>tlc2/*.java</include>
+								<include>tlc2/model/**</include>
+								<include>tlc2/module/**</include>
+								<include>tlc2/output/**</include>
+								<include>tlc2/tool/*.java</include>
+								<include>tlc2/tool/checkpoint/**</include>
+								<include>tlc2/tool/coverage/**</include>
+								<include>tlc2/tool/distributed/**</include>
+								<include>tlc2/tool/doinitfunctor/**</include>
+								<include>tlc2/tool/evalorder/**</include>
+								<include>tlc2/tool/other/**</include>
+								<include>tlc2/tool/queue/**</include>
+								<include>tlc2/tool/simulation/**</include>
+								<include>tlc2/utils/**</include>
+								<include>util/**</include>
+							</includes>
+							<excludes>
+								<exclude>tlc2/tool/UserModuleOverrideTest.java</exclude>
+								<exclude>tlc2/tool/UserModuleOverrideFromJarTest.java</exclude>
+								<exclude>tlc2/tool/UserModuleOverrideAnnotationTest.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>fpset</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>tlc2/tool/fp/**</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>suite</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>tlc2/tool/suite/**</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>values</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>tlc2/value/**</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>user-module</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>tlc2/tool/EvaluatingValueTest.java</include>
+								<include>tlc2/tool/UserModuleOverrideAnnotationTest.java</include>
+								<include>tlc2/tool/UserModuleOverrideTest.java</include>
+								<include>tlc2/tool/UserModuleOverrideAnnotationTest.java</include>
+							</includes>
+							<additionalClasspathElements>
+								<additionalClasspathElement>target/test-model/UserModuleOverrideFromJar.jar</additionalClasspathElement>
+								<additionalClasspathElement>target/test-model</additionalClasspathElement>
+							</additionalClasspathElements>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- The fewer there are of these, the faster the suite will run -->
+						<id>unique-string-conflicts</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<groups>util.IndependentlyRunTest,util.DebuggerTest</groups>
+							<excludedGroups>util.LongTest, util.ConcurrentTest</excludedGroups>
+							<reuseForks>false</reuseForks>
+							<includes>
+								<include>pcal/RABTest.java</include>
+								<include>pcal/SBBTest.java</include>
+								<include>tlc2/tool/EvalExceptionTest.java</include>
+								<include>tlc2/tool/PrintTraceRaceTest.java</include>
+								<include>tlc2/tool/ViewMapTest.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- The fewer there are of these, the faster the suite will run -->
+						<id>independently-run-tests</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<groups>util.IndependentlyRunTest,util.DebuggerTest</groups>
+							<excludedGroups>util.LongTest, util.ConcurrentTest</excludedGroups>
+							<reuseForks>false</reuseForks>
+							<includes>
+								<!-- Reduce lengthy search process by limited to applicable directories -->
+								<include>tlc2/debug/**</include>
+								
+								<include>tlc2/tool/InliningTest.java</include>
+
+								<include>tlc2/tool/EvalExceptionLivenessTest.java</include>
+								<include>tlc2/tool/Github648Test.java</include>
+								<include>tlc2/tool/Github648wNTest.java</include>
+								<include>tlc2/tool/MonolithSpecTest.java</include>
+								<include>tlc2/tool/TLCSetMultiSimTest.java</include>
+								<include>tlc2/tool/TLCSetSimTest.java</include>
+								<include>tlc2/tool/checkpoint/CheckpointWhenTimeBoundTest.java</include>
+								<!--
+									Race condition makes test flaky 
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL1Test.java</include>
+								-->
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2FromCheckpointTest.java</include>
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2Test.java</include>
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL3Test.java</include>
+								<include>tlc2/tool/liveness/ErrorTraceConstructionTest.java</include>
+								<include>tlc2/tool/liveness/Github317aTest.java</include>
+								<include>tlc2/tool/liveness/Github710bTest.java</include>
+								<include>tlc2/tool/liveness/LoopForcedPartialTest.java</include>
+								<include>tlc2/tool/liveness/NoSymmetryTableauModelCheckerTest.java</include>
+								<include>tlc2/tool/liveness/OneBitMutexNoSymmetryTest.java</include>
+								<include>tlc2/tool/liveness/UnsymmetricModelCheckerTestB.java</include>
+								<include>tlc2/tool/liveness/simulation/StutteringTest.java</include>
+								<include>tlc2/tool/simulation/NQSpecTest.java*</include>
+								<include>tlc2/tool/simulation/SimulationWorkerTest.java</include>
+							</includes>
+							<excludes>
+								<exclude>tlc2/tool/EvaluatingValueTest.java</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>ttrace-tests-concurrent</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<reuseForks>true</reuseForks>
+							<excludedGroups>util.LongTest, util.IndependentlyRunTest</excludedGroups>
+							<groups>util.TTraceTest</groups>
+							<skip>false</skip>
+							<includes>
+								<include>**/*_TTraceTest.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>ttrace-tests-individual</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<reuseForks>false</reuseForks>
+							<excludedGroups>util.LongTest</excludedGroups>
+							<groups>util.IndependentlyRunTTraceTest</groups>
+							<skip>false</skip>
+							<includes>
+								<include>pcal/RABTest_TTraceTest.java</include>
+								<include>pcal/SBBTest_TTraceTest.java</include>
+								<include>tlc2/tool/PrintTraceRaceTest_TTraceTest.java</include>
+								<!--
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL1Test_TTraceTest.java</include>
+								-->
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2Test_TTraceTest.java</include>
+								<include>tlc2/tool/liveness/CodePlexBug08EWD840FL3Test_TTraceTest.java</include>
+								<include>tlc2/tool/liveness/ErrorTraceConstructionTest_TTraceTest.java</include>
+								<include>tlc2/tool/liveness/LoopForcedPartialTest_TTraceTest.java</include>
+								<include>tlc2/tool/liveness/OneBitMutexNoSymmetryTest_TTraceTest.java</include>
+								<include>tlc2/tool/liveness/UnsymmetricModelCheckerTestB_TTraceTest.java</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-junit47</artifactId>
+						<version>3.0.0-M7</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<!-- Get Build Information -->
+			<plugin>
+				<!-- https://github.com/elab/jgit-buildnumber -->
+				<groupId>com.labun.buildnumber</groupId>
+				<artifactId>jgit-buildnumber-maven-plugin</artifactId>
+				<version>2.7.0</version>
+				<executions>
+					<execution>
+						<id>jgit-buildnumber</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>extract-buildnumber</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Package -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.2</version>
+				<configuration>
+					<outputDirectory>${dist.output}</outputDirectory>
 				</configuration>
 			</plugin>
 
-			<!-- Compile aspects -->
-            <plugin>
-                <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
-                <groupId>com.nickwongdev</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.12.1</version>
-                <configuration>
-                    <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <complianceLevel>1.8</complianceLevel>
-                            <source>1.8</source>
-                            <target>1.8</target>
-                        </configuration>
-                    </execution>
-               </executions>
-           </plugin>
-      </plugins>
-  </build>
+			<!-- Build jar with dependencies -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<outputDirectory>${dist.output}</outputDirectory>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+					<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+					<minimizeJar>true</minimizeJar>
+					<transformers>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+							<manifestEntries>
+								<Implementation-Title>TLA+ Tools</Implementation-Title>
+								<!--<Implementation-Version></Implementation-Version>-->
+								<Implementation-Vendor>Not Microsoft Corp.</Implementation-Vendor>
 
-  <dependencies>
-	<dependency>
-		<groupId>org.apache.ant</groupId>
-		<artifactId>ant-junit</artifactId>
-		<version>1.7.1</version>
-		<scope>compile</scope>
-	</dependency>
-  		<dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>1.9.1</version>
-        </dependency>
-        <!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
-        <!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
-        <!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
-        <!-- there exists no p2 repository that we could add to our target platform.  However, an OSGi-fied    -->
-        <!-- jline exists on Maven Central.                                                                    -->
-		<!-- https://mvnrepository.com/artifact/org.jline/jline-terminal -->
+								<Built-By>${user.name}</Built-By>
+								<Build-Tag>${env.BUILD_TAG}</Build-Tag>
+								<Build-TimeStamp>${maven.build.timestamp}</Build-TimeStamp>
+								<!--<Build-Rev></Build-Rev>-->
+
+								<!-- Git revision -->
+								<X-Git-Branch>${git.branch}</X-Git-Branch>
+								<X-Git-Tag>${git.tag}</X-Git-Tag>
+								<X-Git-Revision>${git.revision}</X-Git-Revision>
+								<X-Git-ShortRevision>${git.shortRevision}</X-Git-ShortRevision>
+								<X-Git-BuildNumber>${git.branch}_${git.tag}_${git.shortRevision}</X-Git-BuildNumber>
+								<X-Git-Commits-Count>${git.commitsCount}</X-Git-Commits-Count>
+								<!-- The jar files contains many main classes (SANY, TEX, pcal, ...) -->
+								<!-- but lets consider TLC the one users primarily use. -->
+								<Main-Class>tlc2.TLC</Main-Class>
+								<Class-Path>CommunityModules-deps.jar CommunityModules.jar</Class-Path>
+								<!-- App-Name and Permissions is required by Java Webstart used by distributed TLC -->
+								<!-- Depending on security level, the user will see a warning otherwise. -->
+								<!-- http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/security/manifest.html -->
+								<Application-Name>TLC</Application-Name>
+								<permissions>all-permissions</permissions>
+							</manifestEntries>
+						</transformer>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"></transformer>
+						<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+							<addHeader>false</addHeader>
+						</transformer>
+						-->
+					</transformers>
+					<filters>
+						<filter>
+							<artifact>*</artifact>
+							<excludes>
+								<exclude>META-INF/maven/**</exclude>
+								<exclude>META-INF/MANIFEST.MF</exclude>
+							</excludes>
+						</filter>
+						<filter>
+							<artifact>com.sun.mail:*</artifact>
+							<excludes>
+								<exclude>javax/mail/search/**</exclude>
+								<exclude>org/**</exclude>
+							</excludes>
+						</filter>
+						<filter>
+							<artifact>org.eclipse*</artifact>
+							<excludes>
+								<exclude>META-INF/**</exclude>
+								<exclude>about*</exclude>
+							</excludes>
+						</filter>
+					</filters>
+
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
 		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-terminal</artifactId>
-		    <version>3.14.1</version>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>1.6.7</version>
+			<scope>compile</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>smtp</artifactId>
+			<version>1.6.7</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
+		<!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
+		<!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
+		<!-- there exists no p2 repository that we could add to our target platform.  However, an OSGi-fied    -->
+		<!-- jline exists on Maven Central.                                                                    -->
 		<!-- https://mvnrepository.com/artifact/org.jline/jline-reader -->
 		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-reader</artifactId>
-		    <version>3.14.1</version>
+			<groupId>org.jline</groupId>
+			<artifactId>jline-reader</artifactId>
+			<version>3.21.0</version>
+			<scope>compile</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-		<dependency>
- 		   <groupId>com.google.code.gson</groupId>
- 		   <artifactId>gson</artifactId>
-		   <version>2.8.6</version>
-		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc.debug -->
 		<dependency>
-		    <groupId>org.eclipse.lsp4j</groupId>
-		    <artifactId>org.eclipse.lsp4j.debug</artifactId>
-		    <version>0.12.0</version>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j.debug</artifactId>
+			<version>0.12.0</version>
+			<scope>compile</scope>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc -->
-		<dependency>
-		    <groupId>org.eclipse.lsp4j</groupId>
-		    <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
-		    <version>0.12.0</version>
-		</dependency>
-      </dependencies>
 
-      <!-- August 2014 - TL
-           added a non-default profile (must be called explicitly)
-           which creates a jar file and set XMLExporter as the main class.
-       -->
-    <profiles>
-      <profile>
-        <id>exporter</id>
-        <build>
-          <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>2.0</version>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>shade</goal>
-                </goals>
-                <configuration>
-                   <includes>
-                     <include>**/tlatools*</include>
-                   </includes>
-                  <minimizeJar>true</minimizeJar>
-                  <transformers>
-                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <manifestEntries>
-                        <Main-Class>tla2sany.xml.XMLExporter</Main-Class>
-                      </manifestEntries>
-                    </transformer>
-                  </transformers>
-                  <filters>
-                  <filter>
-                    <artifact>*:*</artifact>
-                      <excludes>
-                        <exclude>**/*Test*.*</exclude>
-                      </excludes>
-                    </filter>
-                  </filters>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-        </build>
-    </profile>
-  </profiles>
+		<!-- Direct dependency, but also a dependency of org.eclipse.lsp4j -->
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.9</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.easymock/easymock -->
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.5.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+
+	<profiles>
+		<!-- Run tests on distribution rather than source -->
+		<profile>
+			<id>test-dist</id>
+			<build>
+				<plugins>
+					<!--  -->
+					<plugin>
+						<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.8.8</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>prepare-agent</goal>
+								</goals>
+								<phase>pre-integration-test</phase>
+							</execution>
+							<execution>
+								<id>report</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>report</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Integration Test Jar -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>3.0.0-M7</version>
+						<configuration>
+							<skipTests>${skip.failsafe.tests}</skipTests>
+							<forkCount>1</forkCount>
+							<reuseForks>true</reuseForks>
+							<threadCount>1</threadCount>
+							<argLine>@{argLine} -ea -XX:MaxDirectMemorySize=512k -XX:+UseParallelGC</argLine>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile>
+							<skip>true</skip>
+							<runOrder>alphabetical</runOrder>
+							<systemProperties>
+								<tlc2.tool.fp.FPSet.impl>tlc2.tool.fp.OffHeapDiskFPSet</tlc2.tool.fp.FPSet.impl>
+								<tlc2.tool.distributed.TLCWorker.threadCount>4</tlc2.tool.distributed.TLCWorker.threadCount>
+							</systemProperties>
+							<excludedGroups>util.DebuggerTest,util.LongTest,util.TTraceTest, util.IndependentlyRunTest, util.ConcurrentTest, util.IndependentlyRunTTraceTest</excludedGroups>
+							<!-- Exclude .class files -->
+							<classpathDependencyScopeExclude>compile</classpathDependencyScopeExclude>
+							<useManifestOnlyJar>false</useManifestOnlyJar>
+							<reportsDirectory>${project.build.directory}/test-reports/on-jar</reportsDirectory>
+							<additionalClasspathElements>
+								<additionalClasspathElement>target/test-model</additionalClasspathElement>
+							</additionalClasspathElements>
+						</configuration>
+						<!-- Copy from Surefire -->
+						<!-- Modify goal from test to integration-test -->
+						<executions>
+							<execution>
+								<id>concurrently-testable</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<reuseForks>true</reuseForks>
+									<includes>
+										<include>pcal/**</include>
+										<include>tla2sany/**</include>
+										<include>tlc2/*.java</include>
+										<include>tlc2/model/**</include>
+										<include>tlc2/module/**</include>
+										<include>tlc2/output/**</include>
+										<include>tlc2/tool/*.java</include>
+										<include>tlc2/tool/checkpoint/**</include>
+										<include>tlc2/tool/coverage/**</include>
+										<include>tlc2/tool/distributed/**</include>
+										<include>tlc2/tool/doinitfunctor/**</include>
+										<include>tlc2/tool/evalorder/**</include>
+										<include>tlc2/tool/other/**</include>
+										<include>tlc2/tool/queue/**</include>
+										<include>tlc2/tool/simulation/**</include>
+										<include>tlc2/utils/**</include>
+										<include>util/**</include>
+									</includes>
+									<excludes>
+										<exclude>tlc2/tool/UserModuleOverrideTest.java</exclude>
+										<exclude>tlc2/tool/UserModuleOverrideFromJarTest.java</exclude>
+										<exclude>tlc2/tool/UserModuleOverrideAnnotationTest.java</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>user-module</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<includes>
+										<include>tlc2/tool/EvaluatingValueTest.java</include>
+										<include>tlc2/tool/UserModuleOverrideAnnotationTest.java</include>
+										<include>tlc2/tool/UserModuleOverrideTest.java</include>
+										<include>tlc2/tool/UserModuleOverrideAnnotationTest.java</include>
+									</includes>
+									<additionalClasspathElements>
+										<additionalClasspathElement>target/test-model/UserModuleOverrideFromJar.jar</additionalClasspathElement>
+										<additionalClasspathElement>target/test-model</additionalClasspathElement>
+									</additionalClasspathElements>
+								</configuration>
+							</execution>
+							<execution>
+								<id>fpset</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<includes>
+										<include>tlc2/tool/fp/**</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>suite</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<includes>
+										<include>tlc2/tool/suite/**</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>values</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<includes>
+										<include>tlc2/value/**</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>liveness</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<reuseForks>true</reuseForks>
+									<includes>
+										<include>tlc2/tool/liveness/**</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<!-- The fewer there are of these, the faster the suite will run -->
+								<id>unique-string-conflicts</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<groups>util.IndependentlyRunTest,util.DebuggerTest</groups>
+									<excludedGroups>util.LongTest, util.ConcurrentTest</excludedGroups>
+									<reuseForks>false</reuseForks>
+									<includes>
+										<include>pcal/RABTest.java</include>
+										<include>pcal/SBBTest.java</include>
+										<include>tlc2/tool/EvalExceptionTest.java</include>
+										<include>tlc2/tool/PrintTraceRaceTest.java</include>
+										<include>tlc2/tool/ViewMapTest.java</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<!-- The fewer there are of these, the faster the suite will run -->
+								<id>independently-run-tests</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<groups>util.IndependentlyRunTest,util.DebuggerTest</groups>
+									<excludedGroups>util.LongTest, util.ConcurrentTest</excludedGroups>
+									<reuseForks>false</reuseForks>
+									<includes>
+										<!-- Reduce lengthy search process by limited to applicable directories -->
+										<include>tlc2/debug/**</include>
+										<!--
+											Does not work well with code coverage 
+										<include>tlc2/tool/InliningTest.java</include>
+										-->
+
+										<include>tlc2/tool/EvalExceptionLivenessTest.java</include>
+										<include>tlc2/tool/Github648Test.java</include>
+										<include>tlc2/tool/Github648wNTest.java</include>
+										<include>tlc2/tool/MonolithSpecTest.java</include>
+										<include>tlc2/tool/TLCSetMultiSimTest.java</include>
+										<include>tlc2/tool/TLCSetSimTest.java</include>
+										<include>tlc2/tool/checkpoint/CheckpointWhenTimeBoundTest.java</include>
+										<!--
+											Race condition makes test flaky 
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL1Test.java</include>
+										-->
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2FromCheckpointTest.java</include>
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2Test.java</include>
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL3Test.java</include>
+										<include>tlc2/tool/liveness/ErrorTraceConstructionTest.java</include>
+										<include>tlc2/tool/liveness/Github317aTest.java</include>
+										<include>tlc2/tool/liveness/Github710bTest.java</include>
+										<include>tlc2/tool/liveness/LoopForcedPartialTest.java</include>
+										<include>tlc2/tool/liveness/NoSymmetryTableauModelCheckerTest.java</include>
+										<include>tlc2/tool/liveness/OneBitMutexNoSymmetryTest.java</include>
+										<include>tlc2/tool/liveness/UnsymmetricModelCheckerTestB.java</include>
+										<include>tlc2/tool/liveness/simulation/StutteringTest.java</include>
+										<include>tlc2/tool/simulation/NQSpecTest.java*</include>
+										<include>tlc2/tool/simulation/SimulationWorkerTest.java</include>
+									</includes>
+									<excludes>
+										<exclude>tlc2/tool/EvaluatingValueTest.java</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ttrace-tests-concurrent</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<reuseForks>true</reuseForks>
+									<excludedGroups>util.LongTest, util.IndependentlyRunTest</excludedGroups>
+									<groups>util.TTraceTest</groups>
+									<skip>false</skip>
+									<includes>
+										<include>**/*_TTraceTest.java</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ttrace-tests-individual</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<reuseForks>false</reuseForks>
+									<excludedGroups>util.LongTest</excludedGroups>
+									<groups>util.IndependentlyRunTTraceTest</groups>
+									<skip>false</skip>
+									<includes>
+										<include>pcal/RABTest_TTraceTest.java</include>
+										<include>pcal/SBBTest_TTraceTest.java</include>
+										<include>tlc2/tool/PrintTraceRaceTest_TTraceTest.java</include>
+										<!-- 
+											<include>tlc2/tool/liveness/CodePlexBug08EWD840FL1Test_TTraceTest.java</include>
+										-->
+										
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL2Test_TTraceTest.java</include>
+										<include>tlc2/tool/liveness/CodePlexBug08EWD840FL3Test_TTraceTest.java</include>
+										<include>tlc2/tool/liveness/ErrorTraceConstructionTest_TTraceTest.java</include>
+										<include>tlc2/tool/liveness/LoopForcedPartialTest_TTraceTest.java</include>
+										<include>tlc2/tool/liveness/OneBitMutexNoSymmetryTest_TTraceTest.java</include>
+										<include>tlc2/tool/liveness/UnsymmetricModelCheckerTestB_TTraceTest.java</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- Executes long-running unit tests -->
+		<profile>
+			<id>test-long</id>
+			<properties>
+				<skip.surefire.tests>true</skip.surefire.tests>
+				<skip.tests.very-long>false</skip.tests.very-long>
+			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<version>3.3.0</version>
+						<executions>
+							<execution>
+								<phase>initialize</phase>
+								<goals>
+									<goal>properties</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>3.0.0-M7</version>
+						<configuration>
+							<skipTests>${skip.failsafe.tests}</skipTests>
+							<forkCount>1</forkCount>
+							<skip>true</skip>
+							<reuseForks>false</reuseForks>
+							<threadCount>1</threadCount>
+							<argLine>-ea -XX:+UseParallelGC</argLine>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile>
+							<runOrder>alphabetical</runOrder>
+							<systemProperties>
+								<org.aspectj.weaver.showWeaveInfo>false</org.aspectj.weaver.showWeaveInfo>
+								<aj.weaving.verbose>false</aj.weaving.verbose>
+								<tlc2.tool.fp.FPSet.impl>tlc2.tool.fp.OffHeapDiskFPSet</tlc2.tool.fp.FPSet.impl>
+								<tlc2.tool.distributed.TLCWorker.threadCount>4</tlc2.tool.distributed.TLCWorker.threadCount>
+							</systemProperties>
+							<groups>util.LongTest</groups>
+							<!-- Exclude .class files -->
+							<classpathDependencyScopeExclude>compile</classpathDependencyScopeExclude>
+							<useManifestOnlyJar>false</useManifestOnlyJar>
+							<reportsDirectory>${project.build.directory}/test-reports</reportsDirectory>
+							<additionalClasspathElements>
+								<additionalClasspathElement>target/test-model</additionalClasspathElement>
+							</additionalClasspathElements>
+						</configuration>
+						<executions>
+							<execution>
+								<!-- The fewer there are of these, the faster the suite will run -->
+								<id>long-tests</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<skip>false</skip>
+									<includes>
+										<include>pcal/DetlefsTest.java</include>
+										<include>pcal/MacroQuicksortTest.java</include>
+										<include>pcal/PcalPaxosTest.java</include>
+										<include>pcal/SimpleMultiProcTest.java</include>
+										<include>pcal/StarkMutexTest.java</include>
+										<include>tlc2/tool/fp/OffHeapDiskFPSetTest.java</include>
+										<include>tlc2/tool/fp/AbstractHeapBasedDiskFPSetTest.java</include>
+									</includes>
+								</configuration>
+							</execution>
+							<execution>
+								<!-- The fewer there are of these, the faster the suite will run -->
+								<id>very-long-tests</id>
+								<goals>
+									<goal>integration-test</goal>
+								</goals>
+								<configuration>
+									<argLine>-javaagent:${org.aspectj:aspectjweaver:jar} -ea -XX:+UseParallelGC</argLine>
+									<skip>${skip.tests.very-long}</skip>
+									<includes>
+										<include>tlc2/tool/fp/FPSetLongTest.java</include>
+										<include>tlc2/tool/fp/DiskFPSetLongTest.java</include>
+										<include>tlc2/tool/fp/MSBDiskFPSetLongTest.java</include>
+										<include>tlc2/tool/fp/OffHeapDiskFPSetLongTest.java</include>
+										<include>tlc2/tool/liveness/MultiThreadedSpecLongTest.java</include>
+										<include>tlc2/tool/queue/DiskStateQueueLongTest.java</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- Builds jmh benchmark -->
+		<profile>
+			<id>benchmark</id>
+			<properties>
+				<!-- Standard tests should not be run -->
+				<skip.surefire.tests>true</skip.surefire.tests>
+				<skip.failsafe.tests>true</skip.failsafe.tests>
+				<benchmark.class></benchmark.class> <!-- Overridden with a specific benchmark if appropriate -->
+			</properties>
+			<build>
+				<plugins>
+					<!-- Add source dir -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>add-benchmark-test-source</id>
+								<goals>
+									<goal>add-test-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${test.src.benchmark}</source>
+									</sources>
+								</configuration>
+							</execution>
+
+						</executions>
+					</plugin>
+
+					<!-- Copy compiled test files to be bundled into jar -->
+					<plugin>
+						<artifactId>maven-resources-plugin</artifactId>
+						<version>3.3.0</version>
+						<executions>
+							<execution>
+								<id>add-resource</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${class.output}/</outputDirectory>
+									<resources>
+										<resource>
+											<directory>${test.output}</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Package benchmark jar -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>3.3.0</version>
+						<configuration>
+							<outputDirectory>${benchmark.out}</outputDirectory>
+							<finalName>${project.artifactId}-${project.version}-benchmark</finalName>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<minimizeJar>false</minimizeJar>
+							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Implementation-Title>TLA+ Tools JMH Benchmark</Implementation-Title>
+										<!--<Implementation-Version></Implementation-Version>-->
+										<Implementation-Vendor>Not Microsoft Corp.</Implementation-Vendor>
+
+										<Built-By>${user.name}</Built-By>
+										<Build-Tag>${env.BUILD_TAG}</Build-Tag>
+										<Build-TimeStamp>${maven.build.timestamp.format}</Build-TimeStamp>
+										<!--<Build-Rev></Build-Rev>-->
+
+										<!-- Git revision -->
+										<X-Git-Branch>${git.branch}</X-Git-Branch>
+										<X-Git-Tag>${git.tag}</X-Git-Tag>
+										<X-Git-Revision>${git.revision}</X-Git-Revision>
+										<X-Git-ShortRevision>${git.shortRevision}</X-Git-ShortRevision>
+										<X-Git-BuildNumber>${git.branch}_${git.tag}_${git.shortRevision}</X-Git-BuildNumber>
+										<X-Git-Commits-Count>${git.commitsCount}</X-Git-Commits-Count>
+
+										<Main-Class>org.openjdk.jmh.Main</Main-Class>
+									</manifestEntries>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"></transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+									<addHeader>false</addHeader>
+								</transformer>
+								-->
+							</transformers>
+							<filters>
+								<filter>
+									<artifact>*</artifact>
+									<excludes>
+										<exclude>META-INF/maven/**</exclude>
+										<exclude>META-INF/MANIFEST.MF</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>com.sun.mail:*</artifact>
+									<excludes>
+										<exclude>javax/mail/search/**</exclude>
+										<exclude>org/**</exclude>
+									</excludes>
+								</filter>
+								<filter>
+									<artifact>org.eclipse*</artifact>
+									<excludes>
+										<exclude>META-INF/**</exclude>
+										<exclude>about*</exclude>
+									</excludes>
+								</filter>
+							</filters>
+
+						</configuration>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Run benchmark -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>Run benchmark</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>integration-test</phase>
+							</execution>
+						</executions>
+						<configuration>
+							<async>false</async>
+							<executable>java</executable>
+							<commandlineArgs>
+							-jar ${benchmark.out}/${project.artifactId}-${project.version}-benchmark.jar -wi 1 -i1 -f1 -rf json -rff "${project.build.directory}/benchmark/Benchmark-${benchmark.class}-${maven.build.timestamp}-${git.shortRevision}.json" -jvmArgsPrepend "-ea -Xms8192m -Xmx8192m" -jvmArgsAppend "-Dtlc2.tool.ModuleOverwritesBenchmark.base=${test.model.output}" ${benchmark.class}
+						  </commandlineArgs>
+						</configuration>
+					</plugin>
+				</plugins>
+
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>org.openjdk.jmh</groupId>
+					<artifactId>jmh-core</artifactId>
+					<version>1.35</version>
+					<scope>compile</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.openjdk.jmh</groupId>
+					<artifactId>jmh-generator-annprocess</artifactId>
+					<version>1.35</version>
+					<scope>compile</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<!-- Verifies TLC parts with NASA's pathfinder model checker -->
+		<profile>
+			<id>pathfinder-verification</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>add-jpf-test-source</id>
+								<goals>
+									<goal>add-test-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${test.src.jpf}</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+
+					<!-- Run Unit Tests -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>3.0.0-M7</version>
+						<configuration>
+							<forkCount>1</forkCount>
+							<reuseForks>false</reuseForks>
+							<argLine>-ea -XX:MaxDirectMemorySize=512k -XX:+UseParallelGC</argLine>
+							<redirectTestOutputToFile>true</redirectTestOutputToFile>
+							<skip>false</skip>
+							<runOrder>alphabetical</runOrder>
+							<reportsDirectory>${project.build.directory}/test-pathfinder-verification-reports</reportsDirectory>
+							<skip>false</skip>
+							<includes>
+								<include>tlc2/**/*JPF*.java</include>
+							</includes>
+							<!--<forkedProcessTimeoutInSeconds>20</forkedProcessTimeoutInSeconds>-->
+						</configuration>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.maven.surefire</groupId>
+								<artifactId>surefire-junit47</artifactId>
+								<version>3.0.0-M7</version>
+							</dependency>
+						</dependencies>
+					</plugin>
+				</plugins>
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>gov.nasa</groupId>
+					<artifactId>jpf</artifactId>
+					<version>1.0.0</version>
+					<scope>system</scope>
+					<systemPath>${test.src.jpf}/lib/jpf.jar</systemPath>
+				</dependency>
+				<dependency>
+					<groupId>gov.nasa</groupId>
+					<artifactId>jpf-classes</artifactId>
+					<version>1.0.0</version>
+					<scope>system</scope>
+					<systemPath>${test.src.jpf}/lib/jpf-classes.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>coverage</id>
+			<build>
+				<plugins></plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>aspectj</id>
+			<build>
+				<!-- Copy needed files to source directory -->
+				<resources>
+					<resource>
+						<directory>${class.src.aspectj}</directory>
+						<includes>
+							<include>**/*.*</include>
+						</includes>
+						<excludes>
+							<exclude>**/*.aj</exclude>
+							<exclude>**/*.java</exclude>
+							<exclude>**/*.~*</exclude>
+							<exclude>**/*##*</exclude>
+						</excludes>
+					</resource>
+				</resources>
+				<plugins>
+					<!--  -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>add-aspectj-source</id>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${class.src.aspectj}</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.10.1</version>
+						<configuration>
+							<!-- IMPORTANT -->
+							<useIncrementalCompilation>false</useIncrementalCompilation>
+						</configuration>
+					</plugin>
+
+					<!-- Compile aspects -->
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>aspectj-maven-plugin</artifactId>
+						<version>1.14.0</version>
+						<configuration>
+							<!-- Uncomment for detailed weave info
+							<showWeaveInfo>true</showWeaveInfo>
+							-->
+							<complianceLevel>16</complianceLevel>
+							<weaveDirectories>${class.src.aspectj}</weaveDirectories>
+						</configuration>
+						<executions>
+							<execution>
+								<!-- IMPORTANT -->
+								<phase>process-sources</phase>
+								<goals>
+									<goal>compile</goal>
+									<goal>test-compile</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjrt</artifactId>
+					<version>1.9.7</version>
+				</dependency>
+
+				<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjtools -->
+				<dependency>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjtools</artifactId>
+					<version>1.9.7</version>
+				</dependency>
+
+				<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+				<dependency>
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjweaver</artifactId>
+					<version>1.9.7</version>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<!-- August 2014 - TL
+		   added a non-default profile (must be called explicitly)
+		   which creates a jar file and set XMLExporter as the main class.
+	   -->
+		<profile>
+			<id>exporter</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>3.3.0</version>
+						<configuration>
+							<promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+							<includes>
+								<include>**/tlatools*</include>
+							</includes>
+							<minimizeJar>true</minimizeJar>
+							<transformers>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<!-- Git revision -->
+										<X-Git-Branch>${git.branch}</X-Git-Branch>
+										<X-Git-Tag>${git.tag}</X-Git-Tag>
+										<X-Git-Revision>${git.revision}</X-Git-Revision>
+										<X-Git-ShortRevision>${git.shortRevision}</X-Git-ShortRevision>
+										<X-Git-BuildNumber>${git.branch}_${git.tag}_${git.shortRevision}</X-Git-BuildNumber>
+										<X-Git-Commits-Count>${git.commitsCount}</X-Git-Commits-Count>
+
+										<Main-Class>tlc2.TLC</Main-Class>
+										<Build-Tag>${env.BUILD_TAG}</Build-Tag>
+										<Build-TimeStamp>${maven.build.timestamp.format}</Build-TimeStamp>
+										<Implementation-Title>TLA+ Tools</Implementation-Title>
+										<Application-Name>TLC</Application-Name>
+										<permissions>all-permissions</permissions>
+									</manifestEntries>
+								</transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer"></transformer>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+									<addHeader>false</addHeader>
+								</transformer>
+							</transformers>
+							<filters>
+								<filter>
+									<artifact>*</artifact>
+									<excludes>
+										<exclude>**/*Test*.*</exclude>
+										<exclude>META-INF/**</exclude>
+									</excludes>
+								</filter>
+							</filters>
+							<outputDirectory>${dist.output}</outputDirectory>
+						</configuration>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>shade</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>dev</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-clean-plugin</artifactId>
+						<version>3.2.0</version>
+						<executions>
+							<execution>
+								<id>auto-clean</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>clean</goal>
+								</goals>
+								<configuration>
+									<excludeDefaultDirectories>true</excludeDefaultDirectories>
+									<filesets>
+										<fileset>
+											<!-- Delete the test model to allow tests to run -->
+											<directory>${test.model.output}</directory>
+											<includes>
+												<include>**/*</include>
+											</includes>
+											<followSymlinks>false</followSymlinks>
+										</fileset>
+										<fileset>
+											<!-- Delete the ../states/ folder created by the Ant JUnit tests as part -->
+											<directory>${project.basedir}/states/</directory>
+											<includes>
+												<include>**/*</include>
+											</includes>
+											<followSymlinks>false</followSymlinks>
+										</fileset>
+									</filesets>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+		<!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
+
+		<profile>
+			<id>sonar</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties></properties>
+			<dependencies>
+				<dependency>
+					<groupId>org.sonarsource.scanner.maven</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>3.9.1.2184</version>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<id>docs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.4.1</version>
+						<configuration>
+						  <show>private</show>
+						  <nohelp>true</nohelp>
+						</configuration>
+					  </plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

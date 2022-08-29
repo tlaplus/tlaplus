@@ -4,8 +4,8 @@ package tla2sany.parser;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 
-import tla2sany.utilities.Vector;
-import tla2sany.utilities.Stack;
+import java.util.ArrayList;
+import java.util.Stack;
 import tla2sany.utilities.Assert;
 import util.UniqueString;
 import util.ToolIO;
@@ -18,7 +18,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     ***********************************************************************/
     String[]deps = new String[ dependencyList.size() ];
     for (int lvi =0; lvi < deps.length; lvi++)
-      deps[lvi] = ((UniqueString)dependencyList.elementAt(lvi)).toString();
+      deps[lvi] = ((UniqueString)dependencyList.get(lvi)).toString();
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
@@ -31,7 +31,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * The root node.                                                       *
     ***********************************************************************/
 
-  public Vector dependencyList = new Vector( 20 );
+  public ArrayList dependencyList = new ArrayList( 20 );
 
   private UniqueString mn = null;
      /**********************************************************************
@@ -614,11 +614,11 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
     ***********************************************************************/
 
   private final String msgStackToString(ParseException e) {
-    StringBuffer msg;
+    StringBuilder msg;
     String name = " *unknown* (error occurred before module header)";
     if (mn != null) name = mn.toString();
 
-    msg = new StringBuffer("***Parse Error***\n");
+    msg = new StringBuilder("***Parse Error***\n");
     if ( expecting != emptyString ) {
       msg.append("Was expecting \"");
       msg.append( expecting );
@@ -750,12 +750,12 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
   private final void addDependency( UniqueString s ) {
     int lvi = internals.search( s );
     if ( lvi < 0 )
-      dependencyList.addElement( s );
+      dependencyList.add( s );
   }
 
   private final UniqueString reduceString( String s ) {
     int l = s.length();
-    StringBuffer copy = new StringBuffer( l );
+    StringBuilder copy = new StringBuilder( l );
     int i = 0;
     int j = 0;
     while ( i!= l ) {
@@ -801,7 +801,7 @@ private int levelOfProofStepLexeme(Token tok){
   String im = tok.image ;
   if (im.substring(1,2).equals("*")) {return -1;} ;
   if (im.substring(1,2).equals("+")) {return -2;} ;
-  return new Integer(im.substring(1, im.indexOf('>'))).intValue() ;
+  return Integer.valueOf(im.substring(1, im.indexOf('>'))).intValue() ;
     /***********************************************************************
     * The ".intValue()" added by SZ because Java 1.4 doesn't support       *
     * auto-boxing.                                                         *
@@ -11790,7 +11790,7 @@ ClosedStart() : {
       return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
+  private java.util.ArrayList jj_expentries = new java.util.ArrayList();
   private int[] jj_expentry;
   private int jj_kind = -1;
   private int[] jj_lasttokens = new int[100];
@@ -11819,13 +11819,13 @@ ClosedStart() : {
           if (exists) break;
         }
       }
-      if (!exists) jj_expentries.addElement(jj_expentry);
+      if (!exists) jj_expentries.add(jj_expentry);
       if (pos != 0) jj_lasttokens[(jj_endpos = pos) - 1] = kind;
     }
   }
 
   public ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+    jj_expentries.clear();
     boolean[] la1tokens = new boolean[237];
     for (int i = 0; i < 237; i++) {
       la1tokens[i] = false;
@@ -11868,7 +11868,7 @@ ClosedStart() : {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     jj_endpos = 0;
@@ -11876,7 +11876,7 @@ ClosedStart() : {
     jj_add_error_token(0, 0);
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[])jj_expentries.elementAt(i);
+      exptokseq[i] = (int[])jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }

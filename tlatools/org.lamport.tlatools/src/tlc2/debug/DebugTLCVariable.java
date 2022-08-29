@@ -2,7 +2,7 @@
  * Copyright (c) 2020 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,80 +25,74 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import org.eclipse.lsp4j.debug.Variable;
+import tlc2.value.impl.*;
+import util.UniqueString;
+
 import java.util.List;
 import java.util.Random;
 
-import org.eclipse.lsp4j.debug.Variable;
-
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.FcnRcdValue;
-import tlc2.value.impl.RecordValue;
-import tlc2.value.impl.TLCVariable;
-import tlc2.value.impl.TupleValue;
-import tlc2.value.impl.Value;
-import util.UniqueString;
-
 public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable, Comparable<DebugTLCVariable> {
-	
-	private transient Value tlcValue;
-	
-	public DebugTLCVariable(UniqueString lhs) {
-		this.setName(lhs.toString());
-	}
-	
-	public DebugTLCVariable(String lhs) {
-		this.setName(lhs);
-	}
-	
-	public DebugTLCVariable(Value value) {
-		this.setName(value.toString());
-	}
 
-	@Override
-	public List<TLCVariable> getNested(Random rnd) {
-		return this.tlcValue.getTLCVariables(this, rnd);
-	}
+    private Value tlcValue;
 
-	@Override
-	public DebugTLCVariable setInstance(Value v) {
-		this.tlcValue = v;
-		return this;
-	}
+    public DebugTLCVariable(final UniqueString lhs) {
+        this.setName(lhs.toString());
+    }
 
-	@Override
-	public TLCVariable newInstance(final String name, Value v, Random rnd) {
-		DebugTLCVariable variable = new DebugTLCVariable(name);
-		variable.setInstance(v);
-		if (v instanceof Enumerable || v instanceof FcnRcdValue || v instanceof RecordValue || v instanceof TupleValue) {
-			variable.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE-1)+ 1);
-		}
-		return v.toTLCVariable(variable, rnd);
-	}
+    public DebugTLCVariable(final String lhs) {
+        this.setName(lhs);
+    }
 
-	@Override
-	public TLCVariable newInstance(Value value, Random rnd) {
-		return newInstance(value.toString(), value, rnd);
-	}
-	
-	@Override
-	public Value getTLCValue() {
-		return tlcValue;
-	}
+    public DebugTLCVariable(final Value value) {
+        this.setName(value.toString());
+    }
 
-	@Override
-	public int compareTo(DebugTLCVariable other) {
-		if (getName().compareTo(other.getName()) != 0) {
-			return getName().compareTo(other.getName());
-		}
-		if (getType().compareTo(other.getType()) != 0) {
-			return getType().compareTo(other.getType());
-		}
-		if (getValue().compareTo(other.getValue()) != 0) {
-			return getValue().compareTo(other.getValue());
-		}
-		// We do *not* compare tlcValue here for two reasons:
-		// 1. tlcValue is marked transient, and, thus, might be null
-		// 2. tlcValues representing infinite domains throw an exception when compared
-		return 0;
-	}
+    @Override
+    public List<TLCVariable> getNested(final Random rnd) {
+        return this.tlcValue.getTLCVariables(this, rnd);
+    }
+
+    @Override
+    public DebugTLCVariable setInstance(final Value v) {
+        this.tlcValue = v;
+        return this;
+    }
+
+    @Override
+    public TLCVariable newInstance(final String name, final Value v, final Random rnd) {
+        final DebugTLCVariable variable = new DebugTLCVariable(name);
+        variable.setInstance(v);
+        if (v instanceof Enumerable || v instanceof FcnRcdValue || v instanceof RecordValue || v instanceof TupleValue) {
+            variable.setVariablesReference(rnd.nextInt(Integer.MAX_VALUE - 1) + 1);
+        }
+        return v.toTLCVariable(variable, rnd);
+    }
+
+    @Override
+    public TLCVariable newInstance(final Value value, final Random rnd) {
+        return newInstance(value.toString(), value, rnd);
+    }
+
+    @Override
+    public Value getTLCValue() {
+        return tlcValue;
+    }
+
+    @Override
+    public int compareTo(final DebugTLCVariable other) {
+        if (getName().compareTo(other.getName()) != 0) {
+            return getName().compareTo(other.getName());
+        }
+        if (getType().compareTo(other.getType()) != 0) {
+            return getType().compareTo(other.getType());
+        }
+        if (getValue().compareTo(other.getValue()) != 0) {
+            return getValue().compareTo(other.getValue());
+        }
+        // We do *not* compare tlcValue here for two reasons:
+        // 1. tlcValue is marked transient, and, thus, might be null
+        // 2. tlcValues representing infinite domains throw an exception when compared
+        return 0;
+    }
 }

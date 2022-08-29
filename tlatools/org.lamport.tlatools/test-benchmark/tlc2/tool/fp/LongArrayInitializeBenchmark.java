@@ -35,31 +35,30 @@ import org.openjdk.jmh.annotations.State;
 
 @State(Scope.Benchmark)
 public class LongArrayInitializeBenchmark {
-	
-	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
-	private LongArray array;
 
-	@Param({"8", "16", "24", "28", "31"})
-	public int size;
-	
+    private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
+    @Param({"8", "16", "24", "28", "31"})
+    public int size;
+    private LongArray array;
+
     @Setup
     public void up() throws IOException {
         final long elements = 1L << size;
-		array = new LongArray(elements);
+        array = new LongArray(elements);
     }
-    
+
     @Benchmark
     public void AputAddressSingle() throws IOException {
-    	array.zeroMemory(1);
+        array.zeroMemory(1);
     }
-    
+
     @Benchmark
     public void BputAddressConcurrent() throws IOException {
-    	array.zeroMemory(AVAILABLE_PROCESSORS);
+        array.zeroMemory(AVAILABLE_PROCESSORS);
     }
-    
-	@Benchmark
-	public void CsetMemory() throws IOException {
-    	array.zeroMemory();
+
+    @Benchmark
+    public void CsetMemory() throws IOException {
+        array.zeroMemory();
     }
 }

@@ -8,54 +8,43 @@ package tlc2.module;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.value.Values;
-import tlc2.value.impl.ModelValue;
-import tlc2.value.impl.StringValue;
-import tlc2.value.impl.UserObj;
-import tlc2.value.impl.UserValue;
-import tlc2.value.impl.Value;
+import tlc2.value.impl.*;
 
-public class Strings extends UserObj
-{
-	public static final long serialVersionUID = 20160822L;
+public class Strings extends UserObj {
+    public static final long serialVersionUID = 20160822L;
 
-    private static Value SetString = new UserValue(new Strings());
+    private static final Value SetString = new UserValue(new Strings());
 
-    public static Value STRING()
-    {
+    public static Value STRING() {
         return SetString;
     }
 
     @Override
-    public final int compareTo(Value val)
-    {
-        if ((val instanceof UserValue) && (((UserValue) val).userObj instanceof Strings))
-        {
+    public final int compareTo(final Value val) {
+        if ((val instanceof UserValue uv) && (uv.userObj instanceof Strings)) {
             return 0;
         }
         if (val instanceof ModelValue)
             return 1;
-        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "STRING", Values.ppr(val.toString()) });
+        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[]{"STRING", Values.ppr(val.toString())});
     }
 
     @Override
-    public final boolean member(Value val)
-    {
+    public final boolean member(final Value val) {
         if (val instanceof StringValue)
             return true;
-        if (val instanceof ModelValue)
-            return ((ModelValue) val).modelValueMember(this);
-        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[] { Values.ppr(val.toString()), "STRING" });
+        if (val instanceof ModelValue mv)
+            return mv.modelValueMember(this);
+        throw new EvalException(EC.TLC_MODULE_CHECK_MEMBER_OF, new String[]{Values.ppr(val.toString()), "STRING"});
     }
 
     @Override
-    public final boolean isFinite()
-    {
+    public final boolean isFinite() {
         return false;
     }
 
     @Override
-    public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
-    {
+    public final StringBuilder toString(final StringBuilder sb, final int offset, final boolean swallow) {
         return sb.append("STRING");
     }
 }

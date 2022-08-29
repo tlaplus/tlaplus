@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,47 +25,45 @@
  ******************************************************************************/
 
 package tlc2.tool.suite;
+
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.ModelCheckerTestCase;
 import util.TestPrintStream;
 import util.ToolIO;
 
 public abstract class SuiteETestCase extends ModelCheckerTestCase {
 
-	private final TestPrintStream testPrintStream = new TestPrintStream();
+    private final TestPrintStream testPrintStream = new TestPrintStream();
 
-	public SuiteETestCase() {
-		this(ExitStatus.SUCCESS);
-	}
+    public SuiteETestCase() {
+        this(ExitStatus.SUCCESS);
+    }
 
-	public SuiteETestCase(int exitStatus) {
-		super("setBySetUp", "suite", exitStatus);
-	}
-	
-	public SuiteETestCase(String[] params) {
-		this(params, ExitStatus.SUCCESS);
-	}
+    public SuiteETestCase(final int exitStatus) {
+        super("setBySetUp", "suite", exitStatus);
+    }
 
-	public SuiteETestCase(String[] params, int exitStatus) {
-		super("setBySetUp", "suite", params, exitStatus);
-	}
+    public SuiteETestCase(final String[] params, final int exitStatus) {
+        super("setBySetUp", "suite", params, exitStatus);
+    }
 
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ModelCheckerTestCase#setUp()
-	 */
-	public void setUp() {
-		// Set spec name to the name of the unit tests
-		spec = getClass().getSimpleName().toLowerCase();
-		
-		// Intercept tool out to check SANY parser errors
-		ToolIO.out = testPrintStream;
-		ToolIO.err = testPrintStream;
-		
-		super.setUp();
-	}
-	
-	
-	protected void assertSubstring(String substring) {
-		testPrintStream.assertSubstring(substring);
-	}
+    /* (non-Javadoc)
+     * @see tlc2.tool.liveness.ModelCheckerTestCase#setUp()
+     */
+    @Override
+    public void setUp() {
+        // Set spec name to the name of the unit tests
+        spec = getClass().getSimpleName().toLowerCase();
+
+        // Intercept tool out to check SANY parser errors
+        ToolIO.out = testPrintStream;
+        ToolIO.err = testPrintStream;
+
+        super.setUp();
+    }
+
+
+    protected void assertSubstring(final String substring) {
+        testPrintStream.assertSubstring(substring);
+    }
 }

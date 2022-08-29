@@ -33,52 +33,52 @@ import tlc2.util.Context;
 
 public class ActionItemListExt extends ActionItemList {
 
-	public final static ActionItemList Empty = new ActionItemListExt(null, null, 0, null, null);
+    public static final ActionItemList Empty = new ActionItemListExt(null, null, 0, null, null);
 
-	private ActionItemListExt prev;
+    private ActionItemListExt prev;
 
-	private Action action;
+    private Action action;
 
-	protected ActionItemListExt(SemanticNode pred, Context con, int kind, ActionItemList next, CostModel cm) {
-		super(pred, con, kind, next, cm);
-	}
+    protected ActionItemListExt(final SemanticNode pred, final Context con, final int kind, final ActionItemList next, final CostModel cm) {
+        super(pred, con, kind, next, cm);
+    }
 
-	@Override
-	public IActionItemList cons(SemanticNode pred, Context con, CostModel cm, int kind) {
-		ActionItemListExt actionItemListExt = new ActionItemListExt(pred, con, kind, this, coverage ? cm.get(pred) : cm);
-		actionItemListExt.action = getAction();
-		return actionItemListExt;
-	}
+    @Override
+    public IActionItemList cons(final SemanticNode pred, final Context con, final CostModel cm, final int kind) {
+        final ActionItemListExt actionItemListExt = new ActionItemListExt(pred, con, kind, this, coverage ? cm.get(pred) : cm);
+        actionItemListExt.action = getAction();
+        return actionItemListExt;
+    }
 
-	@Override
-	public ActionItemList cons(final Action act, final int kind) {
-		final ActionItemListExt actionItemListExt = new ActionItemListExt(act.pred, act.con, kind, this, coverage ? act.cm.get(pred) : act.cm);
-		actionItemListExt.action = act;
-		return actionItemListExt;
-	}
+    @Override
+    public ActionItemList cons(final Action act, final int kind) {
+        final ActionItemListExt actionItemListExt = new ActionItemListExt(act.pred, act.con, kind, this, coverage ? act.cm.get(pred) : act.cm);
+        actionItemListExt.action = act;
+        return actionItemListExt;
+    }
 
-	@Override
-	public ActionItemList cdr() {
-		final ActionItemListExt cdr = (ActionItemListExt) super.cdr();
-		cdr.prev = this;
-		return cdr;
-	}
+    @Override
+    public ActionItemList cdr() {
+        final ActionItemListExt cdr = (ActionItemListExt) super.cdr();
+        cdr.prev = this;
+        return cdr;
+    }
 
-	@Override
-	public boolean isEmpty() {
-		return this == Empty;
-	}
+    @Override
+    public ActionItemList getEmpty() {
+        return new ActionItemListExt(null, null, 0, null, null);
+    }
 
-	@Override
-	public void setAction(final Action action) {
-		this.action = action;
-	}
+    @Override
+    public Action getAction() {
+        if (this.prev != null) {
+            return this.prev.action;
+        }
+        return action;
+    }
 
-	@Override
-	public Action getAction() {
-		if (this.prev != null) {
-			return this.prev.action;
-		}
-		return action;
-	}
+    @Override
+    public void setAction(final Action action) {
+        this.action = action;
+    }
 }

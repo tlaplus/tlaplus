@@ -25,29 +25,31 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertTrue;
+
 public class ETest4 extends SuiteETestCase {
 
-	public ETest4() {
-		super(ExitStatus.FAILURE_SPEC_EVAL);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "0", "0", "0"));
-		String s = "0. Line 13, column 9 to line 16, column 51 in etest4\n"
-			+ "1. Line 13, column 12 to line 13, column 16 in etest4\n"
-			+ "2. Line 15, column 12 to line 15, column 26 in etest4\n"
-			+ "3. Line 15, column 12 to line 15, column 22 in etest4\n\n";
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION, s));
+    public ETest4() {
+        super(ExitStatus.FAILURE_SPEC_EVAL);
+    }
 
-		assertUncovered("line 18, col 9 to line 18, col 19 of module etest4: 0");
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "0", "0", "0"));
+        final String s = """
+                0. Line 13, column 9 to line 16, column 51 in etest4
+                1. Line 13, column 12 to line 13, column 16 in etest4
+                2. Line 15, column 12 to line 15, column 26 in etest4
+                3. Line 15, column 12 to line 15, column 22 in etest4
+
+                """;
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_NESTED_EXPRESSION, s));
+
+        assertUncovered("line 18, col 9 to line 18, col 19 of module etest4: 0");
+    }
 }

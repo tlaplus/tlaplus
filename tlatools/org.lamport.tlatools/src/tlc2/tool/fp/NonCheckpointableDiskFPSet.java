@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,28 +25,30 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
-
 import tlc2.output.EC;
 import tlc2.output.MP;
+
+import java.rmi.RemoteException;
 
 @SuppressWarnings("serial")
 public abstract class NonCheckpointableDiskFPSet extends DiskFPSet {
 
-	protected NonCheckpointableDiskFPSet(FPSetConfiguration fpSetConfig) throws RemoteException {
-		super(fpSetConfig);
-	}
+    protected NonCheckpointableDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+        super(fpSetConfig);
+    }
 
-	public void beginChkpt(String fname) throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
+    @Override
+    public void beginChkpt(final String fname) {
+        MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
+    }
 
-	public void commitChkpt(String fname) throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
+    @Override
+    public void commitChkpt(final String fname) {
+        MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
+    }
 
-	public void recover(String fname) throws IOException {
-		MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
-	}
+    @Override
+    public void recover(final String fname) {
+        MP.printWarning(EC.GENERAL, "Checkpointing is not implemented for " + getClass().getCanonicalName());
+    }
 }

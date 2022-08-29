@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -32,79 +32,95 @@ import org.junit.Test;
 
 import gov.nasa.jpf.util.test.TestJPF;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStates;
 
 public class StateQueueJPFTest extends TestJPF {
 
-	public static void main(String[] args) {
-		new StateQueueJPFTest().test();
-	}
-	
-	@Test
-	public void test() {
-		if (verifyNoPropertyViolation()) {
-			final StateQueue queue = new DummyStateQueue();
-			final TLCState tlcState = new DummyTLCState();
-			queue.enqueue(tlcState);
-			
-			Thread main = new Thread(new Runnable() {
-				public void run() {
-					queue.suspendAll();
-					// critical section (taking a checkpoint)
-					queue.resumeAll();
-				}
-			}, "Main");
-			main.start();
+    public static void main(final String[] args) {
+        new StateQueueJPFTest().test();
+    }
 
-			for (int i = 0; i < 3; i++) {
-				Thread worker = new Thread(new Runnable() {
-					public void run() {
-						for (int i = 0; i < 3; i++) {
-							TLCState state = queue.dequeue();
-							if (state == null) {
-								queue.finishAll();
-								return;
-							}
-							queue.enqueue(tlcState);
-						}
-						queue.finishAll();
-					}
-				}, "Worker" + i);
-				worker.start();
-			}
-		}
-	}
-	
-	/*
-	 * Dummy implementation of StateQueue with minimal functionality compared to
-	 * DiskStateQueue or MemStateQueue. After all, we verify the abstract
-	 * StateQueue and not the implementations (which should be done separately).
-	 */
-	private static class DummyStateQueue extends StateQueue {
+    @Test
+    public void test() {
+        if (verifyNoPropertyViolation()) {
+            final StateQueue queue = new DummyStateQueue();
+            final TLCState tlcState = TLCStates.createDummyState();
+            queue.enqueue(tlcState);
 
-		private TLCState state;
+            final Thread main = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    queue.suspendAll();
+                    // critical section (taking a checkpoint)
+                    queue.resumeAll();
+                }
+            }, "Main");
+            main.start();
 
-		void enqueueInner(TLCState state) {
-			this.state = state;
-		}
+            for (int i = 0; i < 3; i++) {
+                final Thread worker = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < 3; i++) {
+                            final TLCState state = queue.dequeue();
+                            if (state == null) {
+                                try {
+                                    queue.close();
+                                } catch (Exception e) {
+                                }
+                                return;
+                            }
+                            queue.enqueue(tlcState);
+                        }
 
-		TLCState dequeueInner() {
-			return state;
-		}
+                        try {
+                            queue.close();
+                        } catch (Exception e) {
+                        }
+                    }
+                }, "Worker" + i);
+                worker.start();
+            }
+        }
+    }
 
-		TLCState peekInner() {
-			return state;
-		}
+    /*
+     * Dummy implementation of StateQueue with minimal functionality compared to
+     * DiskStateQueue or MemStateQueue. After all, we verify the abstract
+     * StateQueue and not the implementations (which should be done separately).
+     */
+    private static class DummyStateQueue extends StateQueue {
 
-		public void beginChkpt() throws IOException {
-			// checkpointing not being verified
-		}
+        private TLCState state;
 
-		public void commitChkpt() throws IOException {
-			// checkpointing not being verified
-		}
+        @Override
+        void enqueueInner(final TLCState state) {
+            this.state = state;
+        }
 
-		public void recover() throws IOException {
-			// checkpointing not being verified
-		}
-	}
+        @Override
+        TLCState dequeueInner() {
+            return state;
+        }
+
+        @Override
+        TLCState peekInner() {
+            return state;
+        }
+
+        @Override
+        public void beginChkpt() throws IOException {
+            // checkpointing not being verified
+        }
+
+        @Override
+        public void commitChkpt() throws IOException {
+            // checkpointing not being verified
+        }
+
+        @Override
+        public void recover() throws IOException {
+            // checkpointing not being verified
+        }
+    }
 }

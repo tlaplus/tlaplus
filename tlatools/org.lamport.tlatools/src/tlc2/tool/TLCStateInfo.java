@@ -14,97 +14,94 @@ package tlc2.tool;
 // doesn't get used in throughput-optimized BFS search (unless TLC runs in
 // '-debugger' mode).
 public class TLCStateInfo {
-  private static final String INITIAL_PREDICATE_NO_ANGLE_BRACKET = "Initial predicate";
+    private static final String INITIAL_PREDICATE_NO_ANGLE_BRACKET = "Initial predicate";
 
-  public static final String INITIAL_PREDICATE = "<" + INITIAL_PREDICATE_NO_ANGLE_BRACKET + ">";
-  
-  public TLCStateInfo predecessorState;
-  public long stateNumber;
-  public Object info;
-  public final TLCState state;
-  public Long fp;
+    public static final String INITIAL_PREDICATE = "<" + INITIAL_PREDICATE_NO_ANGLE_BRACKET + ">";
+    public final Object info;
+    public final TLCState state;
+    public TLCStateInfo predecessorState;
+    public long stateNumber;
+    public Long fp;
 
-  public TLCStateInfo(final TLCState state) {
-	this.state = state;
-	this.stateNumber = state.getLevel();
-	
-	if (state.hasAction()) {
-		// In simulation mode or when TLC runs with "-debugger", states have the Action
-		// attached.
-		this.info = toInfo(state.isInitial(), state.getAction());
-	} else {
-		// Traditionally (hail legacy), the name and location of the initial predicate is unknown.
-		// See e.g. https://github.com/tlaplus/tlaplus/issues/305
-		this.info = INITIAL_PREDICATE;
-	}
-  }
+    public TLCStateInfo(final TLCState state) {
+        this.state = state;
+        this.stateNumber = state.getLevel();
 
-  public TLCStateInfo(final TLCState state, final Action action) {
-	this.state = state;
-	this.stateNumber = state.getLevel();
-	
-	this.info = toInfo(state.isInitial(), action);
-  }
-  
-  private static String toInfo(final boolean isInitial, final Action a) {
-	  if (isInitial && !a.isNamed()) {
-		  // It is possible for an action to have no name, yet to have a location. Instead
-		  // of showing <Action loc ...>, we show <Initial Predicate loc...> for legacy
-	      // reasons.
-		  return a.getLocation(INITIAL_PREDICATE_NO_ANGLE_BRACKET);
-	  }
-	  return a.getLocation();
-  }
-  
-  // Legacy (DFID & MP)
-  public TLCStateInfo(final TLCState state, final int stateOrdinal) {
-		this.state = state;
-		this.stateNumber = stateOrdinal;
-		this.info = "";
-  }
-  
-  // AliasTLCStateInfo
-  protected TLCStateInfo(final TLCState s, final TLCStateInfo info) {
-	  this.state = s;
-	  this.info = info.info;
-	  this.stateNumber = info.stateNumber;
-	  this.fp = info.fp;
-  }
+        if (state.hasAction()) {
+            // In simulation mode or when TLC runs with "-debugger", states have the Action
+            // attached.
+            this.info = toInfo(state.isInitial(), state.getAction());
+        } else {
+            // Traditionally (hail legacy), the name and location of the initial predicate is unknown.
+            // See e.g. https://github.com/tlaplus/tlaplus/issues/305
+            this.info = INITIAL_PREDICATE;
+        }
+    }
 
-  public final long fingerPrint() {
-	  if (fp == null) {
-		  fp = this.state.fingerPrint();
-	  }
-	  return fp.longValue();
-  }
+    public TLCStateInfo(final TLCState state, final Action action) {
+        this.state = state;
+        this.stateNumber = state.getLevel();
 
-  public final String toString() {
-    return this.state.toString();
-  }
-  
-  public boolean equals(Object other) {
-	  if (other instanceof TLCStateInfo) {
-		  TLCStateInfo sinfo = (TLCStateInfo) other;
-		  return this.state.equals(sinfo.state);
-	  } else if (other instanceof TLCState) {
-		  TLCState state = (TLCState) other;
-		  return this.state.equals(state);
-	  }
-	  return false;
-  }
+        this.info = toInfo(state.isInitial(), action);
+    }
 
-  public int hashCode() {
-	  return this.state.hashCode();
-  }
+    // Legacy (DFID & MP)
+    public TLCStateInfo(final TLCState state, final int stateOrdinal) {
+        this.state = state;
+        this.stateNumber = stateOrdinal;
+        this.info = "";
+    }
 
-  public TLCState getOriginalState() {
-	return state;
-  }
-  
-  public Action getAction() {
-	  if (state.hasAction()) {
-		  return state.getAction();
-	  }
-	  return Action.UNKNOWN;
-  }
+    // AliasTLCStateInfo
+    protected TLCStateInfo(final TLCState s, final TLCStateInfo info) {
+        this.state = s;
+        this.info = info.info;
+        this.stateNumber = info.stateNumber;
+        this.fp = info.fp;
+    }
+
+    private static String toInfo(final boolean isInitial, final Action a) {
+        if (isInitial && !a.isNamed()) {
+            // It is possible for an action to have no name, yet to have a location. Instead
+            // of showing <Action loc ...>, we show <Initial Predicate loc...> for legacy
+            // reasons.
+            return a.getLocation(INITIAL_PREDICATE_NO_ANGLE_BRACKET);
+        }
+        return a.getLocation();
+    }
+
+    public final long fingerPrint() {
+        if (fp == null) {
+            fp = this.state.fingerPrint();
+        }
+        return fp;
+    }
+
+    public final String toString() {
+        return this.state.toString();
+    }
+
+    public boolean equals(final Object other) {
+        if (other instanceof final TLCStateInfo sinfo) {
+            return this.state.equals(sinfo.state);
+        } else if (other instanceof final TLCState state) {
+            return this.state.equals(state);
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        return this.state.hashCode();
+    }
+
+    public TLCState getOriginalState() {
+        return state;
+    }
+
+    public Action getAction() {
+        if (state.hasAction()) {
+            return state.getAction();
+        }
+        return Action.UNKNOWN;
+    }
 }

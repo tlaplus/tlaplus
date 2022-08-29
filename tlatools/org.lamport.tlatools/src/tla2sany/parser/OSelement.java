@@ -2,14 +2,29 @@
 package tla2sany.parser;
 
 final class OSelement {
-  Operator op;
-  SyntaxTreeNode  node;
-  int kind;
+    final Operator op;
+    final SyntaxTreeNode node;
+    int kind;
 
-  OSelement( SyntaxTreeNode n ) { node = n; op = null; }
-  OSelement( SyntaxTreeNode n, Operator o ) { node = n; op = o; }
+    OSelement(final SyntaxTreeNode n) {
+        node = n;
+        op = null;
+    }
 
-  final Operator getOperator() { return op; }
-  final SyntaxTreeNode  getNode() { return node; }
-  final boolean  isOperator() { return op != null; }
+    OSelement(final SyntaxTreeNode n, final Operator o) {
+        node = n;
+        op = o;
+    }
+
+    Operator getOperator() {
+        return op;
+    }
+
+    SyntaxTreeNode getNode() {
+        return node;
+    }
+
+    boolean isOperator() {
+        return op != null;
+    }
 }

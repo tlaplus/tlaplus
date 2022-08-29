@@ -4,14 +4,17 @@ package pcal.exception;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class StringVectorToFileException extends UnrecoverableException
-{
+public class StringVectorToFileException extends UnrecoverableException {
 
     /**
-     * @param string
+     *
      */
-    public StringVectorToFileException(String string)
-    {
+    private static final long serialVersionUID = -48762115442890427L;
+
+    /**
+     *
+     */
+    public StringVectorToFileException(final String string) {
         super(string);
     }
 

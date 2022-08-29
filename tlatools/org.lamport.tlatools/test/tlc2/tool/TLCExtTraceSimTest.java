@@ -25,16 +25,14 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+
+import static org.junit.Assert.assertTrue;
 
 public class TLCExtTraceSimTest extends ModelCheckerTestCase {
     public TLCExtTraceSimTest() {
-        super("TLCExtTrace", new String[] { "-config", "TLCExtTrace.tla", "-simulate", "num=1" });
+        super("TLCExtTrace", new String[]{"-config", "TLCExtTrace.tla", "-simulate", "num=1"});
     }
 
     @Test

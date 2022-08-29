@@ -35,25 +35,25 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Benchmark)
 public class FP64Benchmark {
 
-	/*
-	 * Run with: java -jar target/benchmarks.jar -wi 2 -i 2 -f2 -rf json -rff
-	 * FP64Benchmark-$(date +%s)-$(git rev-parse --short HEAD).json
-	 * -jvmArgsPrepend "-Xms8192m -Xmx8192m" -jvmArgsAppend tlc2.util.FP64Benchmark "
-	 */
+    /*
+     * Run with: java -jar target/benchmarks.jar -wi 2 -i 2 -f2 -rf json -rff
+     * FP64Benchmark-$(date +%s)-$(git rev-parse --short HEAD).json
+     * -jvmArgsPrepend "-Xms8192m -Xmx8192m" -jvmArgsAppend tlc2.util.FP64Benchmark "
+     */
 
     @Setup
     public void up() throws IOException {
-    	FP64.Init();
+        FP64.Init();
     }
-    
+
     @Benchmark
     public long extendIntLoop() {
-    	return FP64.ExtendLoop(72316478964978L, 3876421);
+        return FP64.ExtendLoop(72316478964978L, 3876421);
     }
 
     @Benchmark
     public long extendIntUnrolled() {
-    	return FP64.Extend(72316478964978L, 3876421);
+        return FP64.Extend(72316478964978L, 3876421);
     }
 
 }

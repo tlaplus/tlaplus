@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,69 +25,50 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import java.util.HashSet;
-import java.util.Iterator;
-
-import tla2sany.semantic.ExprNode;
-import tla2sany.semantic.LevelNode;
-import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.SubstInNode;
-import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.*;
 import tlc2.util.Context;
-import tlc2.util.List;
 import tlc2.value.impl.LazyValue;
+
+import java.util.HashSet;
+import java.util.LinkedList;
 
 public abstract class Specs {
 
-	/** 
-	 * The level of the expression according to level checking.
-	 * static method, does not change instance state 
-	 */
-	public static int getLevel(LevelNode expr, Context c)
-	{
-	    HashSet<SymbolNode> lpSet = expr.getLevelParams();
-	    if (lpSet.isEmpty())
-	        return expr.getLevel();
-	
-	    int level = expr.getLevel();
-	    Iterator<SymbolNode> iter = lpSet.iterator();
-	    while (iter.hasNext())
-	    {
-	        SymbolNode param = (SymbolNode) iter.next();
-	        Object res = c.lookup(param, true);
-	        if (res != null)
-	        {
-	            if (res instanceof LazyValue)
-	            {
-	                LazyValue lv = (LazyValue) res;
-	                int plevel = getLevel((LevelNode) lv.expr, lv.con);
-	                level = (plevel > level) ? plevel : level;
-	            } else if (res instanceof OpDefNode)
-	            {
-	                int plevel = getLevel((LevelNode) res, c);
-	                level = (plevel > level) ? plevel : level;
-	            }
-	        }
-	    }
-	    return level;
-	}
+    /**
+     * The level of the expression according to level checking.
+     * static method, does not change instance state
+     */
+    public static int getLevel(final LevelNode expr, final Context c) {
+        final HashSet<SymbolNode> lpSet = expr.getLevelParams();
+        if (lpSet.isEmpty())
+            return expr.getLevel();
 
-	/**
-	 * Static method, does not change instance state
-	 * @param expr
-	 * @param subs
-	 * @return
-	 */
-	public static final ExprNode addSubsts(ExprNode expr, List subs)
-	{
-	    ExprNode res = expr;
-	
-	    while (!subs.isEmpty())
-	    {
-	        SubstInNode sn = (SubstInNode) subs.car();
-	        res = new SubstInNode(sn.stn, sn.getSubsts(), res, sn.getInstantiatingModule(), sn.getInstantiatedModule());
-	        subs = subs.cdr();
-	    }
-	    return res;
-	}
+        int level = expr.getLevel();
+        for (final SymbolNode param : lpSet) {
+            final Object res = c.lookup(param, true);
+            if (res != null) {
+                if (res instanceof final LazyValue lv) {
+                    final int plevel = getLevel((LevelNode) lv.expr, lv.con);
+                    level = Math.max(plevel, level);
+                } else if (res instanceof OpDefNode) {
+                    final int plevel = getLevel((LevelNode) res, c);
+                    level = Math.max(plevel, level);
+                }
+            }
+        }
+        return level;
+    }
+
+    /**
+     * Static method, does not change instance state
+     */
+    public static ExprNode addSubsts(final ExprNode expr, final LinkedList<SubstInNode> subs) {
+        ExprNode res = expr;
+
+
+        for (final SubstInNode sn : subs) {
+            res = new SubstInNode(sn.stn, sn.getSubsts(), res, sn.getInstantiatingModule(), sn.getInstantiatedModule());
+        }
+        return res;
+    }
 }

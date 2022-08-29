@@ -207,23 +207,23 @@ Stack.java
    Stack abstraction, pre-java Generics
 Strings.java
    Add an indentation method to basic (java) strings.
-Vector.java
+ArrayList.java
    A generic (Object-based) java abstraction for dynamic vectors.  Can be
    resized.  supported methods:
   - int size ()
   - String toString()
-  - void addElement( Obj)
+  - void add( Obj)
   - void setElementAt( Obj, int)
   - bool contains (Obj)
-  - void append( Vector)
-  - void appendNoRepeats ( Vector) 
+  - void append( ArrayList)
+  - void appendNoRepeats ( ArrayList)
   - Enumeration elements ()
   - void removeAllElements ()
   - void removeElementAt (int)
   - void insertElementAt (Obj, int)
 
 VectorEnumeration.java
-  Support class for Vector. Creates an enumeration.
+  Support class for ArrayList. Creates an enumeration.
   - implements nextElement, hasMoreElements for an Enumeration on vectors
   - create a local copy of references to obj content.
 

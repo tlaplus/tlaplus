@@ -4,14 +4,17 @@ package pcal.exception;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class PcalFixIDException extends UnrecoverableException
-{
+public class PcalFixIDException extends UnrecoverableException {
 
     /**
-     * @param message
+     *
      */
-    public PcalFixIDException(String message)
-    {
+    private static final long serialVersionUID = 6901771658852290251L;
+
+    /**
+     *
+     */
+    public PcalFixIDException(final String message) {
         super(message);
     }
 

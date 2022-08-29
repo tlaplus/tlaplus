@@ -5,13 +5,6 @@
 
 package tlc2.tool.fp;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.rmi.RemoteException;
-
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCTrace;
@@ -19,95 +12,117 @@ import tlc2.util.SetOfLong;
 import util.Assert;
 import util.FileUtil;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.rmi.RemoteException;
+
 /**
  * Alternative implementation
- * @deprecated not used currently
+ *
  * @version $Id$
+ * @deprecated not used currently
  */
+@Deprecated
 public final class MemFPSet1 extends FPSet {
-  private String metadir;
-  private String filename;
-  private SetOfLong set;
+    private static final long serialVersionUID = -3147272113595828560L;
+    private final SetOfLong set;
+    private String metadir;
+    private String filename;
 
-  public MemFPSet1(final FPSetConfiguration fpSetConfig) throws RemoteException {
-    super(fpSetConfig);
-    this.set = new SetOfLong(10001, 0.75f);
-  }
-
-  public final FPSet init(int numThreads, String metadir, String filename) {
-    this.metadir = metadir;
-    this.filename = filename;
-	return this;
-  }
-
-  public final long size() { return this.set.size(); }
-
-  public final long sizeof() { return 8 + this.set.sizeof(); }
-
-  public synchronized final boolean put(long fp) {
-    return this.set.put(fp);
-  }
-
-  public synchronized final boolean contains(long fp) {
-    return this.set.contains(fp);
-  }
-
-  public final void exit(boolean cleanup) throws IOException {
-    super.exit(cleanup);
-    if (cleanup) {
-      // Delete the metadata directory:
-      File file = new File(this.metadir);
-      FileUtil.deleteDir(file, true);
+    public MemFPSet1(final FPSetConfiguration fpSetConfig) throws RemoteException {
+        super(fpSetConfig);
+        this.set = new SetOfLong(10001, 0.75f);
     }
-    String hostname = InetAddress.getLocalHost().getHostName();    
-    MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
-    System.exit(0);    
-  }
 
-  public final long checkFPs() { return this.set.checkFPs(); }
-
-  /* Checkpoint. */
-  public final void beginChkpt(String fname) throws IOException {
-    DataOutputStream dos = FileUtil.newDFOS(this.chkptName(fname, "tmp"));
-    this.set.beginChkpt(dos);
-    dos.close();
-  }
-  
-  public final void commitChkpt(String fname) throws IOException {
-    File oldChkpt = new File(this.chkptName(fname, "chkpt"));
-    File newChkpt = new File(this.chkptName(fname, "tmp"));
-    if ((oldChkpt.exists() && !oldChkpt.delete()) ||
-	!newChkpt.renameTo(oldChkpt)) {
-      throw new IOException("MemFPSet1.commitChkpt: cannot delete " + oldChkpt);
+    @Override
+    public FPSet init(final int numThreads, final String metadir, final String filename) {
+        this.metadir = metadir;
+        this.filename = filename;
+        return this;
     }
-  } 
 
-  public final void recover(String fname) throws IOException {
-    
-    DataInputStream dis = FileUtil.newDFIS(this.chkptName(fname, "chkpt"));
-    this.set.recover(dis);
-    dis.close();
-    
-  }
+    @Override
+    public long size() {
+        return this.set.size();
+    }
 
-  public final void beginChkpt() throws IOException {
-    this.beginChkpt(this.filename);
-  }
+    public long sizeof() {
+        return 8 + this.set.sizeof();
+    }
 
-  public final void commitChkpt() throws IOException {
-    this.commitChkpt(this.filename);
-  }
-  
-  public final void recover(TLCTrace trace) throws IOException {
-    this.recover(this.filename);
-  }
+    @Override
+    public synchronized boolean put(final long fp) {
+        return this.set.put(fp);
+    }
 
-  public final void recoverFP(long fp) throws IOException {
-    Assert.check(!this.set.put(fp), EC.TLC_FP_NOT_IN_SET);
-  }
-  
-  private final String chkptName(String fname, String ext) {
-    return this.metadir + FileUtil.separator + fname + ".fp." + ext;
-  }
-  
+    @Override
+    public synchronized boolean contains(final long fp) {
+        return this.set.contains(fp);
+    }
+
+    @Override
+    public void close() throws Exception {
+        super.close();
+
+        final String hostname = InetAddress.getLocalHost().getHostName();
+        MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
+    }
+
+    @Override
+    public long checkFPs() {
+        return this.set.checkFPs();
+    }
+
+    /* Checkpoint. */
+    @Override
+    public void beginChkpt(final String fname) throws IOException {
+        try (final DataOutputStream dos = FileUtil.newDFOS(this.chkptName(fname, "tmp"))) {
+            this.set.beginChkpt(dos);
+        }
+    }
+
+    @Override
+    public void commitChkpt(final String fname) throws IOException {
+        final File oldChkpt = new File(this.chkptName(fname, "chkpt"));
+        final File newChkpt = new File(this.chkptName(fname, "tmp"));
+        if ((oldChkpt.exists() && !oldChkpt.delete()) ||
+                !newChkpt.renameTo(oldChkpt)) {
+            throw new IOException("MemFPSet1.commitChkpt: cannot delete " + oldChkpt);
+        }
+    }
+
+    @Override
+    public void recover(final String fname) throws IOException {
+        try (final DataInputStream dis = FileUtil.newDFIS(this.chkptName(fname, "chkpt"))) {
+            this.set.recover(dis);
+        }
+    }
+
+    @Override
+    public void beginChkpt() throws IOException {
+        this.beginChkpt(this.filename);
+    }
+
+    @Override
+    public void commitChkpt() throws IOException {
+        this.commitChkpt(this.filename);
+    }
+
+    @Override
+    public void recover(final TLCTrace trace) throws IOException {
+        this.recover(this.filename);
+    }
+
+    @Override
+    public void recoverFP(final long fp) {
+        Assert.check(!this.set.put(fp), EC.TLC_FP_NOT_IN_SET);
+    }
+
+    private String chkptName(final String fname, final String ext) {
+        return this.metadir + FileUtil.separator + fname + ".fp." + ext;
+    }
+
 }

@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,28 +25,26 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
-import static org.junit.Assert.assertFalse;
-
-import java.io.IOException;
-
 import org.junit.Ignore;
 import org.junit.Test;
-
 import tlc2.output.EC;
+import tlc2.tool.ModelCheckerTestCase;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * see {@link May09dTest}May09Test
  */
 public class May09dTest extends ModelCheckerTestCase {
 
-	public May09dTest() {
-		super("May09dMC", "symmetry");
-	}
+    public May09dTest() {
+        super("May09dMC", "symmetry");
+    }
 
-	@Test
-	@Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
-	public void testSpec() throws IOException {
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-	}
+    @Test
+    @Ignore("Ignored for as long as symmetry is incorrectly handled by TLC with liveness checking.")
+    public void testSpec() {
+        assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+        assertFalse(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
+    }
 }

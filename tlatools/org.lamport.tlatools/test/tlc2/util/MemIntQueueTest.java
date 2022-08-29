@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,110 +26,110 @@
 
 package tlc2.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.Test;
 
 import java.util.NoSuchElementException;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class MemIntQueueTest {
 
-	@Test
-	public void testDequeuePastLastElement() {
-		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
-		queue.enqueueInt(1);
-		
-		assertEquals(1, queue.dequeueInt());
-		try {
-			queue.dequeueInt();
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		fail("Returned element where there should be none.");
-	}
-	
-	// Add 0 three times and make sure it's only returned this many times. 0
-	// is MemIntQueue's internal default for an empty slot.
-	@Test
-	public void testEnqueueZeros() {
-		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
-		queue.enqueueInt(0);
-		queue.enqueueInt(0);
-		queue.enqueueInt(0);
-		
-		assertEquals(0, queue.dequeueInt());
-		assertEquals(0, queue.dequeueInt());
-		assertEquals(0, queue.dequeueInt());
-		
-		try {
-			queue.dequeueInt();
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		fail("Returned element where there should be none.");
-	}
-	
-	@Test
-	public void testEnqueueLong() {
-		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
-		queue.enqueueLong(0);
-		
-		assertEquals(0, queue.dequeueInt());
-		assertEquals(0, queue.dequeueInt());
+    @Test
+    public void testDequeuePastLastElement() {
+        final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
+        queue.enqueueInt(1);
 
-		try {
-			queue.dequeueInt();
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		fail("Returned element where there should be none.");
-	}
-	
-	@Test
-	public void testEnqueueDequeueLong() {
-		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
-		queue.enqueueLong(0);
-		
-		assertEquals(0, queue.dequeueLong());
+        assertEquals(1, queue.dequeueInt());
+        try {
+            queue.dequeueInt();
+        } catch (final NoSuchElementException e) {
+            return;
+        }
+        fail("Returned element where there should be none.");
+    }
 
-		try {
-			queue.dequeueLong();
-		} catch (NoSuchElementException e) {
-			return;
-		}
-		fail("Returned element where there should be none.");
-	}
-	
-	@Test
-	public void testGrow() {
-		final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant", 4);
-		queue.enqueueInt(0);
-		queue.enqueueInt(1);
-		queue.enqueueInt(2);
-		queue.enqueueInt(3);
-		assertEquals(4, queue.size());
+    // Add 0 three times and make sure it's only returned this many times. 0
+    // is MemIntQueue's internal default for an empty slot.
+    @Test
+    public void testEnqueueZeros() {
+        final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
+        queue.enqueueInt(0);
+        queue.enqueueInt(0);
+        queue.enqueueInt(0);
 
-		queue.dequeueInt();
-		queue.dequeueInt();
-		queue.dequeueInt();
-		queue.dequeueInt();
-		assertEquals(0, queue.size());
+        assertEquals(0, queue.dequeueInt());
+        assertEquals(0, queue.dequeueInt());
+        assertEquals(0, queue.dequeueInt());
 
-		queue.enqueueInt(4);
-		queue.enqueueInt(5);
-		queue.enqueueInt(6);
-		queue.enqueueInt(7);
-		assertEquals(4, queue.size());
+        try {
+            queue.dequeueInt();
+        } catch (final NoSuchElementException e) {
+            return;
+        }
+        fail("Returned element where there should be none.");
+    }
 
-		queue.dequeueInt();
+    @Test
+    public void testEnqueueLong() {
+        final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
+        queue.enqueueLong(0);
 
-		// This should make the queue grow internally.
-		queue.enqueueInt(8);
-		queue.enqueueInt(9);
-		for(int i = 5; i < 10; i++) {
-			assertEquals(i, queue.dequeueInt());
-		}
-		assertEquals(0, queue.size());
-	}
+        assertEquals(0, queue.dequeueInt());
+        assertEquals(0, queue.dequeueInt());
+
+        try {
+            queue.dequeueInt();
+        } catch (final NoSuchElementException e) {
+            return;
+        }
+        fail("Returned element where there should be none.");
+    }
+
+    @Test
+    public void testEnqueueDequeueLong() {
+        final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant");
+        queue.enqueueLong(0);
+
+        assertEquals(0, queue.dequeueLong());
+
+        try {
+            queue.dequeueLong();
+        } catch (final NoSuchElementException e) {
+            return;
+        }
+        fail("Returned element where there should be none.");
+    }
+
+    @Test
+    public void testGrow() {
+        final MemIntQueue queue = new MemIntQueue("irrelevant", "irrelevant", 4);
+        queue.enqueueInt(0);
+        queue.enqueueInt(1);
+        queue.enqueueInt(2);
+        queue.enqueueInt(3);
+        assertEquals(4, queue.size());
+
+        queue.dequeueInt();
+        queue.dequeueInt();
+        queue.dequeueInt();
+        queue.dequeueInt();
+        assertEquals(0, queue.size());
+
+        queue.enqueueInt(4);
+        queue.enqueueInt(5);
+        queue.enqueueInt(6);
+        queue.enqueueInt(7);
+        assertEquals(4, queue.size());
+
+        queue.dequeueInt();
+
+        // This should make the queue grow internally.
+        queue.enqueueInt(8);
+        queue.enqueueInt(9);
+        for (int i = 5; i < 10; i++) {
+            assertEquals(i, queue.dequeueInt());
+        }
+        assertEquals(0, queue.size());
+    }
 }

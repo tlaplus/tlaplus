@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,53 +25,51 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
+import org.junit.Test;
+import tlc2.output.EC;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TLCGetNonDeterminismTest extends ModelCheckerTestCase {
 
-	public TLCGetNonDeterminismTest() {
-		super("TLCGetNonDeterminism");
-	}
-	
-	@Test
-	@Ignore("No known fix/By design")
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    public TLCGetNonDeterminismTest() {
+        super("TLCGetNonDeterminism");
+    }
 
-		// Assert TLC has found a temporal violation and a counter example
-		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
-		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
-		
-		// Assert the error trace
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("/\\ x = 0\n" 
-						+ "/\\ y = 0");
-		expectedTrace.add("/\\ x = 1\n" 
-						+ "/\\ y = 1");
-		expectedTrace.add("/\\ x = 2\n" 
-				        + "/\\ y = 2");
-		expectedTrace.add("/\\ x = 3\n" 
-						+ "/\\ y = 3");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+    @Test
+    @Ignore("No known fix/By design")
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertStuttering(5);
-	}
+        // Assert TLC has found a temporal violation and a counter example
+        assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+        assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
-	@Override
-	protected int getNumberOfThreads() {
-		// This test passes with a single worker! There is a slim chance it passes with more workers.
-		return 4;
-	}
+        // Assert the error trace
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+        final List<String> expectedTrace = new ArrayList<>(4);
+        expectedTrace.add("/\\ x = 0\n"
+                + "/\\ y = 0");
+        expectedTrace.add("/\\ x = 1\n"
+                + "/\\ y = 1");
+        expectedTrace.add("/\\ x = 2\n"
+                + "/\\ y = 2");
+        expectedTrace.add("/\\ x = 3\n"
+                + "/\\ y = 3");
+        assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+
+        assertStuttering(5);
+    }
+
+    @Override
+    protected int getNumberOfThreads() {
+        // This test passes with a single worker! There is a slim chance it passes with more workers.
+        return 4;
+    }
 }

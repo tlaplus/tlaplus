@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,37 +25,36 @@
  ******************************************************************************/
 package tlc2.value;
 
-import java.io.EOFException;
-import java.io.IOException;
-
 import util.IDataInputStream;
 import util.UniqueString;
 
+import java.io.IOException;
+
 public interface IValueInputStream {
 
-	IValue read() throws IOException;
+    IValue read() throws IOException;
 
-	int readShort() throws IOException;
+    int readShort() throws IOException;
 
-	int readInt() throws IOException;
+    int readInt() throws IOException;
 
-	long readLong() throws IOException;
+    long readLong() throws IOException;
 
-	void close() throws IOException;
+    void close() throws IOException;
 
-	int readNat() throws IOException;
+    int readNat() throws IOException;
 
-	short readShortNat() throws IOException;
+    short readShortNat() throws IOException;
 
-	long readLongNat() throws IOException;
+    long readLongNat() throws IOException;
 
-	byte readByte() throws EOFException, IOException;
+    byte readByte() throws IOException;
 
-	void assign(Object obj, int idx);
+    void assign(Object obj, int idx);
 
-	int getIndex();
+    int getIndex();
 
-	IDataInputStream getInputStream();
+    IDataInputStream getInputStream();
 
-	UniqueString getValue(int idx);
+    UniqueString getValue(int idx);
 }

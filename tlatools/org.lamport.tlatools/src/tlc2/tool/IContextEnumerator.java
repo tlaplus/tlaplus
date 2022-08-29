@@ -2,8 +2,9 @@ package tlc2.tool;
 
 import tlc2.util.Context;
 
-public interface IContextEnumerator {
+import java.util.Iterator;
 
-	Context nextElement();
+public interface IContextEnumerator extends Iterator<Context> {
+
 
 }

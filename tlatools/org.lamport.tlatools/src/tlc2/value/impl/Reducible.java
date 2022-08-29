@@ -7,12 +7,16 @@ package tlc2.value.impl;
 
 public interface Reducible {
 
-  int size();
-  boolean member(Value elem);
-  Value diff(Value val);
-  Value cap(Value val);
-  Value cup(Value val);
+    int size();
 
-  ValueEnumeration elements();
+    boolean member(Value elem);
+
+    Value diff(Value val);
+
+    Value cap(Value val);
+
+    Value cup(Value val);
+
+    ValueEnumeration elements();
 }
 

@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,114 +25,121 @@
  ******************************************************************************/
 package pcal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import tlc2.output.EC;
+import util.IndependentlyRunTest;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
+import static org.junit.Assert.*;
 
 public class RABTest extends PCalModelCheckerTestCase {
 
-	public RABTest() {
-		super("RAB", "pcal", EC.ExitStatus.VIOLATION_SAFETY);
-	}
+    public RABTest() {
+        super("RAB", "pcal", EC.ExitStatus.VIOLATION_SAFETY);
+    }
 
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "4"));
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "551", "350", "130"));
-		assertEquals(7, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
+    @Category(IndependentlyRunTest.class) // Relies on ordering of unique strings
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "4"));
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "551", "350", "130"));
+        assertEquals(7, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>();
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"A\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"Loop\" @@ p1 :> \"Loop\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"A\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"FetchFlags\" @@ p1 :> \"Loop\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"A\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"StoreFlags\" @@ p1 :> \"Loop\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"B\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> TRUE, value |-> TRUE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"StoreFlags\" @@ p1 :> \"FetchFlags\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"B\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> TRUE, value |-> TRUE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"StoreFlags\" @@ p1 :> \"StoreFlags\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"B\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> TRUE, value |-> TRUE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"StoreFlags\" @@ p1 :> \"ReadFlags\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> TRUE, value |-> TRUE] ]");
-		expectedTrace.add("/\\ myattr = (p0 :> \"A\" @@ p1 :> \"B\")\n" + 
-				"/\\ temp = ( p0 :>\n" + 
-				"      [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> FALSE, value |-> FALSE] ] @@\n" + 
-				"  p1 :>\n" + 
-				"      [ A |-> [valid |-> FALSE, value |-> FALSE],\n" + 
-				"        B |-> [valid |-> TRUE, value |-> TRUE] ] )\n" + 
-				"/\\ calc = [A |-> FALSE, B |-> TRUE]\n" + 
-				"/\\ pc = (p0 :> \"ReadFlags\" @@ p1 :> \"ReadFlags\")\n" + 
-				"/\\ flags = [ A |-> [valid |-> TRUE, value |-> FALSE],\n" + 
-				"  B |-> [valid |-> FALSE, value |-> FALSE] ]");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+        assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
+        final List<String> expectedTrace = new ArrayList<>();
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "A")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "Loop" @@ p1 :> "Loop")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "A")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "FetchFlags" @@ p1 :> "Loop")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "A")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "StoreFlags" @@ p1 :> "Loop")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "B")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> TRUE, value |-> TRUE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "StoreFlags" @@ p1 :> "FetchFlags")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "B")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> TRUE, value |-> TRUE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "StoreFlags" @@ p1 :> "StoreFlags")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "B")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> TRUE, value |-> TRUE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "StoreFlags" @@ p1 :> "ReadFlags")
+                /\\ flags = [ A |-> [valid |-> FALSE, value |-> FALSE],
+                  B |-> [valid |-> TRUE, value |-> TRUE] ]""");
+        expectedTrace.add("""
+                /\\ myattr = (p0 :> "A" @@ p1 :> "B")
+                /\\ temp = ( p0 :>
+                      [ A |-> [valid |-> TRUE, value |-> FALSE],
+                        B |-> [valid |-> FALSE, value |-> FALSE] ] @@
+                  p1 :>
+                      [ A |-> [valid |-> FALSE, value |-> FALSE],
+                        B |-> [valid |-> TRUE, value |-> TRUE] ] )
+                /\\ calc = [A |-> FALSE, B |-> TRUE]
+                /\\ pc = (p0 :> "ReadFlags" @@ p1 :> "ReadFlags")
+                /\\ flags = [ A |-> [valid |-> TRUE, value |-> FALSE],
+                  B |-> [valid |-> FALSE, value |-> FALSE] ]""");
+        assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertZeroUncovered();
-	}
+        assertZeroUncovered();
+    }
 }
 /*
 C:\lamport\tla\pluscal>java -mx1000m -cp "c:/lamport/tla/newtools/tla2-inria-workspace/tla2-inria/tlatools/class" tlc2.TLC -cleanup RAB.tla         

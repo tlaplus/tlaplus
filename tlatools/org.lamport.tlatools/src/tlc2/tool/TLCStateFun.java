@@ -5,19 +5,16 @@
 
 package tlc2.tool;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SymbolNode;
-import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
-import tlc2.value.impl.Value;
 import util.UniqueString;
 import util.WrongInvocationException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class represents a TLA+ state, which simply is an assignment
@@ -26,107 +23,123 @@ import util.WrongInvocationException;
  * can not be used in getInitStates and getNextStates.
  */
 public final class TLCStateFun extends TLCState {
-  private SymbolNode name;
-  private IValue value;
-  private TLCStateFun next;
+    public static final TLCState Empty = new TLCStateFun(null, null, null);
+    private static final long serialVersionUID = -357349115038775307L;
+    private final SymbolNode name;
+    private final IValue value;
+    private final TLCStateFun next;
 
-  public final static TLCState Empty = new TLCStateFun(null, null, null);
-  
-  private TLCStateFun(SymbolNode name, IValue value, TLCStateFun state) {
-    this.name = name;
-    this.value = value;
-    this.next = state;
-  }
-
-  public final TLCState createEmpty() { return Empty; }
-
-  public final TLCState bind(UniqueString name, IValue value) {
-      throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
-  }
-
-  public final TLCState bind(SymbolNode id, IValue value) {
-    return new TLCStateFun(id, value, this);
-  }
-  
-  public final TLCState unbind(UniqueString name) {
-      throw new WrongInvocationException("TLCStateFun.unbind: This is a TLC bug.");
-  }
-  
-  public final IValue lookup(UniqueString var) {
-    for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
-      if (var == cur.name.getName()) return cur.value;
+    private TLCStateFun(final SymbolNode name, final IValue value, final TLCStateFun state) {
+        super(new OpDeclNode[]{});
+        this.name = name;
+        this.value = value;
+        this.next = state;
     }
-    return null;
-  }
-  
-  public final boolean containsKey(UniqueString var) {
-    return this.lookup(var) != null;
-  }
-  
-  public final TLCState copy() {
-      // The following code added blindly by LL on 28 May 2010
-      // to fix a bug.  I have no idea what's going on here.
-       return new TLCStateFun(this.name, this.value, this.next);
-      // throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
-  }
-  
-  public final TLCState deepCopy() {
-      throw new WrongInvocationException("TLCStateFun.deepCopy: This is a TLC bug.");
-  }
-  
-  public final void deepNormalize() {
-      throw new WrongInvocationException("TLCStateFun.normalizeFcns: This is a TLC bug.");
-  }
-  
-  public final long fingerPrint() {
-      throw new WrongInvocationException("TLCStateFun.fingerPrint: This is a TLC bug.");
-  }
 
-  public final boolean allAssigned() { return true; }  
-  
-  public final Set<OpDeclNode> getUnassigned() { return new HashSet<OpDeclNode>(); }
-
-  public final Context addToContext(Context c) {
-    Context c1 = c;
-    for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
-      c1 = c1.cons(cur.name, cur.value);
+    @Override
+    public TLCState createEmpty() {
+        return Empty;
     }
-    return c1;
-  }
 
-  public final StateVec addToVec(StateVec states) {
-    return states.addElement(this);
-  }
-  
-  public final void read(IValueInputStream vis) throws IOException {
-      throw new WrongInvocationException("TLCStateFun.read: This is a TLC bug.");
-  }
-
-  public final void write(IValueOutputStream vos) throws IOException {
-      throw new WrongInvocationException("TLCStateFun.write: This is a TLC bug.");
-  }
-  
-  /* Returns a string representation of this state.  */
-  public final String toString() {
-    StringBuffer sb = new StringBuffer("[");
-    if (this != Empty) {
-      sb.append(this.name.getName().toString());
-      sb.append(" -> ");
-      sb.append(this.value.toString());
-
-      for (TLCStateFun cur = this.next; cur != Empty; cur = cur.next) {
-	sb.append(", ");
-	sb.append(cur.name.getName().toString());
-	sb.append("->");
-	sb.append(cur.value);
-      }
+    @Override
+    public TLCState bind(final UniqueString name, final IValue value) {
+        throw new WrongInvocationException("TLCStateFun.bind: This is a TLC bug.");
     }
-    sb.append("]");
-    return sb.toString();
-  }
-  
-  public final String toString(TLCState lastState) {
-      throw new WrongInvocationException("TLCStateFun.toString: This is a TLC bug.");
-  }
-  
+
+    @Override
+    public TLCState bind(final SymbolNode id, final IValue value) {
+        return new TLCStateFun(id, value, this);
+    }
+
+    @Override
+    public TLCState unbind(final UniqueString name) {
+        throw new WrongInvocationException("TLCStateFun.unbind: This is a TLC bug.");
+    }
+
+    @Override
+    public IValue lookup(final UniqueString var) {
+        for (TLCStateFun cur = this; cur != Empty; cur = cur.next) {
+            if (var == cur.name.getName()) return cur.value;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean containsKey(final UniqueString var) {
+        return this.lookup(var) != null;
+    }
+
+    @Override
+    public TLCState copy() {
+        // The following code added blindly by LL on 28 May 2010
+        // to fix a bug.  I have no idea what's going on here.
+        return new TLCStateFun(this.name, this.value, this.next);
+        // throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
+    }
+
+    @Override
+    public TLCState deepCopy() {
+        throw new WrongInvocationException("TLCStateFun.deepCopy: This is a TLC bug.");
+    }
+
+    @Override
+    public void deepNormalize() {
+        throw new WrongInvocationException("TLCStateFun.normalizeFcns: This is a TLC bug.");
+    }
+
+    @Override
+    public long fingerPrint() {
+        throw new WrongInvocationException("TLCStateFun.fingerPrint: This is a TLC bug.");
+    }
+
+    @Override
+    public TLCState createNewFromValueStream(final IValueInputStream vis) {
+        throw new WrongInvocationException("TLCStateFun.fingerPrint: This is a TLC bug.");
+    }
+
+    @Override
+    public boolean allAssigned() {
+        return true;
+    }
+
+    @Override
+    public Set<OpDeclNode> getUnassigned() {
+        return new HashSet<>();
+    }
+
+
+    @Override
+    public StateVec addToVec(final StateVec states) {
+        return states.addState(this);
+    }
+
+    @Override
+    public void write(final IValueOutputStream vos) {
+        throw new WrongInvocationException("TLCStateFun.write: This is a TLC bug.");
+    }
+
+    /* Returns a string representation of this state.  */
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("[");
+        if (this != Empty) {
+            sb.append(this.name.getName().toString());
+            sb.append(" -> ");
+            sb.append(this.value.toString());
+
+            for (TLCStateFun cur = this.next; cur != Empty; cur = cur.next) {
+                sb.append(", ");
+                sb.append(cur.name.getName().toString());
+                sb.append("->");
+                sb.append(cur.value);
+            }
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    @Override
+    public String toString(final TLCState lastState) {
+        throw new WrongInvocationException("TLCStateFun.toString: This is a TLC bug.");
+    }
+
 }

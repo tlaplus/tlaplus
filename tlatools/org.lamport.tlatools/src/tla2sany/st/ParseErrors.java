@@ -5,5 +5,5 @@
 package tla2sany.st;
 
 public interface ParseErrors {
-  public  ParseError[] errors();
+    ParseError[] errors();
 }

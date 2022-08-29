@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,82 +25,83 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import tla2sany.semantic.SemanticNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.util.statistics.CounterStatistic;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public abstract class CostModelNode implements CostModel {
-	
-	// children has to preserve order to later traverse tree in the module location
-	// order when reporting coverage. Thus, use LinkedHashMap here.
-	protected final Map<SemanticNode, CostModelNode> children = new LinkedHashMap<>();
 
-	protected final CounterStatistic stats = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
-	protected final CounterStatistic secondary = CounterStatistic.getInstance(() -> TLCGlobals.isCoverageEnabled());
-	
-	// ---------------- Statistics ---------------- //
+    // children has to preserve order to later traverse tree in the module location
+    // order when reporting coverage. Thus, use LinkedHashMap here.
+    protected final Map<SemanticNode, CostModelNode> children = new LinkedHashMap<>();
 
-	protected long getEvalCount() {
-		return this.stats.getCount();
-	}
+    protected final CounterStatistic stats = CounterStatistic.getInstance(TLCGlobals::isCoverageEnabled);
+    protected final CounterStatistic secondary = CounterStatistic.getInstance(TLCGlobals::isCoverageEnabled);
 
-	protected long getSecondary() {
-		return this.secondary.getCount();
-	}
+    // ---------------- Statistics ---------------- //
 
-	protected abstract Location getLocation();
+    protected long getEvalCount() {
+        return this.stats.getCount();
+    }
 
-	// -- --//
-	
-	void addChild(final CostModelNode child) {
-		final boolean newlyInserted = this.children.put(child.getNode(), child) == null;
-		assert newlyInserted;
-	}
+    protected long getSecondary() {
+        return this.secondary.getCount();
+    }
 
-	abstract SemanticNode getNode();
-	
-	@Override
-	public abstract CostModelNode getRoot();
-	
-	boolean isRoot() {
-		return false;
-	}
+    protected abstract Location getLocation();
 
-	int getLevel() {
-		return 0;
-	}
-	
-	// -- -- //
-	
-	@Override
-	public final CostModel getAndIncrement(final SemanticNode eon) {
-		return get(eon).incInvocations();
-	}
+    // -- --//
 
-	@Override
-	public final CostModel incInvocations(long size) {
-		this.stats.add(size);
-		return this;
-	}
+    void addChild(final CostModelNode child) {
+        final boolean newlyInserted = this.children.put(child.getNode(), child) == null;
+        assert newlyInserted;
+    }
 
-	@Override
-	public final CostModel incInvocations() {
-		this.stats.increment();
-		return this;
-	}
+    abstract SemanticNode getNode();
 
-	public final CostModel incSecondary() {
-		this.secondary.increment();
-		return this;
-	}
+    @Override
+    public abstract CostModelNode getRoot();
 
-	@Override
-	public final CostModel incSecondary(final long value) {
-		this.secondary.add(value);
-		return this;
-	}
+    boolean isRoot() {
+        return false;
+    }
+
+    int getLevel() {
+        return 0;
+    }
+
+    // -- -- //
+
+    @Override
+    public final CostModel getAndIncrement(final SemanticNode eon) {
+        return get(eon).incInvocations();
+    }
+
+    @Override
+    public final CostModel incInvocations(final long size) {
+        this.stats.add(size);
+        return this;
+    }
+
+    @Override
+    public final CostModel incInvocations() {
+        this.stats.increment();
+        return this;
+    }
+
+    @Override
+    public final CostModel incSecondary() {
+        this.secondary.increment();
+        return this;
+    }
+
+    @Override
+    public final CostModel incSecondary(final long value) {
+        this.secondary.add(value);
+        return this;
+    }
 }

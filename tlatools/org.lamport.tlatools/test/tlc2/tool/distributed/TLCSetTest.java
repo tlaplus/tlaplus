@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,26 +26,25 @@
 
 package tlc2.tool.distributed;
 
+import org.junit.Test;
+import tlc2.output.EC;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
-import tlc2.output.EC;
 
 /**
  * Tests support for TLCSet/TLCGet in TLCServer
  */
 public class TLCSetTest extends TLCServerTestCase {
 
-	public TLCSetTest() {
-		super("TLCSet");
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_COMPUTING_INIT));
-		assertTrue(recorder.recorded(EC.TLC_FEATURE_UNSUPPORTED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-	}
+    public TLCSetTest() {
+        super("TLCSet");
+    }
+
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_COMPUTING_INIT));
+        assertTrue(recorder.recorded(EC.TLC_FEATURE_UNSUPPORTED));
+        assertFalse(recorder.recorded(EC.GENERAL));
+    }
 }

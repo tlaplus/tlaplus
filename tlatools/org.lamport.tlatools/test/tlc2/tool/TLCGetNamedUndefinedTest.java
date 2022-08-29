@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,24 +25,22 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+
+import static org.junit.Assert.assertTrue;
 
 public class TLCGetNamedUndefinedTest extends ModelCheckerTestCase {
 
-	public TLCGetNamedUndefinedTest() {
-		super("TLCGetNamedUndefined", ExitStatus.ERROR_CONFIG_PARSE);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_MODULE_TLCGET_UNDEFINED));
-		assertTrue(recorder.recorded(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT));
-	}
+    public TLCGetNamedUndefinedTest() {
+        super("TLCGetNamedUndefined", ExitStatus.ERROR_CONFIG_PARSE);
+    }
+
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recorded(EC.TLC_MODULE_TLCGET_UNDEFINED));
+        assertTrue(recorder.recorded(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT));
+    }
 }

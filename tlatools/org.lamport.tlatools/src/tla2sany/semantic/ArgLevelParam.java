@@ -4,52 +4,51 @@
 package tla2sany.semantic;
 
 class ArgLevelParam {
-  /*************************************************************************
-  * ArgLevelParam objects are used only to implement the elements of the   *
-  * set of that name in the specification LevelSpec.tla of level           *
-  * checking.  If the ArgLevelParam object alp is in the HashSet of        *
-  * objects returned by getArgLevelParams for an expression, then the      *
-  * operator alp.op appears somewhere in the expression as a               *
-  * subexpression alp.op(...)  in which the alp.i-th argument's level      *
-  * depends on the parameter alp.param of the current context.             *
-  *************************************************************************/
-  SymbolNode op;
-  int        i;
-  SymbolNode param;
+    /*************************************************************************
+     * ArgLevelParam objects are used only to implement the elements of the   *
+     * set of that name in the specification LevelSpec.tla of level           *
+     * checking.  If the ArgLevelParam object alp is in the HashSet of        *
+     * objects returned by getArgLevelParams for an expression, then the      *
+     * operator alp.op appears somewhere in the expression as a               *
+     * subexpression alp.op(...)  in which the alp.i-th argument's level      *
+     * depends on the parameter alp.param of the current context.             *
+     *************************************************************************/
+    final SymbolNode op;
+    final int i;
+    final SymbolNode param;
 
-  /* Creates new ArgLevelParam */
-  public ArgLevelParam(SymbolNode op, int i, SymbolNode param) {
-    this.op = op;
-    this.i = i;
-    this.param = param;
-  }
-
-  public final boolean occur(SymbolNode[] symbols) {
-    for (int i = 0; i < symbols.length; i++) {
-      if (this.op == symbols[i] ||
-	  this.param == symbols[i]) {
-	return true;
-      }
+    /* Creates new ArgLevelParam */
+    public ArgLevelParam(final SymbolNode op, final int i, final SymbolNode param) {
+        this.op = op;
+        this.i = i;
+        this.param = param;
     }
-    return false;
-  }
 
-  public final boolean equals(Object obj) {
-    if (obj instanceof ArgLevelParam) {
-      ArgLevelParam alp = (ArgLevelParam)obj;
-      return ((this.op == alp.op) &&
-	      (this.i == alp.i) &&
-	      (this.param == alp.param));
+    public final boolean occur(final SymbolNode[] symbols) {
+        for (final SymbolNode symbol : symbols) {
+            if (this.op == symbol ||
+                    this.param == symbol) {
+                return true;
+            }
+        }
+        return false;
     }
-    return false;
-  }
 
-  public final int hashCode() {
-    return this.op.hashCode() + this.i + this.param.hashCode();
-  }
+    public final boolean equals(final Object obj) {
+        if (obj instanceof final ArgLevelParam alp) {
+            return ((this.op == alp.op) &&
+                    (this.i == alp.i) &&
+                    (this.param == alp.param));
+        }
+        return false;
+    }
 
-  public final String toString() {
-    return "<" + this.op + ", " + this.i + ", " + this.param + ">";
-  }
+    public final int hashCode() {
+        return this.op.hashCode() + this.i + this.param.hashCode();
+    }
+
+    public final String toString() {
+        return "<" + this.op + ", " + this.i + ", " + this.param + ">";
+    }
 
 }

@@ -25,9 +25,6 @@
  ******************************************************************************/
 package tlc2.module;
 
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.LevelConstants;
 import tlc2.overrides.Evaluation;
@@ -39,99 +36,102 @@ import tlc2.util.Context;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.Value;
 
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 public class TLCEval implements ValueConstants {
 
-	public static final long serialVersionUID = 20220105L;
+    public static final long serialVersionUID = 20220105L;
 
-	private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-	private static Value convert(final Value eval) {
-		// Legacy implementation of TLCEval taken from TLC.java
-		Value evalVal = eval.toSetEnum();
-		if (evalVal != null) {
-			return evalVal;
-		}
-		evalVal = eval.toFcnRcd();
-		if (evalVal != null) {
-			return evalVal;
-		}
-		return eval;
-	}
+    private static Value convert(final Value eval) {
+        // Legacy implementation of TLCEval taken from TLC.java
+        Value evalVal = eval.toSetEnum();
+        if (evalVal != null) {
+            return evalVal;
+        }
+        evalVal = eval.toFcnRcd();
+        if (evalVal != null) {
+            return evalVal;
+        }
+        return eval;
+    }
 
-	/**
-	 * Implements TLCEval, which causes TLC to eagerly evaluate the value. Useful
-	 * for preventing inefficiency caused by lazy evaluation defeating efforts at
-	 * common subexpression elimination.
-	 */
-	@Evaluation(definition = "TLCEval", module = "TLC", warn = false, silent = true)
-	public static Value tlcEval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
-			final TLCState s1, final int control, final CostModel cm) {
-		// TLCEval has a single parameter:
-		final ExprOrOpArgNode arg = args[0];
+    /**
+     * Implements TLCEval, which causes TLC to eagerly evaluate the value. Useful
+     * for preventing inefficiency caused by lazy evaluation defeating efforts at
+     * common subexpression elimination.
+     */
+    @Evaluation(definition = "TLCEval", module = "TLC", warn = false, silent = true)
+    public static Value tlcEval(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+                                final TLCState s1, final int control, final CostModel cm) {
+        // TLCEval has a single parameter:
+        final ExprOrOpArgNode arg = args[0];
 
-		if (arg.getLevel() > LevelConstants.ConstantLevel) {
-			// For a non-constant expression, all we can do is to evaluate
-			// and convert the value according to the old implementation
-			// of TLCEval.
-			// Since there is no sharing going on, there is no need to deal
-			// with WorkerValue here.
-			
-			// The value that a constant-level expression evaluates to is stored in the
-			// semantic graph. 
-			// For a state-level formula, the value could be kept in a transient member
-			// of the state.  This effort doesn't seem worth it, though.
-			return convert(tool.eval(arg, c, s0, s1, control, cm));
-		} else if (!c.isDeepEmpty()) {
-			// If a constant expression has a context, e.g. a parameter, we
-			// cannot cache the value.
-			return convert(tool.eval(arg, c, s0, s1, control, cm));
-		}
+        if (arg.getLevel() > LevelConstants.ConstantLevel) {
+            // For a non-constant expression, all we can do is to evaluate
+            // and convert the value according to the old implementation
+            // of TLCEval.
+            // Since there is no sharing going on, there is no need to deal
+            // with WorkerValue here.
 
-		return tlcEvalConst(tool, arg, cm);
-	}
+            // The value that a constant-level expression evaluates to is stored in the
+            // semantic graph.
+            // For a state-level formula, the value could be kept in a transient member
+            // of the state.  This effort doesn't seem worth it, though.
+            return convert(tool.eval(arg, c, s0, s1, control, cm));
+        } else if (!c.isDeepEmpty()) {
+            // If a constant expression has a context, e.g. a parameter, we
+            // cannot cache the value.
+            return convert(tool.eval(arg, c, s0, s1, control, cm));
+        }
 
-	private static Value tlcEvalConst(Tool tool, ExprOrOpArgNode arg, CostModel cm) {
-		assert arg.getLevel() == LevelConstants.ConstantLevel;
-		
-		lock.readLock().lock();
+        return tlcEvalConst(tool, arg, cm);
+    }
 
-		// Read with ReadLock
-		Object obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
-		if (obj != null) {
-			// Return the cached value.
-			try {
-				return (Value) obj;
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
+    private static Value tlcEvalConst(final Tool tool, final ExprOrOpArgNode arg, final CostModel cm) {
+        assert arg.getLevel() == LevelConstants.ConstantLevel;
 
-		// Slow-path below. Note that ReentrantRWLock deadlocks when
-		// upgrading a read to a write-lock, but we don't need this here.
-		lock.readLock().unlock();
+        lock.readLock().lock();
 
-		lock.writeLock().lock();
-		try {
-			// Re-read with WriteLock in case another thread obtained
-			// the write lock while this thread waited.
-			obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
-			if (obj != null) {
-				return (Value) obj;
-			}
+        // Read with ReadLock
+        Object obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
+        if (obj != null) {
+            // Return the cached value.
+            try {
+                return (Value) obj;
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
 
-			// Create/Write the value!
-			final Object demuxed =  WorkerValue.demux(tool, arg, cm);
-			Value eval;
-			if (demuxed instanceof Value) {
-				eval = (Value) demuxed;
-			} else {
-				eval = (Value) WorkerValue.mux((WorkerValue) demuxed);
-			}
-			eval = convert(eval);
-			arg.setToolObject(tool.getId(), eval);
-			return eval;
-		} finally {
-			lock.writeLock().unlock();
-		}
-	}
+        // Slow-path below. Note that ReentrantRWLock deadlocks when
+        // upgrading a read to a write-lock, but we don't need this here.
+        lock.readLock().unlock();
+
+        lock.writeLock().lock();
+        try {
+            // Re-read with WriteLock in case another thread obtained
+            // the write lock while this thread waited.
+            obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
+            if (obj != null) {
+                return (Value) obj;
+            }
+
+            // Create/Write the value!
+            final Object demuxed = WorkerValue.demux(tool, arg, cm);
+            Value eval;
+            if (demuxed instanceof Value v) {
+                eval = v;
+            } else {
+                eval = (Value) WorkerValue.mux(demuxed);
+            }
+            eval = convert(eval);
+            arg.setToolObject(tool.getId(), eval);
+            return eval;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
 }

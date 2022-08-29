@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,34 +25,32 @@
  ******************************************************************************/
 package tlc2.tool;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
-
 import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(BlockJUnit4ClassRunner.class)
 public class UserModuleOverrideAnnotationTest extends ModelCheckerTestCase {
 
-	public UserModuleOverrideAnnotationTest() {
-		super("UserModuleOverrideAnnotation");
-	}
-	
-	@Test
-	public void testSpec() {
-		recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH);
-		recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH);
-		recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH);
+    public UserModuleOverrideAnnotationTest() {
+        super("UserModuleOverrideAnnotation");
+    }
 
-		// ModelChecker has finished and generated the expected amount of states
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    @Test
+    public void testSpec() {
+        recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH);
+        recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH);
+        recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH);
 
-		assertZeroUncovered();
-	}
+        // ModelChecker has finished and generated the expected amount of states
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+        assertFalse(recorder.recorded(EC.GENERAL));
+
+        assertZeroUncovered();
+    }
 }

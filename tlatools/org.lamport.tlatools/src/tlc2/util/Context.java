@@ -5,15 +5,15 @@
 
 package tlc2.util;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Function;
-
 import tla2sany.semantic.SymbolNode;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import util.UniqueString;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Function;
 
 // Context is used two times:
 // 1) To determine the level boundedness of the expression appearing in the spec
@@ -32,210 +32,203 @@ import util.UniqueString;
 // The contrived spec at the bottom exhibits this problem. Increasing the level,
 // the number of lookups go through the roof.
 public final class Context implements Iterator<Context> {
-	/**
-	 * A link list of name and value pairs. When adding <name, value> to the
-	 * context, we assume that name != null.
-	 */
+    public static final Context Empty = new Context(null, null, null);
+    private static final Context BaseBranch = new Context(null, null, Empty);
+    /**
+     * A link list of name and value pairs. When adding <name, value> to the
+     * context, we assume that name != null.
+     */
 
-	private final SymbolNode name;
-	private final Object value;
-	private final Context next;
+    private final SymbolNode name;
+    private final Object value;
+    private final Context next;
 
-	public final static Context Empty = new Context(null, null, null);
-	
-	private final static Context BaseBranch = new Context(null, null, Empty);
-	
-	private Context(SymbolNode name, Object value, final Context next) {
-		this.name = name;
-		this.value = value;
-		this.next = next;
-	}
+    private Context(final SymbolNode name, final Object value, final Context next) {
+        this.name = name;
+        this.value = value;
+        this.next = next;
+    }
 
-	// This method is only called within the context of the ENABLED (temporal)
-	// operator. A branching context is specially handled during lookup below
-	// if cutoff is true.
-	public static Context branch(Context base) {
-		if (base == Empty) {
-			// Avoid new instance if the next context in the chain is the Empty
-			// one (Branch -> Empty).
-			return BaseBranch;
-		}
-		return new Context(null, null, base);
-	}
+    // This method is only called within the context of the ENABLED (temporal)
+    // operator. A branching context is specially handled during lookup below
+    // if cutoff is true.
+    public static Context branch(final Context base) {
+        if (base == Empty) {
+            // Avoid new instance if the next context in the chain is the Empty
+            // one (Branch -> Empty).
+            return BaseBranch;
+        }
+        return new Context(null, null, base);
+    }
 
-	public final Context cons(SymbolNode name, Object value) {
-		return new Context(name, value, this);
-	}
+    public Context cons(final SymbolNode name, final Object value) {
+        return new Context(name, value, this);
+    }
 
-	/**
-	 * This method returns the value for the name var. It returns null if this
-	 * context does not contain var.
-	 */
-	public final Object lookup(SymbolNode var) {
-		Context cur = this;
-		// Follow the linked list of Contexts (chain) starting at this context
-		// until a Context has been reached whose name (SymbolNode) is identical
-		// to the searched for var. Stop if the Empty context (the base of all
-		// Context "chains") has been reached.
-		while (cur != Empty) {
-			// Check identity of value if match (this is slightly simpler
-			// compared to the second lookup method. Here we can ignore the else
-			// if branch since there is no cutoff.
-			if (var == cur.name) {
-				return cur.value;
-			}
-			cur = cur.next;
-		}
-		return null; // On Empty Context (end of chain), return null value
-	}
-	
-	public final Object lookup(final Function<SymbolNode, Boolean> f) {
-		Context cur = this;
-		while (cur != Empty) {
-			if (f.apply(cur.name)) {
-				return cur.value;
-			}
-			cur = cur.next;
-		}
-		return null;
-	}
+    /**
+     * This method returns the value for the name var. It returns null if this
+     * context does not contain var.
+     */
+    public Object lookup(final SymbolNode var) {
+        Context cur = this;
+        // Follow the linked list of Contexts (chain) starting at this context
+        // until a Context has been reached whose name (SymbolNode) is identical
+        // to the searched for var. Stop if the Empty context (the base of all
+        // Context "chains") has been reached.
+        while (cur != Empty) {
+            // Check identity of value if match (this is slightly simpler
+            // compared to the second lookup method. Here we can ignore the else
+            // if branch since there is no cutoff.
+            if (var == cur.name) {
+                return cur.value;
+            }
+            cur = cur.next;
+        }
+        return null; // On Empty Context (end of chain), return null value
+    }
 
-	public final SymbolNode lookupName(final Function<SymbolNode, Boolean> f) {
-		Context cur = this;
-		while (cur != Empty) {
-			if (f.apply(cur.name)) {
-				return cur.name;
-			}
-			cur = cur.next;
-		}
-		return null;
-	}
+    public Object lookup(final Function<SymbolNode, Boolean> f) {
+        Context cur = this;
+        while (cur != Empty) {
+            if (f.apply(cur.name)) {
+                return cur.value;
+            }
+            cur = cur.next;
+        }
+        return null;
+    }
 
-	/**
-	 * @param var
-	 *            The SymbolNode to lookup
-	 * @param cutoff
-	 *            Iff true, lookup stops at a branching Context. Follows
-	 *            complete chain if false.
-	 * @return value associated with the {@link SymbolNode} var or null if var
-	 *         could not be found in the search along the Context "chain"
-	 */
-	public final Object lookup(final SymbolNode var, final boolean cutoff) {
-		Context cur = this;
-		// Follow the linked list of Contexts (chain) starting at this context until a Context has been
-		// reached whose name (SymbolNode) is identical to the searched for var. Stop if the Context's
-		// name is null, which is the case for a branching Context (see branch(..)
-		// above) or the Empty context (the base of all Context "chains") has been reached.
-		while (cur != Empty) {
-			// Check identity of value if not empty or branching
-			if (cur.name != null) {
-				if (var == cur.name) {
-					return cur.value;
-				}
-			} else if (cutoff == true) {
-				// reached a branching context (value is null)
-				assert cur.value == null;
-				return null;
-			}
-			cur = cur.next;
-		}
-		return null; // On Empty Context (end of chain), return null value
-	}
+    public SymbolNode lookupName(final Function<SymbolNode, Boolean> f) {
+        Context cur = this;
+        while (cur != Empty) {
+            if (f.apply(cur.name)) {
+                return cur.name;
+            }
+            cur = cur.next;
+        }
+        return null;
+    }
 
-	public final Map<UniqueString, Value> toMap() {
-		if (this.name == null) {
-			if (this == Empty) {
-				return new HashMap<>();
-			}
-			return this.next.toMap();
-		}
-		final Map<UniqueString, Value> res = new HashMap<>();
-		res.put(this.name.getName(),
-				this.value instanceof Value ? (Value) this.value : new StringValue(this.value.toString()));
+    /**
+     * @param var    The SymbolNode to lookup
+     * @param cutoff Iff true, lookup stops at a branching Context. Follows
+     *               complete chain if false.
+     * @return value associated with the {@link SymbolNode} var or null if var
+     * could not be found in the search along the Context "chain"
+     */
+    public Object lookup(final SymbolNode var, final boolean cutoff) {
+        Context cur = this;
+        // Follow the linked list of Contexts (chain) starting at this context until a Context has been
+        // reached whose name (SymbolNode) is identical to the searched for var. Stop if the Context's
+        // name is null, which is the case for a branching Context (see branch(..)
+        // above) or the Empty context (the base of all Context "chains") has been reached.
+        while (cur != Empty) {
+            // Check identity of value if not empty or branching
+            if (cur.name != null) {
+                if (var == cur.name) {
+                    return cur.value;
+                }
+            } else if (cutoff) {
+                // reached a branching context (value is null)
+                assert cur.value == null;
+                return null;
+            }
+            cur = cur.next;
+        }
+        return null; // On Empty Context (end of chain), return null value
+    }
 
-		Context cur;
-		for (cur = this.next; cur.name != null; cur = cur.next) {
-			res.put(cur.name.getName(),
-					cur.value instanceof Value ? (Value) cur.value : new StringValue(cur.value.toString()));
-		}
-		res.putAll(cur.toMap());
+    public Map<UniqueString, Value> toMap() {
+        if (this.name == null) {
+            if (this == Empty) {
+                return new HashMap<>();
+            }
+            return this.next.toMap();
+        }
+        final Map<UniqueString, Value> res = new HashMap<>();
+        res.put(this.name.getName(),
+                this.value instanceof Value v ? v : new StringValue(this.value.toString()));
 
-		return res;
-	}
-	
-	public final StringBuffer toString(StringBuffer sb) {
-		if (this.name == null) {
-			if (this == Empty) {
-				return sb;
-			}
-			return this.next.toString(sb);
-		}
-		sb.append(this.name.getName());
-		sb.append("->");
-		sb.append(this.value);
-		Context cur;
-		for (cur = this.next; cur.name != null; cur = cur.next) {
-			sb.append(", ");
-			sb.append(cur.name.getName());
-			sb.append("->");
-			sb.append(cur.value);
-		}
-		cur.toString(sb);
-		return sb;
-	}
+        Context cur;
+        for (cur = this.next; cur.name != null; cur = cur.next) {
+            res.put(cur.name.getName(),
+                    cur.value instanceof Value v ? v : new StringValue(cur.value.toString()));
+        }
+        res.putAll(cur.toMap());
 
-	public final String toString() {
-		StringBuffer sb = new StringBuffer("[");
-		sb = this.toString(sb);
-		sb.append("]");
-		return sb.toString();
-	}
+        return res;
+    }
 
-	@Override
-	public boolean hasNext() {
-		return this.next != null;
-	}
+    public StringBuilder toString(final StringBuilder sb) {
+        if (this.name == null) {
+            if (this == Empty) {
+                return sb;
+            }
+            return this.next.toString(sb);
+        }
+        sb.append(this.name.getName());
+        sb.append("->");
+        sb.append(this.value);
+        Context cur;
+        for (cur = this.next; cur.name != null; cur = cur.next) {
+            sb.append(", ");
+            sb.append(cur.name.getName());
+            sb.append("->");
+            sb.append(cur.value);
+        }
+        cur.toString(sb);
+        return sb;
+    }
 
-	@Override
-	public Context next() {
-		return this.next;
-	}
+    public String toString() {
+        StringBuilder sb = new StringBuilder("[");
+        sb = this.toString(sb);
+        sb.append("]");
+        return sb.toString();
+    }
 
-	public final SymbolNode getName() {
-		return name;
-	}
+    @Override
+    public boolean hasNext() {
+        return this.next != null;
+    }
 
-	public final Object getValue() {
-		return value;
-	}
-	
-	public final boolean isEmpty() {
-		return this == Empty;
-	}
+    @Override
+    public Context next() {
+        return this.next;
+    }
 
-	public final boolean isDeepEmpty() {
-		if (this.isEmpty() || this == BaseBranch) {
-			return true;
-		}
-		return false;
-	}
+    public SymbolNode getName() {
+        return name;
+    }
 
-	public final int depth() {
-		int depth = 1;
-		Context child = next();
-		while (child.hasNext()) {
-			depth++;
-			child = child.next();
-		}
-		return depth;
-	}
+    public Object getValue() {
+        return value;
+    }
 
-	public Context deepCopy() {
-		if (this == Empty) {
-			return this;
-		}
-		return new Context(this.name, this.value, this.next.deepCopy());
-	}
+    public boolean isEmpty() {
+        return this == Empty;
+    }
+
+    public boolean isDeepEmpty() {
+        return this.isEmpty() || this == BaseBranch;
+    }
+
+    public int depth() {
+        int depth = 1;
+        Context child = next();
+        while (child.hasNext()) {
+            depth++;
+            child = child.next();
+        }
+        return depth;
+    }
+
+    public Context deepCopy() {
+        if (this == Empty) {
+            return this;
+        }
+        return new Context(this.name, this.value, this.next.deepCopy());
+    }
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------

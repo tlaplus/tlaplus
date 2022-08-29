@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -27,7 +27,6 @@ package tlc2.tool.impl;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.TLCGlobals;
-import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
@@ -103,55 +102,53 @@ Disadvantages:
 2) [Value#deepCopy](https://github.com/tlaplus/tlaplus/blob/63bab42e79e750b7ac033cfe7196d8f0b53e861e/tlatools/src/tlc2/value/IValue.java#L104)  - required to create the copies of V<sub>SG</sub> - is [broken for most value types](https://github.com/tlaplus/tlaplus/blob/63bab42e79e750b7ac033cfe7196d8f0b53e861e/tlatools/src/tlc2/value/impl/SubsetValue.java#L232) (can probably be fixed).
 */
 public class WorkerValue {
-	/*
-	 * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
-	 */    
+    private final IValue[] values;
+
+    private WorkerValue(final IValue[] values) {
+        this.values = values;
+    }
+
+    /*
+     * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
+     */
     public static Object demux(final OpDefEvaluator spec, final ExprOrOpArgNode en) {
-    	return demux(spec, en, CostModel.DO_NOT_RECORD);
+        return demux(spec, en, CostModel.DO_NOT_RECORD);
     }
 
-	/*
-	 * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
-	 */    
+    /*
+     * Demuxing is supposed to be called only once per sn/opDef whereas muxing is called many many times.
+     */
     public static Object demux(final OpDefEvaluator spec, final ExprOrOpArgNode en, final CostModel cm) {
-        final IValue defVal = spec.eval(en, Context.Empty, TLCState.Empty, cm);
-    	defVal.deepNormalize();
-    	
-    	if (defVal.mutates() && TLCGlobals.getNumWorkers() > 1) {
-    		final IValue[] values = new IValue[TLCGlobals.getNumWorkers()];
-    		values[0] = defVal;
+        final IValue defVal = spec.eval(en, Context.Empty, spec.getEmptyState(), cm);
+        defVal.deepNormalize();
 
-    		for (int i = 1; i < values.length; i++) {
-    			// Ideally, we could invoke IValue#deepCopy here instead of evaluating opDef again.  However,
-    			// IValue#deepCopy doesn't create copies for most values.
-    			values[i] = spec.eval(en, Context.Empty, TLCState.Empty, cm);
-    			values[i].deepNormalize();
-    		}
-    		
-    		return new WorkerValue(values);
-    	} else {
-    		return defVal;
-    	}
+        if (defVal.mutates() && TLCGlobals.getNumWorkers() > 1) {
+            final IValue[] values = new IValue[TLCGlobals.getNumWorkers()];
+            values[0] = defVal;
+
+            for (int i = 1; i < values.length; i++) {
+                // Ideally, we could invoke IValue#deepCopy here instead of evaluating opDef again.  However,
+                // IValue#deepCopy doesn't create copies for most values.
+                values[i] = spec.eval(en, Context.Empty, spec.getEmptyState(), cm);
+                values[i].deepNormalize();
+            }
+
+            return new WorkerValue(values);
+        } else {
+            return defVal;
+        }
     }
-    
-	public static Object mux(final Object result) {
-		if (!(result instanceof WorkerValue)) {
-			return result;
-		}
-		
-		final WorkerValue vp = (WorkerValue) result;
-		final Thread t = Thread.currentThread();
-		if (t instanceof IdThread) {
-			final IdThread w = (IdThread) t;
-			return vp.values[w.myGetId()];
-		} else {
-			return vp.values[0];
-		}
-	}
-	
-	private final IValue[] values;
 
-	private WorkerValue(IValue[] values) {
-		this.values = values;
-	}
+    public static Object mux(final Object result) {
+        if (!(result instanceof final WorkerValue vp)) {
+            return result;
+        }
+
+        final Thread t = Thread.currentThread();
+        if (t instanceof final IdThread w) {
+            return vp.values[w.myGetId()];
+        } else {
+            return vp.values[0];
+        }
+    }
 }

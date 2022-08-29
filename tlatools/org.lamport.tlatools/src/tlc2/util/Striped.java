@@ -6,37 +6,37 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public final class Striped {
 
-	public static Striped readWriteLock(final int lockCnt) {
-		return new Striped(lockCnt);
-	}
+    private final ReadWriteLock[] locks;
 
-	private final ReadWriteLock[] locks;
+    public Striped(final int lockCnt) {
+        this.locks = new ReadWriteLock[lockCnt];
+        for (int i = 0; i < locks.length; i++) {
+            locks[i] = new ReentrantReadWriteLock();
+        }
+    }
 
-	public Striped(int lockCnt) {
-		this.locks = new ReadWriteLock[lockCnt];
-		for (int i = 0; i < locks.length; i++) {
-			locks[i] = new ReentrantReadWriteLock();
-		}
-	}
+    public static Striped readWriteLock(final int lockCnt) {
+        return new Striped(lockCnt);
+    }
 
-	public final ReadWriteLock getAt(int lockIndex) {
-		return this.locks[lockIndex];
-	}
+    public ReadWriteLock getAt(final int lockIndex) {
+        return this.locks[lockIndex];
+    }
 
-	public final int size() {
-		return locks.length;
-	}
+    public int size() {
+        return locks.length;
+    }
 
-	public final void releaseAllLocks() {
-		for (int i = size() - 1; i >= 0; i--) {
-			this.locks[i].writeLock().unlock();
-		}
-	}
+    public void releaseAllLocks() {
+        for (int i = size() - 1; i >= 0; i--) {
+            this.locks[i].writeLock().unlock();
+        }
+    }
 
-	public final void acquireAllLocks() {
-		//TODO find way to do this more efficiently
-		for (int i = 0; i < size(); i++) {
-			this.locks[i].writeLock().lock();
-		}
-	}
+    public void acquireAllLocks() {
+        //TODO find way to do this more efficiently
+        for (int i = 0; i < size(); i++) {
+            this.locks[i].writeLock().lock();
+        }
+    }
 }

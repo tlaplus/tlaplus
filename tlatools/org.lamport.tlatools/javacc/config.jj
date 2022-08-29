@@ -61,7 +61,7 @@ public static void load ( ) {
       input = new java.io.FileInputStream( source );
       origin = " from local config.src file.";
     } else {
-      input = new java.io.StringBufferInputStream( defaultConfig );
+      input = new java.io.StringBuilderInputStream( defaultConfig );
       origin = " from defaults.";
     }
     Parser = new Configuration( input );

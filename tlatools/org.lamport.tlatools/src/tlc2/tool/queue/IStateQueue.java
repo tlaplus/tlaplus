@@ -1,94 +1,93 @@
 package tlc2.tool.queue;
 
-import java.io.IOException;
-
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 
-public interface IStateQueue {
+import java.io.IOException;
 
-	/* Enqueues the state. It is not thread-safe. */
-	public abstract void enqueue(final TLCState state);
+public interface IStateQueue extends AutoCloseable {
 
-	/**
-	 * Returns the first element in the queue. It returns null if the queue is
-	 * empty. It is not thread-safe.
-	 */
-	public abstract TLCState dequeue();
+    /* Enqueues the state. It is not thread-safe. */
+    void enqueue(final TLCState state);
 
-	/* Enqueues a state. Wake up any waiting thread. */
-	public abstract void sEnqueue(final TLCState state);
+    /**
+     * Returns the first element in the queue. It returns null if the queue is
+     * empty. It is not thread-safe.
+     */
+    TLCState dequeue();
 
-	/* Enqueues a list of states. Wake up any waiting thread. */
-	public abstract void sEnqueue(final TLCState states[]);
-	public abstract void sEnqueue(final StateVec stateVec);
-	
-	/* Return the first element in the queue. Wait if empty. */
-	public abstract TLCState sDequeue();
-	
-	/**
-	 * Returns the first element in the queue. Wait if empty. Does not remove the
-	 * element. Can be null and blocks other consumers (sEnqueue and sDequeue).
-	 */
-	public abstract TLCState sPeek();
+    /* Enqueues a state. Wake up any waiting thread. */
+    void sEnqueue(final TLCState state);
 
-	/**
-	 * Return (up to) the first count elements in the queue. Wait if empty.
-	 * 
-	 * @param cnt
-	 *            Amount of states requested
-	 * @return null iff no states are available && all work is done @see
-	 *         {@link #isAvail()}, states otherwise
-	 * @throws RuntimeException
-	 *             if cnt <= 0
-	 */
-	public abstract TLCState[] sDequeue(int cnt);
+    /* Enqueues a list of states. Wake up any waiting thread. */
+    void sEnqueue(final TLCState[] states);
 
-	/**
-	 * Signals all waiting {@link Worker} that all work is done. We can exit now.
-	 */
-	public abstract void finishAll();
+    void sEnqueue(final StateVec stateVec);
 
-	/**
-	 * Suspends all access to the {@link StateQueue} for {@link Worker},
-	 * potentially waiting for current accessing {@link Worker} to finish first.
-	 * 
-	 * @return False iff {@link #finish} is true, true otherwise
-	 */
-	public abstract boolean suspendAll();
+    /* Return the first element in the queue. Wait if empty. */
+    TLCState sDequeue();
 
-	/**
-	 * Resumes waiting {@link Worker} after a checkpoint
-	 */
-	public abstract void resumeAll();
+    /**
+     * Returns the first element in the queue. Wait if empty. Does not remove the
+     * element. Can be null and blocks other consumers (sEnqueue and sDequeue).
+     */
+    TLCState sPeek();
 
-	/**
-	 * This is a no-op in regular. The only case is, when a worker is stuck in
-	 * {@link #isAvail()}, {@link #isEmpty}, {@link #stop} is false and
-	 * {@link #numWaiting} > 0. Bottom-line, it is assumed to be side-effect
-	 * free when workers behave correctly except for the single case when a
-	 * remote worker dies unexpectedly.
-	 * 
-	 * @see Bug #175 in general/bugzilla/index.html
-	 */
-	public abstract void resumeAllStuck();
+    /**
+     * Return (up to) the first count elements in the queue. Wait if empty.
+     *
+     * @param cnt Amount of states requested
+     * @return null iff no states are available && all work is done @see
+     * {@link #isAvail()}, states otherwise
+     * @throws RuntimeException if cnt <= 0
+     */
+    TLCState[] sDequeue(int cnt);
 
-	/* This method returns the size of the state queue. */
-	public abstract long size();
+    /**
+     * Signals all waiting {@link Worker} that all work is done. We can exit now.
+     */
+    void close() throws Exception;
 
-	/* Checkpoint. */
-	public abstract void beginChkpt() throws IOException;
+    /**
+     * Suspends all access to the {@link StateQueue} for {@link Worker},
+     * potentially waiting for current accessing {@link Worker} to finish first.
+     *
+     * @return False iff {@link #finish} is true, true otherwise
+     */
+    boolean suspendAll();
 
-	public abstract void commitChkpt() throws IOException;
+    /**
+     * Resumes waiting {@link Worker} after a checkpoint
+     */
+    void resumeAll();
 
-	public abstract void recover() throws IOException;
+    /**
+     * This is a no-op in regular. The only case is, when a worker is stuck in
+     * {@link #isAvail()}, {@link #isEmpty}, {@link #stop} is false and
+     * {@link #numWaiting} > 0. Bottom-line, it is assumed to be side-effect
+     * free when workers behave correctly except for the single case when a
+     * remote worker dies unexpectedly.
+     *
+     * @see Bug #175 in general/bugzilla/index.html
+     */
+    void resumeAllStuck();
 
-	public abstract boolean isEmpty();
+    /* This method returns the size of the state queue. */
+    long size();
 
-	/**
-	 * TESTING ONLY!
-	 * Delete disk files if any.
-	 */
-	abstract void delete() throws IOException;
+    /* Checkpoint. */
+    void beginChkpt() throws IOException;
+
+    void commitChkpt() throws IOException;
+
+    void recover() throws IOException;
+
+    boolean isEmpty();
+
+    /**
+     * TESTING ONLY!
+     * Delete disk files if any.
+     */
+    void delete() throws Exception;
 }

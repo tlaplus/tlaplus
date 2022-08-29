@@ -33,6 +33,7 @@ import java.util.ResourceBundle;
  * localized properties files, and as a default format if some
  * translation is missing.
  * </p>
+ *
  * @since 2.2
  */
 public enum LocalizedFormats implements Localizable {
@@ -374,34 +375,42 @@ public enum LocalizedFormats implements Localizable {
     // CHECKSTYLE: resume MultipleVariableDeclarations
 
 
-    /** Source English format. */
+    /**
+     * Source English format.
+     */
     private final String sourceFormat;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
      * @param sourceFormat source English format to use when no
-     * localized version is available
+     *                     localized version is available
      */
     LocalizedFormats(final String sourceFormat) {
         this.sourceFormat = sourceFormat;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getSourceString() {
         return sourceFormat;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public String getLocalizedString(final Locale locale) {
         try {
-            final String path = LocalizedFormats.class.getName().replaceAll("\\.", "/");
-            ResourceBundle bundle =
+            final String path = LocalizedFormats.class.getName().replace("\\.", "/");
+            final ResourceBundle bundle =
                     ResourceBundle.getBundle("assets/" + path, locale);
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 // the value of the resource is the translated format
                 return bundle.getString(toString());
             }
 
-        } catch (MissingResourceException mre) { // NOPMD
+        } catch (final MissingResourceException mre) { // NOPMD
             // do nothing here
         }
 

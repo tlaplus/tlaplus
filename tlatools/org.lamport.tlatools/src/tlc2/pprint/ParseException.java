@@ -7,8 +7,10 @@ package tlc2.pprint;
 
 public class ParseException extends Exception {
 
-  ParseException(String s) {
-    super(s);
-  }
+    private static final long serialVersionUID = -429713791322323815L;
+
+    ParseException(final String s) {
+        super(s);
+    }
 
 }

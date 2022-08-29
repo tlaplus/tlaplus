@@ -3,19 +3,27 @@ package tla2sany.parser;
 
 
 public class ParseError implements tla2sany.st.ParseError {
-  private String custom;
-  private String backup;
-  ParseError(String a, String b) {
-    custom = a;
-    backup = b;
-  }
+    private final String custom;
+    private final String backup;
 
-  ParseError(String a) {
-    custom = a;
-    backup = "";
-  }
+    ParseError(final String a, final String b) {
+        custom = a;
+        backup = b;
+    }
 
-  public final String reportedError() { return custom; };
-  public final String defaultError() { return backup; };
+    ParseError(final String a) {
+        custom = a;
+        backup = "";
+    }
+
+    @Override
+    public final String reportedError() {
+        return custom;
+    }
+
+    @Override
+    public final String defaultError() {
+        return backup;
+    }
 }
 

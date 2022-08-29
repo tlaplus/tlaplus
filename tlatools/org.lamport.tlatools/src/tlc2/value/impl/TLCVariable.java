@@ -2,7 +2,7 @@
  * Copyright (c) 2020 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -30,21 +30,21 @@ import java.util.Random;
 
 public interface TLCVariable {
 
-	TLCVariable setInstance(final Value value);
-	
-	void setName(final String name);
+    TLCVariable setInstance(final Value value);
 
-	void setValue(final String value);
+    void setName(final String name);
 
-	void setType(final String type);
+    void setValue(final String value);
 
-	void setVariablesReference(final int variablesReference);
+    void setType(final String type);
 
-	TLCVariable newInstance(String name, Value values, Random rnd);
+    void setVariablesReference(final int variablesReference);
 
-	TLCVariable newInstance(Value value, Random rnd);
+    TLCVariable newInstance(String name, Value values, Random rnd);
 
-	List<TLCVariable> getNested(Random rnd);
+    TLCVariable newInstance(Value value, Random rnd);
 
-	Value getTLCValue();
+    List<TLCVariable> getNested(Random rnd);
+
+    Value getTLCValue();
 }

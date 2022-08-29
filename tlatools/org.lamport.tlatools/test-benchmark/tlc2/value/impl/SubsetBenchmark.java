@@ -34,47 +34,44 @@ import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntervalValue;
-import tlc2.value.impl.SubsetValue;
 
 @State(Scope.Benchmark)
 public class SubsetBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
-	
-	@Param({"10", "12", "14", "16", "20", "24"})
-	public int numOfElements;
-	
-	@Param({"32", "64", "128", "256"})
-	public int size;
+        FP64.Init();
+    }
 
-	public SubsetValue subset;
-		
-	@Setup(Level.Invocation)
-	public void setup() {
-		if (size < 128 || (size >= 128 && numOfElements <= 20)) {
-			subset = (SubsetValue) new SubsetValue(new IntervalValue(1, size)).normalize();
-		} else {
-			// This appears to be the only way to skip permutations from the parameter space
-			// size X numOfElements. These permutations will go OOM or reach GC overhad
-			// limit anyway.
-			System.exit(0);
-		}
-	}
+    @Param({"10", "12", "14", "16", "20", "24"})
+    public int numOfElements;
 
-	@Benchmark
-	public Enumerable randomSetOfSubsets() {
-		return subset.getRandomSetOfSubsets(1 << numOfElements, .1d);
-	}
+    @Param({"32", "64", "128", "256"})
+    public int size;
 
-	@Benchmark
-	public Enumerable randomSetOfSubsetsExact() {
-		return subset.getRandomSetOfSubsets(1 << numOfElements, 10);
-	}
+    public SubsetValue subset;
+
+    @Setup(Level.Invocation)
+    public void setup() {
+        if (size < 128 || (size >= 128 && numOfElements <= 20)) {
+            subset = (SubsetValue) new SubsetValue(new IntervalValue(1, size)).normalize();
+        } else {
+            // This appears to be the only way to skip permutations from the parameter space
+            // size X numOfElements. These permutations will go OOM or reach GC overhad
+            // limit anyway.
+            System.exit(0);
+        }
+    }
+
+    @Benchmark
+    public Enumerable randomSetOfSubsets() {
+        return subset.getRandomSetOfSubsets(1 << numOfElements, .1d);
+    }
+
+    @Benchmark
+    public Enumerable randomSetOfSubsetsExact() {
+        return subset.getRandomSetOfSubsets(1 << numOfElements, 10);
+    }
 }

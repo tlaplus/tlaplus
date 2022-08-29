@@ -1,46 +1,38 @@
 package pcal;
 
-import java.util.Vector;
+import pcal.exception.*;
 
-import pcal.exception.PcalFixIDException;
-import pcal.exception.PcalSymTabException;
-import pcal.exception.PcalTLAGenException;
-import pcal.exception.PcalTranslateException;
-import pcal.exception.RemoveNameConflictsException;
+import java.util.ArrayList;
 
 /**
  * Responsible for generation of TLA+ from PCal AST<br>
  * Note: this class is renamed from NotYetImplemented on 11th March 2009
- * 
+ *
  * @author Leslie Lamport, Keith Marzullo
  * @version $Id$
  */
-public class PCalTLAGenerator
-{
+public class PCalTLAGenerator {
 
+    private final AST ast;
+    private final ParseAlgorithm parseAlgorithm;
+    // This is set to the AST constructed by ParseAlgorithm.getAlgorithm
     private PcalSymTab st = null;
-    private AST ast = null; 
-             // This is set to the AST constructed by ParseAlgorithm.getAlgorithm
 
     /**
-     * Constructs a working copy 
-     * @param ast
+     * Constructs a working copy
      */
-    public PCalTLAGenerator(AST ast)
-    {
+    public PCalTLAGenerator(final AST ast, final ParseAlgorithm parseAlgorithm) {
         this.ast = ast;
+        this.parseAlgorithm = parseAlgorithm;
     }
 
     /********************************************************************
      * Called by trans.java.  Should go in a new .java file.            *
      ********************************************************************/
-    public void removeNameConflicts() throws RemoveNameConflictsException
-    {
-        try
-        {
+    public void removeNameConflicts() throws RemoveNameConflictsException {
+        try {
             st = new PcalSymTab(ast);
-        } catch (PcalSymTabException e)
-        {
+        } catch (final PcalSymTabException e) {
             throw new RemoveNameConflictsException(e.getMessage());
         }
 
@@ -50,11 +42,9 @@ public class PCalTLAGenerator
             PcalDebug.reportWarning("symbols were renamed.");
         if (st.errorReport.length() > 0)
             throw new RemoveNameConflictsException(st.errorReport);
-        try
-        {
+        try {
             PcalFixIDs.Fix(ast, st);
-        } catch (PcalFixIDException e)
-        {
+        } catch (final PcalFixIDException e) {
             throw new RemoveNameConflictsException(e.getMessage());
         }
     }
@@ -64,47 +54,35 @@ public class PCalTLAGenerator
      * Note that this requires RemoveNameConflicts to be called first   *
      * because of the grotty use of the class variable st.              *
      ********************************************************************/
-    public Vector<String> translate() throws RemoveNameConflictsException
-    {
-        Vector<String> result = new Vector<String>();
-        AST xast = null;  // Set to the exploded AST
+    public ArrayList<String> translate() throws RemoveNameConflictsException {
+        AST xast;  // Set to the exploded AST
 
-        for (int i = 0; i < st.disambiguateReport.size(); i++)
-            result.addElement((String) st.disambiguateReport.elementAt(i));
-        // System.out.println("Before: " + ast.toString());
-        // System.out.println("After renaming: " + ast.toString());
-        try
-        {
-            xast = PcalTranslate.Explode(ast, st);
-        } catch (PcalTranslateException e)
-        {
+        PcalTranslate pcalTranslate = new PcalTranslate(this.parseAlgorithm);
+
+        ArrayList<String> result = new ArrayList<>(st.disambiguateReport);
+        try {
+            xast = pcalTranslate.Explode(ast, st);
+        } catch (final PcalTranslateException e) {
             throw new RemoveNameConflictsException(e);
         }
         // System.out.println("After exploding: " + xast.toString());
-        try
-        {
-            PcalTLAGen tlaGenerator = new PcalTLAGen();
+        try {
+            final PcalTLAGen tlaGenerator = new PcalTLAGen(parseAlgorithm);
 //            result.addAll(tlaGenerator.generate(xast, st));
             result = tlaGenerator.generate(xast, st, result);
-        } catch (PcalTLAGenException e)
-        {
+        } catch (final PcalTLAGenException e) {
             throw new RemoveNameConflictsException(e);
         }
 
 // tla-pcal debugging
-//System.out.println("After Translation:");
-//System.out.println(xast.toString());
-        /*******************************************************************
-        * Following test added by LL on 31 Aug 2007.                       *
-        *******************************************************************/
-        try
-        {
-            if (ParseAlgorithm.hasDefaultInitialization)
-            {
+/*******************************************************************
+ * Following test added by LL on 31 Aug 2007.                       *
+ *******************************************************************/
+        try {
+            if (parseAlgorithm.hasDefaultInitialization) {
                 st.CheckForDefaultInitValue();
             }
-        } catch (PcalSymTabException e)
-        {
+        } catch (final PcalSymTabException e) {
             throw new RemoveNameConflictsException(e.getMessage());
         }
         return result;

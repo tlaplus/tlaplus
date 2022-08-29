@@ -34,25 +34,25 @@ import org.openjdk.jmh.annotations.State;
 
 @State(Scope.Benchmark)
 public class LongArrayBenchmark {
-	private LongArray array;
+    private LongArray array;
 
     @Setup
     public void up() throws IOException {
         final long elements = 1L << 10;
-		array = new LongArray(elements);
-		array.zeroMemory(1);
-		for (long i = 0L; i < elements; i++) {
-			array.set(i, Long.MAX_VALUE - i);
-		}
+        array = new LongArray(elements);
+        array.zeroMemory(1);
+        for (long i = 0L; i < elements; i++) {
+            array.set(i, Long.MAX_VALUE - i);
+        }
     }
-    
+
     @Benchmark
     public void AswapWithCopy() {
-    	array.swapCopy(0, array.size() - 1);
+        array.swapCopy(0, array.size() - 1);
     }
-    
-	@Benchmark
-	public void BswapGetSet() {
-    	array.swap(0, array.size() - 1);
+
+    @Benchmark
+    public void BswapGetSet() {
+        array.swap(0, array.size() - 1);
     }
 }

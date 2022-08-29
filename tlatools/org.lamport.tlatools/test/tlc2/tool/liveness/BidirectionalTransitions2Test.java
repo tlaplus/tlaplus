@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,26 +25,26 @@
  ******************************************************************************/
 package tlc2.tool.liveness;
 
+import org.junit.Test;
+import tlc2.output.EC;
+import tlc2.tool.ModelCheckerTestCase;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
-
 public class BidirectionalTransitions2Test extends ModelCheckerTestCase {
 
-	public BidirectionalTransitions2Test() {
-		super("BidirectionalTransitions", new String[] {"-config", "BidirectionalTransitions2.cfg"});
-	}
-	
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+    public BidirectionalTransitions2Test() {
+        super("BidirectionalTransitions", new String[]{"-config", "BidirectionalTransitions2.cfg"});
+    }
 
-	assertZeroUncovered();
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
+        assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+
+        assertZeroUncovered();
+    }
 }

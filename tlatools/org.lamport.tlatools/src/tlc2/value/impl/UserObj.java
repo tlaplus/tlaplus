@@ -7,21 +7,21 @@ package tlc2.value.impl;
 
 public abstract class UserObj {
 
-  /* Returns negative, 0, positive for less than, equal, greater than. */
-  public abstract int compareTo(Value val);
+    /* Returns negative, 0, positive for less than, equal, greater than. */
+    public abstract int compareTo(Value val);
 
-  /* True iff val is a member of this object. */
-  public abstract boolean member(Value val);
+    /* True iff val is a member of this object. */
+    public abstract boolean member(Value val);
 
-  public abstract boolean isFinite();
-  
-  /* The String representation.    */
-  public abstract StringBuffer toString(StringBuffer sb, int offset, boolean swallow);
+    public abstract boolean isFinite();
 
-  public final String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb = this.toString(sb, 0, true);
-    return sb.toString();
-  }
-  
+    /* The String representation.    */
+    public abstract StringBuilder toString(StringBuilder sb, int offset, boolean swallow);
+
+    public final String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb = this.toString(sb, 0, true);
+        return sb.toString();
+    }
+
 }

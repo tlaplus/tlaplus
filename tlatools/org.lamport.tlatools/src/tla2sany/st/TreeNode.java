@@ -7,18 +7,30 @@
 package tla2sany.st;
 
 public interface TreeNode {
-  public TreeNode[]             heirs();           // always returns an array, never null
-  public String                 getFilename();
-  public Location               getLocation();
-  public String                 getImage();
-  public int                    getKind();
-  public boolean                isKind( int k );
-  public TreeNode[]             zero();
-  public TreeNode[]             one();
-  public util.UniqueString      getUS();
-  public String[]               getPreComments();  // always returns an array, never null
-//  public String[]               getPostComments(); // always returns an array, never null
-  public boolean                local();
-  public void                   printST(int indentation);
-  public String					getHumanReadableImage();
+    TreeNode[] heirs();           // always returns an array, never null
+
+    String getFilename();
+
+    Location getLocation();
+
+    String getImage();
+
+    int getKind();
+
+    boolean isKind(int k);
+
+    TreeNode[] zero();
+
+    TreeNode[] one();
+
+    util.UniqueString getUS();
+
+    String[] getPreComments();  // always returns an array, never null
+
+    //  public String[]               getPostComments(); // always returns an array, never null
+    boolean local();
+
+    void printST(int indentation);
+
+    String getHumanReadableImage();
 }

@@ -2,19 +2,17 @@
 // Last modified on Wed Oct 17 15:23:57 PDT 2001 by yuanyu
 package util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
-/** A <code>BufferedDataOutputStream</code> is an optimized
-    combination of a <code>java.io.BufferedOutputStream</code>
-    and a <code>java.io.DataOutputStream</code>.<P>
-   
-    For efficiency, <code>BufferedDataOutputStream</code>s are 
-    unmonitored. Hence, it is the client's responsibility to lock 
-    the stream before using it. */
+/**
+ * A <code>BufferedDataOutputStream</code> is an optimized
+ * combination of a <code>java.io.BufferedOutputStream</code>
+ * and a <code>java.io.DataOutputStream</code>.<P>
+ * <p>
+ * For efficiency, <code>BufferedDataOutputStream</code>s are
+ * unmonitored. Hence, it is the client's responsibility to lock
+ * the stream before using it.
+ */
 
 public final class BufferedDataOutputStream extends FilterOutputStream implements IDataOutputStream {
     private byte[] buff; /* buffer of bytes to write */
@@ -28,93 +26,123 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
        this.temp != null && this.temp.length >= 8
     */
 
-    /** Initialize this output stream. The stream will be closed
-        initially; use the <code>open</code> method below to
-        open it on an underlying <code>OutputStream</code>. */
+    /**
+     * Initialize this output stream. The stream will be closed
+     * initially; use the <code>open</code> method below to
+     * open it on an underlying <code>OutputStream</code>.
+     */
     public BufferedDataOutputStream() {
         super(null);
         this.initFields();
     }
 
-    /** Open this stream on the underlying output stream <code>os</code>. */
-    public BufferedDataOutputStream(OutputStream os) {
+    /**
+     * Open this stream on the underlying output stream <code>os</code>.
+     */
+    public BufferedDataOutputStream(final OutputStream os) {
         // Initialize fields
         super(os);
         this.initFields();
     }
-    
-    /** Open this output stream on the underlying output stream
-        <code>new FileOutputStream(name)</code>. */
-    public BufferedDataOutputStream(String name) throws IOException {
+
+    /**
+     * Open this output stream on the underlying output stream
+     * <code>new FileOutputStream(name)</code>.
+     */
+    public BufferedDataOutputStream(final String name) throws IOException {
         this(new FileOutputStream(name));
     }
-    
-    /** Open this output stream on the underlying output stream
-        <code>new FileOutputStream(file)</code>. */
-    public BufferedDataOutputStream(File file) throws IOException {
+
+    /**
+     * Open this output stream on the underlying output stream
+     * <code>new FileOutputStream(file)</code>.
+     */
+    public BufferedDataOutputStream(final File file) throws IOException {
         this(new FileOutputStream(file));
     }
-    
+
     private void initFields() {
         this.buff = new byte[8192];
         this.len = 0;
         this.temp = new byte[8];
     }
-    
-    /** Reopen this output stream on <code>os</code>. This method need
-        not be called on a newly initialized stream, but it can be called
-        after the stream has been closed to re-open the stream on a
-        different underlying stream without requiring internal resources
-        to be re-allocated. */
-    public void open(OutputStream os) throws IOException {
+
+    /**
+     * Reopen this output stream on <code>os</code>. This method need
+     * not be called on a newly initialized stream, but it can be called
+     * after the stream has been closed to re-open the stream on a
+     * different underlying stream without requiring internal resources
+     * to be re-allocated.
+     */
+    public void open(final OutputStream os) {
         this.out = os;
         this.len = 0;
     }
-    
-    /** Equivalent to <code>this.open(new FileOutputStream(name))</code>. */
-    public void open(String name) throws IOException {
+
+    /**
+     * Equivalent to <code>this.open(new FileOutputStream(name))</code>.
+     */
+    public void open(final String name) throws IOException {
         this.open(new FileOutputStream(name));
     }
 
-    /** Equivalent to <code>this.open(new FileOutputStream(file))</code>. */
-    public void open(File file) throws IOException {
+    /**
+     * Equivalent to <code>this.open(new FileOutputStream(file))</code>.
+     */
+    public void open(final File file) throws IOException {
         this.open(new FileOutputStream(file));
     }
 
-    /** Flush all bytes written to this stream to the underlying
-        output stream. */
-    public final void flush() throws IOException {
+    /**
+     * Flush all bytes written to this stream to the underlying
+     * output stream.
+     */
+    @Override
+    public void flush() throws IOException {
         this.out.write(this.buff, 0, this.len);
         this.out.flush();
         this.len = 0;
     }
 
-    /** Closes this stream and its underlying stream, after first
-        flushing any buffered data. */
-    public final void close() throws IOException {
+    /**
+     * Closes this stream and its underlying stream, after first
+     * flushing any buffered data.
+     */
+    @Override
+    public void close() throws IOException {
         this.flush();
         this.out.close();
         this.out = null;
     }
-    
-    /** Write <code>b</code> to this stream. */
-    public final void write(byte b) throws IOException {
+
+    /**
+     * Write <code>b</code> to this stream.
+     */
+    public void write(final byte b) throws IOException {
         this.writeByte(b);
     }
-    
-    /** Write the <code>b.length</code> bytes of <code>b</code> to 
-        this stream. */
-    public final void write(byte[] b) throws IOException {
+
+    /**
+     * Write the <code>b.length</code> bytes of <code>b</code> to
+     * this stream.
+     */
+    @Override
+    public void write(final byte[] b) throws IOException {
         this.write(b, 0, b.length);
     }
-    
-    /** Write <code>n</code> bytes of <code>b</code> starting
-        at position <code>off</code> to this stream. */
-    public final void write(byte[] b, int off, int n) throws IOException {
+
+    /**
+     * Write <code>n</code> bytes of <code>b</code> starting
+     * at position <code>off</code> to this stream.
+     */
+    @Override
+    public void write(final byte[] b, int off, int n) throws IOException {
         while (n > 0) {
-            int toCopy = Math.min(n, this.buff.length - this.len);
+            final int toCopy = Math.min(n, this.buff.length - this.len);
             System.arraycopy(b, off, this.buff, this.len, toCopy);
-            this.len += toCopy; off += toCopy; n -= toCopy;
+            this.len += toCopy;
+            off += toCopy;
+            n -= toCopy;
             if (this.buff.length == this.len) {
                 // write buffer to underlying stream
                 this.out.write(this.buff, 0, this.len);
@@ -122,9 +150,11 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
             }
         }
     }
-    
-    /** Write the byte <code>b</code> to this stream. */
-    public final void writeByte(byte b) throws IOException {
+
+    /**
+     * Write the byte <code>b</code> to this stream.
+     */
+    public void writeByte(final byte b) throws IOException {
         this.buff[this.len++] = b;
         if (this.buff.length == this.len) {
             // write buffer to underlying stream
@@ -132,35 +162,44 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
             this.len = 0;
         }
     }
-    
-    /** Write the boolean value <code>b</code> to this stream as
-        a single byte. */
-    public final void writeBoolean(boolean bool) throws IOException {
-        byte b = (bool ? (byte)1 : (byte)0);
+
+    /**
+     * Write the boolean value <code>b</code> to this stream as
+     * a single byte.
+     */
+    public void writeBoolean(final boolean bool) throws IOException {
+        final byte b = (bool ? (byte) 1 : (byte) 0);
         this.writeByte(b);
     }
-    
-    /** Write the short value <code>s</code> to this stream as
-        two bytes. */
-    public final void writeShort(short s) throws IOException {
+
+    /**
+     * Write the short value <code>s</code> to this stream as
+     * two bytes.
+     */
+    public void writeShort(final short s) throws IOException {
         this.temp[0] = (byte) ((s >>> 8) & 0xff);
         this.temp[1] = (byte) (s & 0xff);
         this.write(this.temp, 0, 2);
     }
-    
-    /** Write the integer value <code>i</code> to this stream as
-        four bytes. */
-    public final void writeInt(int i) throws IOException {
+
+    /**
+     * Write the integer value <code>i</code> to this stream as
+     * four bytes.
+     */
+    @Override
+    public void writeInt(final int i) throws IOException {
         this.temp[0] = (byte) ((i >>> 24) & 0xff);
         this.temp[1] = (byte) ((i >>> 16) & 0xff);
         this.temp[2] = (byte) ((i >>> 8) & 0xff);
         this.temp[3] = (byte) (i & 0xff);
         this.write(this.temp, 0, 4);
     }
-    
-    /** Write the long value <code>l</code> to this stream as
-        eight bytes. */
-    public final void writeLong(long l) throws IOException {
+
+    /**
+     * Write the long value <code>l</code> to this stream as
+     * eight bytes.
+     */
+    public void writeLong(final long l) throws IOException {
         this.temp[0] = (byte) ((l >>> 56) & 0xff);
         this.temp[1] = (byte) ((l >>> 48) & 0xff);
         this.temp[2] = (byte) ((l >>> 40) & 0xff);
@@ -171,28 +210,38 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
         this.temp[7] = (byte) (l & 0xff);
         this.write(this.temp, 0, 8);
     }
-    
-    /** Write the float value <code>f</code> to this stream as
-        four bytes. */
-    public final void writeFloat(float f) throws IOException {
-	    this.writeInt(Float.floatToIntBits(f));
-    }
-    
-    /** Write the double value <code>d</code> to this stream as
-        eight bytes. */
-    public final void writeDouble(double d) throws IOException {
-	    this.writeLong(Double.doubleToLongBits(d));
+
+    /**
+     * Write the float value <code>f</code> to this stream as
+     * four bytes.
+     */
+    public void writeFloat(final float f) throws IOException {
+        this.writeInt(Float.floatToIntBits(f));
     }
 
-    /** Write the characters of the string <code>s</code> to this
-        stream as a sequence of bytes. */
-    public final void writeString(String s) throws IOException {
+    /**
+     * Write the double value <code>d</code> to this stream as
+     * eight bytes.
+     */
+    public void writeDouble(final double d) throws IOException {
+        this.writeLong(Double.doubleToLongBits(d));
+    }
+
+    /**
+     * Write the characters of the string <code>s</code> to this
+     * stream as a sequence of bytes.
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    public void writeString(final String s) throws IOException {
         int n = s.length();
         int off = 0;
         while (n > 0) {
-            int toCopy = Math.min(n, this.buff.length - this.len);
+            final int toCopy = Math.min(n, this.buff.length - this.len);
             s.getBytes(off, off + toCopy, this.buff, this.len);
-            this.len += toCopy; off += toCopy; n -= toCopy;
+            this.len += toCopy;
+            off += toCopy;
+            n -= toCopy;
             if (this.buff.length == this.len) {
                 // write buffer to underlying stream
                 this.out.write(this.buff, 0, this.len);
@@ -200,15 +249,17 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
             }
         }
     }
-    
-    /** Write <code>n</code> characters of <code>chars</code> starting 
-        at offset <code>off</code> to this stream as a sequence of bytes. */
-    public final void writeChars(char[] chars, int off, int n) throws IOException {
-        int finOff = off + n;
+
+    /**
+     * Write <code>n</code> characters of <code>chars</code> starting
+     * at offset <code>off</code> to this stream as a sequence of bytes.
+     */
+    public void writeChars(final char[] chars, int off, final int n) throws IOException {
+        final int finOff = off + n;
         while (off < finOff) {
             // Copy (part of) chars to this.buff
-            int endOff = Math.min(finOff, off + this.buff.length - this.len);
-            while (off < endOff) this.buff[this.len++] = (byte)chars[off++];
+            final int endOff = Math.min(finOff, off + this.buff.length - this.len);
+            while (off < endOff) this.buff[this.len++] = (byte) chars[off++];
 
             // If this.buff is full, write it out
             if (this.buff.length == this.len) {
@@ -216,26 +267,29 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
                 this.out.write(this.buff, 0, this.len);
                 this.len = 0;
             }
-        }        
+        }
     }
-    
-    /** Write the string <code>s</code> to the stream in such a way that it
-        can be read back by <code>BufferedDataInputStream.readAnyString</code>,
-        even if <code>s</code> is <code>null</code> or if it contains newline 
-        characters. */
-    public final void writeAnyString(String s) throws IOException {
-      if (s == null) {
-	this.writeInt(-1);
-      }
-      else {
-	this.writeInt(s.length());
-	this.writeString(s);
-      }
+
+    /**
+     * Write the string <code>s</code> to the stream in such a way that it
+     * can be read back by <code>BufferedDataInputStream.readAnyString</code>,
+     * even if <code>s</code> is <code>null</code> or if it contains newline
+     * characters.
+     */
+    public void writeAnyString(final String s) throws IOException {
+        if (s == null) {
+            this.writeInt(-1);
+        } else {
+            this.writeInt(s.length());
+            this.writeString(s);
+        }
     }
-    
-    /** Write the characters of the string <code>s</code> to this
-        stream as a sequence of bytes, followed by a newline. */
-    public final void writeLine(String s) throws IOException {
+
+    /**
+     * Write the characters of the string <code>s</code> to this
+     * stream as a sequence of bytes, followed by a newline.
+     */
+    public void writeLine(final String s) throws IOException {
         this.writeString(s);
         this.writeByte((byte) '\n');
     }

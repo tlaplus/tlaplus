@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,128 +26,128 @@
 
 package tlc2.util;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.junit.Test;
-
 public class LongVecTest {
 
-	protected LongVec getLongVec() {
-		// default capacity
-		return new LongVec();
-	}
-	
-	@Test
-	public void testReadBeyondCapacity() {
-		final LongVec vec = getLongVec();
-		try {
-			vec.elementAt(0);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Read beyond capacity");
-	}
+    protected LongVec getLongVec() {
+        // default capacity
+        return new LongVec();
+    }
 
-	@Test
-	public void testAddAndReadBeyondCapacity() {
-		final LongVec vec = getLongVec();
-		vec.addElement(1L);
-		assertEquals(1L, vec.elementAt(0));
-		try {
-			vec.elementAt(1);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Read beyond capacity");
-	}
+    @Test
+    public void testReadBeyondCapacity() {
+        final LongVec vec = getLongVec();
+        try {
+            vec.get(0);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Read beyond capacity");
+    }
 
-	@Test
-	public void testRemoveBeyondCapacity() {
-		final LongVec vec = new LongVec(10);
-		for (int i = -1; i <= 10; i++) {
-			try {
-				vec.removeElement(0);
-			} catch (IndexOutOfBoundsException e) {
-				continue;
-			}
-			fail("Read beyond capacity");
-		}
-	}
+    @Test
+    public void testAddAndReadBeyondCapacity() {
+        final LongVec vec = getLongVec();
+        vec.add(1L);
+        assertEquals(1L, vec.get(0));
+        try {
+            vec.get(1);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Read beyond capacity");
+    }
 
-	@Test
-	public void testAddRemoveBeyondCapacity() {
-		final LongVec vec = new LongVec(10);
-		vec.addElement(1L);
-		vec.removeElement(0);
-		try {
-			vec.removeElement(1);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Read beyond capacity");
-	}
-	
-	@Test
-	public void testRemoveAndGet() {
-		final LongVec vec = getLongVec();
-		vec.addElement(1L);
-		vec.addElement(2L);
-		vec.addElement(3L);
-		
-		assertEquals(1L, vec.elementAt(0));
-		assertEquals(2L, vec.elementAt(1));
-		assertEquals(3L, vec.elementAt(2));
-		
-		vec.removeElement(1);
-		assertEquals(1L, vec.elementAt(0));
-		assertEquals(3L, vec.elementAt(1));
-		// There must not be an element at idx 2 anymore!
-		try {
-			vec.elementAt(2);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("A new elements magically appeared in LongVec");
-	}
-	
-	@Test
-	public void testRemoveWrongOrder() {
-		final LongVec vec = getLongVec();
-		vec.addElement(1L);
-		vec.addElement(2L);
-		
-		assertEquals(1L, vec.elementAt(0));
-		assertEquals(2L, vec.elementAt(1));
-		
-		vec.removeElement(0);
-		try {
-			vec.removeElement(1);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Removed non-existing element");
-	}
+    @Test
+    public void testRemoveBeyondCapacity() {
+        final LongVec vec = new LongVec(10);
+        for (int i = -1; i <= 10; i++) {
+            try {
+                vec.removeIndexMovingLastElement(0);
+            } catch (final IndexOutOfBoundsException e) {
+                continue;
+            }
+            fail("Read beyond capacity");
+        }
+    }
 
-	@Test
-	public void testGetNegative() {
-		final LongVec vec = getLongVec();
-		try {
-			vec.elementAt(-1);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Read negative");
-	}
+    @Test
+    public void testAddRemoveBeyondCapacity() {
+        final LongVec vec = new LongVec(10);
+        vec.add(1L);
+        vec.removeIndexMovingLastElement(0);
+        try {
+            vec.removeIndexMovingLastElement(1);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Read beyond capacity");
+    }
 
-	@Test
-	public void testRemoveNegative() {
-		final LongVec vec = getLongVec();
-		try {
-			vec.removeElement(-1);
-		} catch (IndexOutOfBoundsException e) {
-			return;
-		}
-		fail("Removed negative");
-	}
+    @Test
+    public void testRemoveAndGet() {
+        final LongVec vec = getLongVec();
+        vec.add(1L);
+        vec.add(2L);
+        vec.add(3L);
+
+        assertEquals(1L, vec.get(0));
+        assertEquals(2L, vec.get(1));
+        assertEquals(3L, vec.get(2));
+
+        vec.removeIndexMovingLastElement(1);
+        assertEquals(1L, vec.get(0));
+        assertEquals(3L, vec.get(1));
+        // There must not be an element at idx 2 anymore!
+        try {
+            vec.get(2);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("A new elements magically appeared in LongVec");
+    }
+
+    @Test
+    public void testRemoveWrongOrder() {
+        final LongVec vec = getLongVec();
+        vec.add(1L);
+        vec.add(2L);
+
+        assertEquals(1L, vec.get(0));
+        assertEquals(2L, vec.get(1));
+
+        vec.removeIndexMovingLastElement(0);
+        try {
+            vec.removeIndexMovingLastElement(1);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Removed non-existing element");
+    }
+
+    @Test
+    public void testGetNegative() {
+        final LongVec vec = getLongVec();
+        try {
+            vec.get(-1);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Read negative");
+    }
+
+    @Test
+    public void testRemoveNegative() {
+        final LongVec vec = getLongVec();
+        try {
+            vec.removeIndexMovingLastElement(-1);
+        } catch (final IndexOutOfBoundsException e) {
+            return;
+        }
+        fail("Removed negative");
+    }
 }

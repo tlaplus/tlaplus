@@ -34,43 +34,38 @@ import org.openjdk.jmh.annotations.State;
 
 import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
-import tlc2.value.impl.Enumerable;
-import tlc2.value.impl.IntValue;
-import tlc2.value.impl.SetEnumValue;
 
 @State(Scope.Benchmark)
 public class SetEnumValueBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
+        FP64.Init();
+    }
 
-	private static ValueVec getValues(int from, int to) {
-		final ValueVec vec = new ValueVec(to - from);
-		for (int i = from; i <= to; i++) {
-			vec.addElement(IntValue.gen(i));
-		}
-		return vec;
-	}
-	
-	@Param({"10", "12", "14", "16"})
-	public int numOfElements;
-	
-	@Param({"16", "18", "20", "22"})
-	public int size;
+    @Param({"10", "12", "14", "16"})
+    public int numOfElements;
+    @Param({"16", "18", "20", "22"})
+    public int size;
+    public Enumerable setEnumValue;
 
-	public Enumerable setEnumValue;
-		
-	@Setup(Level.Invocation)
-	public void setup() {
-		setEnumValue = (Enumerable) new SetEnumValue(getValues(1, 1 << size), false).normalize();
-	}
+    private static ValueVec getValues(final int from, final int to) {
+        final ValueVec vec = new ValueVec(to - from);
+        for (int i = from; i <= to; i++) {
+            vec.add(IntValue.gen(i));
+        }
+        return vec;
+    }
 
-	@Benchmark
-	public Enumerable randomSubset() {
-		return setEnumValue.getRandomSubset(1 << numOfElements);
-	}
+    @Setup(Level.Invocation)
+    public void setup() {
+        setEnumValue = (Enumerable) new SetEnumValue(getValues(1, 1 << size), false).normalize();
+    }
+
+    @Benchmark
+    public Enumerable randomSubset() {
+        return setEnumValue.getRandomSubset(1 << numOfElements);
+    }
 }

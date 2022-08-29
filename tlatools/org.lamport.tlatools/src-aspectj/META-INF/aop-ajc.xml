@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<aspectj>
+
+	<aspects>
+		<aspect name="tlc2.tool.WorkerMonitorAspect"/>
+		<aspect name="tlc2.tool.distributed.RMIMethodMonitorAspect"/>
+		<aspect name="tlc2.tool.distributed.TLCServerMonitorAspect"/>
+		<!-- 
+		<aspect name="tlc2.tool.CostModelAspect"/>
+		 -->
+	</aspects>
+	
+	<!-- 
+	Dump load-time weaving classes to disk.
+	https://www.eclipse.org/aspectj/doc/released/pdguide/ltwdump.html#ltwdump-examples 
+	-->
+    <weaver options="-verbose -debug">
+    		<!-- dump before and after they are woven. -->
+	        <dump within="tlc2..*" beforeandafter="true"/> 
+    	    <include within="tlc2..*"/>
+	</weaver>
+</aspectj>

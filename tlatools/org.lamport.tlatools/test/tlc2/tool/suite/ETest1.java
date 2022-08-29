@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,18 +26,21 @@
 package tlc2.tool.suite;
 
 import org.junit.Test;
-
 import tlc2.output.EC.ExitStatus;
 
 public class ETest1 extends SuiteETestCase {
 
-	public ETest1() {
-		super(ExitStatus.ERROR_SPEC_PARSE);
-	}
-	
-	@Test
-	public void testSpec() {
-		assertSubstring("*** Errors: 1\n\n" + "line 18, col 12 to line 18, col 17 of module etest1\n\n"
-				+ "The operator Foo requires 1 arguments.");
-	}
+    public ETest1() {
+        super(ExitStatus.ERROR_SPEC_PARSE);
+    }
+
+    @Test
+    public void testSpec() {
+        assertSubstring("""
+                *** Errors: 1
+
+                line 18, col 12 to line 18, col 17 of module etest1
+
+                The operator Foo requires 1 arguments.""");
+    }
 }

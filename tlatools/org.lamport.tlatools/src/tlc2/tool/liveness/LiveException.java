@@ -7,15 +7,16 @@ package tlc2.tool.liveness;
 
 public class LiveException extends RuntimeException {
 
-	public final int errorCode;
+    private static final long serialVersionUID = 8031014064543953310L;
+    public final int errorCode;
 
-	public LiveException(int errorCode) {
-		super();
-		this.errorCode = errorCode;
-	}
+    public LiveException(final int errorCode) {
+        super();
+        this.errorCode = errorCode;
+    }
 
-	public LiveException(int errorCode, String msg) {
-		super(msg);
-		this.errorCode = errorCode;
-	}
+    public LiveException(final int errorCode, final String msg) {
+        super(msg);
+        this.errorCode = errorCode;
+    }
 }

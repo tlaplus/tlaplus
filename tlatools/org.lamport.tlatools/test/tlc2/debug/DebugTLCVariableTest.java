@@ -2,7 +2,7 @@
  * Copyright (c) 2021 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,55 +25,54 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.Random;
-
 import org.junit.Test;
-
 import tlc2.module.Strings;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.TupleValue;
 
+import java.util.List;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+
 public class DebugTLCVariableTest {
-	private static final Random rnd = new Random();
+    private static final Random rnd = new Random();
 
-	@Test
-	public void testFiniteEmptySetValue() {
-		assertEquals(0, new DebugTLCVariable("4711").setInstance(new SetEnumValue()).getNested(rnd).size());
-	}
+    @Test
+    public void testFiniteEmptySetValue() {
+        assertEquals(0, new DebugTLCVariable("4711").setInstance(new SetEnumValue()).getNested(rnd).size());
+    }
 
-	@Test
-	public void testFiniteSetValue() {
-		List<TLCVariable> outer = new DebugTLCVariable("4711").setInstance(new SetEnumValue(new SetEnumValue()))
-				.getNested(rnd);
-		assertEquals(1, outer.size());
-		assertEquals(0, outer.get(0).getNested(rnd).size());
-	}
+    @Test
+    public void testFiniteSetValue() {
+        final List<TLCVariable> outer = new DebugTLCVariable("4711").setInstance(new SetEnumValue(new SetEnumValue()))
+                .getNested(rnd);
+        assertEquals(1, outer.size());
+        assertEquals(0, outer.get(0).getNested(rnd).size());
+    }
 
-	@Test
-	public void testFiniteNestedValue() {
-		List<TLCVariable> vars = new DebugTLCVariable("4711")
-				.setInstance(new SetEnumValue(new SetEnumValue(new TupleValue(IntValue.ValZero, IntValue.ValOne))))
-				.getNested(rnd);
-		assertEquals(1, vars.size());
+    @Test
+    public void testFiniteNestedValue() {
+        List<TLCVariable> vars = new DebugTLCVariable("4711")
+                .setInstance(new SetEnumValue(new SetEnumValue(new TupleValue(IntValue.ValZero, IntValue.ValOne))))
+                .getNested(rnd);
+        assertEquals(1, vars.size());
 
-		vars = vars.get(0).getNested(rnd);
-		assertEquals(1, vars.size());
+        vars = vars.get(0).getNested(rnd);
+        assertEquals(1, vars.size());
 
-		vars = vars.get(0).getNested(rnd);
-		assertEquals(2, vars.size());
+        vars = vars.get(0).getNested(rnd);
+        assertEquals(2, vars.size());
 
-		for (TLCVariable var : vars) {
-			assertEquals(0, var.getNested(rnd).size());
-		}
-	}
+        for (final TLCVariable var : vars) {
+            assertEquals(0, var.getNested(rnd).size());
+        }
+    }
 
-	@Test
-	public void testInfiniteValue() {
-		assertEquals(0, new DebugTLCVariable("4711").setInstance(Strings.STRING()).getNested(rnd).size());
-	}
+    @Test
+    public void testInfiniteValue() {
+        assertEquals(0, new DebugTLCVariable("4711").setInstance(Strings.STRING()).getNested(rnd).size());
+    }
 }

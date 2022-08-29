@@ -7,7 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface ExternalSortable /* extends Comparable -- eliminated 12 Jan 09 because it creates an error in Java 1.6 */ {
-  public BigInt read(InputStream in) throws IOException;
-  public void write(OutputStream out) throws IOException;
+    BigInt read(InputStream in) throws IOException;
+
+    void write(OutputStream out) throws IOException;
 }
 

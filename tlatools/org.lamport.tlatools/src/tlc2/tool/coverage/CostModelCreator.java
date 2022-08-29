@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,29 +25,9 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
-import static tlc2.tool.ToolGlobals.OPCODE_unchanged;
-
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
-import tla2sany.semantic.ExprNode;
-import tla2sany.semantic.ExprOrOpArgNode;
-import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.SemanticNode;
-import tla2sany.semantic.Subst;
-import tla2sany.semantic.SubstInNode;
-import tla2sany.semantic.SymbolNode;
+import tla2sany.semantic.*;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -55,7 +35,10 @@ import tlc2.tool.ITool;
 import tlc2.tool.coverage.ActionWrapper.Relation;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
-import tlc2.util.Vect;
+
+import java.util.*;
+
+import static tlc2.tool.ToolGlobals.OPCODE_unchanged;
 
 /**
  * <h1>Why a CostModel:</h1> Why a CostModelCreator to traverses the semantic
@@ -93,7 +76,7 @@ import tlc2.util.Vect;
  * reasons are unknown and further investigations have been abandoned. Instead,
  * the problem has been side-stepped by refactorings in ModelChecker and Tool.
  * [1]
- * https://bitbucket.org/parvmor/tarjanconcurrentscc/src/unionfind/specifications/MCBloemenSCC.tla
+ * <a href="https://bitbucket.org/parvmor/tarjanconcurrentscc/src/unionfind/specifications/MCBloemenSCC.tla">...</a>
  * altered to terminate TLC after five minutes with TLCSet("exit",...)
  * <p>
  * The refactorings essentially decomposed large methods into smaller ones (see
@@ -148,349 +131,333 @@ import tlc2.util.Vect;
  */
 public class CostModelCreator extends ExplorerVisitor {
 
-	private final Deque<CostModelNode> stack = new ArrayDeque<>();
-	private final Map<ExprOrOpArgNode, Subst> substs = new HashMap<>();
-	private final Map<OpApplNode, Set<OpApplNodeWrapper>> node2Wrapper = new HashMap<>();
-	private final Set<OpDefNode> opDefNodes = new HashSet<>();
-	// Set of OpDefNodes occurring in LetIns and their OpApplNodes.
-	private final Map<ExprNode, ExprNode> letIns = new HashMap<>();
-	// OpAppNode does not implement equals/hashCode which causes problem when added
-	// to sets or maps. E.g. for a test, an OpApplNode instance belonging to
-	// Sequences.tla showed up in coverage output.
-	private final Set<OpApplNodeWrapper> nodes = new HashSet<>();
-	private final ITool tool;
-	
-	private ActionWrapper root;
-	private Context ctx = Context.Empty;
-	
-	private CostModelCreator(final SemanticNode root, final ITool tool) {
-		this.tool = tool;
-		this.stack.push(new RecursiveOpApplNodeWrapper());
-		root.walkGraph(new CoverageHashTable(opDefNodes), this);
-	}
+    private final Deque<CostModelNode> stack = new ArrayDeque<>();
+    private final Map<ExprOrOpArgNode, Subst> substs = new HashMap<>();
+    private final Map<OpApplNode, Set<OpApplNodeWrapper>> node2Wrapper = new HashMap<>();
+    private final Set<OpDefNode> opDefNodes = new HashSet<>();
+    // Set of OpDefNodes occurring in LetIns and their OpApplNodes.
+    private final Map<ExprNode, ExprNode> letIns = new HashMap<>();
+    // OpAppNode does not implement equals/hashCode which causes problem when added
+    // to sets or maps. E.g. for a test, an OpApplNode instance belonging to
+    // Sequences.tla showed up in coverage output.
+    private final Set<OpApplNodeWrapper> nodes = new HashSet<>();
+    private final ITool tool;
 
-	// root cannot be type OpApplNode but has to be SemanticNode (see Test216).
-	private CostModelCreator(final ITool tool) {
-		this.tool = tool;
-		// MAK 10/08/2018: Annotate OApplNodes in the semantic tree that correspond to
-		// primed vars. It is unclear why OpApplNodes do not get marked as primed when
-		// instantiated. The logic in Tool#getPrimedLocs is too obscure to tell.
-		final ObjLongTable<SemanticNode>.Enumerator<SemanticNode> keys = tool.getPrimedLocs().keys();
-		SemanticNode sn;
-		while ((sn = keys.nextElement()) != null) {
-			this.nodes.add(new OpApplNodeWrapper((OpApplNode) sn, null));
-		}
-	}
+    private ActionWrapper root;
+    private Context ctx = Context.Empty;
 
-	private CostModel getCM(final Action act, final ActionWrapper.Relation relation) {
-		this.substs.clear();
-		this.node2Wrapper.clear();
-		this.opDefNodes.clear();
-		this.letIns.clear();
-		this.stack.clear();
-		this.ctx = Context.Empty;
-		
-		this.root = new ActionWrapper(act, relation);
-		this.stack.push(root);
-		act.pred.walkGraph(new CoverageHashTable(opDefNodes), this);
-		
-		assert this.stack.peek().isRoot();
-		return this.stack.peek().getRoot();
-	}
+    private CostModelCreator(final SemanticNode root, final ITool tool) {
+        this.tool = tool;
+        this.stack.push(new RecursiveOpApplNodeWrapper());
+        root.walkGraph(new CoverageHashTable(opDefNodes), this);
+    }
 
-	@Override
-	public void preVisit(final ExploreNode exploreNode) {
-		if (exploreNode instanceof OpApplNode) {
-			final OpApplNode opApplNode = (OpApplNode) exploreNode;
-			if (opApplNode.isStandardModule()) {
-				return;
-			}
-			
-	        final OpApplNodeWrapper oan;
-			if (opApplNode.hasOpcode(OPCODE_unchanged)) {
-				oan = new UnchangedOpApplNodeWrapper(opApplNode, this.root);
-			} else {
-				oan = new OpApplNodeWrapper(opApplNode, this.root);
-			}
-			
-			if (nodes.contains(oan)) {
-				oan.setPrimed();
-			}
-			
-			// A (recursive) function definition nested in LetIn:
-			//   LET F[n \in S] == e
-			//   IN F[...]
-			// with e either built from F or not.
-			if (letIns.containsKey(opApplNode)) {
-				// At the visit of the LETIN node in the walk over the semantic graph we stored
-				// the mapping from the LET part to the IN part in this.lets (see LetInNode below).
-				// Here, we add the LET parts(s) to the lets of the IN part if it is found on
-				// the stack (this is more involved because we have to find the OANWrappers and
-				// not just the OANs). 
-				final ExprNode in = letIns.get(opApplNode);
-				for (CostModelNode cmn : stack) {
-					final SemanticNode node = cmn.getNode();
-					if (node == in && cmn instanceof OpApplNodeWrapper) {
-						// addLets instead of addChild because lets can be added multiple times
-						// whereas addChild asserts a child to be added only once.
-						((OpApplNodeWrapper) cmn).addLets(oan);
-					}
-				}
-			}
-			
-			// CONSTANT operators (including definition overrides...)
-			final SymbolNode operator = opApplNode.getOperator();
-			final Object val = tool.lookup(operator);
-			if (val instanceof OpDefNode && operator != val) { // second conjunct bc lookup returns operator when nothing else found.
-				final OpDefNode odn = (OpDefNode) val;
-				final ExprNode body = odn.getBody();
-				if (body instanceof OpApplNode) {
-					final CostModelCreator substitution = new CostModelCreator(body, tool);
-					oan.addChild((OpApplNodeWrapper) substitution.getModel());
-				}
-			}			
-			
-			// RECURSIVE
-			if (operator instanceof OpDefNode) {
-				final OpDefNode odn = (OpDefNode) operator;
-				if (odn.getInRecursive()) {
-					stack.stream()
-							.filter(w -> w.getNode() != null && w.getNode() instanceof OpApplNode
-									&& ((OpApplNode) w.getNode()).getOperator() == odn)
-							.findFirst().ifPresent(cmn -> oan.setRecursive(cmn));
-				}
-			}
+    // root cannot be type OpApplNode but has to be SemanticNode (see Test216).
+    private CostModelCreator(final ITool tool) {
+        this.tool = tool;
+        // MAK 10/08/2018: Annotate OApplNodes in the semantic tree that correspond to
+        // primed vars. It is unclear why OpApplNodes do not get marked as primed when
+        // instantiated. The logic in Tool#getPrimedLocs is too obscure to tell.
+        final ObjLongTable<SemanticNode>.Enumerator<SemanticNode> keys = tool.getPrimedLocs().keys();
+        SemanticNode sn;
+        while ((sn = keys.nextElement()) != null) {
+            this.nodes.add(new OpApplNodeWrapper((OpApplNode) sn, null));
+        }
+    }
 
-			// Higher-order operators/Operators as arguments (LAMBDA, ...)
-			//
-			// line X: Foo(Op(_), S) == \A s \in S: Op(s)
-			// line ?: ...
-			// line Y: Bar == Foo(LAMBDA e: e..., {1,2,3})
-			//
-			// This is the most involved part of CMC: The task is to make the OANW
-			// corresponding to the RHS of the LAMBDA expression on line Y a child of Op(s)
-			// on line X. However, the graph exploration is DFS which means that we haven't
-			// seen the LAMBDA on line Y when we are at the Op(s) on line X and we've
-			// (mostly) forgotten about Op(s) when we see the LAMBDA. ToolImpl - as part of
-			// its DFS over the semantic graph - passes a context along which gets extended
-			// or *branched*. Here, we cannot pass a Context along the decent but instead
-			// keep a single, global context. 
-			//
-			// The global context does not create a problem with regards to correctness, but
-			// can lead to long context chains for larger specifications. Therefore, only
-			// extend the context when opApplNode.argsContainOpArgNodes() is true, i.e. when
-			// one or more arguments of an operator are also operators (such as a LAMBDA).
-			// Without this safeguard, the time to create the CostModel for the SchedMono
-			// specification took approximately 60 seconds. With the safeguard, it is down
-			// to a second or two.
-			//
-			// To summarize, this is a clutch that has been hacked to be good enough!
-			// 
-			// if-branches 1., 2., and 3. below are evaluated in three distinct
-			// invocation of outer preVisit for different ExploreNodes.
-			if (tool != null && operator instanceof OpDefNode && opApplNode.hasOpcode(0)
-					&& opApplNode.argsContainOpArgNodes()) {
-				// 1) Maintain Context for all OpApplNode iff one or more of its args are of
-				// type OpArgNode. This is more restrictive than Tool.
-				final OpDefNode odn = (OpDefNode) operator;
-				if (odn.hasOpcode(0) && !odn.isStandardModule()) {
-					this.ctx = tool.getOpContext(odn, opApplNode.getArgs(), ctx, false);
-				}
-			}
-			final Object lookup = this.ctx.lookup(opApplNode.getOperator());
-			if (lookup instanceof OpDefNode) {
-				// 2) Context has an entry for the given body where body is 'LAMBDA e: e...' and
-				// oan is 'Op(s)'. Remember for later.
-				final ExprNode body = ((OpDefNode) lookup).getBody();
-				if (body instanceof OpApplNode) {
-					// Design choice:
-					// Might as well store the mapping from body to oan via
-					// body#setToolObject(tla2sany.semantic.FrontEnd.getToolId(), oan) instead of in
-					// node2Wrapper. However, node2Wrapper can be gc'ed after the CostModel has been
-					// created and before state space exploration.
-					this.node2Wrapper.computeIfAbsent((OpApplNode) body, key -> new HashSet<>()).add(oan);
-				}
-			}
-			if (this.node2Wrapper.containsKey(opApplNode)) {
-				// 3) Now it's later. Connect w and oan where
-				// w is 'Op(s)' and oan is 'LAMBDA e: e...'
-				this.node2Wrapper.get(opApplNode).forEach(w -> w.addChild(oan));
-			}
-			// End of Higher-order operators/Operators as arguments (LAMBDA, ...) 
-			
-			// Substitutions
-			if (this.substs.containsKey(exploreNode)) {
-				final Subst subst = this.substs.get(exploreNode);
-				assert subst.getExpr() == oan.getNode();
-				subst.setCM(oan);
-			}
-			
-			final CostModelNode parent = stack.peek();
-			parent.addChild(oan.setLevel(parent.getLevel() + 1));
-			stack.push(oan);
-		} else if (exploreNode instanceof SubstInNode) {
-			final SubstInNode sin = (SubstInNode) exploreNode;
-			final Subst[] substs = sin.getSubsts();
-			for (Subst subst : substs) {
-				this.substs.put(subst.getExpr(), subst);
-			}
-		} else if (exploreNode instanceof LetInNode) {
-			final LetInNode lin = (LetInNode) exploreNode;
-			for (OpDefNode opDefNode : lin.getLets()) {
-				letIns.put(opDefNode.getBody(), lin.getBody());
-			}
-		} else if (exploreNode instanceof OpDefNode) {
-			//TODO Might suffice to just keep RECURSIVE ones.
-			opDefNodes.add((OpDefNode) exploreNode);
-		}
-	}
+    public static void create(final ITool tool) {
+        final CostModelCreator collector = new CostModelCreator(tool);
 
-	@Override
-	public void postVisit(final ExploreNode exploreNode) {
-		if (exploreNode instanceof OpApplNode) {
-			if (((OpApplNode) exploreNode).isStandardModule()) {
-				return;
-			}
-			final CostModelNode pop = stack.pop();
-			assert pop.getNode() == exploreNode;
-		} else if (exploreNode instanceof OpDefNode) {
-			final boolean removed = opDefNodes.remove((OpDefNode) exploreNode);
-			assert removed;
-		}
-	}
+        // TODO Start from the ModuleNode similar to how the Explorer works. It is
+        // unclear how to lookup the corresponding subtree in the global CM graph
+        // in getNextState and getInitStates of the model checker.
+        final ArrayList<Action> init = tool.getInitStateSpec();
+        for (final Action initAction : init) {
+            initAction.cm = collector.getCM(initAction, Relation.INIT);
+        }
 
-	private CostModel getModel() {
-		assert this.stack.peek().isRoot();
-		return this.stack.peek().getRoot();
-	}
-	
-	public static final void create(final ITool tool) {
-		final CostModelCreator collector = new CostModelCreator(tool);
+        final Map<SemanticNode, CostModel> cms = new HashMap<>();
+        for (final Action nextAction : tool.getActions()) {
+            if (cms.containsKey(nextAction.pred)) {
+                nextAction.cm = cms.get(nextAction.pred);
+            } else {
+                nextAction.cm = collector.getCM(nextAction, Relation.NEXT);
+                cms.put(nextAction.pred, nextAction.cm);
+            }
+        }
 
-		// TODO Start from the ModuleNode similar to how the Explorer works. It is
-		// unclear how to lookup the corresponding subtree in the global CM graph
-		// in getNextState and getInitStates of the model checker.
-		final Vect<Action> init = tool.getInitStateSpec();
-		for (int i = 0; i < init.size(); i++) {
-			final Action initAction = init.elementAt(i);
-			initAction.cm = collector.getCM(initAction, Relation.INIT);
-		}
+        for (final Action invariant : tool.getInvariants()) {
+            if (!invariant.isInternal()) {
+                invariant.cm = collector.getCM(invariant, Relation.PROP);
+            }
+        }
 
-		final Map<SemanticNode, CostModel> cms = new HashMap<>();
-		for (Action nextAction : tool.getActions()) {
-			if (cms.containsKey(nextAction.pred)) {
-				nextAction.cm = cms.get(nextAction.pred);
-			} else {
-				nextAction.cm = collector.getCM(nextAction, Relation.NEXT);
-				cms.put(nextAction.pred, nextAction.cm);
-			}
-		}
+        // action constraints
+        final ExprNode[] actionConstraints = tool.getActionConstraints();
+        for (final ExprNode exprNode : actionConstraints) {
+            final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
+            final Action act = new Action(exprNode, Context.Empty, odn);
+            act.cm = collector.getCM(act, Relation.CONSTRAINT);
+            exprNode.setToolObject(tool.getId(), act);
+        }
+        // state constraints
+        final ExprNode[] modelConstraints = tool.getModelConstraints();
+        for (final ExprNode exprNode : modelConstraints) {
+            final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
+            final Action act = new Action(exprNode, Context.Empty, odn);
+            act.cm = collector.getCM(act, Relation.CONSTRAINT);
+            exprNode.setToolObject(tool.getId(), act);
+        }
 
-		for (Action invariant : tool.getInvariants()) {
-			if (!invariant.isInternal()) {
-				invariant.cm = collector.getCM(invariant, Relation.PROP);
-			}
-		}
-		
-		// action constraints
-		final ExprNode[] actionConstraints = tool.getActionConstraints();
-		for (ExprNode exprNode : actionConstraints) {
-			final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
-			final Action act = new Action(exprNode, Context.Empty, odn);
-			act.cm = collector.getCM(act, Relation.CONSTRAINT);
-			exprNode.setToolObject(tool.getId(), act);
-		}
-		// state constraints
-		final ExprNode[] modelConstraints = tool.getModelConstraints();
-		for (ExprNode exprNode : modelConstraints) {
-			final OpDefNode odn = (OpDefNode) exprNode.getToolObject(tool.getId());
-			final Action act = new Action(exprNode, Context.Empty, odn);
-			act.cm = collector.getCM(act, Relation.CONSTRAINT);
-			exprNode.setToolObject(tool.getId(), act);
-		}
-		
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
         if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
-    		for (Action impliedInits : tool.getImpliedInits()) {
-    			impliedInits.cm = collector.getCM(impliedInits, Relation.PROP);
-    		}
-    		for (Action impliedActions : tool.getImpliedActions()) {
-    			impliedActions.cm = collector.getCM(impliedActions, Relation.PROP);
-    		}
+            for (final Action impliedInits : tool.getImpliedInits()) {
+                impliedInits.cm = collector.getCM(impliedInits, Relation.PROP);
+            }
+            for (final Action impliedActions : tool.getImpliedActions()) {
+                impliedActions.cm = collector.getCM(impliedActions, Relation.PROP);
+            }
         }
-	}
-	
-	public static void report(final ITool tool, final long startTime) {
+    }
+
+    public static void report(final ITool tool, final long startTime) {
         MP.printMessage(EC.TLC_COVERAGE_START);
-    	final Vect<Action> init = tool.getInitStateSpec();
-    	for (int i = 0; i < init.size(); i++) {
-    		final Action initAction = init.elementAt(i);
-    		initAction.cm.report();
-    	}
+        final ArrayList<Action> init = tool.getInitStateSpec();
+        for (final Action initAction : init) {
+            initAction.cm.report();
+        }
 
-		// Order next-state actions based on location to print in order of location.
-		// Note that Action[] actions may contain action instances with identical
-		// location which is the case for actions that are evaluated in the scope of a
-		// Context, i.e. \E s \in ProcSet: action(s) \/ ...
-    	// However, actions with identical location share the ActionWrapper instance
-    	// which is why we can non-deterministically choose to report one of it without
-    	// producing bogus results (see CostModelCreator.preVisit(ExploreNode) above).
-    	final Action[] actions = tool.getActions();
+        // Order next-state actions based on location to print in order of location.
+        // Note that Action[] actions may contain action instances with identical
+        // location which is the case for actions that are evaluated in the scope of a
+        // Context, i.e. \E s \in ProcSet: action(s) \/ ...
+        // However, actions with identical location share the ActionWrapper instance
+        // which is why we can non-deterministically choose to report one of it without
+        // producing bogus results (see CostModelCreator.preVisit(ExploreNode) above).
+        final Action[] actions = tool.getActions();
         final Set<CostModel> reported = new HashSet<>();
-        final Set<Action> sortedActions = new TreeSet<>(new Comparator<Action>() {
-			@Override
-			public int compare(Action o1, Action o2) {
-				return o1.pred.getLocation().compareTo(o2.pred.getLocation());
-			}
-		});
+        final Set<Action> sortedActions = new TreeSet<>(Comparator.comparing(o -> o.pred.getLocation()));
         sortedActions.addAll(Arrays.asList(actions));
-        for (Action action : sortedActions) {
-        	if (!reported.contains(action.cm)) {
-        		action.cm.report();
-        		reported.add(action.cm);
-        	}
-		}
-        
-        for (Action invariant : tool.getInvariants()) {
-			if (!invariant.isInternal()) {
-	        	//TODO May need to be ordered similar to next-state actions above.
-	        	invariant.cm.report();
-			}
-		}
-        
-		// action constraints
-		final ExprNode[] actionConstraints = tool.getActionConstraints();
-		for (ExprNode exprNode : actionConstraints) {
-			final Action act = (Action) exprNode.getToolObject(tool.getId());
-			act.cm.report();
-		}
-		// state constraints
-		final ExprNode[] modelConstraints = tool.getModelConstraints();
-		for (ExprNode exprNode : modelConstraints) {
-			final Action act = (Action) exprNode.getToolObject(tool.getId());
-			act.cm.report();
-		}
-        
+        for (final Action action : sortedActions) {
+            if (!reported.contains(action.cm)) {
+                action.cm.report();
+                reported.add(action.cm);
+            }
+        }
+
+        for (final Action invariant : tool.getInvariants()) {
+            if (!invariant.isInternal()) {
+                //TODO May need to be ordered similar to next-state actions above.
+                invariant.cm.report();
+            }
+        }
+
+        // action constraints
+        final ExprNode[] actionConstraints = tool.getActionConstraints();
+        for (final ExprNode exprNode : actionConstraints) {
+            final Action act = (Action) exprNode.getToolObject(tool.getId());
+            Objects.requireNonNull(act).cm.report();
+        }
+        // state constraints
+        final ExprNode[] modelConstraints = tool.getModelConstraints();
+        for (final ExprNode exprNode : modelConstraints) {
+            final Action act = (Action) exprNode.getToolObject(tool.getId());
+            Objects.requireNonNull(act).cm.report();
+        }
+
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
         if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
-    		for (Action impliedInits : tool.getImpliedInits()) {
-    			impliedInits.cm.report();
-    		}
-    		for (Action impliedActions : tool.getImpliedActions()) {
-    			impliedActions.cm.report();
-    		}
+            for (final Action impliedInits : tool.getImpliedInits()) {
+                impliedInits.cm.report();
+            }
+            for (final Action impliedActions : tool.getImpliedActions()) {
+                impliedActions.cm.report();
+            }
         }
-       
-		// Notify users about the performance overhead related to coverage collection
-		// after N minutes of model checking. The assumption is that a user has little
-		// interest in coverage for a large (long-running) model anyway.  In the future
+
+        // Notify users about the performance overhead related to coverage collection
+        // after N minutes of model checking. The assumption is that a user has little
+        // interest in coverage for a large (long-running) model anyway.  In the future
         // it is hopefully possible to switch from profiling to sampling to relax the
         // performance overhead of coverage and cost statistics.
-		final long l = System.currentTimeMillis() - startTime;
-		if (l > (5L * 60L * 1000L)) {
-			MP.printMessage(EC.TLC_COVERAGE_END_OVERHEAD);
-		} else {
-			MP.printMessage(EC.TLC_COVERAGE_END);
-		}
-	}
+        final long l = System.currentTimeMillis() - startTime;
+        if (l > (5L * 60L * 1000L)) {
+            MP.printMessage(EC.TLC_COVERAGE_END_OVERHEAD);
+        } else {
+            MP.printMessage(EC.TLC_COVERAGE_END);
+        }
+    }
+
+    private CostModel getCM(final Action act, final ActionWrapper.Relation relation) {
+        this.substs.clear();
+        this.node2Wrapper.clear();
+        this.opDefNodes.clear();
+        this.letIns.clear();
+        this.stack.clear();
+        this.ctx = Context.Empty;
+
+        this.root = new ActionWrapper(act, relation);
+        this.stack.push(root);
+        act.pred.walkGraph(new CoverageHashTable(opDefNodes), this);
+
+        assert Objects.requireNonNull(this.stack.peek()).isRoot();
+        return Objects.requireNonNull(this.stack.peek()).getRoot();
+    }
+
+    @Override
+    public void preVisit(final ExploreNode exploreNode) {
+        if (exploreNode instanceof final OpApplNode opApplNode) {
+            if (opApplNode.isStandardModule()) {
+                return;
+            }
+
+            final OpApplNodeWrapper oan;
+            if (opApplNode.hasOpcode(OPCODE_unchanged)) {
+                oan = new UnchangedOpApplNodeWrapper(opApplNode, this.root);
+            } else {
+                oan = new OpApplNodeWrapper(opApplNode, this.root);
+            }
+
+            if (nodes.contains(oan)) {
+                oan.setPrimed();
+            }
+
+            // A (recursive) function definition nested in LetIn:
+            //   LET F[n \in S] == e
+            //   IN F[...]
+            // with e either built from F or not.
+            if (letIns.containsKey(opApplNode)) {
+                // At the visit of the LETIN node in the walk over the semantic graph we stored
+                // the mapping from the LET part to the IN part in this.lets (see LetInNode below).
+                // Here, we add the LET parts(s) to the lets of the IN part if it is found on
+                // the stack (this is more involved because we have to find the OANWrappers and
+                // not just the OANs).
+                final ExprNode in = letIns.get(opApplNode);
+                for (final CostModelNode cmn : stack) {
+                    final SemanticNode node = cmn.getNode();
+                    if (node == in && cmn instanceof OpApplNodeWrapper) {
+                        // addLets instead of addChild because lets can be added multiple times
+                        // whereas addChild asserts a child to be added only once.
+                        ((OpApplNodeWrapper) cmn).addLets(oan);
+                    }
+                }
+            }
+
+            // CONSTANT operators (including definition overrides...)
+            final SymbolNode operator = opApplNode.getOperator();
+            final Object val = tool.lookup(operator);
+            if (val instanceof final OpDefNode odn && operator != val) { // second conjunct bc lookup returns operator when nothing else found.
+                final ExprNode body = odn.getBody();
+                if (body instanceof OpApplNode) {
+                    final CostModelCreator substitution = new CostModelCreator(body, tool);
+                    oan.addChild((OpApplNodeWrapper) substitution.getModel());
+                }
+            }
+
+            // RECURSIVE
+            if (operator instanceof final OpDefNode odn && odn.getInRecursive()) {
+                    stack.stream()
+                            .filter(w -> w.getNode() != null && w.getNode() instanceof OpApplNode wOAN
+                                    && wOAN.getOperator() == odn)
+                            .findFirst().ifPresent(oan::setRecursive);
+            }
+
+            // Higher-order operators/Operators as arguments (LAMBDA, ...)
+            //
+            // line X: Foo(Op(_), S) == \A s \in S: Op(s)
+            // line ?: ...
+            // line Y: Bar == Foo(LAMBDA e: e..., {1,2,3})
+            //
+            // This is the most involved part of CMC: The task is to make the OANW
+            // corresponding to the RHS of the LAMBDA expression on line Y a child of Op(s)
+            // on line X. However, the graph exploration is DFS which means that we haven't
+            // seen the LAMBDA on line Y when we are at the Op(s) on line X and we've
+            // (mostly) forgotten about Op(s) when we see the LAMBDA. ToolImpl - as part of
+            // its DFS over the semantic graph - passes a context along which gets extended
+            // or *branched*. Here, we cannot pass a Context along the decent but instead
+            // keep a single, global context.
+            //
+            // The global context does not create a problem with regards to correctness, but
+            // can lead to long context chains for larger specifications. Therefore, only
+            // extend the context when opApplNode.argsContainOpArgNodes() is true, i.e. when
+            // one or more arguments of an operator are also operators (such as a LAMBDA).
+            // Without this safeguard, the time to create the CostModel for the SchedMono
+            // specification took approximately 60 seconds. With the safeguard, it is down
+            // to a second or two.
+            //
+            // To summarize, this is a clutch that has been hacked to be good enough!
+            //
+            // if-branches 1., 2., and 3. below are evaluated in three distinct
+            // invocation of outer preVisit for different ExploreNodes.
+            if (operator instanceof final OpDefNode odn && opApplNode.hasOpcode(0) && opApplNode.argsContainOpArgNodes()) {
+                // 1) Maintain Context for all OpApplNode iff one or more of its args are of
+                // type OpArgNode. This is more restrictive than Tool.
+                if (odn.hasOpcode(0) && !odn.isStandardModule()) {
+                    this.ctx = tool.getOpContext(odn, opApplNode.getArgs(), ctx, false);
+                }
+            }
+            final Object lookup = this.ctx.lookup(opApplNode.getOperator());
+            if (lookup instanceof OpDefNode odn) {
+                // 2) Context has an entry for the given body where body is 'LAMBDA e: e...' and
+                // oan is 'Op(s)'. Remember for later.
+                final ExprNode body = odn.getBody();
+                if (body instanceof OpApplNode bOAN) {
+                    // Design choice:
+                    // Might as well store the mapping from body to oan via
+                    // body#setToolObject(tla2sany.semantic.FrontEnd.getToolId(), oan) instead of in
+                    // node2Wrapper. However, node2Wrapper can be gc'ed after the CostModel has been
+                    // created and before state space exploration.
+                    this.node2Wrapper.computeIfAbsent(bOAN, key -> new HashSet<>()).add(oan);
+                }
+            }
+            if (this.node2Wrapper.containsKey(opApplNode)) {
+                // 3) Now it's later. Connect w and oan where
+                // w is 'Op(s)' and oan is 'LAMBDA e: e...'
+                this.node2Wrapper.get(opApplNode).forEach(w -> w.addChild(oan));
+            }
+            // End of Higher-order operators/Operators as arguments (LAMBDA, ...)
+
+            // Substitutions
+            if (this.substs.containsKey(exploreNode)) {
+                final Subst subst = this.substs.get(exploreNode);
+                assert subst.getExpr() == oan.getNode();
+                subst.setCM(oan);
+            }
+
+            final CostModelNode parent = stack.peek();
+            Objects.requireNonNull(parent).addChild(oan.setLevel(parent.getLevel() + 1));
+            stack.push(oan);
+        } else if (exploreNode instanceof final SubstInNode sin) {
+            final Subst[] substs = sin.getSubsts();
+            for (final Subst subst : substs) {
+                this.substs.put(subst.getExpr(), subst);
+            }
+        } else if (exploreNode instanceof final LetInNode lin) {
+            for (final OpDefNode opDefNode : lin.getLets()) {
+                letIns.put(opDefNode.getBody(), lin.getBody());
+            }
+        } else if (exploreNode instanceof OpDefNode odn) {
+            //TODO Might suffice to just keep RECURSIVE ones.
+            opDefNodes.add(odn);
+        }
+    }
+
+    @Override
+    public void postVisit(final ExploreNode exploreNode) {
+        if (exploreNode instanceof OpApplNode oan) {
+            if (oan.isStandardModule()) {
+                return;
+            }
+            final CostModelNode pop = stack.pop();
+            assert pop.getNode() == exploreNode;
+        } else if (exploreNode instanceof OpDefNode odn) {
+            final boolean removed = opDefNodes.remove(odn);
+            assert removed;
+        }
+    }
+
+    private CostModel getModel() {
+        assert Objects.requireNonNull(this.stack.peek()).isRoot();
+        return Objects.requireNonNull(this.stack.peek()).getRoot();
+    }
 }

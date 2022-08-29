@@ -26,94 +26,96 @@
 
 package tlc2.tool;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import tla2sany.semantic.SemanticNode;
 import tlc2.value.IValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FingerprintException extends RuntimeException {
 
-  final public IValue value;
-  final public FingerprintException next;
+    private static final long serialVersionUID = -3982482838722472641L;
+    public final IValue value;
+    public final FingerprintException next;
 
-  private FingerprintException(Throwable initCauseThrowable, IValue value, FingerprintException next) {
-    initCause(initCauseThrowable);
-    this.value = value;
-    this.next = next;
-  }
-
-  public static FingerprintException getNewHead(IValue v, Throwable t){
-    FingerprintException fpe = null;
-    if(t instanceof FingerprintException)
-      fpe = ((FingerprintException) t).prependNewHead(v);
-    else
-      fpe = FingerprintException.createNewHead(v, t);
-    return fpe;
-  }
-
-  private static FingerprintException createNewHead(IValue value, Throwable initCauseThrowable){
-    if(value == null || initCauseThrowable == null)
-      return null;
-    else
-      return new FingerprintException(initCauseThrowable, value, null);
-  }
-
-  private FingerprintException prependNewHead(IValue value){
-    if(value == null)
-      return null;
-    else
-      return new FingerprintException(null, value, this);
-  }
-
-  public Throwable getRootCause(){
-    FingerprintException nextFPE = this;
-    while(nextFPE.next != null)
-      nextFPE = nextFPE.next;
-    return nextFPE.getCause();
-  }
-
-  public String getTrace(){
-    return getTraceImpl(0, null);
-  }
-
-  private String getTraceImpl(final int traceIndexLabel, final Integer lastSemanticNodeUid){
-    SemanticNode semanticNode = value.getSource();
-    if(semanticNode == null){
-      if(next == null)
-        return "";
-      else
-        return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
+    private FingerprintException(final Throwable initCauseThrowable, final IValue value, final FingerprintException next) {
+        initCause(initCauseThrowable);
+        this.value = value;
+        this.next = next;
     }
-    else{
-      Integer semanticNodeUid = semanticNode.getUid();
-      if(semanticNodeUid.equals(lastSemanticNodeUid)){ // same SemanticNode compared to current top of stack
-        if(next == null)
-          return "";
+
+    public static FingerprintException getNewHead(final IValue v, final Throwable t) {
+        FingerprintException fpe;
+        if (t instanceof FingerprintException e)
+            fpe = e.prependNewHead(v);
         else
-          return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
-      }
-      else{ // different SemanticNode compared to current top of stack
-        String description = traceIndexLabel + ") " + semanticNode.toString() + "\n";
-        if(next == null)
-          return description;
-        else
-          return next.getTraceImpl(traceIndexLabel+1, semanticNodeUid) + description;
-      }
+            fpe = FingerprintException.createNewHead(v, t);
+        return fpe;
     }
-  }
 
-  public final List<SemanticNode> asTrace() {
-	  final List<SemanticNode> stack = new ArrayList<>();
-	  
-	  if (value != null) {
-		  stack.add(this.value.getSource());
-	  }
+    private static FingerprintException createNewHead(final IValue value, final Throwable initCauseThrowable) {
+        if (value == null || initCauseThrowable == null)
+            return null;
+        else
+            return new FingerprintException(initCauseThrowable, value, null);
+    }
 
-	  while (next != null && next.value != null) {
-		stack.add(next.value.getSource());
-	  }
-	  
-	  return stack;
-  }
+    private FingerprintException prependNewHead(final IValue value) {
+        if (value == null)
+            return null;
+        else
+            return new FingerprintException(null, value, this);
+    }
+
+    public Throwable getRootCause() {
+        FingerprintException nextFPE = this;
+        while (nextFPE.next != null)
+            nextFPE = nextFPE.next;
+        return nextFPE.getCause();
+    }
+
+    public String getTrace() {
+        return getTraceImpl(0, null);
+    }
+
+    private String getTraceImpl(final int traceIndexLabel, final Integer lastSemanticNodeUid) {
+        final SemanticNode semanticNode = value.getSource();
+        if (semanticNode == null) {
+            if (next == null)
+                return "";
+            else
+                return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
+        } else {
+            final Integer semanticNodeUid = semanticNode.getUid();
+            if (semanticNodeUid.equals(lastSemanticNodeUid)) { // same SemanticNode compared to current top of stack
+                if (next == null)
+                    return "";
+                else
+                    return next.getTraceImpl(traceIndexLabel, lastSemanticNodeUid);
+            } else { // different SemanticNode compared to current top of stack
+                final String description = traceIndexLabel + ") " + semanticNode + "\n";
+                if (next == null)
+                    return description;
+                else
+                    return next.getTraceImpl(traceIndexLabel + 1, semanticNodeUid) + description;
+            }
+        }
+    }
+
+    public final List<SemanticNode> asTrace() {
+        final List<SemanticNode> stack = new ArrayList<>();
+
+        if (value != null) {
+            stack.add(this.value.getSource());
+        }
+
+        var curr = next;
+
+        while (curr != null && curr.value != null) {
+            stack.add(curr.value.getSource());
+            curr = curr.next;
+        }
+
+        return stack;
+    }
 }

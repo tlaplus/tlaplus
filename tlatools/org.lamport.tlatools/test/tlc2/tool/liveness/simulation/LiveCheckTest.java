@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,126 +26,119 @@
 
 package tlc2.tool.liveness.simulation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
-import tlc2.tool.liveness.AbstractDiskGraph;
-import tlc2.tool.liveness.ILiveCheck;
-import tlc2.tool.liveness.LiveCheck;
-import tlc2.tool.liveness.LiveExprNode;
-import tlc2.tool.liveness.OrderOfSolution;
-import tlc2.tool.liveness.TBGraph;
-import tlc2.tool.liveness.TBGraphNode;
+import tlc2.tool.liveness.*;
 import tlc2.tool.queue.DummyTLCState;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.DummyBucketStatistics;
 
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 public class LiveCheckTest {
 
-	private ITool tool;
-	
-	@Before
-	public void createTool() {
-		this.tool = EasyMock.createNiceMock(ITool.class);
-	}
+    private ITool tool;
 
-	// Add identical state twice, which can happen in simulation mode when the
-	// trace is: <<100L, 200L, ..., 100L, 200L>> (as in a cycle that is
-	// repeated due to the trace length). In this scenario DiskGraph should
-	// *not* add/update the 100L state, because it's successors (200L) don't
-	// change.
-	// Note that adding/updating the state would result in a larger
-	// on-disk file, but doesn't seem to invalidate the simulation validity.
-	@Test
-	@Ignore("EasyMock doesn't work with recent Java versions")
-	public void testAddIdenticalNodeTwiceNoTableau() throws IOException {
-		addIdenticalNodeTwice(false, -1);
-	}
+    @Before
+    public void createTool() {
+        this.tool = EasyMock.createNiceMock(ITool.class);
+    }
 
-	@Test
-	@Ignore("EasyMock doesn't work with recent Java versions")
-	public void testAddIdenticalNodeTwiceWithTableau() throws IOException {
-		addIdenticalNodeTwice(true, 0);
-	}
+    // Add identical state twice, which can happen in simulation mode when the
+    // trace is: <<100L, 200L, ..., 100L, 200L>> (as in a cycle that is
+    // repeated due to the trace length). In this scenario DiskGraph should
+    // *not* add/update the 100L state, because it's successors (200L) don't
+    // change.
+    // Note that adding/updating the state would result in a larger
+    // on-disk file, but doesn't seem to invalidate the simulation validity.
+    @Test
+    @Ignore("EasyMock doesn't work with recent Java versions")
+    public void testAddIdenticalNodeTwiceNoTableau() throws Exception {
+        addIdenticalNodeTwice(false, -1);
+    }
 
-	public void addIdenticalNodeTwice(boolean withTablue, int tableauId) throws IOException {
-		final ILiveCheck liveCheck;
-		if (withTablue) {
-			liveCheck = getLiveCheckWithTableau();
-		} else {
-			liveCheck = getLiveCheck();
-		}
+    @Test
+    @Ignore("EasyMock doesn't work with recent Java versions")
+    public void testAddIdenticalNodeTwiceWithTableau() throws Exception {
+        addIdenticalNodeTwice(true, 0);
+    }
 
-		assertEquals(1, liveCheck.getNumChecker());
-		final AbstractDiskGraph diskGraph = liveCheck.getChecker(0).getDiskGraph();
-		assertNotNull(diskGraph);
-		
-		final TLCState state = new DummyTLCState();
-		liveCheck.addInitState(tool, state, 100L);
+    public void addIdenticalNodeTwice(final boolean withTablue, final int tableauId) throws Exception {
+        final ILiveCheck liveCheck;
+        if (withTablue) {
+            liveCheck = getLiveCheckWithTableau();
+        } else {
+            liveCheck = getLiveCheck();
+        }
 
-		final SetOfStates setOfStates = new SetOfStates(1);
-		setOfStates.put(200L, new DummyTLCState(200L));
-		
-		// Add state 100L the first time, then add its successor
-		liveCheck.addNextState(tool, state, 100L, setOfStates);
-		liveCheck.addNextState(tool, state, 200L, setOfStates);
-		assertEquals(0, diskGraph.getPtr(100L, tableauId));
+        assertEquals(1, liveCheck.getNumChecker());
+        final AbstractDiskGraph diskGraph = liveCheck.getChecker(0).getDiskGraph();
+        assertNotNull(diskGraph);
 
-		// Add state 100L again and check that it does *not* 
-		// end up in disk graph.
-		liveCheck.addNextState(tool, state, 100L, setOfStates);
-		assertEquals(0, diskGraph.getPtr(100L, tableauId));
-	}
+        final TLCState state = new DummyTLCState(tool.getVariables());
+        liveCheck.addInitState(tool, state, 100L);
 
-	private ILiveCheck getLiveCheck() throws IOException {
-		final ITool tool = EasyMock.createNiceMock(ITool.class);
-		// Configure OOS mock to react to the subsequent invocation. This is
-		// essentially the list of calls being made on OOS during
-		// LiveCheck#addInitState and LiveCheck#addNextState
-		final OrderOfSolution oos = EasyMock.createNiceMock(OrderOfSolution.class);
-		EasyMock.expect(oos.hasTableau()).andReturn(false);
-		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((ITool) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
-		EasyMock.replay(oos);
-		
-		return new LiveCheck(tool,
-				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
-	}
-	
-	private ILiveCheck getLiveCheckWithTableau() throws IOException {
-		final TBGraphNode node = EasyMock.createMock(TBGraphNode.class);
-		EasyMock.expect(node.isConsistent((TLCState) EasyMock.anyObject(), (ITool) EasyMock.anyObject())).andReturn(true)
-				.anyTimes();
-		EasyMock.expect(node.nextSize()).andReturn(1).anyTimes();
-		EasyMock.expect(node.nextAt(0)).andReturn(node).anyTimes();
-		EasyMock.expect(node.getIndex()).andReturn(0).anyTimes();
-		EasyMock.replay(node);
-		
-		final TBGraph tbGraph = new TBGraph();
-		tbGraph.addElement(node);
-		tbGraph.setInitCnt(1);
-		
-		// Configure OOS mock to react to the subsequent invocation. This is a
-		// essentially the list of calls being made on OOS during
-		// LiveCheck#addInitState and LiveCheck#addNextState
-		final OrderOfSolution oos = EasyMock.createNiceMock(OrderOfSolution.class);
-		EasyMock.expect(oos.hasTableau()).andReturn(true);
-		EasyMock.expect(oos.getTableau()).andReturn(tbGraph).anyTimes();
-		EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
-		EasyMock.expect(oos.checkState((ITool) EasyMock.anyObject(), (TLCState) EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
-		EasyMock.replay(oos);
-		
-		return new LiveCheck(tool,
-				new OrderOfSolution[] { oos }, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
-	}
+        final SetOfStates setOfStates = new SetOfStates(1);
+        setOfStates.add(200L, new DummyTLCState(tool.getVariables(), 200L));
+
+        // Add state 100L the first time, then add its successor
+        liveCheck.addNextState(tool, state, 100L, setOfStates);
+        liveCheck.addNextState(tool, state, 200L, setOfStates);
+        assertEquals(0, diskGraph.getPtr(100L, tableauId));
+
+        // Add state 100L again and check that it does *not*
+        // end up in disk graph.
+        liveCheck.addNextState(tool, state, 100L, setOfStates);
+        assertEquals(0, diskGraph.getPtr(100L, tableauId));
+    }
+
+    private ILiveCheck getLiveCheck() throws IOException {
+        final ITool tool = EasyMock.createNiceMock(ITool.class);
+        // Configure OOS mock to react to the subsequent invocation. This is
+        // essentially the list of calls being made on OOS during
+        // LiveCheck#addInitState and LiveCheck#addNextState
+        final OrderOfSolution oos = EasyMock.createNiceMock(OrderOfSolution.class);
+        EasyMock.expect(oos.hasTableau()).andReturn(false);
+        EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
+        EasyMock.expect(oos.checkState(EasyMock.anyObject(), EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+        EasyMock.replay(oos);
+
+        return new LiveCheck(tool,
+                new OrderOfSolution[]{oos}, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
+    }
+
+    private ILiveCheck getLiveCheckWithTableau() throws Exception {
+        final TBGraphNode node = EasyMock.createMock(TBGraphNode.class);
+        EasyMock.expect(node.isConsistent(EasyMock.anyObject(), EasyMock.anyObject())).andReturn(true)
+                .anyTimes();
+        EasyMock.expect(node.nextSize()).andReturn(1).anyTimes();
+        EasyMock.expect(node.nextAt(0)).andReturn(node).anyTimes();
+        EasyMock.expect(node.getIndex()).andReturn(0).anyTimes();
+        EasyMock.replay(node);
+
+        final TBGraph tbGraph = new TBGraph();
+        tbGraph.add(node);
+        tbGraph.setInitCnt(1);
+
+        // Configure OOS mock to react to the subsequent invocation. This is a
+        // essentially the list of calls being made on OOS during
+        // LiveCheck#addInitState and LiveCheck#addNextState
+        final OrderOfSolution oos = EasyMock.createNiceMock(OrderOfSolution.class);
+        EasyMock.expect(oos.hasTableau()).andReturn(true);
+        EasyMock.expect(oos.getTableau()).andReturn(tbGraph).anyTimes();
+        EasyMock.expect(oos.getCheckAction()).andReturn(new LiveExprNode[0]).anyTimes();
+        EasyMock.expect(oos.checkState(EasyMock.anyObject(), EasyMock.anyObject())).andReturn(new boolean[0]).anyTimes();
+        EasyMock.replay(oos);
+
+        return new LiveCheck(tool,
+                new OrderOfSolution[]{oos}, System.getProperty("java.io.tmpdir"), new DummyBucketStatistics());
+    }
 }
 

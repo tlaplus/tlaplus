@@ -26,33 +26,33 @@
 
 package tlc2.tool;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
+
+import static org.junit.Assert.assertTrue;
 
 public class FingerprintExceptionNextTest extends ModelCheckerTestCase {
 
-	public FingerprintExceptionNextTest() {
-		super("FingerprintExceptionNext", ExitStatus.FAILURE_SPEC_EVAL);
-	}
+    public FingerprintExceptionNextTest() {
+        super("FingerprintExceptionNext", ExitStatus.FAILURE_SPEC_EVAL);
+    }
 
-	@Test
-	public void testSpec() {
-		// ModelChecker has finished with a general exception, a fingerprint exception and underlying overflow exception
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
-		assertTrue(recorder.recorded(EC.GENERAL));
-		String arg1 = "1) line 8, col 51 to line 8, col 63 of module FingerprintExceptionNext\n"
-			+ "0) line 8, col 44 to line 8, col 64 of module FingerprintExceptionNext\n";
-		String arg2 = "Overflow when computing the number of elements in:\n"
-			+ "SUBSET (1..32)";
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_FINGERPRINT_EXCEPTION, arg1, arg2));
-		
-		assertUncovered("line 8, col 71 to line 8, col 76 of module FingerprintExceptionNext: 0\n");
-	}
+    @Test
+    public void testSpec() {
+        // ModelChecker has finished with a general exception, a fingerprint exception and underlying overflow exception
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
+        assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
+        assertTrue(recorder.recorded(EC.GENERAL));
+        final String arg1 = """
+                1) line 8, col 51 to line 8, col 63 of module FingerprintExceptionNext
+                0) line 8, col 44 to line 8, col 64 of module FingerprintExceptionNext
+                """;
+        final String arg2 = "Overflow when computing the number of elements in:\n"
+                + "SUBSET (1..32)";
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_FINGERPRINT_EXCEPTION, arg1, arg2));
+
+        assertUncovered("line 8, col 71 to line 8, col 76 of module FingerprintExceptionNext: 0\n");
+    }
 }

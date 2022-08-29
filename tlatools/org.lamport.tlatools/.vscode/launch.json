@@ -1,0 +1,224 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Test",
+            "request": "launch",
+            "mainClass": "pcal.Test",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch trans",
+            "request": "launch",
+            "mainClass": "pcal.trans",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch SANY",
+            "request": "launch",
+            "mainClass": "tla2sany.SANY",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch XMLExporter",
+            "request": "launch",
+            "mainClass": "tla2sany.xml.XMLExporter",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TLA",
+            "request": "launch",
+            "mainClass": "tla2tex.TLA",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TeX",
+            "request": "launch",
+            "mainClass": "tla2tex.TeX",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch REPL",
+            "request": "launch",
+            "mainClass": "tlc2.REPL",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TLC",
+            "request": "launch",
+            "mainClass": "tlc2.TLC",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TestDriver",
+            "request": "launch",
+            "mainClass": "tlc2.TestDriver",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch StandaloneConstExpressionDebugger",
+            "request": "launch",
+            "mainClass": "tlc2.debug.StandaloneConstExpressionDebugger",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch PrettyPrint",
+            "request": "launch",
+            "mainClass": "tlc2.pprint.PrettyPrint",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch CheckImplFile",
+            "request": "launch",
+            "mainClass": "tlc2.tool.CheckImplFile",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TLCServer",
+            "request": "launch",
+            "mainClass": "tlc2.tool.distributed.TLCServer",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TLCWorker",
+            "request": "launch",
+            "mainClass": "tlc2.tool.distributed.TLCWorker",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch DistributedFPSet",
+            "request": "launch",
+            "mainClass": "tlc2.tool.distributed.fp.DistributedFPSet",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch TLCWorkerAndFPSet",
+            "request": "launch",
+            "mainClass": "tlc2.tool.distributed.fp.TLCWorkerAndFPSet",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch DiskFPSet",
+            "request": "launch",
+            "mainClass": "tlc2.tool.fp.DiskFPSet",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch LongArray",
+            "request": "launch",
+            "mainClass": "tlc2.tool.fp.LongArray",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch ModelConfig",
+            "request": "launch",
+            "mainClass": "tlc2.tool.impl.ModelConfig",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch StateMonitor",
+            "request": "launch",
+            "mainClass": "tlc2.tool.management.StateMonitor",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch CheckFP",
+            "request": "launch",
+            "mainClass": "tlc2.tool.other.CheckFP",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch CurrentDir",
+            "request": "launch",
+            "mainClass": "tlc2.tool.other.CurrentDir",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch FileClassLoader",
+            "request": "launch",
+            "mainClass": "tlc2.tool.other.FileClassLoader",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch DiskQueueBenachmark",
+            "request": "launch",
+            "mainClass": "tlc2.tool.queue.DiskQueueBenachmark",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch StateQueueJPFTest",
+            "request": "launch",
+            "mainClass": "tlc2.tool.queue.StateQueueJPFTest",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch BufferedRandomAccessFile",
+            "request": "launch",
+            "mainClass": "tlc2.util.BufferedRandomAccessFile",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch LongVec",
+            "request": "launch",
+            "mainClass": "tlc2.util.LongVec",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch FcnRcdBenchmark",
+            "request": "launch",
+            "mainClass": "tlc2.value.impl.FcnRcdBenchmark",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch ExecutionStatisticsCollector",
+            "request": "launch",
+            "mainClass": "util.ExecutionStatisticsCollector",
+            "projectName": "org.lamport.tlatools"
+        },
+        {
+            "type": "java",
+            "name": "Launch MailSender",
+            "request": "launch",
+            "mainClass": "util.MailSender",
+            "projectName": "org.lamport.tlatools"
+        }
+    ]
+}

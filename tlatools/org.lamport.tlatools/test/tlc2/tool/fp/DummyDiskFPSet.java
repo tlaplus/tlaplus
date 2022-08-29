@@ -10,11 +10,11 @@ import java.rmi.RemoteException;
 @SuppressWarnings("serial")
 public class DummyDiskFPSet extends LSBDiskFPSet {
 
-	public DummyDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
-		super(fpSetConfig);
-	}
+    public DummyDiskFPSet(final FPSetConfiguration fpSetConfig) throws RemoteException {
+        super(fpSetConfig);
+    }
 
-	public void setIndex(long[] anIndex) {
-		this.index = anIndex;
-	}
+    public void setIndex(final long[] anIndex) {
+        this.index = anIndex;
+    }
 }

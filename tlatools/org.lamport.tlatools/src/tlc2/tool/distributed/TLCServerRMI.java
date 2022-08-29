@@ -5,52 +5,50 @@
 
 package tlc2.tool.distributed;
 
+import tlc2.tool.distributed.fp.FPSetRMI;
+import tlc2.tool.distributed.fp.IFPSetManager;
+
 import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import tlc2.tool.distributed.fp.FPSetRMI;
-import tlc2.tool.distributed.fp.IFPSetManager;
 
 /**
  * @version $Id$
  */
 public interface TLCServerRMI extends Remote {
-	public void registerWorker(TLCWorkerRMI worker)
-			throws IOException;
-	
-	public void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException;
+    void registerWorker(TLCWorkerRMI worker)
+            throws IOException;
 
-	public Boolean getCheckDeadlock() throws RemoteException;
+    void registerFPSet(FPSetRMI fpSet, String hostname) throws RemoteException;
 
-	public Boolean getPreprocess() throws RemoteException;
+    Boolean getCheckDeadlock() throws RemoteException;
 
-	public IFPSetManager getFPSetManager() throws RemoteException;
+    Boolean getPreprocess() throws RemoteException;
 
-	public long getIrredPolyForFP() throws RemoteException;
-	
-	/**
-	 * @return true iff server is done computing states
-	 */
-	public boolean isDone() throws RemoteException;
-	
-	/**
-	 * @return The name and (potentially) path to the specification file 
-	 * @throws RemoteException
-	 */
-	public String getSpecFileName() throws RemoteException;
+    IFPSetManager getFPSetManager() throws RemoteException;
 
-	/**
-	 * @return The name and (potentially) path to the configuration file
-	 * @throws RemoteException
-	 */
-	public String getConfigFileName() throws RemoteException;
-	
-	/**
-	 * Reads the given file from the server stripping the path the just the file name.
-	 * @param file A full qualified or relative (to server spec dir) file name.
-	 * @return the file requested
-	 * @throws RemoteException
-	 */
-	public byte[] getFile(final String file) throws RemoteException;
+    long getIrredPolyForFP() throws RemoteException;
+
+    /**
+     * @return true iff server is done computing states
+     */
+    boolean isDone() throws RemoteException;
+
+    /**
+     * @return The name and (potentially) path to the specification file
+     */
+    String getSpecFileName() throws RemoteException;
+
+    /**
+     * @return The name and (potentially) path to the configuration file
+     */
+    String getConfigFileName() throws RemoteException;
+
+    /**
+     * Reads the given file from the server stripping the path the just the file name.
+     *
+     * @param file A full qualified or relative (to server spec dir) file name.
+     * @return the file requested
+     */
+    byte[] getFile(final String file) throws RemoteException;
 }

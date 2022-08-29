@@ -36,87 +36,87 @@ import tlc2.value.RandomEnumerableValues;
 @State(Scope.Benchmark)
 public class EnumerateSubsetBenchmark {
 
-	static {
-		RandomEnumerableValues.setSeed(15041980L);
-		RandomEnumerableValues.reset();
+    static {
+        RandomEnumerableValues.setSeed(15041980L);
+        RandomEnumerableValues.reset();
 
-		FP64.Init();
-	}
-	
-	@Param({"0", "1", "2", "3", "4", "8", "10", "12", "14", "16", "18", "19"})
-	public int numOfElements;
+        FP64.Init();
+    }
 
-	@Benchmark
-	public Enumerable elementsAlwaysNormalized() {
-		final IntervalValue inner = new IntervalValue(1, numOfElements);
-		final SubsetValue subset = new SubsetValue(inner);
+    @Param({"0", "1", "2", "3", "4", "8", "10", "12", "14", "16", "18", "19"})
+    public int numOfElements;
 
-		final ValueVec vals = new ValueVec(subset.size());
-		final ValueEnumeration Enum = subset.elementsNormalized();
-		Value  elem;
-		while ((elem = Enum.nextElement()) != null) {
-			vals.addElement(elem);
-		}
+    @Benchmark
+    public Enumerable elementsAlwaysNormalized() {
+        final IntervalValue inner = new IntervalValue(1, numOfElements);
+        final SubsetValue subset = new SubsetValue(inner);
+
+        final ValueVec vals = new ValueVec(subset.size());
+        final ValueEnumeration Enum = subset.elementsNormalized();
+        Value elem;
+        while ((elem = Enum.nextElement()) != null) {
+            vals.add(elem);
+        }
         return (Enumerable) new SetEnumValue(vals, true).normalize();
-	}
+    }
 
-	@Benchmark
-	public Enumerable kElementsNotNormalized() {
-		final IntervalValue inner = new IntervalValue(1, numOfElements);
-		final SubsetValue subset = new SubsetValue(inner);
+    @Benchmark
+    public Enumerable kElementsNotNormalized() {
+        final IntervalValue inner = new IntervalValue(1, numOfElements);
+        final SubsetValue subset = new SubsetValue(inner);
 
-		final ValueVec vec = new ValueVec(subset.size());
-		for (int i = 0; i <= inner.size(); i++) {
-			final ValueEnumeration Enum = subset.kElements(i);
-			Value  elem;
-			while ((elem = Enum.nextElement()) != null) {
-				vec.addElement(elem);
-			}
-		}
+        final ValueVec vec = new ValueVec(subset.size());
+        for (int i = 0; i <= inner.size(); i++) {
+            final ValueEnumeration Enum = subset.kElements(i);
+            Value elem;
+            while ((elem = Enum.nextElement()) != null) {
+                vec.add(elem);
+            }
+        }
         return (Enumerable) new SetEnumValue(vec, false);
-	}
-	
-	@Benchmark
-	public Enumerable kElementsNormalized() {
-		final IntervalValue inner = new IntervalValue(1, numOfElements);
-		final SubsetValue subset = new SubsetValue(inner);
+    }
 
-		final ValueVec vec = new ValueVec(subset.size());
-		for (int i = 0; i <= inner.size(); i++) {
-			final ValueEnumeration Enum = subset.kElements(i);
-			Value  elem;
-			while ((elem = Enum.nextElement()) != null) {
-				vec.addElement(elem);
-			}
-		}
+    @Benchmark
+    public Enumerable kElementsNormalized() {
+        final IntervalValue inner = new IntervalValue(1, numOfElements);
+        final SubsetValue subset = new SubsetValue(inner);
+
+        final ValueVec vec = new ValueVec(subset.size());
+        for (int i = 0; i <= inner.size(); i++) {
+            final ValueEnumeration Enum = subset.kElements(i);
+            Value elem;
+            while ((elem = Enum.nextElement()) != null) {
+                vec.add(elem);
+            }
+        }
         return (Enumerable) new SetEnumValue(vec, false).normalize();
-	}
+    }
 
-	@Benchmark
-	public Enumerable elementsNotNormalized() {
-		final IntervalValue inner = new IntervalValue(1, numOfElements);
-		final SubsetValue subset = new SubsetValue(inner);
-		
-		final ValueVec vals = new ValueVec(subset.size());
-		final ValueEnumeration Enum = subset.elementsLexicographic();
-		Value  elem;
-		while ((elem = Enum.nextElement()) != null) {
-			vals.addElement(elem);
-		}
-		return (Enumerable) new SetEnumValue(vals, false);
-	}
+    @Benchmark
+    public Enumerable elementsNotNormalized() {
+        final IntervalValue inner = new IntervalValue(1, numOfElements);
+        final SubsetValue subset = new SubsetValue(inner);
 
-	@Benchmark
-	public Enumerable elementsNormalized() {
-		final IntervalValue inner = new IntervalValue(1, numOfElements);
-		final SubsetValue subset = new SubsetValue(inner);
-		
-		final ValueVec vals = new ValueVec(subset.size());
-		final ValueEnumeration Enum = subset.elementsLexicographic();
-		Value  elem;
-		while ((elem = Enum.nextElement()) != null) {
-			vals.addElement(elem);
-		}
-		return (Enumerable) new SetEnumValue(vals, false).normalize();
-	}
+        final ValueVec vals = new ValueVec(subset.size());
+        final ValueEnumeration Enum = subset.elementsLexicographic();
+        Value elem;
+        while ((elem = Enum.nextElement()) != null) {
+            vals.add(elem);
+        }
+        return (Enumerable) new SetEnumValue(vals, false);
+    }
+
+    @Benchmark
+    public Enumerable elementsNormalized() {
+        final IntervalValue inner = new IntervalValue(1, numOfElements);
+        final SubsetValue subset = new SubsetValue(inner);
+
+        final ValueVec vals = new ValueVec(subset.size());
+        final ValueEnumeration Enum = subset.elementsLexicographic();
+        Value elem;
+        while ((elem = Enum.nextElement()) != null) {
+            vals.add(elem);
+        }
+        return (Enumerable) new SetEnumValue(vals, false).normalize();
+    }
 }

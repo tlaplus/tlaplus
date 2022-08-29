@@ -2,7 +2,7 @@
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,121 +25,115 @@
  ******************************************************************************/
 package tlc2.value;
 
-import java.io.IOException;
-import java.util.Random;
-
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
-import tlc2.value.impl.BoolValue;
-import tlc2.value.impl.IntValue;
-import tlc2.value.impl.ModelValue;
-import tlc2.value.impl.StringValue;
-import tlc2.value.impl.TLCVariable;
+import tlc2.value.impl.*;
+
+import java.io.IOException;
+import java.util.Random;
 
 public interface IValue extends Comparable<Object> {
 
-	/* This method compares this with val.  */
-	@Override
-	int compareTo(Object val);
+    /* This method compares this with val.  */
+    @Override
+    int compareTo(Object val);
 
-	void write(IValueOutputStream vos) throws IOException;
+    void write(IValueOutputStream vos) throws IOException;
 
-	IValue setCostModel(CostModel cm);
+    CostModel getCostModel();
 
-	CostModel getCostModel();
+    IValue setCostModel(CostModel cm);
 
-	void setSource(SemanticNode semanticNode);
+    SemanticNode getSource();
 
-	SemanticNode getSource();
+    void setSource(SemanticNode semanticNode);
 
-	boolean hasSource();
+    boolean hasSource();
 
-	/* MAK 09/17/2019: Introduced to guarantee that Value instances are
-	 * fully initialized when created by the SpecProcessor (as opposed
-	 * to by workers during state space exploration).
-	 */
-	/**
-	 * Fully initialize this instance which includes:
-	 * - deep normalization
-	 * - conversion and caching iff defined by the sub-class
-	 * 
-	 *  No further mutation of this instance should be required
-	 *  for any evaluation whatsoever.
-	 *  
-	 *  Afterwards, isNormalized below returns true (it does not
-	 *  return true for all sub-classes when only deepNormalized
-	 *  is executed)!
-	 *  
-	 *  see comment in UnionValue#deepNormalize too
-	 */
-	default IValue initialize() {
-		this.deepNormalize();
-		// Execute fingerprint code path to internally trigger convertAndCache iff
-		// defined (0L parameter is not relevant)
-		this.fingerPrint(0L);
-		return this;
-	}
-	
-	/**
-	   * This method normalizes (destructively) the representation of
-	   * the value. It is essential for equality comparison.
-	   */
-	boolean isNormalized();
+    /* MAK 09/17/2019: Introduced to guarantee that Value instances are
+     * fully initialized when created by the SpecProcessor (as opposed
+     * to by workers during state space exploration).
+     */
 
-	/* Fully normalize this (composite) value. */
-	void deepNormalize();
+    /**
+     * Fully initialize this instance which includes:
+     * - deep normalization
+     * - conversion and caching iff defined by the sub-class
+     * <p>
+     * No further mutation of this instance should be required
+     * for any evaluation whatsoever.
+     * <p>
+     * Afterwards, isNormalized below returns true (it does not
+     * return true for all sub-classes when only deepNormalized
+     * is executed)!
+     * <p>
+     * see comment in UnionValue#deepNormalize too
+     */
+    default IValue initialize() {
+        this.deepNormalize();
+        // Execute fingerprint code path to internally trigger convertAndCache iff
+        // defined (0L parameter is not relevant)
+        this.fingerPrint(0L);
+        return this;
+    }
 
-	/* This method returns the fingerprint of this value. */
-	long fingerPrint(long fp);
+    /**
+     * This method normalizes (destructively) the representation of
+     * the value. It is essential for equality comparison.
+     */
+    boolean isNormalized();
 
-	/**
-	   * This method returns the value permuted by the permutation. It
-	   * returns this if nothing is permuted.
-	   */
-	IValue permute(IMVPerm perm);
+    /* Fully normalize this (composite) value. */
+    void deepNormalize();
 
-	/* This method returns true iff the value is finite. */
-	boolean isFinite();
+    /* This method returns the fingerprint of this value. */
+    long fingerPrint(long fp);
 
-	/* This method returns the size of the value.  */
-	int size();
+    /**
+     * This method returns the value permuted by the permutation. It
+     * returns this if nothing is permuted.
+     */
+    IValue permute(IMVPerm perm);
 
-	/* This method returns true iff the value is fully defined. */
-	boolean isDefined();
+    /* This method returns true iff the value is finite. */
+    boolean isFinite();
 
-	/* This method makes a real deep copy of this.  */
-	IValue deepCopy();
+    /* This method returns the size of the value.  */
+    int size();
 
-	/**
-	   * This abstract method returns a string representation of this
-	   * value. Each subclass must provide its own implementation.
-	   */
-	StringBuffer toString(StringBuffer sb, int offset, boolean swallow);
+    /* This method returns true iff the value is fully defined. */
+    boolean isDefined();
 
-	/* The string representation of this value */
-	String toString();
+    /* This method makes a real deep copy of this.  */
+    IValue deepCopy();
 
-	String toString(String delim);
-	
-	String toUnquotedString();
+    /**
+     * This abstract method returns a string representation of this
+     * value. Each subclass must provide its own implementation.
+     */
+    StringBuilder toString(StringBuilder sb, int offset, boolean swallow);
 
-	default boolean isAtom() {
-		if (this instanceof ModelValue || this instanceof IntValue || this instanceof StringValue
-				|| this instanceof BoolValue) {
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * @return true if a value mutates as part of normalization or fingerprinting.
-	 */
-	default boolean mutates() {
-		return true;
-	}
+    /* The string representation of this value */
+    String toString();
 
-	TLCState toState();
+    String toString(String delim);
 
-	TLCVariable toTLCVariable(TLCVariable variable, Random rnd);
+    String toUnquotedString();
+
+    default boolean isAtom() {
+        return this instanceof ModelValue || this instanceof IntValue || this instanceof StringValue
+                || this instanceof BoolValue;
+    }
+
+    /**
+     * @return true if a value mutates as part of normalization or fingerprinting.
+     */
+    default boolean mutates() {
+        return true;
+    }
+
+    TLCState toState(TLCState emptyState);
+
+    TLCVariable toTLCVariable(TLCVariable variable, Random rnd);
 }

@@ -1,34 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="tlc2/tool/WorkerMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
-	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="src" path="test-long"/>
-	<classpathentry kind="src" path="test-concurrent"/>
-	<classpathentry kind="src" path="test-verify"/>
-	<classpathentry kind="src" path="test-benchmark"/>
-	<classpathentry kind="src" path=".apt_generated">
+	<classpathentry including="**/*.java" kind="src" output="target/class" path="src">
 		<attributes>
 			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11">
+	<classpathentry excluding="**" kind="src" output="target/class" path="target/generated-resources">
 		<attributes>
-			<attribute name="module" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
-		<accessrules>
-			<accessrule kind="accessible" pattern="jdk/internal/**"/>
-		</accessrules>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="lib/javax.mail/mailapi-1.6.3.jar"/>
-	<classpathentry kind="lib" path="lib/jline/jline-reader-3.14.1.jar"/>
-	<classpathentry kind="lib" path="lib/jline/jline-terminal-3.14.1.jar"/>
-	<classpathentry kind="lib" path="lib/jpf.jar"/>
-	<classpathentry kind="lib" path="lib/jmh/jmh-core-1.21.jar"/>
-	<classpathentry kind="lib" path="lib/jmh/commons-math3-3.2.jar"/>
-	<classpathentry kind="lib" path="lib/gson/gson-2.8.6.jar"/>
-	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.debug-0.12.0.jar"/>
-	<classpathentry kind="lib" path="lib/lsp/org.eclipse.lsp4j.jsonrpc-0.12.0.jar"/>
-	<classpathentry kind="output" path="class"/>
+	<classpathentry including="**/*.java" kind="src" output="target/test-class" path="test">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/class"/>
 </classpath>

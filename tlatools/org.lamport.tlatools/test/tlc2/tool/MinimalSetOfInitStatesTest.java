@@ -2,7 +2,7 @@
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,33 +25,31 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import org.junit.Test;
+import tlc2.output.EC;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
-import tlc2.output.EC;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-
 public class MinimalSetOfInitStatesTest extends ModelCheckerTestCase {
 
-	public MinimalSetOfInitStatesTest() {
-		super("MinimalSetOfInitStates");
-	}
+    public MinimalSetOfInitStatesTest() {
+        super("MinimalSetOfInitStates");
+    }
 
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertFalse(recorder.recorded(EC.GENERAL));
-		
-		// Without the fix to tlc2.tool.Tool.getInitStates(ActionItemList, TLCState,
-		// IStateFunctor), the number of generated initial states would be 6 with
-		// 4 being distinct. The fix in getInitStates causes TLC to more efficiently
-		// evaluate the init predicate and avoid generating the two duplicates.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "6"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "6", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertFalse(recorder.recorded(EC.GENERAL));
 
-	assertZeroUncovered();
-	}
+        // Without the fix to tlc2.tool.Tool.getInitStates(ActionItemList, TLCState,
+        // IStateFunctor), the number of generated initial states would be 6 with
+        // 4 being distinct. The fix in getInitStates causes TLC to more efficiently
+        // evaluate the init predicate and avoid generating the two duplicates.
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "8", "s", "6"));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "14", "6", "0"));
+        assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
+
+        assertZeroUncovered();
+    }
 }

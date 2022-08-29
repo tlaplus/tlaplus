@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,20 +26,26 @@
 package tlc2.tool.suite;
 
 import org.junit.Test;
-
 import tlc2.output.EC.ExitStatus;
 
 public class ETest16 extends SuiteETestCase {
 
-	public ETest16() {
-		super(ExitStatus.ERROR_SPEC_PARSE);
-	}
+    public ETest16() {
+        super(ExitStatus.ERROR_SPEC_PARSE);
+    }
 
-	@Test
-	public void testSpec() {
-		assertSubstring("*** Errors: 2\n\n" + "line 5, col 27 to line 5, col 27 of module etest16\n\n"
-				+ "Non-unique fields in constructor.\n\n\n"
-				+ "line 7, col 27 to line 7, col 27 of module etest16\n\n"
-				+ "Non-unique fields in constructor.");
-	}
+    @Test
+    public void testSpec() {
+        assertSubstring("""
+                *** Errors: 2
+
+                line 5, col 27 to line 5, col 27 of module etest16
+
+                Non-unique fields in constructor.
+
+
+                line 7, col 27 to line 7, col 27 of module etest16
+
+                Non-unique fields in constructor.""");
+    }
 }

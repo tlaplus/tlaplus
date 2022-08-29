@@ -4,22 +4,24 @@ package pcal.exception;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class RemoveNameConflictsException extends UnrecoverablePositionedException
-{
+public class RemoveNameConflictsException extends UnrecoverablePositionedException {
 
     /**
-     * @param message
+     *
      */
-    public RemoveNameConflictsException(String message)
-    {
+    private static final long serialVersionUID = -9110055310375572440L;
+
+    /**
+     *
+     */
+    public RemoveNameConflictsException(final String message) {
         super(message);
     }
 
     /**
-     * @param e2
+     *
      */
-    public RemoveNameConflictsException(UnrecoverablePositionedException e2)
-    {
+    public RemoveNameConflictsException(final UnrecoverablePositionedException e2) {
         super(e2.getMessage(), e2.getPosition());
     }
 

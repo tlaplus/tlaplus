@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -28,42 +28,42 @@ package tlc2.util;
 
 public interface IntStack {
 
-	/**
-	 * Return the number of items on the stack.
-	 */
-	long size();
+    /**
+     * Return the number of items on the stack.
+     */
+    long size();
 
-	/**
-	 * Push an integer onto the stack.
-	 */
-	void pushInt(final int x);
+    /**
+     * Push an integer onto the stack.
+     */
+    void pushInt(final int x);
 
-	/**
-	 * Push a long integer onto the stack.
-	 */
-	void pushLong(final long x);
+    /**
+     * Push a long integer onto the stack.
+     */
+    void pushLong(final long x);
 
-	/**
-	 * Pop the integer from the top of the stack.
-	 */
-	int popInt();
+    /**
+     * Pop the integer from the top of the stack.
+     */
+    int popInt();
 
-	/**
-	 * Pop the long integer from the top of the stack.
-	 */
-	long popLong();
-	
-	/**
-	 * Removes all elements from the stack
-	 */
-	void reset();
+    /**
+     * Pop the long integer from the top of the stack.
+     */
+    long popLong();
 
-	// Some implementors support peak operations.
-	default long peakLong() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-	
-	default int peakInt() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /**
+     * Removes all elements from the stack
+     */
+    void reset();
+
+    // Some implementors support peak operations.
+    default long peakLong() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    default int peakInt() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }

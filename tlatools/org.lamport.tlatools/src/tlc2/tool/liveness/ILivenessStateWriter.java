@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,13 +26,14 @@
 package tlc2.tool.liveness;
 
 import tlc2.tool.TLCState;
-import tlc2.util.BitVector;
 import tlc2.util.IStateWriter;
 
+import java.util.BitSet;
+
 public interface ILivenessStateWriter extends IStateWriter {
-	void writeState(TLCState state, TBGraphNode tableauNode);
+    void writeState(TLCState state, TBGraphNode tableauNode);
 
-	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew);
+    void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitSet actionChecks, int from, int length, boolean successorStateIsNew);
 
-	void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization);
+    void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor, TBGraphNode tableauNodeSuccessor, BitSet actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization);
 }

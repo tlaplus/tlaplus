@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,54 +26,54 @@
 
 package tlc2.util;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.io.File;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 public class SynchronousDiskIntStackTest {
 
-	@Test
-	public void testPushIntNoWrite() {
-		final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
-				+ System.currentTimeMillis();
+    @Test
+    public void testPushIntNoWrite() {
+        final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
+                + System.currentTimeMillis();
 
-		final int size = 8;
-		
-		final IntStack diskIntStack = new SynchronousDiskIntStack(diskdir, "SynchronousDiskIntStackTest", size);
-		
-		// Fill stack
-		for (int i = 0; i < size; i++) {
-			diskIntStack.pushInt(i);
-		}
+        final int size = 8;
 
-		// Check all elements still on stack
-		for (int i = size - 1; i >= 0; i--) {
-			assertEquals(i, diskIntStack.popInt());
-		}
-	}
+        final IntStack diskIntStack = new SynchronousDiskIntStack(diskdir, "SynchronousDiskIntStackTest", size);
 
-	@Test
-	public void testPushIntWrite() {
-		final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
-				+ System.currentTimeMillis();
-		new File(diskdir).mkdirs();
+        // Fill stack
+        for (int i = 0; i < size; i++) {
+            diskIntStack.pushInt(i);
+        }
 
-		final int size = 8;
-		
-		final IntStack diskIntStack = new SynchronousDiskIntStack(diskdir, "SynchronousDiskIntStackTest", size);
-		
-		// Fill stack trice
-		for (int i = 0; i < (size * 3); i++) {
-			diskIntStack.pushInt(i);
-		}
+        // Check all elements still on stack
+        for (int i = size - 1; i >= 0; i--) {
+            assertEquals(i, diskIntStack.popInt());
+        }
+    }
 
-		// Check all elements still on stack
-		for (int i = (3*size) - 1; i >= 0; i--) {
-			assertEquals(i, diskIntStack.popInt());
-		}
-		
-		assertEquals(0, diskIntStack.size());
-	}
+    @Test
+    public void testPushIntWrite() {
+        final String diskdir = System.getProperty("java.io.tmpdir") + File.separator + "SynchronousDiskIntStackTest_"
+                + System.currentTimeMillis();
+        new File(diskdir).mkdirs();
+
+        final int size = 8;
+
+        final IntStack diskIntStack = new SynchronousDiskIntStack(diskdir, "SynchronousDiskIntStackTest", size);
+
+        // Fill stack trice
+        for (int i = 0; i < (size * 3); i++) {
+            diskIntStack.pushInt(i);
+        }
+
+        // Check all elements still on stack
+        for (int i = (3 * size) - 1; i >= 0; i--) {
+            assertEquals(i, diskIntStack.popInt());
+        }
+
+        assertEquals(0, diskIntStack.size());
+    }
 }

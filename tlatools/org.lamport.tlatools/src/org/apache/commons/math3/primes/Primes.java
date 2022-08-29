@@ -50,12 +50,12 @@ public class Primes {
      * @param n number to test.
      * @return true if n is prime. (All numbers &lt; 2 return false).
      */
-    public static boolean isPrime(int n) {
+    public static boolean isPrime(final int n) {
         if (n < 2) {
             return false;
         }
 
-        for (int p : SmallPrimes.PRIMES) {
+        for (final int p : SmallPrimes.PRIMES) {
             if (0 == (n % p)) {
                 return n == p;
             }
@@ -114,7 +114,7 @@ public class Primes {
      * @return list of prime factors of n
      * @throws MathIllegalArgumentException if n &lt; 2.
      */
-    public static List<Integer> primeFactors(int n) {
+    public static List<Integer> primeFactors(final int n) {
 
         if (n < 2) {
             throw new MathIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL, n, 2);

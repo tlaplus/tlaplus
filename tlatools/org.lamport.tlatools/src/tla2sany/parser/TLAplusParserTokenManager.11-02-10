@@ -3,8 +3,8 @@ package tla2sany.parser;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tlc2.output.EC;
-import tla2sany.utilities.Vector;
-import tla2sany.utilities.Stack;
+import java.util.ArrayList;
+import java.util.Stack;
 import util.Assert;
 import util.UniqueString;
 import util.ToolIO;
@@ -4299,7 +4299,7 @@ static final long[] jjtoMore = {
 protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[227];
 private final int[] jjstateSet = new int[454];
-StringBuffer image;
+StringBuilder image;
 int jjimageLen;
 int lengthOfMatch;
 protected char curChar;
@@ -4516,19 +4516,19 @@ void SkipLexicalActions(Token matchedToken)
    {
       case 28 :
          if (image == null)
-            image = new StringBuffer();
+            image = new StringBuilder();
          image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                      bracketCount++;
          break;
       case 30 :
          if (image == null)
-            image = new StringBuffer();
+            image = new StringBuilder();
          image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
             bracketCount--; if (bracketCount == 0) SwitchTo( IN_COMMENT );
          break;
       case 31 :
          if (image == null)
-            image = new StringBuffer();
+            image = new StringBuilder();
          image.append(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1)));
                      bracketCount++;
          break;

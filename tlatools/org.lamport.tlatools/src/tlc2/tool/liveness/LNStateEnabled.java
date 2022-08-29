@@ -17,86 +17,87 @@ import tlc2.util.Context;
 
 /**
  * The Enabled Predicate
- * 
+ *
  * <p>
  * For any action A, we define <i>Enabled A<i> to be the predicate that is true for a
  * state iff it is possible to take an <i>A<i> step starting in that state.
  * </p>
- * 
+ *
  * <p>
  * If action <i>A<i> represents an atomic operation of a program, then <i>Enabled A<i> is
  * true for those states in which it is possible to perform the operation.
  * </p>
- * 
  */
 class LNStateEnabled extends LNState {
-	private final ExprNode pred;
-	private final ExprNode subscript;
-	private final boolean isBox;
+    private final ExprNode pred;
+    private final ExprNode subscript;
+    private final boolean isBox;
 
-	public LNStateEnabled(ExprNode pred, Context con, ExprNode subscript, boolean isBox) {
-		super(con);
-		this.pred = pred;
-		this.subscript = subscript;
-		this.isBox = isBox;
-	}
+    public LNStateEnabled(final ExprNode pred, final Context con, final ExprNode subscript, final boolean isBox) {
+        super(con);
+        this.pred = pred;
+        this.subscript = subscript;
+        this.isBox = isBox;
+    }
 
-	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
-		// Note that s2 is useless.
-		if (this.isBox && this.subscript != null) {
-			return true;
-		}
+    @Override
+    public final boolean eval(final ITool tool, final TLCState s1, final TLCState s2) {
+        // Note that s2 is useless.
+        if (this.isBox && this.subscript != null) {
+            return true;
+        }
 
-		TLCState sfun = TLCStateFun.Empty;
-		Context c1 = Context.branch(getContext());
-		if (this.subscript != null) {
-			sfun = tool.enabled(this.pred, c1, s1, sfun, this.subscript, IActionItemList.CHANGED);
-		} else {
-			sfun = tool.enabled(this.pred, c1, s1, sfun);
-		}
-		return sfun != null;
-	}
+        TLCState sfun = TLCStateFun.Empty;
+        final Context c1 = Context.branch(getContext());
+        if (this.subscript != null) {
+            sfun = tool.enabled(this.pred, c1, s1, sfun, this.subscript, IActionItemList.CHANGED);
+        } else {
+            sfun = tool.enabled(this.pred, c1, s1, sfun);
+        }
+        return sfun != null;
+    }
 
-	public final void toString(StringBuffer sb, String padding) {
-		sb.append("ENABLED ");
-		if (this.subscript == null) {
-			this.pred.toString(sb, padding + "        ");
-		} else {
-			sb.append((this.isBox) ? "[" : "<");
-			this.pred.toString(sb, padding + "         ");
-			sb.append(((this.isBox) ? "]_" : ">_") + this.subscript);
-		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
-	 */
-	public String toDotViz() {
-		final StringBuffer sb = new StringBuffer();
-		if (this.pred instanceof OpApplNode) {
-			final OpApplNode oan = (OpApplNode) this.pred;
-			sb.append("(");
-			// Zeros
-			final TreeNode[] zero = oan.getTreeNode().zero();
-			for (TreeNode treeNode : zero) {
-				// TreeNode is interface with only STN being impl => unchecked
-				// cast is safe.
-				SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
-				sb.append(stn.getHumanReadableImage());
-			}
-			// Ones
-			final TreeNode[] one = oan.getTreeNode().one();
-			if (one != null) {
-				for (TreeNode treeNode : one) {
-					SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
-					sb.append(stn.getHumanReadableImage());
-				}
-			}
-			sb.append(")");
-		} else {
-			toString(sb, "");
-		}
-		return sb.toString();
-	}
+    @Override
+    public final void toString(final StringBuilder sb, final String padding) {
+        sb.append("ENABLED ");
+        if (this.subscript == null) {
+            this.pred.toString(sb, padding + "        ");
+        } else {
+            sb.append((this.isBox) ? "[" : "<");
+            this.pred.toString(sb, padding + "         ");
+            sb.append((this.isBox) ? "]_" : ">_").append(this.subscript);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see tlc2.tool.liveness.LiveExprNode#toDotViz()
+     */
+    @Override
+    public String toDotViz() {
+        final StringBuilder sb = new StringBuilder();
+        if (this.pred instanceof final OpApplNode oan) {
+            sb.append("(");
+            // Zeros
+            final TreeNode[] zero = oan.getTreeNode().zero();
+            for (final TreeNode treeNode : zero) {
+                // TreeNode is interface with only STN being impl => unchecked
+                // cast is safe.
+                final SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+                sb.append(stn.getHumanReadableImage());
+            }
+            // Ones
+            final TreeNode[] one = oan.getTreeNode().one();
+            if (one != null) {
+                for (final TreeNode treeNode : one) {
+                    final SyntaxTreeNode stn = (SyntaxTreeNode) treeNode;
+                    sb.append(stn.getHumanReadableImage());
+                }
+            }
+            sb.append(")");
+        } else {
+            toString(sb, "");
+        }
+        return sb.toString();
+    }
 
 }

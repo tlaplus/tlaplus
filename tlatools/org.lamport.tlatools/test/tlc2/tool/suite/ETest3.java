@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -25,34 +25,34 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class ETest3 extends SuiteETestCase {
 
-	public ETest3() {
-		super(ExitStatus.VIOLATION_DEADLOCK);
-	}
-	
-	/* (non-Javadoc)
-	 * @see tlc2.tool.liveness.ModelCheckerTestCase#checkDeadLock()
-	 */
-	protected boolean checkDeadLock() {
-		return true;
-	}
+    public ETest3() {
+        super(ExitStatus.VIOLATION_DEADLOCK);
+    }
 
-	@Test
-	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_DEADLOCK_REACHED));
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
-		assertFalse(recorder.recorded(EC.GENERAL));
+    /* (non-Javadoc)
+     * @see tlc2.tool.liveness.ModelCheckerTestCase#checkDeadLock()
+     */
+    @Override
+    protected boolean checkDeadLock() {
+        return true;
+    }
 
-		assertZeroUncovered();
-	}
+    @Test
+    public void testSpec() {
+        assertTrue(recorder.recorded(EC.TLC_DEADLOCK_REACHED));
+        assertTrue(recorder.recorded(EC.TLC_FINISHED));
+        assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
+        assertFalse(recorder.recorded(EC.GENERAL));
+
+        assertZeroUncovered();
+    }
 }

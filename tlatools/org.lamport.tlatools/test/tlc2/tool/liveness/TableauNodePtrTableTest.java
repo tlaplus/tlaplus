@@ -2,7 +2,7 @@
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy 
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -12,7 +12,7 @@
  *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software. 
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,64 +26,60 @@
 
 package tlc2.tool.liveness;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TableauNodePtrTableTest {
 
-	@Test
-	public void testSetDone() {
-		final TableauNodePtrTable tbl = new TableauNodePtrTable(0); // init with 0 so that grow is tested
-		
-		final long fingerprint = 1L;
-		assertFalse(tbl.isDone(fingerprint));
-		
-		tbl.setDone(fingerprint);
-		assertTrue(tbl.isDone(fingerprint));
-		
-		tbl.put(fingerprint, 1, TableauNodePtrTable.UNDONE);
-		// This ends up as -2 for the high part of the long and thus tbl isn't
-		// done anymore.
-		assertFalse(tbl.isDone(fingerprint));
+    @Test
+    public void testSetDone() {
+        final TableauNodePtrTable tbl = new TableauNodePtrTable(0); // init with 0 so that grow is tested
 
-		// Add another node BUT with different tableau index. The done state
-		// does NOT change.
-		tbl.put(fingerprint, 2, 4711L);
-		assertFalse(tbl.isDone(fingerprint));
+        final long fingerprint = 1L;
+        assertFalse(tbl.isDone(fingerprint));
 
-		tbl.setDone(fingerprint);
-		assertTrue(tbl.isDone(fingerprint));
-	}
-	
-	// Test various methods which apparently all yield pretty much the same result
-	@Test
-	public void testRedundantMethodYieldSameResult() {
-		final TableauNodePtrTable tbl = new TableauNodePtrTable(0); // init with 0 so that grow is tested
-		
-		final long fingerprint = 1L;
-		
-		assertEquals(-1, tbl.getNodesLoc(fingerprint));
-		
-		final int loc = tbl.setDone(fingerprint);
-		assertTrue(tbl.isDone(fingerprint));
+        tbl.setDone(fingerprint);
+        assertTrue(tbl.isDone(fingerprint));
 
-		assertTrue(tbl.getNodesLoc(fingerprint) != -1);
-		assertEquals(tbl.getNodesLoc(fingerprint), loc);
+        tbl.put(fingerprint, 1, TableauNodePtrTable.UNDONE);
+        // This ends up as -2 for the high part of the long and thus tbl isn't
+        // done anymore.
+        assertFalse(tbl.isDone(fingerprint));
 
-		assertTrue(Arrays.equals(tbl.getNodesByLoc(loc), tbl.getNodes(fingerprint)));
+        // Add another node BUT with different tableau index. The done state
+        // does NOT change.
+        tbl.put(fingerprint, 2, 4711L);
+        assertFalse(tbl.isDone(fingerprint));
 
-		assertEquals(-1, tbl.getLoc(fingerprint, 1));
-		tbl.addElem(fingerprint, 1, 2342);
-		// Cannot lookup after addElem
-		assertEquals(-1, tbl.getLoc(fingerprint, 1));
-		
-		//...have to put instead
-		tbl.put(fingerprint, 1, 2342);
-		assertTrue(tbl.getLoc(fingerprint, 1) != -1);
-	}
+        tbl.setDone(fingerprint);
+        assertTrue(tbl.isDone(fingerprint));
+    }
+
+    // Test various methods which apparently all yield pretty much the same result
+    @Test
+    public void testRedundantMethodYieldSameResult() {
+        final TableauNodePtrTable tbl = new TableauNodePtrTable(0); // init with 0 so that grow is tested
+
+        final long fingerprint = 1L;
+
+        assertEquals(-1, tbl.getNodesLoc(fingerprint));
+
+        final int loc = tbl.setDone(fingerprint);
+        assertTrue(tbl.isDone(fingerprint));
+
+        assertTrue(tbl.getNodesLoc(fingerprint) != -1);
+        assertEquals(tbl.getNodesLoc(fingerprint), loc);
+
+        assertArrayEquals(tbl.getNodesByLoc(loc), tbl.getNodes(fingerprint));
+
+        assertEquals(-1, tbl.getLoc(fingerprint, 1));
+        tbl.addElem(fingerprint, 1, 2342);
+        // Cannot lookup after addElem
+        assertEquals(-1, tbl.getLoc(fingerprint, 1));
+
+        //...have to put instead
+        tbl.put(fingerprint, 1, 2342);
+        assertTrue(tbl.getLoc(fingerprint, 1) != -1);
+    }
 }

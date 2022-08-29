@@ -5,7 +5,7 @@
 
 package tlc2.tool.liveness;
 
-import tlc2.util.BitVector;
+import java.util.BitSet;
 
 /**
  * A {@link PossibleErrorModel} is technically a lookup table into its
@@ -20,12 +20,12 @@ import tlc2.util.BitVector;
  * checks
  * <ul>
  * <li>When the states and transitions (see
- * {@link GraphNode#addTransition(long, int, int, int, BitVector, int, int)})
+ * {@link GraphNode#addTransition(long, int, int, int, BitSet, int, int)})
  * are evaluated during "normal" model checking the PEM index selects the set of
  * relevant OOS checks. The result of each check is stored in a per node
- * {@link BitVector} index again by the corresponding PEM mapping.</li>
- * <li>During liveness checking (see {@link LiveWorker#checkSccs()} when the
- * pre-computed check result is being looked up in the node's {@link BitVector}.
+ * {@link BitSet} index again by the corresponding PEM mapping.</li>
+ * <li>During liveness checking (see {@link LiveWorker#checkSccs} when the
+ * pre-computed check result is being looked up in the node's {@link BitSet}.
  * </li>
  * </ul>
  * <p>
@@ -35,9 +35,9 @@ import tlc2.util.BitVector;
  * <p>
  * Theorie-wise, a {@link PossibleErrorModel} (there are as many PEMs as
  * disjuncts in the normal form (DNF) produced by
- * {@link Liveness#processLiveness(tlc2.tool.Tool)}) represents the negation of
+ * {@link Liveness#processLiveness}) represents the negation of
  * the stated liveness properties. It is then applied onto the discovered
- * strongly-connected-components in {@link LiveWorker#checkComponent()} to check
+ * strongly-connected-components in {@link LiveWorker#checkComponent} to check
  * if the PEM is "P-satisfiable". If it is, it shows that a violation of the
  * original liveness properties has been found (meaning they can't be
  * "P-valid"). A counter-example can be created.
@@ -49,63 +49,60 @@ import tlc2.util.BitVector;
  * such a behavior (SCC), it would violate the liveness property.
  */
 public class PossibleErrorModel {
-	final int[] EAAction; // <>[]act's (Eventually Always actions) (Strong fairness)
-	final int[] AEState; // []<>state's (Infinitely Often states)
-	final int[] AEAction; // []<>act's (Infinitely Often actions) (Weak fairness)
-	
-	public PossibleErrorModel(int[] aeAction, int[] aeState, int[] eaAction) {
-		this.AEAction = aeAction;
-		this.AEState = aeState;
-		this.EAAction = eaAction;
-	}
-	
-	public final boolean isEmpty() {
-		return (this.EAAction.length == 0 && this.AEState.length == 0 && this.AEAction.length == 0);
-	}
+    final int[] EAAction; // <>[]act's (Eventually Always actions) (Strong fairness)
+    final int[] AEState; // []<>state's (Infinitely Often states)
+    final int[] AEAction; // []<>act's (Infinitely Often actions) (Weak fairness)
 
-	public final String toString(LiveExprNode[] checkState, LiveExprNode[] checkAction) {
-		StringBuffer sb = new StringBuffer();
-		this.toString(sb, "", checkState, checkAction);
-		return sb.toString();
-	}
+    public PossibleErrorModel(final int[] aeAction, final int[] aeState, final int[] eaAction) {
+        this.AEAction = aeAction;
+        this.AEState = aeState;
+        this.EAAction = eaAction;
+    }
 
-	public final void toString(StringBuffer sb, String padding, LiveExprNode[] checkState, LiveExprNode[] checkAction) {
-		boolean noPadding = true;
-		String padding1 = padding + "       ";
+    public final boolean isEmpty() {
+        return (this.EAAction.length == 0 && this.AEState.length == 0 && this.AEAction.length == 0);
+    }
 
-		for (int i = 0; i < this.EAAction.length; i++) {
-			int idx = this.EAAction[i];
-			if (noPadding) {
-				noPadding = false;
-			} else {
-				sb.append(padding);
-			}
-			sb.append("/\\ <>[]");
-			checkAction[idx].toString(sb, padding1);
-			sb.append("\n");
-		}
-		for (int i = 0; i < this.AEState.length; i++) {
-			int idx = this.AEState[i];
-			if (noPadding) {
-				noPadding = false;
-			} else {
-				sb.append(padding);
-			}
-			sb.append("/\\ []<>");
-			checkState[idx].toString(sb, padding1);
-			sb.append("\n");
-		}
-		for (int i = 0; i < this.AEAction.length; i++) {
-			int idx = this.AEAction[i];
-			if (noPadding) {
-				noPadding = false;
-			} else {
-				sb.append(padding);
-			}
-			sb.append("/\\ []<>");
-			checkAction[idx].toString(sb, padding1);
-			sb.append("\n");
-		}
-	}
+    public final String toString(final LiveExprNode[] checkState, final LiveExprNode[] checkAction) {
+        final StringBuilder sb = new StringBuilder();
+        this.toString(sb, "", checkState, checkAction);
+        return sb.toString();
+    }
+
+    public final void toString(final StringBuilder sb, final String padding, final LiveExprNode[] checkState, final LiveExprNode[] checkAction) {
+        boolean noPadding = true;
+        final String padding1 = padding + "       ";
+
+        for (final int idx : this.EAAction) {
+            if (noPadding) {
+                noPadding = false;
+            } else {
+                sb.append(padding);
+            }
+            sb.append("/\\ <>[]");
+            checkAction[idx].toString(sb, padding1);
+            sb.append("\n");
+        }
+        for (final int idx : this.AEState) {
+            if (noPadding) {
+                noPadding = false;
+            } else {
+                sb.append(padding);
+            }
+            sb.append("/\\ []<>");
+            checkState[idx].toString(sb, padding1);
+            sb.append("\n");
+        }
+        for (final int idx : this.AEAction) {
+            if (noPadding) {
+                noPadding = false;
+            } else {
+                sb.append(padding);
+            }
+            sb.append("/\\ []<>");
+            checkAction[idx].toString(sb, padding1);
+            sb.append("\n");
+        }
+    }
 
 }

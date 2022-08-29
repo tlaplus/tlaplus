@@ -5,159 +5,148 @@
 
 package pcal;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Changed {
-	/*
-	 * A Changed object is used when generating the actions to keep track
-	 * of how many times a variable has been set in the conjuncts produced
-	 * so far.  It's an error if the variable has been set more than once.
-	 * If it has been set once, then uses of it in expressions must be
-	 * replaced by their primed versions.
-	 * 
-	 * The object has two fields: 
-	 *   vars: a vector of variable names.  It is set to the vector
-	 *         of all variables.
-	 *   count: an array whose i-th element is the number of times the
-	 *          i-th variable in vars has been changed.
-	 */
-    public int[] count; /* number times variable set */
-    public Vector vars; /* list of variables */
+    /*
+     * A Changed object is used when generating the actions to keep track
+     * of how many times a variable has been set in the conjuncts produced
+     * so far.  It's an error if the variable has been set more than once.
+     * If it has been set once, then uses of it in expressions must be
+     * replaced by their primed versions.
+     *
+     * The object has two fields:
+     *   vars: a vector of variable names.  It is set to the vector
+     *         of all variables.
+     *   count: an array whose i-th element is the number of times the
+     *          i-th variable in vars has been changed.
+     */
+    public final int[] count; /* number times variable set */
+    public final List<String> vars; /* list of variables */
 
-    public Changed (Vector vars) {
-	count = new int[vars.size()];
-	this.vars = vars;
-	for (int i = 0; i < count.length; i++)
-	    count[i] = 0;
+    public Changed(final List<String> vars) {
+        count = new int[vars.size()];
+        this.vars = vars;
+        Arrays.fill(count, 0);
     }
 
-    public Changed (Changed c) {
-	vars = c.vars;
-	count = new int[vars.size()];
-	for (int i = 0; i < count.length; i++)
-	    count[i] = c.count[i];
+    public Changed(final Changed c) {
+        vars = c.vars;
+        count = new int[vars.size()];
+        System.arraycopy(c.count, 0, count, 0, count.length);
     }
 
-    public String toString () {
-	String s = "[";
-	for (int i = 0; i < count.length; i++)
-	    s = s
-		+ ((i == 0) ? "" : ", ")
-		+ ((String) vars.elementAt(i))
-		+ " "
-		+ count[i];
-	s = s + "]";
-	return s;
+    public String toString() {
+        final StringBuilder s = new StringBuilder("[");
+        for (int i = 0; i < count.length; i++)
+            s.append((i == 0) ? "" : ", ").append(vars.get(i)).append(" ").append(count[i]);
+        s.append("]");
+        return s.toString();
     }
 
     public int Size() {
-	return count.length;
+        return count.length;
     }
 
-    public boolean IsChanged(String s) {
-	for (int i = 0; i < count.length; i++)
-	    if (s.equals((String) vars.elementAt(i)))
-		return (count[i] > 0);
-	return false;
+    public boolean IsChanged(final String s) {
+        for (int i = 0; i < count.length; i++)
+            if (s.equals(vars.get(i)))
+                return (count[i] > 0);
+        return false;
     }
 
-    public void Merge (Changed  c) {
-	PcalDebug.Assert(count.length == c.count.length);
-	for (int i = 0; i < count.length; i++)
-	    count[i] = (count[i] > c.count[i]) ? count[i] : c.count[i];
+    public void Merge(final Changed c) {
+        PcalDebug.Assert(count.length == c.count.length);
+        for (int i = 0; i < count.length; i++)
+            count[i] = Math.max(count[i], c.count[i]);
     }
 
-    public int Set (String v) {
-	for (int i = 0; i < count.length; i++)
-	    if (v.equals((String) vars.elementAt(i)))
-		return ++count[i];
-	return 0;
+    public int Set(final String v) {
+        for (int i = 0; i < count.length; i++)
+            if (v.equals(vars.get(i)))
+                return ++count[i];
+        return 0;
     }
 
     /* String of vars whose change count is 0 */
-    public String Unchanged () {
-	String s = "";
-	for (int i = 0; i < count.length; i++)
-	    if (count[i] == 0)
-		s = s
-		    + ((s.length() == 0) ? "" : ", ")
-		    + (String) vars.elementAt(i);
-	return s;
+    public String Unchanged() {
+        final StringBuilder s = new StringBuilder();
+        for (int i = 0; i < count.length; i++)
+            if (count[i] == 0)
+                s.append((s.length() == 0) ? "" : ", ").append(vars.get(i));
+        return s.toString();
     }
 
     /* String of vars that were changed in c but not in this */
-    public String Unchanged (Changed c) {
-	String s = "";
-	for (int i = 0; i < count.length; i++)
-	    if ((count[i] == 0) && c.count[i] > 0)
-		s = s
-		    + ((s.length() == 0) ? "" : ", ")
-		    + (String) vars.elementAt(i);
-	return s;
+    public String Unchanged(final Changed c) {
+        final StringBuilder s = new StringBuilder();
+        for (int i = 0; i < count.length; i++)
+            if ((count[i] == 0) && c.count[i] > 0)
+                s.append((s.length() == 0) ? "" : ", ").append(vars.get(i));
+        return s.toString();
     }
-  
-    /* Vector of strings of vars whose change count is 0 */
+
+    /* ArrayList of strings of vars whose change count is 0 */
     /* Each string is no longer than ch characters       */
     /* (except for vars whose length is over ch-1)       */
     /* This method is called only once, from             */
     /* GenLabeledStmt.                                   */
-    public Vector Unchanged (int ch) {
-	Vector sv = new Vector();
-	String s = "";
-	boolean haveOne = false;
-	for (int i = 0; i < count.length; i++)
-	    if (count[i] == 0) {
-		String one = (String) vars.elementAt(i);
-		if (haveOne) s = s + ", ";
-		else haveOne = true;
-		if (s.length() + one.length() > ch) {
-		    if (s.length() > 0) sv.addElement(s);
-		    s = one;
-		}
-		else s = s + one;
-	    }
-	if  (s.length() > 0) sv.addElement(s);
-	return sv;
+    public List<String> Unchanged(final int ch) {
+        final List<String> sv = new ArrayList<>();
+        StringBuilder s = new StringBuilder();
+        boolean haveOne = false;
+        for (int i = 0; i < count.length; i++)
+            if (count[i] == 0) {
+                final String one = vars.get(i);
+                if (haveOne) s.append(", ");
+                else haveOne = true;
+                if (s.length() + one.length() > ch) {
+                    if (s.length() > 0) sv.add(s.toString());
+                    s = new StringBuilder(one);
+                } else s.append(one);
+            }
+        if (s.length() > 0) sv.add(s.toString());
+        return sv;
     }
 
     /* String of vars that were changed in c but not in this */
     /* Each string is no longer than ch characters           */
     /* (except for vars whose length is over ch-1)           */
-    public Vector Unchanged (Changed c, int ch) {
-	Vector sv = new Vector();
-	String s = "";
-	boolean haveOne = false;
-	for (int i = 0; i < count.length; i++)
-	    if ((count[i] == 0) && c.count[i] > 0) {
-		String one = (String) vars.elementAt(i);
-		if (haveOne) s = s + ", ";
-		else haveOne = true;
-		if (s.length() + one.length() > ch) {
-		    if (s.length() > 0) sv.addElement(s);
-		    s = one;
-		}
-		else s = s + one;
-	    }
-	if  (s.length() > 0) sv.addElement(s);
-	return sv;
+    public List<String> Unchanged(final Changed c, final int ch) {
+        final List<String> sv = new ArrayList<>();
+        StringBuilder s = new StringBuilder();
+        boolean haveOne = false;
+        for (int i = 0; i < count.length; i++)
+            if ((count[i] == 0) && c.count[i] > 0) {
+                final String one = vars.get(i);
+                if (haveOne) s.append(", ");
+                else haveOne = true;
+                if (s.length() + one.length() > ch) {
+                    if (s.length() > 0) sv.add(s.toString());
+                    s = new StringBuilder(one);
+                } else s.append(one);
+            }
+        if (s.length() > 0) sv.add(s.toString());
+        return sv;
     }
-  
+
     /* Number of vars whose change count is 0 */
-    public int NumUnchanged () {
-	int ct = 0;
-	for (int i = 0; i < count.length; i++)
-	    if (count[i] == 0) ct = ct + 1;
-	return ct;
+    public int NumUnchanged() {
+        int ct = 0;
+        for (final int j : count) if (j == 0) ct = ct + 1;
+        return ct;
     }
 
     /* Number of vars that were changed in c but not in this */
-    public int NumUnchanged (Changed c) {
-	int ct = 0;
+    public int NumUnchanged(final Changed c) {
+        int ct = 0;
 
-	for (int i = 0; i < count.length; i++)
-	    if ((count[i] == 0) && c.count[i] > 0)
-		ct = ct + 1;
-	return ct;
+        for (int i = 0; i < count.length; i++)
+            if ((count[i] == 0) && c.count[i] > 0)
+                ct = ct + 1;
+        return ct;
     }
-  
+
 }
