@@ -17,4 +17,11 @@ Spec == x = 1 /\ [][x < 10 /\ x' = x + 1]_x
 Inv == /\ Len(Trace) = x
        /\ \A i \in 1..x : /\ Trace[i].x = i
 
+Inv2 == x < 7
+
+Alias ==
+[
+	x |-> x,
+	t |-> Trace
+]
 ==================================

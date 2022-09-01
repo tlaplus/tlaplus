@@ -401,6 +401,8 @@ public class TLCTrace {
 				StatePrinter.printStandaloneErrorState(s1);
 				System.exit(1);
 			}
+			sinfo.state.uid = s1.uid;
+			sinfo.state.workerId = s1.workerId;
 		}
 		if (s2 == null) {
 			lastState = null;
@@ -419,6 +421,8 @@ public class TLCTrace {
 				StatePrinter.printStandaloneErrorState(s2);
 				System.exit(1);
 			}
+			sinfo.state.uid = s2.uid;
+			sinfo.state.workerId = s2.workerId;
 			sinfo = this.tool.evalAlias(sinfo, s2);
 			StatePrinter.printInvariantViolationStateTraceState(sinfo, null, ++idx);
 		}
