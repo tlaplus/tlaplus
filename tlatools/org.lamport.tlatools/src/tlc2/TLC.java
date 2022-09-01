@@ -464,7 +464,7 @@ public class TLC {
             } else if (args[index].equals("-gzip"))
             {
                 index++;
-                TLCGlobals.useGZIP = false;
+                TLCGlobals.useGZIP = true;
             } else if (args[index].equals("-terse"))
             {
                 index++;
