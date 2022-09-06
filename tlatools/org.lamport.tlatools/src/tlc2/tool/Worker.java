@@ -603,7 +603,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	private final void doPostCondition(TLCState curState, TLCState succState) throws IOException {
 		final LinkedList<TLCStateInfo> trace = new LinkedList<>();
-		if (curState.isInitial()) {
+		if (curState.isInitial() && succState == null) {
+			// Prevents calling tool.getState(initial, initial) in the next else-if branch.
 			trace.add(tool.getState(curState.fingerPrint()));
 		} else if (succState == null) {
 			trace.addAll(Arrays.asList(tlc.getTraceInfo(curState)));
