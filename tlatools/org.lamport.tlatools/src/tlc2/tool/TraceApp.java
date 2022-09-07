@@ -5,6 +5,11 @@
 
 package tlc2.tool;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
+
 public interface TraceApp {
 
   /* Reconstruct the initial state whose fingerprint is fp. */
@@ -16,7 +21,19 @@ public interface TraceApp {
   /* Reconstruct the info for the transition from s to s1. */
   public TLCStateInfo getState(TLCState s1, TLCState s);
 
-  public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor);
+	default public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, TLCStateInfo[] prefix) {
+		return evalAlias(current, successor, (Supplier<List<TLCStateInfo>>) () -> Arrays.asList(prefix));
+	}
+	
+	default public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, TLCStateInfo[] prefix, TLCStateInfo... suffix) {
+		return evalAlias(current, successor, (Supplier<List<TLCStateInfo>>) () -> {
+			final List<TLCStateInfo> l = new ArrayList<>(Arrays.asList(prefix));
+			l.addAll(Arrays.asList(suffix));
+			return l;
+		});
+	}
+  
+  public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, Supplier<List<TLCStateInfo>> prefix);
 
 }
 

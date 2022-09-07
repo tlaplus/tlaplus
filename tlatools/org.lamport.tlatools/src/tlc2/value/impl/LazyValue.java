@@ -75,7 +75,7 @@ public class LazyValue extends Value {
 	  this.val = aValue;
   }
 
-  public final Value getValue() {
+  public Value getValue() {
 	  // cache hit on (this.val != null && !isUncachable)
       // cache miss on (this.val == null)
 	  return this.val;

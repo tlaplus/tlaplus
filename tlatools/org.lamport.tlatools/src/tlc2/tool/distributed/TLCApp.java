@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
@@ -258,8 +259,9 @@ public class TLCApp extends DistApp {
 		return this.tool.getState(s1, s);
 	}
 	
-	public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
-		return this.tool.evalAlias(current, successor);
+	@Override
+	public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, Supplier<List<TLCStateInfo>> prefix) {
+		return this.tool.evalAlias(current, successor, prefix);
 	}
 
 	/* (non-Javadoc)

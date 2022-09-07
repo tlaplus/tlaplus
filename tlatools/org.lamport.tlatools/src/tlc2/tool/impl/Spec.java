@@ -215,6 +215,10 @@ abstract class Spec
         return def.getBody();
     }
 
+    public final boolean hasAlias() {
+		return !"".equals(this.config.getAlias());
+    }
+    
     /* Get the alias declaration for the state variables. */
     public final SemanticNode getAliasSpec()
     {

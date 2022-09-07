@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -356,13 +357,15 @@ public class TLCTrace {
 			    StatePrinter.printInvariantViolationStateTraceState(new TLCStateInfo(s1));
 			} else {
 				// Print initial state
-				StatePrinter.printInvariantViolationStateTraceState(this.tool.evalAlias(new TLCStateInfo(s1), s2), s1, 1);
+				StatePrinter.printInvariantViolationStateTraceState(
+						this.tool.evalAlias(new TLCStateInfo(s1), s2, prefix), s1, 1);
 				
 				// Create TLCStateInfo instance to include corresponding action in output.
 				TLCStateInfo state = this.tool.getState(s2, s1);
 				
 				// Print successor state.
-				StatePrinter.printInvariantViolationStateTraceState(this.tool.evalAlias(state, s2), s1, 2);
+				StatePrinter.printInvariantViolationStateTraceState(
+						this.tool.evalAlias(state, s2, prefix), s1, 2);
 			}
 			return;
 		}
@@ -373,7 +376,10 @@ public class TLCTrace {
 		TLCState lastState = null;
 		int idx = 0;
 		while (idx < prefix.length - 1) {
-			StatePrinter.printInvariantViolationStateTraceState(this.tool.evalAlias(prefix[idx], prefix[idx + 1].state), lastState, idx + 1);
+			final int j = idx + 1;
+			StatePrinter.printInvariantViolationStateTraceState(
+					this.tool.evalAlias(prefix[idx], prefix[j].state, () -> Arrays.asList(prefix).subList(0, j)),
+					lastState, idx + 1);
 			lastState = prefix[idx].state;
 			idx++;
 		}
@@ -391,8 +397,10 @@ public class TLCTrace {
 				System.exit(1);
 			}
 		} else {
-			TLCStateInfo s0 = prefix[prefix.length - 1];
-			StatePrinter.printInvariantViolationStateTraceState(this.tool.evalAlias(s0, s1), lastState, ++idx);
+			final int j = prefix.length - 1;
+			TLCStateInfo s0 = prefix[j];
+			StatePrinter.printInvariantViolationStateTraceState(
+					this.tool.evalAlias(s0, s1, prefix), lastState, ++idx);
 			
 			sinfo = this.tool.getState(s1.fingerPrint(), s0.state);
 			if (sinfo == null) {
@@ -407,13 +415,14 @@ public class TLCTrace {
 		if (s2 == null) {
 			lastState = null;
 		}
-		sinfo = this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2);
+		sinfo = this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo);
 		StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++idx);
 		lastState = sinfo.state;
 
 		// Print s2:
 		// The predecessor to s2 is s1.
 		if (s2 != null) {
+			final TLCStateInfo si1 = sinfo;
 			sinfo = this.tool.getState(s2, s1);
 			if (sinfo == null) {
 				MP.printError(EC.TLC_FAILED_TO_RECOVER_INIT);
@@ -423,7 +432,7 @@ public class TLCTrace {
 			}
 			sinfo.state.uid = s2.uid;
 			sinfo.state.workerId = s2.workerId;
-			sinfo = this.tool.evalAlias(sinfo, s2);
+			sinfo = this.tool.evalAlias(sinfo, s2, prefix, si1, sinfo);
 			StatePrinter.printInvariantViolationStateTraceState(sinfo, null, ++idx);
 		}
 	}

@@ -12,11 +12,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
@@ -70,6 +72,7 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.LazySupplierValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MVPerm;
 import tlc2.value.impl.MVPerms;
@@ -1580,11 +1583,32 @@ public abstract class Tool
 		return current;
   }
 
-  public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
-		if ("".equals(this.config.getAlias())) {
+  	@Override
+	public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor) {
+		if (!hasAlias()) {
 			return current;
 		}
+		return evalAlias(current, successor, Context.Empty);
+	}
+
+  	@Override
+	public TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, Supplier<List<TLCStateInfo>> prefix) {
+		if (!hasAlias()) {
+			return current;
+		}
+
+		final ExternalModuleTable emt = getSpecProcessor().getSpecObj().getExternalModuleTable();
+		final SymbolNode tlcExtTrace = emt.getContext(UniqueString.of("TLCExt")).getSymbol(UniqueString.of("Trace"));
 		
+		return evalAlias(current, successor,
+				Context.Empty.cons(tlcExtTrace, new LazySupplierValue(tlcExtTrace, (Supplier<Value>) () -> {
+					return new TupleValue(
+							prefix.get().stream().map(si -> new RecordValue(si.state)).toArray(Value[]::new));
+				})));
+	}
+
+  private TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, Context ctxt) {
+
 		// see getState(..)
 		IdThread.setCurrentState(current.state);
 
@@ -1598,7 +1622,7 @@ public abstract class Tool
 		}
 
 		try {
-			final TLCState alias = eval(getAliasSpec(), Context.Empty, current.state, successor, EvalControl.Clear).toState();
+			final TLCState alias = eval(getAliasSpec(), ctxt, current.state, successor, EvalControl.Clear).toState();
 			if (alias != null) {
 				return new AliasTLCStateInfo(alias, current);
 			}
@@ -1779,6 +1803,10 @@ public abstract class Tool
           // when the lookup returns an OpDef with opcode # 0.
           Object val = this.lookup(opNode, c, s0, EvalControl.isPrimed(control));
 
+//          if (val instanceof Supplier) {
+//        	  val = ((Supplier) val).get();
+//          }
+          
           // First, unlazy if it is a lazy value. We cannot use the cached
           // value when s1 == null or isEnabled(control).
 			if (val instanceof LazyValue) {

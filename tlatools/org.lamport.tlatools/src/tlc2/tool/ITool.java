@@ -270,6 +270,10 @@ public interface ITool extends TraceApp {
 
 	ExprNode[] getModelConstraints();
 
+	TLCStateInfo evalAlias(TLCStateInfo current, TLCState successor, Supplier<List<TLCStateInfo>> prefix);
+
+	TLCStateInfo evalAlias(TLCStateInfo curState, TLCState sucState);
+
 	TLCState evalAlias(TLCState curState, TLCState sucState);
 
 	default <T> T eval(Supplier<T> supplier) {

@@ -60,9 +60,6 @@ public class TLCExtTraceAliasTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ x = 5\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5]>>");
 		expectedTrace.add("/\\ x = 6\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5], [x |-> 6]>>");
 		expectedTrace.add("/\\ x = 7\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5], [x |-> 6], [x |-> 7]>>");
-//		expectedTrace.add("/\\ x = 8\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5], [x |-> 6], [x |-> 7], [x |-> 8]>>");
-//		expectedTrace.add("/\\ x = 9\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5], [x |-> 6], [x |-> 7], [x |-> 8], [x |-> 9]>>");
-//		expectedTrace.add("/\\ x = 10\n/\\ t = <<[x |-> 1], [x |-> 2], [x |-> 3], [x |-> 4], [x |-> 5], [x |-> 6], [x |-> 7], [x |-> 8], [x |-> 9], [x |-> 10]>>");
 
 		final List<String> expectedActions = new ArrayList<>(7);
 		expectedActions.add("<Initial predicate line 14, col 9 to line 14, col 13 of module TLCExtTrace>");

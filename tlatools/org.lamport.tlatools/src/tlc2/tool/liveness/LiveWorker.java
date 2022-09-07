@@ -871,8 +871,9 @@ public class LiveWorker implements Callable<Boolean> {
 
 				// Print the prefix in reverse order of previous loop:
 				for (int i = 0; i < states.size() - 1; i++) {
-					StatePrinter.printInvariantViolationStateTraceState(
-							tool.getDebugger().evalAlias(states.get(i), states.get(i + 1).state));
+					final int j = i;
+					StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(states.get(i),
+							states.get(i + 1).state, () -> new ArrayList<>(states.subList(0, j))));
 				}
 				return states;
 			}
@@ -918,7 +919,7 @@ public class LiveWorker implements Callable<Boolean> {
 		// Wait for the prefix-path to be searched/generated and fully printed.
 		// get() is a blocking call that makes this thread wait for the executor
 		// to finish its job of searching and printing the prefix-path.
-		List<TLCStateInfo> states = new ArrayList<>(0);
+		final List<TLCStateInfo> states;
 		try {
 			states = future.get();
 		} catch (ExecutionException ee) {
@@ -951,18 +952,21 @@ public class LiveWorker implements Callable<Boolean> {
 		// efficiency reason. Regenerating the next state might be
 		// expensive.
 		if (postfix.isEmpty()) {
-			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(cycleState, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(cycleState,
+					cycleState.state, () -> new ArrayList<>(states)));
 		} else {
 			postfix.pack().removeLastIf(cycleState.fingerPrint());
 			
 			for (int i = postfix.size() - 1; i >= 0; i--) {
 				final long curFP = postfix.elementAt(i);
 				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
+				StatePrinter.printInvariantViolationStateTraceState(
+						tool.getDebugger().evalAlias(sinfo, sucinfo.state, () -> new ArrayList<>(states)));
 				states.add(sucinfo);
-				StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, sucinfo.state));
 				sinfo = sucinfo;
 			}
-			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, cycleState.state));
+			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, cycleState.state,
+					() -> new ArrayList<>(states)));
 		}
 
 		/* All error trace states have been printed (prefix + cycleStack +
