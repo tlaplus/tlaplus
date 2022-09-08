@@ -638,7 +638,7 @@ public abstract class AbstractChecker
 	}
 
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[5];
+		final UniqueString[] n = new UniqueString[6];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.QUEUE;
@@ -655,6 +655,9 @@ public abstract class AbstractChecker
 		
 		n[4] = TLCGetSet.DURATION;
 		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+
+		n[5] = TLCGetSet.WORKER;
+		v[5] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
 
 		return new RecordValue(n, v, false);
 	}

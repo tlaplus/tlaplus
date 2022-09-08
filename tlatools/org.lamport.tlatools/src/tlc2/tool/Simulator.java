@@ -40,6 +40,7 @@ import tlc2.tool.liveness.LiveCheck1;
 import tlc2.tool.liveness.LiveException;
 import tlc2.tool.liveness.NoOpLiveCheck;
 import tlc2.util.DotActionWriter;
+import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.util.statistics.DummyBucketStatistics;
@@ -821,7 +822,7 @@ public class Simulator {
 	}
 	
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[4];
+		final UniqueString[] n = new UniqueString[5];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.TRACES;
@@ -835,6 +836,9 @@ public class Simulator {
 
 		n[3] = TLCGetSet.BEHAVIOR;
 		v[3] = getWorkerStatistics();
+
+		n[4] = TLCGetSet.WORKER;
+		v[4] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
 		
 		return new RecordValue(n, v, false);
 	}
