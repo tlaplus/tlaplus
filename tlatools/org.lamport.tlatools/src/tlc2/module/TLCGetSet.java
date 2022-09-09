@@ -81,6 +81,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
 	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
 	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
+	public static final UniqueString ID = UniqueString.uniqueStringOf("id");
 
 	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
 	public static final UniqueString ALL_VALUES = UniqueString.of("all");

@@ -416,7 +416,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 
 		// Have the worker generate a specified number of traces of a fixed length.
 		LongAdder numOfGenStates = new LongAdder();
-		LongAdder numOfGenTraces = new LongAdder();
+		AtomicLong numOfGenTraces = new AtomicLong();
 		AtomicLong m2AndMean = new AtomicLong();
 		int traceDepth = 5;
 		long traceNum = 5;
