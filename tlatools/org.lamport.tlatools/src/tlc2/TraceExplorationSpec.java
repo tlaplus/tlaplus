@@ -337,7 +337,7 @@ public class TraceExplorationSpec {
 		/**
 		 * Write TEConstants module, if needed.
 		 */
-		if (modelValuesAsConstants != "") {
+		if (!modelValuesAsConstants.isEmpty()) {
 			writer.addFooter();
 			writer.append(TLAConstants.CR);
 			writer.addPrimer(teConstantSpecName, originalSpecName);

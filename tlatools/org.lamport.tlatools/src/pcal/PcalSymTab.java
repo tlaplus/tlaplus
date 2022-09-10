@@ -571,7 +571,7 @@ public class PcalSymTab {
     }
         
     private void ExtractVarDecl(AST.VarDecl ast, String context) {
-        int vtype = (context == "") ? GLOBAL : PROCESSVAR;
+        int vtype = context.isEmpty() ? GLOBAL : PROCESSVAR;
         if (! InsertSym(vtype, ast.var, context, "process", ast.line, ast.col))
             errorReport = errorReport + "\n" + vtypeName[vtype] + " " + ast.var +
             " redefined at line " + ast.line + ", column " + ast.col;
