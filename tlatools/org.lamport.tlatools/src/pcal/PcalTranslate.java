@@ -207,26 +207,26 @@ public class PcalTranslate {
                 TLAToken tok = ((TLAToken) line.elementAt(j));
                 tok.column = nextCol;
                 nextCol = nextCol + tok.getWidth();
-                if (tok.type == TLAToken.BUILTIN && tok.string == "|->") {
+                if (tok.type == TLAToken.BUILTIN && tok.string.equals("|->")) {
                     tok.column = tok.column + 1;
                     if (tok.column < 16) tok.column = 16;
                     nextCol = tok.column + 5;
                 }
-                else if (tok.type == TLAToken.BUILTIN && tok.string == "[") {
+                else if (tok.type == TLAToken.BUILTIN && tok.string.equals("[")) {
                     nextCol = nextCol + 1;
                 }
-                else if (tok.type == TLAToken.BUILTIN && tok.string == "]") {
+                else if (tok.type == TLAToken.BUILTIN && tok.string.equals("]")) {
                     tok.column = tok.column + 1;
                     nextCol = nextCol + 1;
                 }
-                else if (tok.type == TLAToken.BUILTIN && tok.string == "<<") {
+                else if (tok.type == TLAToken.BUILTIN && tok.string.equals("<<")) {
                     nextCol = nextCol + 1;
                 }
-                else if (tok.type == TLAToken.BUILTIN && tok.string == ">>") {
+                else if (tok.type == TLAToken.BUILTIN && tok.string.equals(">>")) {
                     tok.column = tok.column + 1;
                     nextCol = nextCol + 1;
                 }
-                else if (tok.type == TLAToken.BUILTIN && tok.string == "\\o") {
+                else if (tok.type == TLAToken.BUILTIN && tok.string.equals("\\o")) {
                     tok.column = tok.column + 1;
                     nextCol = nextCol + 2;
                 }
