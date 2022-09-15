@@ -602,9 +602,9 @@ public class Simulator {
 	}
 
 	private void writeActionFlowGraph() throws IOException {
-		if (traceActions.equals("BASIC")) {
+		if ("BASIC".equals(traceActions)) {
 			writeActionFlowGraphBasic();
-		} else if (traceActions.equals("FULL")) {
+		} else if ("FULL".equals(traceActions)) {
 			writeActionFlowGraphFull();
 		}
 	}
