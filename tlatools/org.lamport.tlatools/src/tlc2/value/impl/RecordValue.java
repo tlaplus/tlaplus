@@ -79,8 +79,8 @@ public class RecordValue extends Value implements Applicable {
 	// where this would have been useful. Consider refactoring the CM module
 	// override once sufficient time has passed that we can expect most users to be
 	// on a version of TLC with this constructor.
-	public RecordValue(final Map<UniqueString, Value> m) {
-		final List<Map.Entry<UniqueString, Value>> entries = new ArrayList<>(m.entrySet());
+	public RecordValue(final Map<UniqueString, ? extends Value> m) {
+		final List<Map.Entry<UniqueString, ? extends Value>> entries = new ArrayList<>(m.entrySet());
 
 		this.names = new UniqueString[entries.size()];
 		this.values = new Value[entries.size()];

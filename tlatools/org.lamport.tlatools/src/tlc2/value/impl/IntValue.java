@@ -40,6 +40,10 @@ public class IntValue extends Value {
     }
     return nb + 1;
   }
+  
+  public static IntValue sum(IntValue n, IntValue m) {
+	  return IntValue.gen(n.val + m.val);
+  }
 
   public final int val;
 

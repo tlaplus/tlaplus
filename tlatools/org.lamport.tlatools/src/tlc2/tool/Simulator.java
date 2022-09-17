@@ -812,16 +812,16 @@ public class Simulator {
 		return this.traceDepth;
 	}
 
-	public final Value getWorkerStatistics() {
+	public final Value getWorkerStatistics(TLCState s) {
 		if (Thread.currentThread() instanceof SimulationWorker) {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
-			return w.getWorkerStatistics();
+			return w.getWorkerStatistics(s);
 		} else {
-			return workers.get(0).getWorkerStatistics();
+			return workers.get(0).getWorkerStatistics(s);
 		}	
 	}
 	
-	public final Value getStatistics() {
+	public final Value getStatistics(final TLCState s) {
 		final UniqueString[] n = new UniqueString[5];
 		final Value[] v = new Value[n.length];
 		
@@ -835,7 +835,7 @@ public class Simulator {
 		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
 
 		n[3] = TLCGetSet.BEHAVIOR;
-		v[3] = getWorkerStatistics();
+		v[3] = getWorkerStatistics(s);
 
 		n[4] = TLCGetSet.WORKER;
 		v[4] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);

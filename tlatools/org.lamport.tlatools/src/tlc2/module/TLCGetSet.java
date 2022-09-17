@@ -241,7 +241,7 @@ public class TLCGetSet implements ValueConstants {
 				if (TLCGlobals.mainChecker != null) {
 					return TLCGlobals.mainChecker.getStatistics();
 				} else if (TLCGlobals.simulator != null) {
-					return TLCGlobals.simulator.getStatistics();
+					return TLCGlobals.simulator.getStatistics(s0);
 				}
 			} catch (NullPointerException npe) {
 				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));

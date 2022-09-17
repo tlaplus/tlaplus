@@ -26,9 +26,7 @@
 package tlc2.tool;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -124,7 +122,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 	private final String traceActions;
 
-	private final Map<UniqueString, Integer> behaviorStats = new HashMap<>();
+	private final Map<UniqueString, IntValue> behaviorStats = new HashMap<>();
 	
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
@@ -242,7 +240,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		final Vect<Action> initAndNext = this.tool.getSpecActions();
 		final int len = initAndNext.size();
 		for (int i = 0; i < initAndNext.size(); i++) {
-			this.behaviorStats.put(initAndNext.elementAt(i).getName(), 0);
+			this.behaviorStats.put(initAndNext.elementAt(i).getName(), IntValue.ValZero);
 		}
 
 		if (traceActions != null) {
@@ -454,9 +452,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		final Action[] actions = this.tool.getActions();
 		final int len = actions.length;
-		
-		// Reset per-behavior statistics before generating next one.
-		this.behaviorStats.replaceAll((k,v) -> 0);
 
 		// Simulate a trace up to the maximum specified length.
 		for (int traceIdx = 0; traceIdx < maxTraceDepth; traceIdx++) {
@@ -506,7 +501,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			if (traceActions != null) {
 				this.actionStats[curState.getAction().getId()][s1.getAction().getId()]++;
 			}
-			this.behaviorStats.merge(curState.getAction().getName(), 1, Integer::sum);
 			curState = s1;
 			setCurrentState(curState);
 		}
@@ -617,30 +611,23 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return this.localRng;
 	}
 
-	public Value getWorkerStatistics() {
+	public Value getWorkerStatistics(TLCState s) {
 		final UniqueString[] n = new UniqueString[2];
 		final Value[] v = new Value[n.length];
 		
+		// Reset per-behavior statistics.
+		this.behaviorStats.replaceAll((key,val) -> IntValue.ValZero);
+		
+		while (s != null && !s.isInitial()) {
+			behaviorStats.merge(s.getAction().getName(), IntValue.ValOne, IntValue::sum);
+			s = s.getPredecessor();
+		}
 		n[0] = TLCGetSet.SPEC_ACTIONS;
-		v[0] = toRecordValue(behaviorStats);
+		v[0] = new RecordValue(behaviorStats);
 		
 		n[1] = TLCGetSet.ID;
 		v[1] = TLCGetSet.narrowToIntValue(globalTraceCnt);
 		
 		return new RecordValue(n, v, false);
-	}
-	
-	private static RecordValue toRecordValue(final Map<UniqueString, Integer> m) {
-		final List<Map.Entry<UniqueString, Integer>> entries = new ArrayList<>(m.entrySet());
-
-		UniqueString[] names = new UniqueString[entries.size()];
-		Value[] values = new Value[entries.size()];
-
-		for (int i = 0; i < entries.size(); i++) {
-			names[i] = entries.get(i).getKey();
-			values[i] = IntValue.gen(entries.get(i).getValue());
-		}
-		
-		return new RecordValue(names, values, false);
 	}
 }
