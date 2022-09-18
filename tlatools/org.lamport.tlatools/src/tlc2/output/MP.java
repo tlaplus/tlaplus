@@ -563,6 +563,10 @@ public class MP
         case EC.TLC_NO_STATES_SATISFYING_INIT:
             b.append("There is no state satisfying the initial state predicate.");
             break;
+            
+        case EC.TLC_NO_STATES_SATISFYING_INIT_AND_CONSTRAINT:
+            b.append("There is no state satisfying the initial state predicate and the state-constraint(s).");
+            break;
 
         case EC.TLC_STRING_MODULE_NOT_FOUND:
             b.append("This is a TLC bug: TLC could not find its built-in String module.\n");

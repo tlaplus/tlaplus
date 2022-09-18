@@ -267,6 +267,9 @@ public class Simulator {
 		if (this.numOfGenStates.longValue() == 0) {
 			return MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT);
 		}
+		if (this.numOfGenStates.longValue() > 0 && initStates.isEmpty()) {
+			return MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT_AND_CONSTRAINT);
+		}
 
 		// It appears deepNormalize brings the states into a canonical form to
 		// speed up equality checks.

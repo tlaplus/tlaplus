@@ -84,6 +84,7 @@ public interface EC
     public static final int TLC_TEMPORAL_PROPERTY_VIOLATED = 2116;
     public static final int TLC_FAILED_TO_RECOVER_NEXT = 2117;
     public static final int TLC_NO_STATES_SATISFYING_INIT = 2118;
+    public static final int TLC_NO_STATES_SATISFYING_INIT_AND_CONSTRAINT = 2256;
     public static final int TLC_STRING_MODULE_NOT_FOUND = 2119;
 
     public static final int TLC_ERROR_STATE = 2120;
