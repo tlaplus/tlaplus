@@ -8,4 +8,12 @@ public class FastMath {
 		// in many dependencies. We don't want nor need those dependencies.
 		return Math.sqrt(d);
 	}
+	
+    public static int abs(final int x) {
+        return Math.abs(x);
+    }
+    
+    public static int min(final int a, final int b) {
+        return Math.min(a, b);
+    }
 }
