@@ -1,6 +1,6 @@
 package org.apache.commons.math3.util;
 
-public class FastMath {
+public class TLCFastMath {
 
 	public static double sqrt(int d) {
 		// The original implementation of FastMath.java in Apache Commons Math delegates
