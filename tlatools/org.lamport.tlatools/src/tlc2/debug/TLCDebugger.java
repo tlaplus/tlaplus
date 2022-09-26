@@ -864,7 +864,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// VSCode). However, only halt the execution if a front-end/debugger is connect?
 		if (launcher != null) {
 			final OutputEventArguments oea = new OutputEventArguments();
-			oea.setOutput(e.getMessage());
+			oea.setOutput(e.getMessage() == null ? "" : e.getMessage());
 			// A hyperlink pointing to the given location is placed right of the output in
 			// the Debug Console.
 			oea.setLine(frame.getLine());

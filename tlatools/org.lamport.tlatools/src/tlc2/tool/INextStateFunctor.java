@@ -30,6 +30,9 @@ import tlc2.util.SetOfStates;
 public interface INextStateFunctor extends IStateFunctor {
 	
 	public static class InvariantViolatedException extends StatefulRuntimeException {
+		public InvariantViolatedException() {
+			super("Invariant violated");
+		}
 	}
 
 	Object addElement(final TLCState s, final Action a, final TLCState t);
