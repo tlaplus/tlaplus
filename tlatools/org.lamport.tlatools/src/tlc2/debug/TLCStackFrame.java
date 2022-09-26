@@ -63,14 +63,17 @@ import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.debug.IDebugTarget.Granularity;
 import tlc2.output.EC;
+import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.INextStateFunctor.InvariantViolatedException;
+import tlc2.tool.TLCState;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
+import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TLCVariable;
 import tlc2.value.impl.Value;
 import util.Assert;
@@ -495,7 +498,44 @@ public class TLCStackFrame extends StackFrame {
 			return er;
 		}
 	}
+	
+	protected TLCState getS() {
+		return TLCState.Empty;
+	}
+	
+	protected TLCState getT() {
+		return TLCState.Empty;
+	}
 
+	public EvaluateResponse getWatch(final String name) {
+		if (name == null) {
+			return new EvaluateResponse();
+		} 
+		final ModuleNode module = tool.getSpecProcessor().getRootModule();
+		return getWatch(module.getOpDef(name));
+	}
+
+	public EvaluateResponse getWatch(final OpDefNode odn) {
+		if (odn == null) {
+			return new EvaluateResponse();
+		} 
+
+		Variable variable;
+		try {
+			variable = tool.eval(() -> {
+				return getVariable(tool.eval(odn.getBody(), getContext(), getS(), getT(), EvalControl.Clear),
+						odn.getName());
+			});
+		} catch (TLCRuntimeException | EvalException | FingerprintException e) {
+			variable = getVariable(new StringValue(e.getMessage() == null ? "" : e.getMessage()), odn.getName());
+		}
+
+		final EvaluateResponse er = new EvaluateResponse();
+		er.setResult(variable.getValue());
+		er.setVariablesReference(variable.getVariablesReference());
+		return er;
+	}
+	
 	protected Object unlazy(final LazyValue lv) {
 		return unlazy(lv, null);
 	}

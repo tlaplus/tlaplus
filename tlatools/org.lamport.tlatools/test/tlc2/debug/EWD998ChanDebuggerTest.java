@@ -28,6 +28,7 @@ package tlc2.debug;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.OpDefNode;
 import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
 import tlc2.util.Context;
@@ -85,6 +87,21 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		TLCStackFrame stackFrame = (TLCStackFrame) stackFrames[1];
 		Variable[] constants = stackFrame.getConstants();
 		assertEquals(2, constants.length);
+		
+		// Check Watch expressions
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
+		
+		assertEquals(
+				"In evaluation, the identifier counter is either undefined or not an operator.\\nline 43, col 6 to line 43, col 12 of module EWD998Chan",
+				stackFrame.getWatch("Init").getResult());
+		assertEquals(
+				"In evaluation, the identifier inbox is either undefined or not an operator.\\nline 53, col 22 to line 53, col 26 of module EWD998Chan",
+				stackFrame.getWatch("InitiateProbe").getResult());
+		assertEquals(
+				"In evaluation, the identifier inbox is either undefined or not an operator.\\nline 53, col 22 to line 53, col 26 of module EWD998Chan",
+				stackFrame.getWatch("System").getResult());
 		
 		// High-level spec constants (expected to be ordered lexicographically)
 		Variable[] consts = stackFrame.getVariables(constants[0].getVariablesReference());
@@ -428,6 +445,41 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackFrames.length);
 		assertTLCSuccessorFrame(stackFrames[0], 96, 1, 107, 32, RM, Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne), 1);
 		
+		stackFrame = (TLCStackFrame) stackFrames[0];
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
+		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
+		
+		assertEquals("FALSE", stackFrame.getWatch("Init").getResult());
+		assertEquals("FALSE", stackFrame.getWatch("InitiateProbe").getResult());
+		assertEquals("FALSE", stackFrame.getWatch("System").getResult());
+		assertEquals("FALSE", stackFrame.getWatch("Environment").getResult());
+		assertEquals("FALSE", stackFrame.getWatch("Next").getResult());
+		assertEquals("FALSE", stackFrame.getWatch("Spec").getResult());
+		assertEquals("TRUE", stackFrame.getWatch("StateConstraint").getResult());
+		assertEquals("2", stackFrame.getWatch("tpos").getResult());
+		assertEquals("TRUE", stackFrame.getWatch("Stop").getResult());
+		assertEquals("TRUE", stackFrame.getWatch("ActionConstraint").getResult());
+		
+		final EvaluateResponse er = stackFrame.getWatch("EnabledAlias");
+		assertNotNull(er);
+		assertEquals(
+				"[InitiateProbe |-> FALSE, PassToken |-> TRUE, SendMsg |-> TRUE, RecvMsg |-> FALSE, Deactivate |-> TRUE]",
+				er.getResult());
+		assertNotEquals(0, er.getVariablesReference());
+		Variable[] frob = stackFrame.getVariables(er.getVariablesReference());
+		assertEquals(5, frob.length);
+		assertEquals("Deactivate", frob[0].getName());
+		assertEquals("TRUE", frob[0].getValue());
+		assertEquals("InitiateProbe", frob[1].getName());
+		assertEquals("FALSE", frob[1].getValue());
+		assertEquals("PassToken", frob[2].getName());
+		assertEquals("TRUE", frob[2].getValue());
+		assertEquals("RecvMsg", frob[3].getName());
+		assertEquals("FALSE", frob[3].getValue());
+		assertEquals("SendMsg", frob[4].getName());
+		assertEquals("TRUE", frob[4].getValue());
+				
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

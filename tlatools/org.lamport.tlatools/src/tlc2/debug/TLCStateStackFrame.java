@@ -111,10 +111,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		this.stateId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
 	
+	@Override
 	protected TLCState getS() {
 		return getT();
 	}
 	
+	@Override
 	protected TLCState getT() {
 		return state;
 	}

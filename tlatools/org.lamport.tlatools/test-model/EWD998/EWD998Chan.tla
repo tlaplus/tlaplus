@@ -199,4 +199,13 @@ Stop ==
 ActionConstraint ==
     counter \in [Nodes -> Int]
 
+EnabledAlias ==
+    [
+        InitiateProbe |-> ENABLED InitiateProbe, 
+        PassToken |-> \E n \in Nodes: ENABLED PassToken(n),
+        SendMsg |-> \E n \in Nodes: ENABLED SendMsg(n),
+        RecvMsg |-> \E n \in Nodes: ENABLED RecvMsg(n),
+        Deactivate |-> \E n \in Nodes: ENABLED Deactivate(n)
+    ]
+
 =============================================================================

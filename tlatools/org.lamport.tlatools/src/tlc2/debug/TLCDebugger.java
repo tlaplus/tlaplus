@@ -314,6 +314,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			final EvaluateResponse response = new EvaluateResponse();
 			response.setResult(args.getExpression());
 			return CompletableFuture.completedFuture(response);
+		} else if ("watch".equals(args.getContext())) {
+			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
+					.findAny().map(f -> f.getWatch(args.getExpression())).orElse(new EvaluateResponse()));
 		}
 		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}
