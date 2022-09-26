@@ -3413,7 +3413,7 @@ public abstract class Tool
 
   /* This method determines if the action predicate is valid in (s0, s1). */
   @Override
-  public final boolean isValid(Action act, TLCState s0, TLCState s1) {
+  public boolean isValid(Action act, TLCState s0, TLCState s1) {
     Value val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()}, act.pred, act.con);
