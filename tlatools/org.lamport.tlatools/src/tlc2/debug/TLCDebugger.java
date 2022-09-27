@@ -251,13 +251,21 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		filter.setDefault_(this.haltExp);
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
-		
-		final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
-		violations.setDefault_(this.haltInv);
-		violations.setFilter("InvariantBreakpointsFilter");
-		violations.setLabel("Halt (break) on violations");
-		
-		return new ExceptionBreakpointsFilter[] {filter, violations};
+
+		if (TLCGlobals.mainChecker != null) {
+			// Halting on violations/invariants does not work with exhaustive search.
+			// See the following two git commit for why:
+			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
+			// 42f251546ce99c19f1a7a44310816527a15ade2b
+			return new ExceptionBreakpointsFilter[] { filter };
+		} else {
+			final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
+			violations.setDefault_(this.haltInv);
+			violations.setFilter("InvariantBreakpointsFilter");
+			violations.setLabel("Halt (break) on violations");
+
+			return new ExceptionBreakpointsFilter[] { filter, violations };
+		}
 	}
 
 	@Override
