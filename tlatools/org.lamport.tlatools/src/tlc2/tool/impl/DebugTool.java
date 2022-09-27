@@ -50,11 +50,9 @@ import tlc2.tool.INextStateFunctor;
 import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
-import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateMutExt;
-import tlc2.tool.Worker.WrappingRuntimeException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
 import tlc2.util.Context;
@@ -473,15 +471,6 @@ public class DebugTool extends Tool {
 				target.popExceptionFrame(this, pred, c, s0, action, s1, e);
 			}
 			throw e;
-		} catch (WrappingRuntimeException we) {
-			StatefulRuntimeException e = (StatefulRuntimeException) we.unwrapExp();
-			if (e.isKnown()) {throw we;}
-			try {
-				target.markInvariantViolatedFrame(this, pred, c, s0, action, s1, e);
-			} finally {
-				target.popExceptionFrame(this, pred, c, s0, action, s1, e);
-			}
-			throw we;
 		} finally {
 			target.popFrame(this, pred, c, s0, s1);
 		}
@@ -509,15 +498,6 @@ public class DebugTool extends Tool {
 				target.popExceptionFrame(this, expr, c, s0, action, s1, e);
 			}
 			throw e;
-		} catch (WrappingRuntimeException we) {
-			StatefulRuntimeException e = (StatefulRuntimeException) we.unwrapExp();
-			if (e.isKnown()) {throw we;}
-			try {
-				target.markInvariantViolatedFrame(this, expr, c, s0, action, s1, e);
-			} finally {
-				target.popExceptionFrame(this, expr, c, s0, action, s1, e);
-			}
-			throw we;
 		}		
 	}
 	

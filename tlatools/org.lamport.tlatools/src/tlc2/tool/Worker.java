@@ -470,7 +470,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	}
 	
 	@SuppressWarnings("serial")
-	public static class WrappingRuntimeException extends RuntimeException {
+	private static class WrappingRuntimeException extends RuntimeException {
 
 		private final Exception e;
 		private final TLCState state;
