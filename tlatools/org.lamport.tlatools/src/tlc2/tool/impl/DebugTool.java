@@ -161,21 +161,6 @@ public class DebugTool extends Tool {
 			return this.isValid(act, state);
 		}
 	}
-	
-	@Override
-	public final boolean isValid(Action act, TLCState s0, TLCState s1) {
-		final boolean isValid = super.isValid(act, s0, s1);
-		if (!isValid) {
-			try {
-				target.markInvariantViolatedFrame(this, act.pred, act.con, s0, act, s1,
-						new InvariantViolatedException());
-			} catch (ResetEvalException ree) {
-				target.popFrame(s0, s1);
-				return isValid(act, s0, s1);
-			}
-		}
-		return isValid;
-	}
 
 	@Override
 	public final IValue eval(SemanticNode expr, Context ctxt) {
