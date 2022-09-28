@@ -1598,7 +1598,13 @@ public abstract class Tool
 		}
 
 		final ExternalModuleTable emt = getSpecProcessor().getSpecObj().getExternalModuleTable();
-		final SymbolNode tlcExtTrace = emt.getContext(UniqueString.of("TLCExt")).getSymbol(UniqueString.of("Trace"));
+		final tla2sany.semantic.Context tlcExt = emt.getContext(UniqueString.of("TLCExt"));
+		if (tlcExt == null) {
+			// tlcExt is null if the TLCExt module is not extended or instantiated.  Thus,
+			// Trace cannot appear in the spec.
+			return evalAlias(current, successor, Context.Empty);
+		}
+		final SymbolNode tlcExtTrace = tlcExt.getSymbol(UniqueString.of("Trace"));
 		
 		return evalAlias(current, successor,
 				Context.Empty.cons(tlcExtTrace, new LazySupplierValue(tlcExtTrace, (Supplier<Value>) () -> {
