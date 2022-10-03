@@ -61,7 +61,7 @@ public class SingleThreadedSimulator extends Simulator {
 	}
 
 	@Override
-	protected int simulate(final StateVec initialStates) throws InterruptedException {
+	protected SimulationWorkerResult simulate(final StateVec initialStates) throws InterruptedException {
 		// Unless REV#reset is issued below, running simulation under the debugger will
 		// result in different error traces even under identical seeds. This would not
 		// necessarily be a bug but producing the same trace with and without the
@@ -79,12 +79,13 @@ public class SingleThreadedSimulator extends Simulator {
 
 		int errorCode = EC.NO_ERROR;
 
+		SimulationWorkerResult result;
 		while (true) {
 			simulationWorker.simulateAndReport();
 			if (workerResultQueue.isEmpty()) {
 				continue;
 			}
-			final SimulationWorkerResult result = workerResultQueue.take();
+			result = workerResultQueue.take();
 
 			// If the result is an error, print it.
 			if (result.isError()) {
@@ -98,42 +99,42 @@ public class SingleThreadedSimulator extends Simulator {
 						// In case of a liveness error, there is no need to print out
 						// the behavior since the liveness checker should take care of that itself.
 						this.printSummary();
-						errorCode = ((LiveException) error.exception).errorCode;
+						error.errorCode = ((LiveException) error.exception).errorCode;
 					} else if (error.exception instanceof TLCRuntimeException) {
 						final TLCRuntimeException exception = (TLCRuntimeException) error.exception;
 						printBehavior(exception, error.state, error.stateTrace);
-						errorCode = exception.errorCode;
+						error.errorCode = exception.errorCode;
 					} else {
 						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
 								error.stateTrace);
-						errorCode = EC.GENERAL;
+						error.errorCode = EC.GENERAL;
 					}
-					return errorCode;
+					return result;
 				}
 
 				// Print the trace for all other errors.
 				printBehavior(error);
 
 				if (isNonContinuableError(error.errorCode)) {
-					return error.errorCode;
+					return result;
 				}
 
 				// If the 'continue' option is false, then we always terminate on the
 				// first error, shutting down all workers. Otherwise, we continue receiving
 				// results from the worker threads.
 				if (!TLCGlobals.continuation) {
-					return error.errorCode;
+					return result;
 				}
 
 				if (errorCode == EC.NO_ERROR) {
-					errorCode = EC.GENERAL;
+					error.errorCode = EC.GENERAL;
 				}
 			}
 			// If the result is OK, this indicates that the worker has terminated and also
 			// terminate. For example, the worker has generated the requested number of traces.
 			else {
 				this.printSummary();
-				return errorCode;
+				return result;
 			}
 		}
 	}
