@@ -14,7 +14,7 @@ Spec == Init /\ [][Next]_x /\ WF_x(Next)
 Prop1 == []<>(x=1)
 
 PostCondition ==
-    TLCGet(42) = 1050
+    TLCGet(42) \in {1050, 2000}
 
 PostConditionViolated ==
     TLCGet(42) = 0

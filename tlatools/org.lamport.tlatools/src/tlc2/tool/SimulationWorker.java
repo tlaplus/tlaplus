@@ -26,7 +26,9 @@
 package tlc2.tool;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -142,7 +144,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		}
 		
 		// The error code to report.
-		public final int errorCode;
+		public int errorCode;
 
 		// Any additional information to be included in a reported error string.
 		public final String[] parameters;
@@ -159,6 +161,19 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		@Override
 		public String getMessage() {
 			return MP.getMessage(errorCode, parameters);
+		}
+
+		public boolean hasTrace() {
+			return stateTrace != null && !stateTrace.empty();
+		}
+
+		public List<TLCStateInfo> getTrace() {
+			final ArrayList<TLCStateInfo> trace = new ArrayList<>();
+			for (int j = 0; j < stateTrace.size(); j++) {
+				final TLCState state = stateTrace.elementAt(j);
+				trace.add(new TLCStateInfo(state, state.getAction()));
+			}			
+			return trace;
 		}
 	}
 	
