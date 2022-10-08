@@ -551,7 +551,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				}
 			}.get();
 			for (int idx = 0; idx < stateTrace .size(); idx++) {
-				pw.println("\\* " + stateTrace.elementAt(idx).getAction().getLocation());
+				Action curAction = stateTrace.elementAt(idx).getAction();
+				if (curAction != null) {
+					pw.println("\\* " + curAction.getLocation());
+				}
 				pw.println("STATE_" + (idx + 1) + " == ");
 				pw.println(stateTrace.elementAt(idx) + "\n");
 			}
