@@ -26,10 +26,12 @@
 package tlc2.value.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import tlc2.tool.Action;
+import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import util.UniqueString;
 
@@ -83,8 +85,11 @@ public class CounterExample extends RecordValue {
 		this.values[0] = new SetEnumValue(actions.toArray(Value[]::new), false);
 		this.values[1] = new SetEnumValue(states.toArray(Value[]::new), false);
 	}
+	public CounterExample(TLCState initialState) {
+		this(Arrays.asList(new TLCStateInfo[] { new TLCStateInfo(initialState) }), Action.UNKNOWN, 0);
+	}
 
-	public Value toTrace() {
+    public Value toTrace() {
 		final SetEnumValue set = (SetEnumValue) this.select(new StringValue(STATES));
 		final Value[] v = new Value[set.elems.size()];
 		for (int i = 0; i < v.length; i++) {

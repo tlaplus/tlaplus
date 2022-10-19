@@ -29,6 +29,7 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.value.impl.CounterExample;
 import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
@@ -152,6 +153,11 @@ public class ModelChecker extends AbstractChecker
                 if (result != EC.NO_ERROR)
                 {
                     report("exiting, because init failed");
+                    if (this.errState != null) {
+                        tool.checkPostConditionWithCounterExample(new CounterExample(errState));
+                    } else {
+                        tool.checkPostCondition();
+                    }
                     return result;
                 }
             } catch (Throwable e)
