@@ -301,6 +301,25 @@ public abstract class SemanticNode
     visitor.preVisit(this);
     visitor.postVisit(this);
   }
+  
+  public boolean isDefinedWith(final SemanticNode sn) {
+	final ExplorerVisitor<Boolean> visitor = new ExplorerVisitor<>() {
+		boolean cycle = false;
+
+		@Override
+		public void preVisit(ExploreNode exploreNode) {
+			if (exploreNode == sn) {
+				cycle = true;
+			}
+		}
+			
+		public Boolean get() {
+			return cycle;
+		}
+	};
+	this.walkGraph(new Hashtable<>(), visitor);
+	return visitor.get();
+  }
 
   /**
    * Default implementation of toString() to be inherited by subclasses

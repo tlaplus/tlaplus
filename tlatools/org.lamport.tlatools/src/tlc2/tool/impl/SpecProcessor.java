@@ -814,10 +814,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION, new String[] { lhs.toString(), rhs });
                 }
-                if ((myVal instanceof OpDefNode)
-                        && rootOpDefs[i].getNumberOfArgs() != ((OpDefNode) myVal).getNumberOfArgs())
+                if ((myVal instanceof OpDefNode))
                 {
-                    Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(), rhs });
+                	if (rootOpDefs[i].getNumberOfArgs() != ((OpDefNode) myVal).getNumberOfArgs()) {
+                		Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(), rhs });
+                	}
+                	if (((OpDefNode) myVal).isDefinedWith(rootOpDefs[i])) {
+                		cyclicRedefs.add(rootOpDefs[i]);
+                	}
                 }
                 rootOpDefs[i].setToolObject(toolId, myVal);
                 this.defns.put(lhs, myVal);
@@ -1912,5 +1916,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 	public java.util.List<ExprNode> getPostConditionSpecs() {
 		return this.specObj.getPostConditionSpecs();
+	}
+	
+	private final Set<SemanticNode> cyclicRedefs = new HashSet<>();
+
+	public void postActionProcessing() {
+		cyclicRedefs.forEach(sn -> sn.setToolObject(toolId, null));
+		cyclicRedefs.clear();
 	}
 }
