@@ -730,11 +730,9 @@ public class RecordValue extends Value implements Applicable {
 
 	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
 		final int index = vos.getIndex();
-		boolean isNorm = true;
 		int len = vos.readInt();
 		if (len < 0) {
 			len = -len;
-			isNorm = false;
 		}
 		final UniqueString[] names = new UniqueString[len];
 		final Value[] vals = new Value[len];
@@ -750,7 +748,9 @@ public class RecordValue extends Value implements Applicable {
 			}
 			vals[i] = (Value) vos.read(tbl);
 		}
-		final Value res = new RecordValue(names, vals, isNorm);
+		// If a RecordValue is de-serialized with a potentially different UniqueString
+		// table, the RecordValue is not guaranteed to be normalized.
+		final Value res = new RecordValue(names, vals, false);
 		vos.assign(res, index);
 		return res;
 	}
