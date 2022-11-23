@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.LevelConstants;
@@ -288,14 +289,18 @@ public class TLCExt {
 	public static Value tlcDefer(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
 		try {
-			s1.setCallable(() -> {
+			// We should compare control to EvalControl.Primed instead of setting the
+			// callable on s0 and s1, but @Evaluation doesn't seem to correctly pass
+			// control in all scopes such as the next-state relation, state-, and
+			// action-constraints.  
+			Stream.of(s0, s1).forEach(s -> s.setCallable(() -> {
 				final Value[] argVals = new Value[args.length];
 				// evaluate the operator's arguments:
 				for (int i = 0; i < args.length; i++) {
 					argVals[i] = tool.eval(args[i], c, s0, s1, control, cm);
 				}
 				return null;
-			});
+			}));
 		} catch (Throwable e) {
 			Assert.fail(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE, new String[] { "TLCDefer", e.getMessage() });
 		}
