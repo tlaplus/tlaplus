@@ -622,6 +622,8 @@ public class LiveCheck implements ILiveCheck {
 				nextStates.resetNext();
 			}
 			
+			LongVec prefix = null;
+
 			// At this point only constant time operations are allowed =>
 			// Shortly lock the graph.
 			//
@@ -706,70 +708,83 @@ public class LiveCheck implements ILiveCheck {
 				}
 
 				if (errorGraphNode != null) {
-					MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
-					MP.printError(EC.TLC_COUNTER_EXAMPLE);
+					// 1) Recreate the prefix (in fingerprint space) of the trace while oos is locked.
+					dgraph.createCache();
+					prefix = dgraph.getPath(errorGraphNode.stateFP, errorGraphNode.tindex);
+					dgraph.destroyCache();
 
-					// Lock mainChecker to prevent another TLC Worker from concurrently printing a
-					// (state-graph) safety violation.
-					synchronized (TLCGlobals.mainChecker) {
-						
-						dgraph.createCache();
-						final LongVec prefix = dgraph.getPath(errorGraphNode.stateFP, errorGraphNode.tindex);
-						dgraph.destroyCache();
+				}
+			}
+			if (prefix != null) {
+				// 2) Print the trace (in state space) while no longer holding the oos lock.
+				printErrorTrace(tool, prefix);
+			}
+		}
 
-						final int plen = prefix.size();
-						final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
+		private void printErrorTrace(final ITool tool, final LongVec prefix) {
+			// Lock mainChecker to prevent another TLC Worker from concurrently printing a
+			// (state-graph) safety violation.
+			synchronized (TLCGlobals.mainChecker) {
+				if (TLCGlobals.mainChecker.printedLivenessErrorStack) {
+					return;
+				}
+				TLCGlobals.mainChecker.printedLivenessErrorStack = true;
+				
+				MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
+				MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
-						// Reconstruct the initial state.
-						long fp = prefix.elementAt(plen - 1);
-						TLCStateInfo sinfo = tool.getState(fp);
-						if (sinfo == null) {
-							throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
-						}
-						states.add(sinfo);
+				final int plen = prefix.size();
+				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
 
-						// Reconstruct the path of successor states while dropping
-						// *finite* stuttering.
-						for (int i = plen - 2; i >= 0; i--) {
-							long curFP = prefix.elementAt(i);
-							if (curFP != fp) {
-								sinfo = tool.getState(curFP, sinfo);
-								states.add(sinfo);	
-								fp = curFP;
-							}
-						}
+				// Reconstruct the initial state.
+				long fp = prefix.elementAt(plen - 1);
+				TLCStateInfo sinfo = tool.getState(fp);
+				if (sinfo == null) {
+					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
+				}
+				states.add(sinfo);
 
-						for (int i = 0; i < states.size() - 1; i++) {
-							final int j = i;
-							StatePrinter.printInvariantViolationStateTraceState(
-									tool.getLiveness().evalAlias(states.get(i), states.get(i + 1).state, () -> {
-										return new ArrayList<>(states.subList(0, j));
-									}));
-						}
-						// Evaluate alias on the last state that completes the violation of the safety
-						// property.
-						final TLCStateInfo last = states.get(states.size() - 1);
-						StatePrinter.printInvariantViolationStateTraceState(
-								tool.getLiveness().evalAlias(last, last.state, () -> {
-									return new ArrayList<>(states.subList(0, states.size() - 1));
-								}));
-						
-						// Stop subsequent state-space exploration.
-						TLCGlobals.mainChecker.stop();
-						if (states.size() == 1) {
-							TLCGlobals.mainChecker.setErrState(last.state, null, false,
-									EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
-						} else {
-							TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
-									EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
-						}
-						
-						tool.checkPostConditionWithCounterExample(new CounterExample(states));
-						
-						errorGraphNode = null;
-						throw new InvariantViolatedException();
+				// Reconstruct the path of successor states while dropping
+				// *finite* stuttering.
+				for (int i = plen - 2; i >= 0; i--) {
+					long curFP = prefix.elementAt(i);
+					if (curFP != fp) {
+						sinfo = tool.getState(curFP, sinfo);
+						states.add(sinfo);	
+						fp = curFP;
 					}
 				}
+
+				for (int i = 0; i < states.size() - 1; i++) {
+					final int j = i;
+					StatePrinter.printInvariantViolationStateTraceState(
+							tool.getLiveness().evalAlias(states.get(i), states.get(i + 1).state, () -> {
+								return new ArrayList<>(states.subList(0, j));
+							}));
+				}
+				// Evaluate alias on the last state that completes the violation of the safety
+				// property.
+				final TLCStateInfo last = states.get(states.size() - 1);
+				StatePrinter.printInvariantViolationStateTraceState(
+						tool.getLiveness().evalAlias(last, last.state, () -> {
+							return new ArrayList<>(states.subList(0, states.size() - 1));
+						}));
+				
+				// Stop subsequent state-space exploration.
+				//TODO stop() ignores TLCGlobals.continuation!
+				TLCGlobals.mainChecker.stop();
+				if (states.size() == 1) {
+					TLCGlobals.mainChecker.setErrState(last.state, null, false,
+							EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
+				} else {
+					TLCGlobals.mainChecker.setErrState(states.get(states.size() - 2).state, last.state, false,
+							EC.TLC_INVARIANT_VIOLATED_BEHAVIOR);
+				}
+				
+				tool.checkPostConditionWithCounterExample(new CounterExample(states));
+				
+				errorGraphNode = null;
+				throw new InvariantViolatedException();
 			}
 		}
 

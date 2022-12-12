@@ -163,7 +163,6 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	private SetOfStates setOfStates;
 
 	private final boolean checkLiveness;
-	private static boolean printedLivenessErrorStack = false;
 
 	private final void doNextCheckLiveness(TLCState curState, SetOfStates liveNextStates) throws IOException {
 		final long curStateFP = curState.fingerPrint();
@@ -186,11 +185,11 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			this.tlc.liveCheck.addNextState(tlc.tool.getLiveness(), curState, curStateFP, liveNextStates);
 		} catch (EvalException | TLCRuntimeException origExp) {
 			synchronized (this.tlc) {
-				if (printedLivenessErrorStack) {
+				if (this.tlc.printedLivenessErrorStack) {
 					// Another worker beat us to printing an error trace.
 					return; 
 				}
-				printedLivenessErrorStack= true;
+				this.tlc.printedLivenessErrorStack= true;
 				
 				// liveCheck#addNextState throws an EvalException if, e.g., a Java module overrides throw one:
 				// For example: `Cardinality(S) ~> ...` with `S` a naturals, ...

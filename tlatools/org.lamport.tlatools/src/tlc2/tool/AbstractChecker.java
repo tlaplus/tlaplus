@@ -70,6 +70,7 @@ public abstract class AbstractChecker
     protected final IStateWriter allStateWriter;
     protected IWorker[] workers;
 	protected final ILiveCheck liveCheck;
+	public boolean printedLivenessErrorStack = false;
 	private final Value config;
     /**
      * Timestamp of when model checking started.
