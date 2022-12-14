@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -444,6 +445,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 
 	private final StateVec nextStates = new StateVec(1);
+	
+	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {
+		return (int) Math.floor(this.localRng.nextDouble() * actions.length);
+	}
 
 	/**
 	 * Generates a single random trace.
@@ -477,7 +482,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 			// b) Get the current state's successor states.
 			nextStates.clear();
-			int index = (int) Math.floor(this.localRng.nextDouble() * len);
+			int index = getNextActionIndex(this.localRng, actions, curState);
 			final int p = this.localRng.nextPrime();
 			for (int i = 0; i < len; i++) {
 				try {
@@ -577,12 +582,18 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			pw.close();
 		}
 
+		postTrace(curState);
+		
 		// Finished trace generation without any errors.
 		return Optional.empty();
 	}
 	
+	protected boolean postTrace(final TLCState finalState) throws FileNotFoundException {
+		return true;
+	}
+	
 	public final long getTraceCnt() {
-		return this.traceCnt + 1; // +1 to account the currently generated behavior. 
+		return this.traceCnt + 1; // +1 to account for the currently generated behavior. 
 	}
 	
 	public final StateVec getTrace() {

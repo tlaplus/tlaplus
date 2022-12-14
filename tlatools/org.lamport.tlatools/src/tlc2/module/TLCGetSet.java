@@ -94,6 +94,7 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString TRACES = UniqueString.uniqueStringOf("traces");
 	public static final UniqueString DEPTH = UniqueString.uniqueStringOf("depth");
 	public static final UniqueString ARIL = UniqueString.uniqueStringOf("aril");
+	public static final UniqueString SCHED = UniqueString.uniqueStringOf("sched");
 	
 	public static final UniqueString REVISION = UniqueString.uniqueStringOf("revision");
 	public static final UniqueString REV_TIMESTAMP = UniqueString.uniqueStringOf("timestamp");

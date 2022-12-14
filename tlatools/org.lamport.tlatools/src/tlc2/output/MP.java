@@ -999,7 +999,7 @@ public class MP
      		b.append(" (%4% %5% %6%, %7% %8% %9%).");
             break;
         case EC.TLC_MODE_SIMU:
-            b.append("Running Random Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory");
+            b.append("Running %14% Simulation with seed %1% with %2% worker%3% on %4% cores with %11%MB heap and %12%MB offheap memory");
             if (!"".equals(parameters[12])) {
             	b.append(" [pid: %13%]");
             } else {

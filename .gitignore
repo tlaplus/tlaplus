@@ -35,3 +35,4 @@ test.jfr
 *.jfr
 tlatools/org.lamport.tlatools/test-model/test.out
 .tlacache/
+.Rproj.user

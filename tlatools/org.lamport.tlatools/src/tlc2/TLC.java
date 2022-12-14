@@ -428,7 +428,7 @@ public class TLC {
 				// "file=..." and "num=..." are only relevant for simulation which is why they
 				// are args to "-simulate".
 				if ((index < args.length) && (args[index].contains("stats=") || args[index].contains("file=")
-						|| args[index].contains("num="))) {
+						|| args[index].contains("num=") ||args[index].contains("sched"))) {
 					final String[] simArgs = args[index].split(",");
 					index++; // consume simulate args
 					for (String arg : simArgs) {
@@ -440,6 +440,8 @@ public class TLC {
 							traceActions = "BASIC";
 						} else if (arg.equals("stats=full")) {
 							traceActions = "FULL";
+						} else if (arg.equals("sched=rl")) {
+							System.setProperty(Simulator.class.getName() + ".rl", Boolean.TRUE.toString());
 						}
 					}
 				}
@@ -1284,6 +1286,7 @@ public class TLC {
 		result.put("jvmHeapMem", Long.toString(heapMemory));
 		result.put("jvmOffHeapMem", Long.toString(offHeapMemory));
 		result.put("jvmPid", pid == -1 ? "" : String.valueOf(pid));
+		result.put("sched", Boolean.getBoolean(Simulator.class.getName() + ".rl") ? "RL" : "Random");
 		return result;
 	}
 

@@ -116,9 +116,15 @@ public class Simulator {
 		this.numWorkers = numWorkers;
 		this.workers = new ArrayList<>(numWorkers);
 		for (int i = 0; i < this.numWorkers; i++) {
-			this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
-					this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-					this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+			if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
+				this.workers.add(new RLSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+			} else {
+				this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+			}
 		}
 	
 		// Eagerly create the config value in case the next-state relation involves
@@ -589,7 +595,7 @@ public class Simulator {
 						reportCoverage();
 						count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 					}
-					
+
 					writeActionFlowGraph();
 				}
 			} catch (Exception e) {
@@ -847,7 +853,7 @@ public class Simulator {
 	}
 
 	private final Value createConfig() {
-		final UniqueString[] n = new UniqueString[8];
+		final UniqueString[] n = new UniqueString[9];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;
@@ -873,6 +879,9 @@ public class Simulator {
 
 		n[7] = TLCGetSet.INSTALL;
 		v[7] = new StringValue(TLCGlobals.getInstallLocation());
+
+		n[8] = TLCGetSet.SCHED;
+		v[8] = Boolean.getBoolean(Simulator.class.getName() + ".rl") ? new StringValue("rl") : new StringValue("random");
 		
 		return new RecordValue(n, v, false);
 	}
