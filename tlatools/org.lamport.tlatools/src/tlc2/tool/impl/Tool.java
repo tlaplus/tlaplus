@@ -220,8 +220,6 @@ public abstract class Tool
 		for (int i = 0; i < initAndNext.size(); i++) {
 			initAndNext.elementAt(i).setId(i);
 		}
-		
-		getSpecProcessor().postActionProcessing();
   }
 
   Tool(Tool other) {
