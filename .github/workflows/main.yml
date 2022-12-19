@@ -78,17 +78,6 @@ jobs:
       shell: bash
       env:
         MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML }}
-    - name: Set up Comodo Codesign keystore part I
-      run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
-      shell: bash
-      env:
-        COMODO_CODESIGN_COMBINED_PEM: ${{ secrets.COMODO_CODESIGN_COMBINED_PEM }}
-    - name: Set up Comodo Codesign keystore part II
-      run: |
-           openssl pkcs12 -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
-           rm ComodoCertificate.pem
-           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
-           rm ComodoCertificate.p12
 
       ##
       ## Run TLC tests.
@@ -100,7 +89,7 @@ jobs:
       ## Build TLC and Toolbox (logger reduces verbosity).
       ##
     - name: Build with Maven (Linux)
-      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+      run: ${{ matrix.MVN_COMMAND }} -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
 
       ##
       ## Create signed apt repository out of Linux Toolbox zip.
