@@ -452,6 +452,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {
 		return (int) Math.floor(this.localRng.nextDouble() * actions.length);
 	}
+	
+	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState curState) {
+		return (index + p) % actions.length;
+	}
 
 	/**
 	 * Generates a single random trace.
@@ -497,7 +501,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				if (!nextStates.empty()) {
 					break;
 				}
-				index = (index + p) % len;
+				index = getNextActionAltIndex(index, p, actions, curState);
 			}
 			if (nextStates.empty()) {
 				if (checkDeadlock) {

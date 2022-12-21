@@ -120,6 +120,10 @@ public class Simulator {
 				this.workers.add(new RLSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
+				this.workers.add(new RLActionSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else {
 				this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
@@ -881,8 +885,18 @@ public class Simulator {
 		v[7] = new StringValue(TLCGlobals.getInstallLocation());
 
 		n[8] = TLCGetSet.SCHED;
-		v[8] = Boolean.getBoolean(Simulator.class.getName() + ".rl") ? new StringValue("rl") : new StringValue("random");
+		v[8] = new StringValue(getScheduler());
 		
 		return new RecordValue(n, v, false);
+	}
+	
+	private static String getScheduler() {
+		if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
+			return "rl";
+		} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
+			return "rlaction";
+		} else {
+			return "random";
+		}
 	}
 }

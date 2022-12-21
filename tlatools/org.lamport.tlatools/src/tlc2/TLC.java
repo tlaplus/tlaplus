@@ -442,6 +442,8 @@ public class TLC {
 							traceActions = "FULL";
 						} else if (arg.equals("sched=rl")) {
 							System.setProperty(Simulator.class.getName() + ".rl", Boolean.TRUE.toString());
+						} else if (arg.equals("sched=rlaction")) {
+							System.setProperty(Simulator.class.getName() + ".rlaction", Boolean.TRUE.toString());
 						}
 					}
 				}

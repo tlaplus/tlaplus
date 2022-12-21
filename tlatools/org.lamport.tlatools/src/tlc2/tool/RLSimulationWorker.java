@@ -42,12 +42,12 @@ import tlc2.util.RandomGenerator;
 public class RLSimulationWorker extends SimulationWorker {
 	
 	// Alpha = Learning Rate
-	private static final double ALPHA = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.alpha", ".3d"));
+	protected static final double ALPHA = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.alpha", ".3d"));
 	// Gamma = Discount factor
-	private static final double GAMMA = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.gamma", ".7d"));
-	private static final double REWARD = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.reward", "-10d"));
+	protected static final double GAMMA = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.gamma", ".7d"));
+	protected static final double REWARD = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.reward", "-10d"));
 
-	private final Map<Action, Map<Long, Double>> q = new HashMap<>();
+	protected final Map<Action, Map<Long, Double>> q = new HashMap<>();
 
 	public RLSimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile, ILiveCheck liveCheck) {
@@ -66,7 +66,7 @@ public class RLSimulationWorker extends SimulationWorker {
 		}
 	}
 	
-	private final double getReward(final long fp, final Action a) {
+	protected double getReward(final long fp, final Action a) {
 		// The reward is negative to force RL to find alternative solutions instead of
 		// finding the best (one) solution over again. For example, in a maze, RL would
 		// be rewarded +1 if it makes it to the exit. Here, we want to find other paths
@@ -85,9 +85,22 @@ public class RLSimulationWorker extends SimulationWorker {
 		return max;
 	}
 	
+	protected long getHash(TLCState state) {
+		return state.fingerPrint();
+	}
+	
+	@Override
+	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState curState) {
+		// Action at state is not enabled.
+		this.q.get(actions[index]).put(getHash(curState), -Double.MAX_VALUE);
+		return super.getNextActionAltIndex(index, p, actions, curState);
+	}
+	
+	@Override
 	protected final int getNextActionIndex(final RandomGenerator rng, final Action[] actions, final TLCState state) {
-		final long s = state.fingerPrint();
+		final long s = getHash(state);
 		
+		// TODO Experiment with initializing to other values. 
 		this.q.values().forEach(m -> m.putIfAbsent(s, 0d));
 		
 		// Calculate the sum over all actions.
@@ -131,13 +144,14 @@ public class RLSimulationWorker extends SimulationWorker {
 		return m.get(d.length - 1).value;
 	}
 	
+	@Override
 	protected boolean postTrace(TLCState s) {
 		final int level = s.getLevel();
 		for (int i = level - 1; i > 0; i--) {
-			final double maxQ = getMaxQ(s.fingerPrint());
+			final double maxQ = getMaxQ(getHash(s));
 			
 			final TLCState p = s.getPredecessor();
-			final long fp = p.fingerPrint();
+			final long fp = getHash(p);
 			
 			final Action ai = s.getAction();
 			
