@@ -349,6 +349,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 */
 	private final TLCState randomState(RandomGenerator rng, StateVec states) {
 		final int len = states.size();
+		if (len == 1) {
+			return states.elementAt(0);
+		}
 		if (len > 0) {
 			final int index = (int) Math.floor(rng.nextDouble() * len);
 			return states.elementAt(index);
