@@ -421,7 +421,7 @@ public class SimulationWorkerTest extends CommonTestCase {
 		int traceDepth = 5;
 		long traceNum = 5;
 		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, null, false,
-				null, liveCheck, numOfGenStates, numOfGenTraces, m2AndMean);
+				null, liveCheck, numOfGenStates, numOfGenTraces, m2AndMean, new LongAdder());
 
 		worker.start(initStates);
 		worker.join();

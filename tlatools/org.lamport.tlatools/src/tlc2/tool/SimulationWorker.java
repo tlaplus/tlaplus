@@ -96,6 +96,8 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	private long traceCnt = 0;
 	private long globalTraceCnt = 0;
 	
+	private final LongAdder numOfRetries;
+	
 	// The maximum number of traces this worker should generate before terminating.
 	private final long maxTraceNum;
 	
@@ -233,12 +235,12 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck) {
 		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, null, checkDeadlock, traceFile, liveCheck,
-				new LongAdder(), new AtomicLong(), new AtomicLong());
+				new LongAdder(), new AtomicLong(), new AtomicLong(), new LongAdder());
 	}
 
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean, LongAdder numOfRetries) {
 		super(id);
 		this.traceActions = traceActions;
 		this.localRng = new RandomGenerator(seed);
@@ -252,6 +254,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.numOfGenStates = numOfGenStates;
 		this.numOfGenTraces = numOfGenTraces;
 		this.welfordM2AndMean = m2AndMean;
+		this.numOfRetries = numOfRetries;
 		
 		final Vect<Action> initAndNext = this.tool.getSpecActions();
 		final int len = initAndNext.size();
@@ -499,6 +502,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 					return Optional.of(swe);
 				}
 				if (!nextStates.empty()) {
+					numOfRetries.add(i);
 					break;
 				}
 				index = getNextActionAltIndex(index, p, actions, curState);
