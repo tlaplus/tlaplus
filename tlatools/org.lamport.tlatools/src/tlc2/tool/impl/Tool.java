@@ -117,7 +117,7 @@ public abstract class Tool
     implements ValueConstants, ToolGlobals, ITool
 {
 
-  	public static final String PROBABLISTIC_KEY = Tool.class.getName() + ".probabilistic";
+  	public static final String PROBABILISTIC_KEY = Tool.class.getName() + ".probabilistic";
     /*
 	 * Prototype, do *not* activate when checking safety or liveness!!!:
 	 * For simulation that is not meant as a substitute of exhaustive checking for too
@@ -137,7 +137,7 @@ public abstract class Tool
 	 * 
 	 * Activate with: -Dtlc2.tool.impl.Tool.probabilistic=true
 	 */
-  private static final boolean PROBABLISTIC = Boolean.getBoolean(PROBABLISTIC_KEY);
+  private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
 
   public enum Mode {
 	  Simulation, MC, MC_DEBUG, Executor;
@@ -856,7 +856,7 @@ public abstract class Tool
     StateVec nss = new StateVec(0);
     this.getNextStates(action, action.pred, acts, ctx, state, s1.setPredecessor(state).setAction(action), nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
-    if (PROBABLISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
+    if (PROBABILISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
     return nss;
   }
   
@@ -1148,7 +1148,7 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
-		if (PROBABLISTIC) {
+		if (PROBABILISTIC) {
 			// probabilistic (return after a state has been generated, ordered is randomized)
 			final RandomGenerator rng = TLCGlobals.simulator.getRNG();
 			int index = (int) Math.floor(rng.nextDouble() * alen);
@@ -1171,7 +1171,7 @@ public abstract class Tool
 	  {
 	    SemanticNode body = args[0];
 	    
-	    if (PROBABLISTIC) {
+	    if (PROBABILISTIC) {
 		    // probabilistic (return after a state has been generated, ordered is randomized)
 			final ContextEnumerator Enum = this.contexts(Ordering.RANDOMIZED, pred, c, s0, s1, EvalControl.Clear, cm);
 			Context c1;
@@ -1271,7 +1271,7 @@ public abstract class Tool
 	case OPCODE_case:   // Case
 	  {
 	    SemanticNode other = null;
-		if (PROBABLISTIC) {
+		if (PROBABILISTIC) {
 			// See Bounded exists above!
 			throw new UnsupportedOperationException(
 							"Probabilistic evaluation of next-state relation not implemented for CASE yet.");
@@ -1346,7 +1346,7 @@ public abstract class Tool
 	                      " is not enumerable.\n" + pred, pred, c);
 	        }
 	        
-			if (PROBABLISTIC) {
+			if (PROBABILISTIC) {
 				final ValueEnumeration Enum = ((Enumerable)rval).elements(Ordering.RANDOMIZED);
 				Value elem;
 			    while ((elem = Enum.nextElement()) != null) {
@@ -3952,6 +3952,6 @@ public abstract class Tool
 	}
 
 	public static boolean isProbabilistic() {
-		return PROBABLISTIC;
+		return PROBABILISTIC;
 	}
 }
