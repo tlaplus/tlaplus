@@ -915,7 +915,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	// LCG with period m = NcK (n choose k) where NcK = n!/k!(n-k)! to pseudo-randomly
 	// generate all values (indices) in the range [0, NcK)) and generating the 
 	// subset for each index with Unrank#subsetAt.
-	// ASSUME tlc2.tool.impl.Tool.PROBABLISTIC = TRUE
+	// ASSUME tlc2.tool.impl.Tool.PROBABILISTIC = TRUE
 	public class RandomSubsetGenerator implements ValueEnumeration {
 		
 		private final int k;
