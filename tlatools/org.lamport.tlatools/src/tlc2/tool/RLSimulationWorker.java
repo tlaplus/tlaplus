@@ -52,14 +52,14 @@ public class RLSimulationWorker extends SimulationWorker {
 	public RLSimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile, ILiveCheck liveCheck) {
 		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, null, checkDeadlock, traceFile, liveCheck,
-				new LongAdder(), new AtomicLong(), new AtomicLong(), new LongAdder());
+				new LongAdder(), new AtomicLong(), new AtomicLong());
 	}
 	
 	public RLSimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean, LongAdder numOfRetries) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
 		super(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, traceActions, checkDeadlock, traceFile, liveCheck,
-				numOfGenStates, numOfGenTraces, m2AndMean, numOfRetries);
+				numOfGenStates, numOfGenTraces, m2AndMean);
 		
 		for (final Action a : tool.getActions()) {
 			q.put(a, new HashMap<>());

@@ -119,15 +119,15 @@ public class Simulator {
 			if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
 				this.workers.add(new RLSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean, this.numOfRetries));
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
 				this.workers.add(new RLActionSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean, this.numOfRetries));
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else {
 				this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean, this.numOfRetries));
+						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			}
 		}
 	
@@ -161,7 +161,6 @@ public class Simulator {
 	private final LongAdder numOfGenStates = new LongAdder();
 	private final AtomicLong numOfGenTraces = new AtomicLong();
 	private final AtomicLong welfordM2AndMean = new AtomicLong();
-	private final LongAdder numOfRetries = new LongAdder();
 
 	// private Action[] actionTrace; // SZ: never read locally
 	private final String traceFile;
@@ -832,7 +831,7 @@ public class Simulator {
 	}
 	
 	public final Value getStatistics(final TLCState s) {
-		final UniqueString[] n = new UniqueString[6];
+		final UniqueString[] n = new UniqueString[5];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.TRACES;
@@ -849,9 +848,6 @@ public class Simulator {
 
 		n[4] = TLCGetSet.WORKER;
 		v[4] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
-		
-		n[5] = TLCGetSet.TRIALS;
-		v[5] = TLCGetSet.narrowToIntValue(numOfRetries.longValue());
 		
 		return new RecordValue(n, v, false);
 	}
