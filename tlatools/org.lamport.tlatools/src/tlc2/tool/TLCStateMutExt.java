@@ -466,4 +466,12 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
 			cache.put(key, value);
 			return value;
 		}
+
+		@Override
+		public TLCState evalStateLevelAlias() {
+			// We are passing TLCState.Empty to the evalAlias method, which will result in
+			// evalAlias returning this if the alias is an action-level formula, without
+			// raising an error.
+			return mytool.evalAlias(this, TLCState.Empty);
+		}
 }

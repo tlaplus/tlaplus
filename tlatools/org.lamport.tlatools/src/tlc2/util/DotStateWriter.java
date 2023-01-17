@@ -135,7 +135,7 @@ public class DotStateWriter extends StateWriter {
 		// Marker the state as an initial state by using a filled style.
 		this.writer.append(Long.toString(state.fingerPrint()));
 		this.writer.append(" [label=\"");
-		this.writer.append(states2dot(state));
+		this.writer.append(states2dot(state.evalStateLevelAlias()));
 		this.writer.append("\",style = filled]");
 		this.writer.append("\n");
 		
@@ -212,7 +212,7 @@ public class DotStateWriter extends StateWriter {
 				// Write the successor's label.
 				this.writer.append(successorsFP);
 				this.writer.append(" [label=\"");
-				this.writer.append(states2dot(successor));
+				this.writer.append(states2dot(successor.evalStateLevelAlias()));
 				this.writer.append("\"]");
 				this.writer.append(";\n");
 			}

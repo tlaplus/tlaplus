@@ -195,4 +195,8 @@ public abstract class TLCState implements Cloneable, Serializable {
 	public Value setCached(int key, Value value) {
 		return null;
 	}
+	
+	public TLCState evalStateLevelAlias() {
+		return this;
+	}
 }
