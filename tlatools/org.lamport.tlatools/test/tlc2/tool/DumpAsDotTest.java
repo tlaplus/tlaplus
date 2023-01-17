@@ -44,7 +44,7 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class DumpAsDotTest extends ModelCheckerTestCase {
 
 	public DumpAsDotTest() {
-		super("MCa", "CodePlexBug08", new String[] { "-dump", "dot,colorize,actionlabels",
+		super("MCa", "CodePlexBug08", new String[] { "-dump", "dot,colorize,actionlabels,stuttering",
 				System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest" }, ExitStatus.VIOLATION_LIVENESS);
 	}
 

@@ -404,6 +404,7 @@ public class TLC {
 	    boolean colorize = false;
 	    boolean actionLabels = false;
 		boolean snapshot = false;
+		boolean stuttering = false;
 		
 		boolean generateTESpec = true;
 		boolean forceGenerateTESpec = false;
@@ -575,6 +576,7 @@ public class TLC {
                 	colorize = dotArgs.contains("colorize");
                 	actionLabels = dotArgs.contains("actionlabels");
                 	snapshot = dotArgs.contains("snapshot");
+                	stuttering = dotArgs.contains("stuttering");
 					dumpFile = getDumpFile(args[index++], ".dot");
                 }
                 else if (index < args.length)
@@ -1076,7 +1078,7 @@ public class TLC {
 			}
 			try {
 				if (asDot) {
-					this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot);
+					this.stateWriter = new DotStateWriter(dumpFile, colorize, actionLabels, snapshot, stuttering);
 				} else {
 					this.stateWriter = new StateWriter(dumpFile);
 				}

@@ -78,8 +78,11 @@ public class DotStateWriter extends StateWriter {
 	// Create a valid fname_snapshot.dot file after a state is written.
 	private final boolean snapshot;
 	
+	// Determines whether or not stuttering edges should be rendered.
+	private final boolean stuttering;
+	
 	public DotStateWriter(final String fname, final String strict) throws IOException {
-		this(fname, strict, false, false, false);
+		this(fname, strict, false, false, false, false);
 	}
 	
 	/**
@@ -93,16 +96,17 @@ public class DotStateWriter extends StateWriter {
 	 * @throws IOException
 	 */
 	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot) throws IOException {
-		this(fname, "strict ", colorize, actionLabels, snapshot);
+			final boolean snapshot, final boolean stuttering) throws IOException {
+		this(fname, "strict ", colorize, actionLabels, snapshot, stuttering);
 	}
 	
 	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot) throws IOException {
+			final boolean snapshot, final boolean stuttering) throws IOException {
 		super(fname);
 		this.colorize = colorize;
 		this.actionLabels = actionLabels;
 		this.snapshot = snapshot;
+		this.stuttering = stuttering;
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
@@ -187,6 +191,10 @@ public class DotStateWriter extends StateWriter {
 	 */
 	private synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
 			Visualization visualization, Action action) {
+		if (!stuttering && visualization == Visualization.STUTTERING) {
+			// Do not render stuttering transitions unless requested.
+			return;
+		}
 		final String successorsFP = Long.toString(successor.fingerPrint());
 		
 		// Write the transition edge.
@@ -194,7 +202,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
-			this.writer.append(" [style=\"dashed\"];\n");
+			this.writer.append(" [style=\"dashed\",color=\"lightgray\"];\n");
 		} else {
 			// Add the transition edge label.
 			if(action!=null) {
