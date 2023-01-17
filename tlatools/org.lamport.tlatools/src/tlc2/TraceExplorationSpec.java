@@ -289,7 +289,7 @@ public class TraceExplorationSpec {
 		writer.append("  to a dedicated file to reuse `expression` (the module in the ").append(TLAConstants.CR);
 		writer.append(String.format("  dedicated `%s.tla` file takes precedence ", teModuleName))
 				.append(TLAConstants.CR);
-		writer.append(String.format("  over the module `BlockingQueue_TEExpression` below).", teModuleName));
+		writer.append(String.format("  over the module `%s` below).", teModuleName));
 
 		te.addPrimer(teModuleName, originalSpecName, specTEExtendedModules);
 		te.addTraceExpressionStub(originalSpecName, TLAConstants.TraceExplore.SPEC_TE_TRACE_EXPRESSION, variables);
