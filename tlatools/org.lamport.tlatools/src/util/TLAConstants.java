@@ -24,6 +24,7 @@ public final class TLAConstants {
 	    public static final String ERROR_EXTENSION = ".err";
 	    public static final String OUTPUT_EXTENSION = ".out";
 	    public static final String TLA_EXTENSION = ".tla";
+	    public static final String TLA_TRACE_EXTENSION = ".bin";
 		
 		public static final String MODEL_CHECK_FILE_BASENAME = "MC";
 		public static final String MODEL_CHECK_CONFIG_FILE = MODEL_CHECK_FILE_BASENAME + CONFIG_EXTENSION;

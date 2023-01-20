@@ -9,6 +9,10 @@ LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
 LOCAL _TLCTraceFile ==
     "CounterExample.tlc"
 
+LOCAL _TLCTraceSilent ==
+    IF CounterExample.state = {} THEN TRUE ELSE
+        /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
+
 LOCAL _TLCTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)

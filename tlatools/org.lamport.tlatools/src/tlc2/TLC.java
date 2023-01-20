@@ -407,6 +407,7 @@ public class TLC {
 		boolean stuttering = false;
 		
 		boolean generateTESpec = true;
+		boolean generateTESpecBinaryTrace = true;
 		boolean forceGenerateTESpec = false;
 		Path teSpecOut = null;
 		
@@ -515,6 +516,10 @@ public class TLC {
             {
             	index++;
             	generateTESpec = false;
+            } else if (args[index].equals("-noGenerateSpecTEBin") || args[index].equalsIgnoreCase("-noTEBin"))
+            {
+            	index++;
+            	generateTESpecBinaryTrace = false;
             } else if (args[index].equals("-teSpecOutDir"))
             {
             	index++;
@@ -1022,16 +1027,20 @@ public class TLC {
 			final File f = new File(mainFile);
 			final String mainModuleName = f.getName();
 
+			@SuppressWarnings("unchecked")
+			final List<PostCondition> pcs = generateTESpecBinaryTrace ? (List<PostCondition>) params
+					.computeIfAbsent(ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>()) : new ArrayList<>();
+
 			if (teSpecOut == null) {
 				this.teSpec = new TraceExplorationSpec(getTlaFileParentDir(mainFile), new Date(startTime), mainModuleName,
-						this.recorder);
+						this.recorder, pcs);
 			} else {
 				if (teSpecOut.toString().toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION)) {
 					this.teSpec = new TraceExplorationSpec(teSpecOut.getParent(), teSpecOut.getFileName().toFile()
 							.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", ""), mainModuleName,
-							this.recorder);
+							this.recorder, pcs);
 				} else {
-					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainModuleName, this.recorder);
+					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainModuleName, this.recorder, pcs);
 				}
 			}
 		}

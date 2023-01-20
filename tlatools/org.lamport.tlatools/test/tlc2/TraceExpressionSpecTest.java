@@ -45,7 +45,7 @@ public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 
 	public TraceExpressionSpecTest(final String specName, final String path, final String configName, String mode, int exitStatus) {
 		super(specName, path,
-				new String[] { "-generateSpecTE", "-config", configName, "-teSpecOutDir", OUTPUT_PATH, mode },
+				new String[] { "-generateSpecTE", "-noGenerateSpecTEBin", "-config", configName, "-teSpecOutDir", OUTPUT_PATH, mode },
 				exitStatus);
 	}
 

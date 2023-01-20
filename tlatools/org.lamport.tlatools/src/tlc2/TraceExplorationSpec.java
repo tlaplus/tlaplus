@@ -24,6 +24,7 @@ import tlc2.tool.Defns;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.ModelConfig;
+import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.value.impl.ModelValue;
 import util.TLAConstants;
 
@@ -31,7 +32,7 @@ import util.TLAConstants;
  * Logic for generating a trace exploration (TE) spec.
  */
 public class TraceExplorationSpec {
-
+	
 	/**
 	 * Records TLC output as it runs, capturing the error trace if one is found.
 	 */
@@ -52,19 +53,21 @@ public class TraceExplorationSpec {
 	 *                  subscribed.
 	 */
 	public TraceExplorationSpec(Path output, Date timestamp, String originalModuleName,
-			ErrorTraceMessagePrinterRecorder recorder) {
-		this.outputPath = output;
-		this.teSpecModuleName = deriveTESpecModuleName(originalModuleName, timestamp);
-		this.originalModuleName = originalModuleName;
-		this.recorder = recorder;
+			ErrorTraceMessagePrinterRecorder recorder, List<PostCondition> pcs) {
+		this(output, deriveTESpecModuleName(originalModuleName, timestamp), originalModuleName, recorder, pcs);
 	}
 
 	public TraceExplorationSpec(Path output, String teModuleName, String originalModuleName,
-			ErrorTraceMessagePrinterRecorder recorder) {
+			ErrorTraceMessagePrinterRecorder recorder, List<PostCondition> pcs) {
 		this.outputPath = output;
 		this.teSpecModuleName = teModuleName;
 		this.originalModuleName = originalModuleName;
 		this.recorder = recorder;
+
+		// Always dump the trace in binary format in case that the textual trace is
+		// prohibitively large making it infeasible to parse and process with SANY.
+		final Path resolve = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.TLA_TRACE_EXTENSION);
+		pcs.add(new PostCondition("_TLCTrace", "_TLCTraceSilent", "_TLCTraceFile", resolve.toFile().toString()));
 	}
 
 	public void generate(ITool specInfo) {
@@ -303,11 +306,9 @@ public class TraceExplorationSpec {
 		writer.append(TLAConstants.CR);
 		writer.append("Parsing and semantic processing can take forever if the trace below is long.")
 				.append(TLAConstants.CR);
-		writer.append(" In this case, it is advised to deserialize the trace from a binary file.")
+		writer.append(" In this case, it is advised to uncomment the module below to deserialize the")
 				.append(TLAConstants.CR);
-		writer.append(" To create the file, replace your spec's invariant F with:").append(TLAConstants.CR);
-		writer.append("  Inv == IF F THEN TRUE ELSE ~IOSerialize(Trace, \"file.bin\", TRUE)").append(TLAConstants.CR);
-		writer.append(" (IOUtils module is from https://modules.tlapl.us/)");
+		writer.append(" trace from a generated binary file.").append(TLAConstants.CR);
 
 		final Set<String> extendedModulesWithIOUtils = new HashSet<>();
 		extendedModulesWithIOUtils.add("IOUtils");
@@ -317,7 +318,7 @@ public class TraceExplorationSpec {
 		w.append(TLAConstants.CR);
 		w.addPrimer(teTraceName, originalSpecName, extendedModulesWithIOUtils);
 		w.append(TLAConstants.TraceExplore.SPEC_TETRACE_TRACE_DEF).append(TLAConstants.DEFINES)
-				.append("IODeserialize(\"file.bin\", TRUE)\n\n");
+				.append(String.format("IODeserialize(\"%s%s\", TRUE)\n\n", teSpecModuleName, TLAConstants.Files.TLA_TRACE_EXTENSION));
 		w.addFooter();
 		// Users can uncomment the module if they wish to read the serialized trace.
 		writer.append(TLAConstants.CR + w.getComment() + TLAConstants.CR + TLAConstants.CR);
