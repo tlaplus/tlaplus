@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,16 +25,26 @@
  ******************************************************************************/
 package tlc2.module;
 
-import tlc2.overrides.ITLCOverrides;
+import java.io.File;
+import java.io.IOException;
 
-// tlc2.tool.impl.SpecProcessor's "api" only loads class
-// "tlc2.overrides.TLCOverrides".
-public class TLCBuiltInOverrides implements ITLCOverrides {
+import tlc2.overrides.TLAPlusOperator;
+import tlc2.value.IValue;
+import tlc2.value.ValueOutputStream;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.StringValue;
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Class[] get() {
-		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, _TLAPlusDebugger.class,
-				_TLCTrace.class };
+public class _TLCTrace {
+
+	@TLAPlusOperator(identifier = "_TLCTraceSerialize", module = "_TLCTrace", warn = false)
+	public static final IValue ioSerialize(final IValue value, final StringValue absolutePath)
+			throws IOException {
+		final ValueOutputStream vos = new ValueOutputStream(new File(absolutePath.val.toString()), true);
+		try {
+			value.write(vos);
+		} finally {
+			vos.close();
+		}
+		return BoolValue.ValTrue;
 	}
 }
