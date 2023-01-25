@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -50,7 +51,7 @@ import tlc2.output.EC.ExitStatus;
 public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08EWD840FL2FromCheckpointTest() {
-		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"}, ExitStatus.VIOLATION_LIVENESS);
+		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"}, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	
@@ -66,7 +67,7 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 			 * 5) Replace the content of checkpoint.zip with the content of 4)
 			 * 6) Update the number below on states found...
 			 */
-			String prefix = BASE_DIR + TEST_MODEL + "CodePlexBug08" + File.separator;
+			String prefix = BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator;
 			ZipFile zipFile = new ZipFile(prefix + "checkpoint.zip");
 			Enumeration<?> enu = zipFile.entries();
 			while (enu.hasMoreElements()) {
