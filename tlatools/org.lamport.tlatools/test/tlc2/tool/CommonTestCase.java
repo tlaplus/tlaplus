@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -54,7 +55,7 @@ public abstract class CommonTestCase {
 
 	protected static final String BASE_DIR = System.getProperty("basedir", "");
 	protected static final String TEST_MODEL = "test-model" + File.separator;
-	public static final String BASE_PATH = System.getProperty("basepath", BASE_DIR + TEST_MODEL);
+	public static final String BASE_PATH = System.getProperty("basepath", BASE_DIR + File.separator + TEST_MODEL);
 
 	protected final TestMPRecorder recorder;
 

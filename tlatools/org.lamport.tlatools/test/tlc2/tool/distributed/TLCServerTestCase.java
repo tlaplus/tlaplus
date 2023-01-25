@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -66,7 +67,7 @@ public abstract class TLCServerTestCase extends ModelCheckerTestCase {
 			// of no use anyway.
 			TLCGlobals.chkptDuration = 0;
 			
-			final String fqSpec = BASE_DIR + TEST_MODEL + path + File.separator + spec;
+			final String fqSpec = BASE_DIR + File.separator + TEST_MODEL + path + File.separator + spec;
 			final FPSetConfiguration fpSetConfig = new DummyFPSetConfig();
 			ToolIO.setUserDir(BASE_DIR + File.separator + TEST_MODEL + path + File.separator);
 			final TLCApp app = new TLCApp(fqSpec, spec, false, null, fpSetConfig);
