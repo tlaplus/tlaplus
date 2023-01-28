@@ -61,3 +61,23 @@ TLA+ Tools
 ----------
 #### Pretty Print to HTML (difficulty: easy) (skills: Java, HTML)
 TLA+ has a great pretty-printer to TeX (`tla2tex`), but HTML is becoming a de-facto document standard, especially for content shared online. HTML also has other advantages, such as the ability to automatically add hyperlinks from symbols to their definitions, and allow for collapsing and expanding proofs. The existing `tla2tex` code already contains most of the necessary parsing and typesetting pre-processing (like alignment), and could serve as a basis for an HTML pretty-printer. A [prototype already exists](https://github.com/tlaplus/tlaplus/issues/146).
+
+Documentation and Code Quality
+------------------------------
+The TLA+ source code was written by multiple people over many years, so it has cosmetic problems that are distracting to new contributors. **In general, we are not interested in cosmetic or stylistic improvements unless they also fix a concrete issue.** Large refactors carry a big risk of introducing new defects, and we have rejected well-intentioned refactors in the past because they are too large or risky to review.
+
+However, we are happy to accept small, easy-to-review changes that incrementally improve the TLA+ toolbox and tools.  Below are a few meaningful ways to improve TLA+'s documentation and code quality.
+
+#### Improve Internal Documentation (difficulty: easy) (skills: technical writing)
+The TLA+ [internal documentation for developers](https://github.com/tlaplus/tlaplus/blob/master/DEVELOPING.md) is limited. Improving this documentation would make it much easier for new contributors to get started.
+
+#### Improve Test Coverage (difficulty: moderate) (skills: Java)
+While the TLA+ tools have good test coverage, we would much prefer them to have _great_ test coverage. This is a low-risk activity that any developer can help with.
+
+#### Remove Uses of Global Mutable Variables (difficulty: high) (skills: Java) (low priority)
+TLC cannot be easily used as a library in other projects because it makes extensive use of global mutable variables. This is not a problem for the normal use case; TLC has always been intended to run as an isolated process, not as a library. Using a separate process is a deliberate choice and a strength: the operating system provides isolation in case TLC runs out of memory and crashes. However, there would be real benefits to allowing TLC to be used as a library, e.g. [reducing test suite execution time](https://github.com/tlaplus/tlaplus/pull/756).
+
+Fixing the existing uses of global variables must be undertaken carefully and incrementally. Previous efforts to do it have resulted in subtle soundness and completeness bugs.
+
+#### Replace Custom Data Structures with Standard Java Collections (difficulty: moderate) (skills: Java) (low priority)
+The TLA+ tools have handwritten implementations of many now-standard collection classes, such as `tla2sany.utilities.Vector` and `tlc2.util.Vect`, which duplicate the functionality of `java.util.ArrayList`. Replacing the handwritten ones with the standard types would have multiple benefits, including reducing our maintenance burden, reducing the size of the compiled tools JAR, and eliminating latent bugs. Note however that there are [subtle differences](https://github.com/tlaplus/tlaplus/pull/328#issuecomment-542160722) between the handwritten implementations and the standard ones that must be accounted for.
