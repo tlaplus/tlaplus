@@ -92,6 +92,9 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
+		EvaluateResponse expected = new EvaluateResponse();
+		expected.setResult("Does not exist");
+		assertEquals(expected, stackFrame.getWatchWithFallback("Does not exist"));
 		
 		assertEquals(
 				"In evaluation, the identifier counter is either undefined or not an operator.\\nline 43, col 6 to line 43, col 12 of module EWD998Chan",
@@ -449,6 +452,9 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
+		expected = new EvaluateResponse();
+		expected.setResult("Does not exist");
+		assertEquals(expected, stackFrame.getWatchWithFallback("Does not exist"));
 		
 		assertEquals("FALSE", stackFrame.getWatch("Init").getResult());
 		assertEquals("FALSE", stackFrame.getWatch("InitiateProbe").getResult());
