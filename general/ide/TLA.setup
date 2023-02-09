@@ -70,8 +70,6 @@
     <requirement
         name="org.eclipse.e4.tools.spies.feature.feature.group"/>
     <requirement
-        name="com.abstratt.eclipsegraphviz.feature.feature.group"/>
-    <requirement
         name="org.eclipse.rcptt.platform.feature.group"/>
     <repository
         url="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
