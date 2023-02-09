@@ -113,8 +113,13 @@ public class Json {
     try (BufferedReader reader = new BufferedReader(new FileReader(new File(path.val.toString())))) {
       String line = reader.readLine();
       while (line != null) {
-        JsonElement node = JsonParser.parseString(line);
-        values.add(getValue(node));
+      	// Ignore empty lines in the newline delimited Json file.
+      	// see https://github.com/ndjson/ndjson-spec#32-parsing
+      	line = line.trim();
+      	if (!"".equals(line)) {
+      		JsonElement node = JsonParser.parseString(line);
+      		values.add(getValue(node));
+      	}
         line = reader.readLine();
       }
     }
