@@ -38,3 +38,23 @@ Quality Metrics
 ---------------
 
 We collect [quality metrics](https://sonarcloud.io/organizations/tlaplus/projects). If you want to help out with the project, the reports indicate several low hanging fruits to pick.
+
+Building TLC Without the Toolbox
+---------------------------------
+While the Toolbox is maintained in Eclipse, sometimes changes to TLC do not require building the entire GUI. In such cases, it can be beneficial to compile TLC on the command line. While `Maven` is used for the Toolbox, `ant` is used on the command line. It can be installed with `brew` or `apt` with the package name `ant` (e.g. `brew install ant` and `sudo apt-get install ant`). Building requires at least `openjdk` version 11. 
+
+You can build TLC from a fresh clone of this repository+:
+```bash
+$ git clone https://github.com/tlaplus.git
+$ cd tlaplus/tlatools/org.lamport.tlatools
+$ ant -f customBuild.xml info clean compile compile-test dist
+```
+Test that the build was successful by using an example model:
+```bash
+$ java -jar dist/tla2tools.jar ./test-model/pcal/Bakery.tla
+```
+To run the unit tests, abbreviate the above `ant` command:
+```bash
+$ ant -f customBuild.xml test
+```
+
