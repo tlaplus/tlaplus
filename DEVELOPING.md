@@ -11,23 +11,29 @@ help the next potential contributor
 Building TLC / `tlatools.jar`
 =============================
 
-Firstly, make sure that you're using Java 11+.
-If you're using a lower version you'll see compilation errors.
+While the Toolbox is maintained in [Eclipse](https://github.com/tlaplus/tlaplus/tree/master/general/ide), sometimes changes to TLC do not require building the entire GUI. In such cases, it can be beneficial to compile TLC on the command line. 
 
-All of the commands below assume you're in the `tlatools` directory
-so begin with:
+While `Maven` is used for the Toolbox (see below), `ant` can be used for the command line. It can be installed with `brew` or `apt` with the package name `ant` (e.g. `brew install ant` and `sudo apt-get install ant`).
 
-```sh
-cd tlatools
-```
+Make sure that you're using Java 11+. If you're using a lower version you'll see compilation errors.
 
-To build, test, and create `tlatools.jar`:
-
-```sh
-ant -f org.lamport.tlatools/customBuild.xml
+You can build TLC from a fresh clone of this repository+:
+```bash
+$ git clone https://github.com/tlaplus.git
+$ cd tlaplus/tlatools/org.lamport.tlatools
+$ ant -f customBuild.xml info clean compile compile-test dist
 ```
 
 The `tlatools.jar` will be created in the `org.lamport.tlatools/dist` directory.
+
+Test that the build was successful by using an example model:
+```bash
+$ java -jar dist/tla2tools.jar ./test-model/pcal/Bakery.tla
+```
+To run the unit tests, abbreviate the above `ant` command:
+```bash
+$ ant -f customBuild.xml test
+```
 
 If you're using Linux or OSX, you can install `entr`,
 then run the following to watch for and automatically recompile changes:

@@ -1,10 +1,14 @@
 Is this your first contribution to Open Source? If yes, please read the excellent first time contributor guide at [https://opensource.guide/how-to-contribute/](https://opensource.guide/how-to-contribute/).
 
-Generally, we welcome contributions from volunteers. A number of [improvements we'd like to see implemented](https://github.com/tlaplus/tlaplus/blob/master/general/docs/contributions.md) are listed at [general/docs/contributions.md](https://github.com/tlaplus/tlaplus/blob/master/general/docs/contributions.md) in addition to the [issues tagged with "helpwanted"](https://github.com/tlaplus/tlaplus/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). But we're happy to consider anything you'd like to contribute. However, some parts of the tlaplus repository follow a very strict contribution policy. So before you start working on anything, please [discuss with us](https://github.com/tlaplus/tlaplus/issues) what you want to do. You can do that on the [issues page](https://github.com/tlaplus/tlaplus/issues). We do not want to reject your 1k LOC patch because the actual change is not considered sensible by us.
+Generally, we welcome contributions from volunteers. A number of [improvements we'd like to see implemented](https://github.com/tlaplus/tlaplus/blob/master/general/docs/contributions.md) are listed at [general/docs/contributions.md](https://github.com/tlaplus/tlaplus/blob/master/general/docs/contributions.md) in addition to the [issues tagged with "helpwanted"](https://github.com/tlaplus/tlaplus/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). For new developers, there are issues tagged [good first issue](https://github.com/tlaplus/tlaplus/labels/good%20first%20issue).
+
+We're happy to consider anything you'd like to contribute. However, some parts of the tlaplus repository follow a very strict contribution policy. So before you start working on anything, please [discuss with us](https://github.com/tlaplus/tlaplus/issues) what you want to do. You can do that on the [issues page](https://github.com/tlaplus/tlaplus/issues). We do not want to reject your 1k LOC patch because the actual change is not considered sensible by us.
 
  
 
 Except for [TLAPS](https://tla.msr-inria.inria.fr/tlaps/content/Home.html), the TLA<sup>+</sup> tools are maintained in Eclipse. [For instructions on how to setup the Eclipse IDE, please go to general/ide/README.md.](https://github.com/tlaplus/tlaplus/tree/master/general/ide).
+
+For build instructions, please read our [developers guide](https://github.com/tlaplus/tlaplus/blob/master/DEVELOPING.md).
 
 Nightly Builds
 --------------
@@ -38,23 +42,3 @@ Quality Metrics
 ---------------
 
 We collect [quality metrics](https://sonarcloud.io/organizations/tlaplus/projects). If you want to help out with the project, the reports indicate several low hanging fruits to pick.
-
-Building TLC Without the Toolbox
----------------------------------
-While the Toolbox is maintained in Eclipse, sometimes changes to TLC do not require building the entire GUI. In such cases, it can be beneficial to compile TLC on the command line. While `Maven` is used for the Toolbox, `ant` is used on the command line. It can be installed with `brew` or `apt` with the package name `ant` (e.g. `brew install ant` and `sudo apt-get install ant`). Building requires at least `openjdk` version 11. 
-
-You can build TLC from a fresh clone of this repository+:
-```bash
-$ git clone https://github.com/tlaplus.git
-$ cd tlaplus/tlatools/org.lamport.tlatools
-$ ant -f customBuild.xml info clean compile compile-test dist
-```
-Test that the build was successful by using an example model:
-```bash
-$ java -jar dist/tla2tools.jar ./test-model/pcal/Bakery.tla
-```
-To run the unit tests, abbreviate the above `ant` command:
-```bash
-$ ant -f customBuild.xml test
-```
-
