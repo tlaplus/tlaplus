@@ -613,6 +613,11 @@ public class TLC {
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
 						pcs.add(new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
+					} else if ("dot".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_DotTrace", "_DotTrace", "_DotTraceFile", args[index++]));
 					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
 						//Add your new dumpTrace formats here!
 					} else {
