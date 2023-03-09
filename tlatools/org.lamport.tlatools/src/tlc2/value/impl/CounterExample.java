@@ -48,6 +48,10 @@ public class CounterExample extends RecordValue {
 		this(trace, Action.UNKNOWN, 0);
 	}
 
+	public CounterExample(final List<TLCStateInfo> trace, final int loopOrdinal) {
+		this(trace, Action.UNKNOWN, loopOrdinal);
+	}
+
 	// CounterExample has been modeled as a graph to represent counterexamples
 	// of safety *and* liveness violations. Also, this representation is
 	// suitable once the code is extended to handle TLC's "-continue" parameter,

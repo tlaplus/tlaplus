@@ -5,9 +5,12 @@
 
 package tlc2.tool.liveness;
 
+import tlc2.value.impl.CounterExample;
+
 public class LiveException extends RuntimeException {
 
 	public final int errorCode;
+	public CounterExample counterExample;
 
 	public LiveException(int errorCode) {
 		super();
@@ -17,5 +20,11 @@ public class LiveException extends RuntimeException {
 	public LiveException(int errorCode, String msg) {
 		super(msg);
 		this.errorCode = errorCode;
+	}
+
+	public LiveException(int errorCode, String msg, CounterExample c) {
+		super(msg);
+		this.errorCode = errorCode;
+		this.counterExample = c;
 	}
 }

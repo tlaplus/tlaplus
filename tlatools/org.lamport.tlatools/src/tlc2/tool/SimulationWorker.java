@@ -46,10 +46,12 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
+import tlc2.tool.liveness.LiveCounterExampleException;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
 import tlc2.util.SetOfStates;
 import tlc2.util.Vect;
+import tlc2.value.impl.CounterExample;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.Value;
@@ -175,6 +177,13 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				trace.add(new TLCStateInfo(state, state.getAction()));
 			}			
 			return trace;
+		}
+
+		public CounterExample getCounterExample() {
+			if (exception instanceof LiveCounterExampleException) {
+				return ((LiveCounterExampleException) exception).counterExample;
+			}
+			return new CounterExample(getTrace());
 		}
 	}
 	

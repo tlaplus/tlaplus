@@ -6,6 +6,8 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import tlc2.output.EC;
@@ -25,6 +27,7 @@ import tlc2.util.SetOfStates;
 import tlc2.util.Vect;
 import tlc2.util.statistics.DummyBucketStatistics;
 import tlc2.util.statistics.IBucketStatistics;
+import tlc2.value.impl.CounterExample;
 
 public class LiveCheck1 implements ILiveCheck {
 	/**
@@ -509,7 +512,7 @@ public class LiveCheck1 implements ILiveCheck {
 	}
 
 	/* Print out the error state trace. */
-	void printErrorTrace(final BEGraphNode node) throws IOException {
+	CounterExample printErrorTrace(final BEGraphNode node) throws IOException {
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 		// First, find a "bad" cycle from the "bad" scc.
@@ -631,6 +634,7 @@ public class LiveCheck1 implements ILiveCheck {
 		int stateNum = 0;
 		BEGraphNode[] prefix = BEGraph.getPath(initNode, node);
 		TLCStateInfo[] states = new TLCStateInfo[prefix.length];
+		final List<TLCStateInfo> trace = new ArrayList<>(states.length);
 
 		// Recover the initial state:
 		long fp = prefix[0].stateFP;
@@ -656,6 +660,7 @@ public class LiveCheck1 implements ILiveCheck {
 		// Print the prefix:
 		TLCState cycleState = null;
 		for (int i = 0; i < stateNum; i++) {
+			trace.add(states[i]);
 			StatePrinter.printInvariantViolationStateTraceState(states[i], cycleState, i + 1);
 			cycleState = states[i].state;
 		}
@@ -676,12 +681,14 @@ public class LiveCheck1 implements ILiveCheck {
 				if (sinfo == null) {
 					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
 				}
+				trace.add(sinfo);
 				StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++stateNum);
 				lastState = sinfo.state;
 			}
 		}
 		if (node.stateFP == lastState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNum);
+			return new CounterExample(trace, stateNum);
 		} else {
 			sinfo = myTool.getState(cycleState.fingerPrint(), sinfo);
 			// The print stmts below claim there is a cycle, thus assert that
@@ -689,6 +696,7 @@ public class LiveCheck1 implements ILiveCheck {
 			// reduced by one because cyclePos is human-readable.
 			assert cycleState.equals(sinfo.state);
 			StatePrinter.printBackToState(sinfo, cyclePos);
+			return new CounterExample(trace, sinfo.getAction(), cyclePos);
 		}
 	}
 
@@ -766,7 +774,8 @@ public class LiveCheck1 implements ILiveCheck {
 		// This component must contain a counter-example because all three
 		// conditions are satisfied. So, print a counter-example!
 		try {
-			printErrorTrace(node);
+			throw new LiveCounterExampleException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "LiveCheck: Found error trace.",
+					printErrorTrace(node));
 		} catch (IOException e) {
 			MP.printError(EC.GENERAL, "printing an error trace", e); // LL
 			// changed

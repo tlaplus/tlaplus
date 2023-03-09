@@ -303,7 +303,7 @@ public class Simulator {
 		
 		// see tlc2.tool.Worker.doPostCheckAssumption()
 		if (result.isError() && result.error().hasTrace()) {
-			errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(new CounterExample(result.error().getTrace())), errorCode);
+			errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample()), errorCode);
 		} else {
 			errorCode = Math.max(this.tool.checkPostCondition(), errorCode);
 		}
