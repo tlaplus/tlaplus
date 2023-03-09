@@ -4,6 +4,7 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE GraphViz
 LOCAL INSTANCE IOUtils
 LOCAL INSTANCE Sequences
+LOCAL INSTANCE Functions
 
 LOCAL _DotTraceFile ==
     "CounterExample.Dot"
@@ -13,7 +14,9 @@ LOCAL _DotTrace ==
         /\ LET N == CounterExample.state
                E == { <<e[1], e[3], e[2]>> : e \in CounterExample.action }
                G == [node |-> N, edge |-> E] IN
-           Serialize(DotDiGraph(G, LAMBDA v : ToString(v[2]), LAMBDA e: ToString(e[3].name)),
+           Serialize(DotDiGraph(G, LAMBDA v: FoldFunctionOnSet(
+           								LAMBDA x, y: ToString(x) \o "\n" \o y, "", v[2], DOMAIN v[2]), 
+           						   LAMBDA e: e[3].name),
     			_DotTraceFile,
     			[
     				format |-> "TXT",
