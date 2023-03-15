@@ -87,6 +87,18 @@ public interface SymbolNodeValueLookupProvider {
 	}
 
 	default Object getVal(final ExprOrOpArgNode expr, final Context c, final boolean cachable, final CostModel cm, final int forToolId) {
+		if (!LazyValue.LAZYEVAL_OFF && expr instanceof OpApplNode) {
+			final OpApplNode oan = (OpApplNode) expr;
+			// Do not create a LazyValue that "points to" another LazyValue.
+			// Related:
+			// https://github.com/tlaplus/tlaplus/issues/113
+			// https://github.com/tlaplus/tlaplus/issues/798
+			final Object l = c.lookup(oan.getOperator());
+			if (l instanceof LazyValue) {
+				return l;
+			}
+			return new LazyValue(expr, c, cachable, cm);
+		}
 		if (expr instanceof ExprNode) {
 			return new LazyValue(expr, c, cachable, cm);
 		}
