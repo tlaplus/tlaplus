@@ -32,7 +32,7 @@ public class LazyValue extends Value {
 	 * bug where TLC generates and incorrect set of states with certain statements.
 	 * More details can be found at https://github.com/tlaplus/tlaplus/issues/113.
 	 */
-	private static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.impl.LazyValue.class.getName() + ".off");
+	public static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.impl.LazyValue.class.getName() + ".off");
 	
 	static {
 		// Indicate if LazyValue will be disabled in this TLC run.

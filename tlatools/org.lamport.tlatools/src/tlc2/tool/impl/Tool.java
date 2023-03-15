@@ -1842,7 +1842,7 @@ public abstract class Tool
 						// (https://github.com/tlaplus/tlaplus/issues/113) - 
 						// TLC can generate invalid sets of init or next-states caused by broken
 						// LazyValue evaluation. The related tests are AssignmentInit* and
-						// AssignmentNext*. Without this fix TLC essentially reuses a stale lv.val when
+						// AssignmentNext*. Without this fix, TLC essentially reuses a stale lv.val when
 						// it needs to re-evaluate res because the actual operands to eval changed.
 						// Below is Leslie's formal description of the bug:
 						// 
