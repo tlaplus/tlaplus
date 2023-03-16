@@ -7,7 +7,7 @@ on:
         required: false
         default: ''
   schedule:
-    - cron:  '53 5 * * 6'
+    - cron:  '53 5 * * 4'
 
 jobs:
   build:
