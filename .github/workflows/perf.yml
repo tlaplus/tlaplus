@@ -5,7 +5,9 @@ on:
       git-sha:
         description: 'git commit sha'
         required: false
-        default: 'HEAD'
+        default: ''
+  schedule:
+    - cron:  '53 5 * * 6'
 
 jobs:
   build:
