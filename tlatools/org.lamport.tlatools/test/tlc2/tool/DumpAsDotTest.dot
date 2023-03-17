@@ -1,4 +1,5 @@
 strict digraph DiskGraph {
+node [shape=box,style=rounded]
 edge [colorscheme="paired12"]
 nodesep=0.35;
 subgraph cluster_graph {

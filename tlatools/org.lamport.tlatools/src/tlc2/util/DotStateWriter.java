@@ -110,6 +110,11 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
+		
+		// Using boxed nodes instead of ovals can significantly reduce screen estate
+		// waste. Rounding the corners of nodes is merely cosmetic and does not offer
+		// any substantial benefits.
+		this.writer.append("node [shape=box,style=rounded]\n");
         
 		// Set the color scheme for transition edges if necessary.
 		if(colorize) {
