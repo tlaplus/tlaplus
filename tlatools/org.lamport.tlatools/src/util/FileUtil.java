@@ -1,5 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
+
 package util;
 
 import java.io.BufferedInputStream;
@@ -16,7 +18,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -215,51 +220,123 @@ public class FileUtil
 	}
 
     /**
-     * The MetaDir is fromChkpt if it is not null. Otherwise, create a
-     * new one based on the current time.
-     * @param specDir the specification directory
-     * @param fromChkpt, path of the checkpoints if recovering, or <code>null</code>
+     * Determine the MetaDir to use.
      *
+     * Equivalent to {@link #makeMetaDir(Date, String, String)} with
+     * <code>date = new Date()</code>.  See that method for more details.
+     *
+     * @param specDir the specification directory
+     * @param fromChkpt path of the checkpoints if recovering, or <code>null</code>
+     * @return <code>fromChkpt</code> if it is not null, otherwise a new empty directory
      */
     public static String makeMetaDir(String specDir, String fromChkpt)
     {
     	return makeMetaDir(new Date(), specDir, fromChkpt);
     }
-    
+
+    /**
+     * Determine the MetaDir to use.
+     *
+     * If <code>fromChkpt</code> is not null, then that directory is returned.
+     * Otherwise, a new empty directory will be created and returned according
+     * to the following rules:
+     * <ol>
+     *     <li>
+     *         If {@link TLCGlobals#metaDir} is null, then a new empty
+     *         directory in <code>specDir</code>/{@link TLCGlobals#metaRoot}
+     *         will be created and returned.
+     *     </li>
+     *     <li>
+     *         If {@link TLCGlobals#metaDir} is not null, then a new empty
+     *         directory inside it will be created and returned.  The
+     *         <code>specDir</code> argument is ignored in this case.
+     *     </li>
+     * </ol>
+     * The new directory will use the given <code>date</code> in its name for
+     * readability, but may include extra characters to ensure it is unique.
+     *
+     * <p>To ensure that concurrent processes do not accidentally share the
+     * same MetaDir, if this method would create and return a new directory,
+     * then the check for existence and creation happen as one atomic operation
+     * as described in {@link Files#createDirectory}.
+     *
+     * @param date the date to use for naming the directory
+     * @param specDir the specification directory
+     * @param fromChkpt path of the checkpoints if recovering, or <code>null</code>
+     * @return <code>fromChkpt</code> if it is not null, otherwise a new empty directory
+     */
     public static String makeMetaDir(Date date, String specDir, String fromChkpt)
     {
         if (fromChkpt != null)
         {
             return fromChkpt;
         }
-        String metadir = TLCGlobals.metaDir;
-        if (metadir == null)
-        {
+
+        Path metadir;
+        if (TLCGlobals.metaDir != null) {
+            metadir = Paths.get(TLCGlobals.metaDir);
+        } else {
             // If not given, use the directory specDir/metaRoot:
-            metadir = specDir + TLCGlobals.metaRoot + FileUtil.separator;
+            metadir = Paths.get(specDir).resolve(TLCGlobals.metaRoot);
         }
 
-		// MAK 07/2021: Flip the default from low-res time-stamp to high-res time-stamp.
-		// The old default causes problems when TLC is invoked on a small spec in
-		// scripts or e.g. bash while loops.
+        // MAK 07/2021: Flip the default from low-res time-stamp to high-res time-stamp.
+        // The old default causes problems when TLC is invoked on a small spec in
+        // scripts or e.g. bash while loops.
         SimpleDateFormat sdf;
         String highres = System.getProperty(FileUtil.class.getName() + ".milliseconds", "true");
         if (Boolean.valueOf(highres)) {
-        	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss.SSS");
+            sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss.SSS");
         } else {
-        	// -Dutil.FileUtil.milliseconds=false
-        	sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
+            // -Dutil.FileUtil.milliseconds=false
+            sdf = new SimpleDateFormat("yy-MM-dd-HH-mm-ss");
         }
-        metadir += sdf.format(date);
-        File filedir = new File(metadir);
 
-        // ensure the non-existence
-        Assert.check(!filedir.exists(), EC.SYSTEM_METADIR_EXISTS, filedir.getAbsolutePath());
+        metadir = metadir.resolve(sdf.format(date));
 
-        // ensure the dirs are created
-        Assert.check(filedir.mkdirs(), EC.SYSTEM_METADIR_CREATION_ERROR, filedir.getAbsolutePath());
+        try {
+            metadir = createExclusiveDirectoryWithApproximateName(metadir);
+        } catch (IOException e) {
+            Assert.fail(EC.SYSTEM_METADIR_CREATION_ERROR, metadir.toString());
+        }
 
-        return metadir;
+        return metadir.toString();
+    }
+
+    /**
+     * Create the given directory and all required parent directories.
+     * Identical to {@link Files#createDirectory}, but all missing
+     * parent directories are created first.
+     *
+     * @param directory the directory to create
+     * @throws FileAlreadyExistsException if the given directory already exists
+     * @throws IOException if the given directory could not be created due
+     *                     to some other error
+     */
+    public static void createExclusiveDirectory(Path directory) throws IOException {
+        directory = directory.toAbsolutePath();
+        Files.createDirectories(directory.getParent());
+        Files.createDirectory(directory);
+    }
+
+    /**
+     * Create and return a new directory.  The new directory will
+     * have the same parent as <code>approximatePath</code>, but
+     * may have a different name.
+     *
+     * @param approximatePath the approximate path and name of the
+     *                        directory to create
+     * @return the newly-created directory
+     * @throws IOException if a new directory could not be created
+     */
+    public static Path createExclusiveDirectoryWithApproximateName(Path approximatePath) throws IOException {
+        try {
+            createExclusiveDirectory(approximatePath);
+            return approximatePath;
+        } catch (FileAlreadyExistsException e) {
+            approximatePath = approximatePath.toAbsolutePath();
+            return Files.createTempDirectory(approximatePath.getParent(), approximatePath.getFileName().toString());
+        }
     }
 
     public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver)
