@@ -87,7 +87,7 @@ public interface SymbolNodeValueLookupProvider {
 	}
 
 	default Object getVal(final ExprOrOpArgNode expr, final Context c, final boolean cachable, final CostModel cm, final int forToolId) {
-		if (!LazyValue.LAZYEVAL_OFF && expr instanceof OpApplNode) {
+		if (LazyValue.LAZYEVAL_ON && expr instanceof OpApplNode) {
 			final OpApplNode oan = (OpApplNode) expr;
 			// Do not create a LazyValue that "points to" another LazyValue.
 			// Related:
