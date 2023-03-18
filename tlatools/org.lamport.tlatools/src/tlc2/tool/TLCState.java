@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 15:29:58 PST by lamport
 //      modified on Tue Oct 23 16:48:38 PDT 2001 by yuanyu
 
@@ -9,12 +10,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.output.EC;
+import tlc2.util.PartialBoolean;
 import tlc2.value.IValue;
 import tlc2.value.IValueInputStream;
 import tlc2.value.IValueOutputStream;
@@ -215,4 +218,58 @@ public abstract class TLCState implements Cloneable, Serializable {
 	    }
 		return this.copy(s);
 	}
+
+	/**
+	 * Determine if <code>s1</code> is a subset of <code>s2</code> (i.e. <code>s1</code> has the same value
+	 * as <code>s2</code> for every variable that <code>s2</code> has a value for).
+	 *
+	 * <p>In TLA+, a "state" defines a value for every variable in the universe, not just the ones defined
+	 * in your spec.  In that sense, a {@link TLCState} really represents a <i>set</i> of states.  For
+	 * instance, the {@link TLCState} <code>a = 1 /\ b = 2</code> includes every TLA+ state where
+	 * <code>a = 1</code> and <code>b = 2</code>, including some states where <code>c = 3</code> and some
+	 * states where <code>c = 100</code>.  The {@link TLCState}s {@link #Null} and {@link #Empty} represent
+	 * the set of all states.
+	 *
+	 * <p>This function treats <code>s1</code> and <code>s2</code> as sets of states and determines if the
+	 * first is a subset of the second.  Note that the result might not be knowable, since the values in
+	 * the two states might not be comparable (see "Comparability" in the docstring for {@link IValue}).
+	 *
+	 * @param s1 the first set of states
+	 * @param s2 the second set of states
+	 * @return whether <code>s1</code> represents a subset of the states of <code>s2</code>
+	 */
+	public static PartialBoolean isSubset(TLCState s1, TLCState s2) {
+		if (s2 == null || s2 == Empty) {
+			return PartialBoolean.YES;
+		}
+
+		if (s1 == null) {
+			s1 = Empty;
+		}
+
+		// Optimization: if the arguments point to the same state, then we can return true
+		// without inspecting the state's contents.
+		if (s1 == s2) {
+			return PartialBoolean.YES;
+		}
+
+		try {
+			for (OpDeclNode var : vars) {
+				UniqueString key = var.getName();
+				IValue val2 = s2.lookup(key);
+				if (val2 != null) {
+					IValue val1 = s1.lookup(key);
+					if (!Objects.equals(val1, val2)) {
+						return PartialBoolean.NO;
+					}
+				}
+			}
+		} catch (FingerprintException | Assert.TLCRuntimeException e) {
+			// These exceptions get thrown when two values are not comparable.
+			return PartialBoolean.MAYBE;
+		}
+
+		return PartialBoolean.YES;
+	}
+
 }
