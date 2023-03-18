@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2022 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -28,7 +29,9 @@ package tlc2.value.impl;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 
 public class LazySupplierValue extends LazyValue {
@@ -41,7 +44,8 @@ public class LazySupplierValue extends LazyValue {
 	}
 
 	@Override
-	public Value getValue() {
+	public Value getValue(Tool tool, TLCState s0, TLCState s1, int control) {
+		// TODO: is it OK to ignore the args here?  What are the semantics of this particular value?
 		return (Value) s.get();
 	}
 }

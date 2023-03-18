@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2020 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -208,13 +209,13 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		// Showing variables in the debugger does *not* unlazy LazyValues, i.e.
 		// interferes with TLC's evaluation.
 		final List<LazyValue> lazies = new ArrayList<>();
+		final List<Integer> lazyCounts = new ArrayList<>();
 		Context context = f.getContext();
 		while (context != null) {
 			if (context.getValue() instanceof LazyValue) {
 				LazyValue lv = (LazyValue) context.getValue();
-				if (lv.getValue() == null) {
-					lazies.add(lv);
-				}
+				lazies.add(lv);
+				lazyCounts.add(lv.getNumTimesThatANewValueWasCached());
 			}
 			context = context.next();
 		}
@@ -230,7 +231,9 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			}
 			fail();
 		}
-		lazies.forEach(lv -> assertNull(lv.getValue()));
+		for (int i = 0; i < lazies.size(); ++i) {
+			assertEquals((int)lazyCounts.get(i), lazies.get(i).getNumTimesThatANewValueWasCached());
+		}
 	}
 
 	protected static void assertTLCActionFrame(final StackFrame stackFrame, final int beginLine, final int endLine,
@@ -300,13 +303,13 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		// Showing variables in the debugger does *not* unlazy LazyValues, i.e.
 		// interferes with TLC's evaluation.
 		final List<LazyValue> lazies = new ArrayList<>();
+		final List<Integer> lazyCounts = new ArrayList<>();
 		Context context = f.getContext();
 		while (context != null) {
 			if (context.getValue() instanceof LazyValue) {
 				LazyValue lv = (LazyValue) context.getValue();
-				if (lv.getValue() == null) {
-					lazies.add(lv);
-				}
+				lazies.add(lv);
+				lazyCounts.add(lv.getNumTimesThatANewValueWasCached());
 			}
 			context = context.next();
 		}
@@ -317,7 +320,9 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			assertEquals(expected.get(variable.getName()), variable.getValue());
 		}
 		
-		lazies.forEach(lv -> assertNull(lv.getValue()));
+		for (int i = 0; i < lazies.size(); ++i) {
+			assertEquals((int)lazyCounts.get(i), lazies.get(i).getNumTimesThatANewValueWasCached());
+		}
 	}
 
 	protected static void assertTLCStateFrame(final StackFrame stackFrame, final int beginLine, final int endLine,

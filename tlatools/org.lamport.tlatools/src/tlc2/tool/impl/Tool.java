@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2022, Oracle and/or its affiliates.
+// Copyright (c) 2022, 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Thu  2 Aug 2007 at 10:25:48 PST by lamport
 //      modified on Fri Jan  4 22:46:57 PST 2002 by yuanyu
@@ -22,8 +22,6 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
-import tla2sany.semantic.LevelConstants;
-import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDeclNode;
@@ -604,11 +602,11 @@ public abstract class Tool
 
           if (val instanceof LazyValue) {
             LazyValue lv = (LazyValue)val;
-            if (lv.getValue() == null || lv.isUncachable()) {
+            val = lv.getCachedValue(this, ps, null, EvalControl.Clear);
+            if (val == null) {
               this.getInitStates(lv.expr, acts, lv.con, ps, states, cm);
               return;
             }
-            val = lv.getValue();
           }
 
           Object bval = val;
@@ -1092,10 +1090,10 @@ public abstract class Tool
 
           if (val instanceof LazyValue) {
             final LazyValue lv = (LazyValue)val;
-            if (lv.getValue() == null || lv.isUncachable()) {
+            val = lv.getCachedValue(this, s0, s1, EvalControl.Clear);
+            if (val == null) {
               return this.getNextStates(action, lv.expr, acts, lv.con, s0, s1, nss, lv.cm);
             }
-            val = lv.getValue();
           }
 
           //TODO If all eval/apply in getNextStatesApplEvalAppl would be side-effect free (ie. not mutate args, c, s0,...), 
@@ -1858,107 +1856,22 @@ public abstract class Tool
 			if (val instanceof LazyValue) {
 				final LazyValue lv = (LazyValue) val;
 				if (s1 == null) {
+					// NOTE 2023/4/7: Strictly speaking, this branch is not necessary.  TLC could return
+					// `lv.getValue(...)` here as it does in the else-branch below.  Today I considered
+					// removing it since it prevents LazyValue's caching benefits in some cases.
+					// However, I retained it for two reasons:
+					//   (1) There are some debugger-related tests that make assertions about when certain
+					//       LazyValues are evaluated and cached.  Those tests fail if TLC skips this branch.
+					//       I suspect those tests need some additional thought; if it is really important
+					//       that TLC not cache LazyValues during certain debugger actions, it might need a
+					//       stronger prevention mechanism.
+					//   (2) I am worried that this branch serves some subtle purpose I do not yet understand.
+					//       I do not want to remove it unless I am sure that I understand why it was here to
+					//       begin with.
 					val = this.eval(lv.expr, lv.con, s0, TLCState.Null, control, lv.getCostModel());
-			    } else if (lv.isUncachable() || EvalControl.isEnabled(control)) {
-					// Never use cached LazyValues in an ENABLED expression. This is why all
-					// this.enabled* methods pass EvalControl.Enabled (the only exception being the
-					// call on line line 2799 which passes EvalControl.Primed). This is why we can
-			    	// be sure that ENALBED expressions are not affected by the caching bug tracked
-			    	// in Github issue 113 (see below).
-					val = this.eval(lv.expr, lv.con, s0, s1, control, lv.getCostModel());
 				} else {
-					val = lv.getValue();
-					if (val == null) {
-						final Value res = this.eval(lv.expr, lv.con, s0, s1, control, lv.getCostModel());
-						// This check has been suggested by Yuan Yu on 01/15/2018:
-						//
-						// If init-states are being generated, level has to be <= ConstantLevel for
-						// caching/LazyValue to be allowed. If next-states are being generated, level
-						// has to be <= VariableLevel. The level indicates if the expression to be
-						// evaluated contains only constants, constants & variables, constants & 
-						// variables and primed variables (thus action) or is a temporal formula.
-						//
-						// This restriction is in place to fix Github issue 113
-						// (https://github.com/tlaplus/tlaplus/issues/113) - 
-						// TLC can generate invalid sets of init or next-states caused by broken
-						// LazyValue evaluation. The related tests are AssignmentInit* and
-						// AssignmentNext*. Without this fix, TLC essentially reuses a stale lv.val when
-						// it needs to re-evaluate res because the actual operands to eval changed.
-						// Below is Leslie's formal description of the bug:
-						// 
-						// The possible initial values of some variable  var  are specified by a subformula
-						// 
-						// F(..., var, ...)
-						// 
-						// in the initial predicate, for some operator F such that expanding the
-						// definition of F results in a formula containing more than one occurrence of
-						// var , not all occurring in separate disjuncts of that formula.
-						// 
-						// The possible next values of some variable  var  are specified by a subformula
-						// 
-						// F(..., var', ...)
-						// 
-						// in the next-state relation, for some operator F such that expanding the
-						// definition of F results in a formula containing more than one occurrence of
-						// var' , not all occurring in separate disjuncts of that formula.
-						// 
-						// An example of the first case is an initial predicate  Init  defined as follows:
-						// 
-						// VARIABLES x, ...
-						// F(var) == \/ var \in 0..99 /\ var % 2 = 0
-						//           \/ var = -1
-						// Init == /\ F(x)
-						//         /\ ...
-						// 
-						// The error would not appear if  F  were defined by:
-						// 
-						// F(var) == \/ var \in {i \in 0..99 : i % 2 = 0}
-						//           \/ var = -1
-						// 
-						// or if the definition of  F(x)  were expanded in  Init :
-						// 
-						// Init == /\ \/ x \in 0..99 /\ x % 2 = 0
-						//            \/ x = -1
-						//         /\ ...
-						// 
-						// A similar example holds for case 2 with the same operator F and the
-						// next-state formula
-						// 
-						// Next == /\ F(x')
-						//         /\ ...
-						// 
-						// The workaround is to rewrite the initial predicate or next-state relation so
-						// it is not in the form that can cause the bug. The simplest way to do that is
-						// to expand (in-line) the definition of F in the definition of the initial
-						// predicate or next-state relation.
-						//
-						// Note that EvalControl.Init is only set in the scope of this.getInitStates*,
-						// but not in the scope of methods such as this.isInModel, this.isGoodState...
-						// which are invoked by DFIDChecker and ModelChecker#doInit and doNext. These
-						// invocation however don't pose a problem with regards to issue 113 because
-						// they don't generate the set of initial or next states but get passed fully
-						// generated/final states.
-						//
-						// !EvalControl.isInit(control) means Tool is either processing the spec in
-						// this.process* as part of initialization or that next-states are being
-						// generated. The latter case has to restrict usage of cached LazyValue as
-						// discussed above.
-						final int level = ((LevelNode) lv.expr).getLevel(); // cast to LevelNode is safe because LV only subclass of SN.
-						if ((EvalControl.isInit(control) && level <= LevelConstants.ConstantLevel)
-								|| (!EvalControl.isInit(control) && level <= LevelConstants.VariableLevel)) {
-							// The performance benefits of caching values is generally debatable. The time
-							// it takes TLC to check a reasonable sized model of the PaxosCommit [1] spec is
-							// ~2h with, with limited caching due to the fix for issue 113 or without
-							// caching. There is no measurable performance difference even though the change
-							// for issue 113 reduces the cache hits from ~13 billion to ~4 billion. This was
-							// measured with an instrumented version of TLC.
-							// [1] general/performance/PaxosCommit/  
-							lv.setValue(res);
-						}
-						val = res;
-					}
+					return lv.getValue(this, s0, s1, control);
 				}
-
 			}
 
 			Value res = null;
