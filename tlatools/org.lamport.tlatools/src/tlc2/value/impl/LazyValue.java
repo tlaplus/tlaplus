@@ -32,12 +32,12 @@ public class LazyValue extends Value {
 	 * bug where TLC generates and incorrect set of states with certain statements.
 	 * More details can be found at https://github.com/tlaplus/tlaplus/issues/113.
 	 */
-	public static final boolean LAZYEVAL_ON = Boolean.getBoolean(tlc2.value.impl.LazyValue.class.getName() + ".on");
+	public static final boolean LAZYEVAL_OFF = Boolean.getBoolean(tlc2.value.impl.LazyValue.class.getName() + ".off");
 	
 	static {
 		// Indicate if LazyValue will be disabled in this TLC run.
-		if (LAZYEVAL_ON) {
-			ToolIO.out.println("LazyValue is enabled.");
+		if (LAZYEVAL_OFF) {
+			ToolIO.out.println("LazyValue is disabled.");
 		}
 	}
   /**
@@ -63,7 +63,7 @@ public class LazyValue extends Value {
     this.val = null;
     // See comment on cachable's meager performance in Tool.java on line 1408.
     // See other note about a bug that surfaced with LazyValue in Tool.java on line ~1385.
-    if (!LAZYEVAL_ON || !cachable) {
+    if (LAZYEVAL_OFF || !cachable) {
     	this.val = UndefValue.ValUndef;
     }
   }

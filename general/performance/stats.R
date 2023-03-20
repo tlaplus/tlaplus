@@ -5,12 +5,18 @@ data <- read.csv(header=TRUE, sep = "#", file = here("out_run-stats.csv"))
 ## Merge two or more commits when they cannot impact performance because
 ## a commit only changes auxiliary files.
 ## Replace git commit short-hash f91... with df1...
-data[data == "f91c7b0"] <- "df144c5"
-data[data == "46de326"] <- "df144c5"
 
+## Original code
+data[data == "9035dfa"] <- "6f05042"
+data[data == "46de326"] <- "6f05042"
 
-data[data == "0f6a80b"] <- "1eb600d"
-data[data == "0b93602"] <- "1eb600d"
+## No LazyValue chains: PR #799
+## https://github.com/tlaplus/tlaplus/commit/682f17227a607a5c5486415dcc9008a66dccb805
+#data[data == "xxx"] <- "682f172"
+
+## LazyValue disabled (commit 8ef124090c3ee0ee5bc22dc25e1874605ff57f3b):
+#data[data == "xxx"] <- "8ef1240"
+
 
 ## Convert epoch to date.
 library(anytime)
@@ -21,6 +27,21 @@ data <- aggregate(cbind(Generated,Duration) ~ Spec + RevTag + Workers, data = da
 
 ## Calculate Throughput on aggregated data.
 data$Throughput <- data$Generated / data$Duration
+
+##################
+
+# Get the baseline throughput values
+baseline <- data[data$RevTag == "6f05042", c("Spec", "Workers", "Throughput")]
+names(baseline)[3] <- "baseline_throughput"
+
+# Merge baseline_throughput to the original data frame
+data <- merge(data, baseline, by = c("Spec", "Workers"))
+
+# Calculate the change in throughput percentage
+data$change <- (data$Throughput - data$baseline_throughput) / data$baseline_throughput * 100
+
+library(knitr)
+kable(format = "markdown", data[data$RevTag != "6f05042", ][, c(3,1,2,8)], digits=2)
 
 ##################
 
