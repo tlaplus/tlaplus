@@ -1,10 +1,11 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
-      - v1.7.2         # Push events on master branch
+      - v1.7.3         # Push events on master branch
 
 jobs:
 
@@ -16,8 +17,8 @@ jobs:
         include: 
         - operating-system: ubuntu-latest
           MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
-          GITHUB_RELEASE_NAME: The Theano release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.2-linux.gtk.x86_64.zip
+          GITHUB_RELEASE_NAME: The Ulpian release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.3-linux.gtk.x86_64.zip
 
     steps:
 
@@ -75,12 +76,12 @@ jobs:
            ## Generate changelog
            cd general/docs/changelogs
            ## Append sha1 sum to changelog (last line of changelog has the table header).
-           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_2.md
+           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_3.md
            ## Two above as one-liner without intermediate file.
-           $(jq -n --argjson changelog "$(cat ch1_7_2.md | jq  --raw-input --slurp .)" -f gh-1_7_2.jq > gh-1_7_2.json)
+           $(jq -n --argjson changelog "$(cat ch1_7_3.md | jq  --raw-input --slurp .)" -f gh-1_7_3.jq > gh-1_7_3.json)
            ## Update draft release with latest changelog in case it changed.
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
-           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_7_2.json -X PATCH --header "Content-Type: application/json"
+           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_7_3.json -X PATCH --header "Content-Type: application/json"
 
     ## 
     ## Update all git tags to make the download urls work, i.e.
