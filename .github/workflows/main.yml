@@ -84,9 +84,18 @@ jobs:
       env:
         COMODO_CODESIGN_COMBINED_PEM: ${{ secrets.COMODO_CODESIGN_COMBINED_PEM }}
     - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'ubuntu-latest'
       run: |
            openssl version
            openssl pkcs12 -legacy -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+    - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+           openssl version
+           openssl pkcs12 -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
            rm ComodoCertificate.pem
            keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
            rm ComodoCertificate.p12
