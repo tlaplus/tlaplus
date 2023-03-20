@@ -41,12 +41,10 @@ public class Github798NTest extends ModelCheckerTestCase {
 		super("Github798N", new String[] { "-config", "Github798N.tla" }, EC.ExitStatus.SUCCESS);
 	}
 
-	@Override
 	protected boolean noGenerateSpec() {
 		return true;
 	}
 
-	@Override
 	protected boolean doDumpTrace() {
 		return false;
 	}
