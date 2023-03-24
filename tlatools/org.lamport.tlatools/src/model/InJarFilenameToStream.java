@@ -1,3 +1,5 @@
+// Copyright (c) 2023, Oracle and/or its affiliates.
+
 package model;
 
 import java.io.File;
@@ -10,7 +12,6 @@ import util.SimpleFilenameToStream;
 
 public class InJarFilenameToStream extends SimpleFilenameToStream implements
 		FilenameToStream {
-	private static final String TMPDIR = System.getProperty("java.io.tmpdir");
 
 	private final String prefix;
 
@@ -23,7 +24,7 @@ public class InJarFilenameToStream extends SimpleFilenameToStream implements
 		InputStream is = InJarFilenameToStream.class.getResourceAsStream(prefix + name);
 		if(is != null) {
 			try {
-				File sourceFile = new TLAFile(TMPDIR + File.separator + name, InJarFilenameToStream.class.getResource(prefix + name), false, this);				
+				File sourceFile = new TLAFile(tmpDir.resolve(name), InJarFilenameToStream.class.getResource(prefix + name), false, this);
 				sourceFile.deleteOnExit();
 				
 				FileOutputStream fos = new FileOutputStream(sourceFile);
