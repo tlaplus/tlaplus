@@ -1,13 +1,19 @@
+// Copyright (c) 2023, Oracle and/or its affiliates.
+
 package tlc2.tool.distributed;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Map;
 
+import tlc2.output.EC;
+import util.Assert;
 import util.FilenameToStream;
 
 /**
@@ -26,19 +32,17 @@ import util.FilenameToStream;
  */
 public class RMIFilenameToStreamResolver implements FilenameToStream {
 
-	private static final String javaTempDir = System.getProperty("java.io.tmpdir") + File.separator;
-
 	private TLCServerRMI server;
 
 	private final Map<String, File> fileCache = new HashMap<String, File>();
-	private final String rndPrefix;
+	private final Path tmpDir;
 
 	public RMIFilenameToStreamResolver() {
-		rndPrefix = getRandomStoragePrefix();
+		tmpDir = newExclusiveTemporaryDirectory();
 	}
 
 	public RMIFilenameToStreamResolver(final String[] libraryPaths) {
-		rndPrefix = getRandomStoragePrefix();
+		tmpDir = newExclusiveTemporaryDirectory();
 	}
 
 	public void setTLCServer(final TLCServerRMI aServer) {
@@ -94,15 +98,20 @@ public class RMIFilenameToStreamResolver implements FilenameToStream {
 		 return false ;
 	}
 
-	private String getRandomStoragePrefix() {
-		final File file = new File(javaTempDir + System.currentTimeMillis());
-		file.deleteOnExit();
-		file.mkdir();
-		return file.getAbsolutePath();
+	/**
+	 * Create a new empty directory owned by this process.  The returned directory
+	 * will be deleted when the JVM terminates as described by {@link File#deleteOnExit()}.
+	 *
+	 * @return a new temporary directory
+	 */
+	private Path newExclusiveTemporaryDirectory() {
+		Path result = FilenameToStream.getTempDirectory();
+		result.toFile().deleteOnExit();
+		return result;
 	}
 
 	private File writeToNewTempFile(String name, byte[] bs) {
-		final File f = new TLAFile(rndPrefix + File.separator + name, this);
+		final File f = new TLAFile(tmpDir.resolve(name).toString(), this);
 		f.deleteOnExit();
 
 		FileOutputStream outputStream = null;
