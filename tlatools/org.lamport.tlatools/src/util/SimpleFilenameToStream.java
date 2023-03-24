@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Sat 28 June 2008 at  0:23:49 PST by lamport
 
 package util;
@@ -46,7 +47,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * being the last element of this array.
    */
   private String[] libraryPaths;
-  private final Path tmpDir = FilenameToStream.getTempDirectory();
+  protected final Path tmpDir = FilenameToStream.getTempDirectory();
 
   public SimpleFilenameToStream() {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
