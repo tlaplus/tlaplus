@@ -584,21 +584,41 @@ public class FileUtil
         return new DataOutputStream(new FileOutputStream(new File(filename)));
     }
 
-	public static File createTempFile(final String fileName) {
-		final File file;
-		// Create the temp file in Java's temp dir unless TLC's metaDir has been set. The
-		// latter won't be the case when SANY is invoked directly or during the early
-		// startup phase of TLC.
-		if (TLCGlobals.metaDir != null) {
-			file = new File(TLCGlobals.metaDir + separatorChar + fileName);
-		} else {
-			final String tDir = System.getProperty("java.io.tmpdir");
-			file = new File(tDir + separatorChar + fileName);
-		}
-		// Let's get rid of the file when TLC terminates.
-		file.deleteOnExit();
-		return file;
-	}
+    /**
+     * Find a safe place to write a temporary file with the given name.  To prevent
+     * clashes with concurrent runs of other tools, this method creates a new
+     * directory to contain the file. The file and directory will be marked for
+     * cleanup using {@link File#deleteOnExit()}.
+     *
+     * <p>Note that after this method returns, the parent directory will exist but
+     * the new file itself will not.  Callers are expected to create the actual file
+     * themselves.
+     *
+     * @param fileName the name of the file to create
+     * @return a {@link File} pointing to a location for the new file
+     */
+    public static File createTempFile(final String fileName) throws IOException {
+        final File parentDirectory;
+        final File file;
+
+        // Create the temp file in Java's temp dir unless TLC's metaDir has been set. The
+        // latter won't be the case when SANY is invoked directly or during the early
+        // startup phase of TLC.
+        if (TLCGlobals.metaDir != null) {
+            parentDirectory = Files.createTempDirectory(Paths.get(TLCGlobals.metaDir), null).toFile();
+        } else {
+            parentDirectory = Files.createTempDirectory(null).toFile();
+        }
+
+        file = new File(parentDirectory, fileName);
+
+        // Let's get rid of the file when TLC terminates.
+        // Reminder: files will be deleted in the REVERSE of the order they are
+        // registered using deleteOnExit().
+        parentDirectory.deleteOnExit();
+        file.deleteOnExit();
+        return file;
+    }
 	
 	
 	/**
