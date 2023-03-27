@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 15:29:56 PST by lamport
 //      modified on Thu Jan 10 11:22:26 PST 2002 by yuanyu
 
@@ -8,6 +9,7 @@ package tlc2.tool;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,7 +106,7 @@ public class Simulator {
 		// Initialization for liveness checking
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
-				final String tmpDir = System.getProperty("java.io.tmpdir");
+				final String tmpDir = Files.createTempDirectory("tlc-simulator-").toString();
 				liveCheck = new LiveCheck(this.tool.getLiveness(), tmpDir, new DummyBucketStatistics());
 			} else {
 				liveCheck = new LiveCheck1(this.tool.getLiveness());
