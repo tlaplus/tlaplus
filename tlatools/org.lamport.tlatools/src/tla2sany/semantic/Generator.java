@@ -4871,7 +4871,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// Create a vector of all declarations of CONSTANTS and VARIABLES
 		// in the context of the module being instantiated (instancee).
 		// These are all the symbols that must have substitutions defined
-		// for them in the instantiation, either explictly or implicitly.
+		// for them in the instantiation, either explicitly or implicitly.
 		Vector decls = instanceeCtxt.getByClass(OpDeclNode.class);
 
 		// Create a SubstInNode to be used as a template for the SubstInNodes

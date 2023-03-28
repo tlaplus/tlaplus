@@ -83,7 +83,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		public String getTypeString() {
 			// Don't show the meaningless string "DebuggerValue" but "Evaluation pending" if
 			// a user hovers over this value in the variables view.
-			return "Evaluation pending... (value has not be determined yet)";
+			return "Evaluation pending... (value has not been determined yet)";
 		}
 	}
 	
