@@ -85,6 +85,8 @@ public class List {
   /**
    * This method is the car equivalent. It returns the first
    * element of the list.
+   * 
+   * TLA+ calls this the Head operator.
    */
   public final Object car() {
     // Assert.check(this.first != null);
@@ -94,6 +96,8 @@ public class List {
   /**
    * This method is the cdr equivalent. It returns a new list
    * of removing the first front element.
+   * 
+   * TLA+ calls this the Tail operator.
    */
   public final List cdr() {
     // Assert.check(this.first != null);

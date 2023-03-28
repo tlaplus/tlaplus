@@ -110,6 +110,18 @@ public class Assert
         throw new TLCRuntimeException(errorCode, MP.getMessage(errorCode));
     }
 
+    public static void check(boolean condition, String reason, SemanticNode expr, Context ctxt) throws RuntimeException
+    {
+        if (!condition) 
+        {
+	    	if (expr == null) {
+	    		fail(reason);
+	    	} else {
+	    		throw new TLCDetailedRuntimeException(reason, expr, ctxt);
+	    	}
+        }
+    }
+
     /**
      * Checks whether the condition is true. Throws an unchecked exception if otherwise
      * @param condition condition the condition to check
