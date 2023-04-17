@@ -637,9 +637,13 @@ public abstract class AbstractChecker
 	public long getStatesGenerated() {
 		return -1;
 	}
+	
+	public long getInitialStatesGenerated() {
+		return -1;
+	}
 
 	public final Value getStatistics() {
-		final UniqueString[] n = new UniqueString[6];
+		final UniqueString[] n = new UniqueString[7];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.QUEUE;
@@ -647,18 +651,21 @@ public abstract class AbstractChecker
 		
 		n[1] = TLCGetSet.DISTINCT;
 		v[1] = TLCGetSet.narrowToIntValue(getDistinctStatesGenerated());
-
-		n[2] = TLCGetSet.GENERATED;
-		v[2] = TLCGetSet.narrowToIntValue(getStatesGenerated());
 		
-		n[3] = TLCGetSet.DIAMETER;
-		v[3] = TLCGetSet.narrowToIntValue(getProgress());
-		
-		n[4] = TLCGetSet.DURATION;
-		v[4] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+		n[2] = TLCGetSet.INITIAL;
+		v[2] = TLCGetSet.narrowToIntValue(getInitialStatesGenerated());
 
-		n[5] = TLCGetSet.WORKER;
-		v[5] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
+		n[3] = TLCGetSet.GENERATED; 
+		v[3] = TLCGetSet.narrowToIntValue(getStatesGenerated());
+		
+		n[4] = TLCGetSet.DIAMETER;
+		v[4] = TLCGetSet.narrowToIntValue(getProgress());
+		
+		n[5] = TLCGetSet.DURATION;
+		v[5] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+
+		n[6] = TLCGetSet.WORKER;
+		v[6] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
 
 		return new RecordValue(n, v, false);
 	}

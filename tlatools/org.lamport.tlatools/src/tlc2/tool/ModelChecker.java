@@ -1024,6 +1024,14 @@ public class ModelChecker extends AbstractChecker
 		}
     	return sum;
     }
+	
+	/* (non-Javadoc)
+	 * @see tlc2.tool.AbstractChecker#getInitialStatesGenerated()
+	 */
+	@Override
+	public long getInitialStatesGenerated() {
+		return numberOfInitialStates;
+	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.AbstractChecker#getProgress()

@@ -134,6 +134,8 @@ public class TLCGetSet implements ValueConstants {
 	
 	// BFS: The number of distinct states.
 	public static final UniqueString DISTINCT = UniqueString.uniqueStringOf("distinct");
+	// BFS: The number of initial states.
+	public static final UniqueString INITIAL = UniqueString.uniqueStringOf("initial");
 	// BFS: The number of unexplored distinct states.
 	public static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
 
