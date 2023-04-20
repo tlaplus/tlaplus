@@ -224,6 +224,17 @@ jobs:
           token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
           repository: tlaplus/CommunityModules
           event-type: tlaplus-dispatch
+          
+      ##
+      ## Trigger build of VSCode extension.
+      ##
+    - name: VSCode nightly build
+      if: matrix.operating-system == 'ubuntu-latest'
+      uses: peter-evans/repository-dispatch@v2
+      with:
+          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+          repository: tlaplus/vscode-tlaplus
+          event-type: tlaplus-dispatch
 
       ################################# macOS #################################
 
