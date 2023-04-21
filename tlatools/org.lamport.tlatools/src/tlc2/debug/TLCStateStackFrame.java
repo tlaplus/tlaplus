@@ -339,7 +339,10 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			if (bp.getCondition() != null && !bp.getCondition().isEmpty()) {
 				final ModuleNode module = tool.getSpecProcessor().getRootModule();
 				final OpDefNode odn = module.getOpDef(bp.getCondition());
-				
+				// odn == null should be redundant because of check in
+				// tlc2.debug.TLCDebugger.setBreakpoints(SetBreakpointsArguments)
+				if (odn != null) {
+					
 				// Wrap in tool.eval(() -> to evaluate the debug expression *outside* of the
 				// debugger. In that case, we would have to handle the exceptions below.
 //				fire = tool.eval(() -> {
@@ -362,9 +365,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						// the spec, the same error will be raised like for any other broken expression
 						// in the spec. In other words, a user may use the debugger to debug a debug
 						// expression.
+						
+						// Swallow the exception to make TLC continue instead of crash.
 					}
 //					return false;
 //				});
+				}
 			}
 			return fire;
 		}
