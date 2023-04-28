@@ -1413,9 +1413,11 @@ public abstract class Tool
 	case OPCODE_cdot:
 	  {
 			if (Boolean.getBoolean(CDOT_KEY)) {
-				Assert.check(c.isEmpty(),
-						"The current version of TLC only supports basic action composition involving no substitution/instantiation.",
-						pred, c);
+// This assertion test is insufficient to prevent the inadvertent activation of the experimental cdot feature within substitution,
+// such as refinement mapping, as the context could be an ordinary context like quantification.
+//				Assert.check(c.isEmpty(),
+//						"The current version of TLC only supports basic action composition involving no substitution/instantiation.",
+//						pred, c);
 				
 				// next-state relation:
 				// s -(A \cdot B)-> u  <=>  s -A-> t -B-> u
@@ -1437,7 +1439,6 @@ public abstract class Tool
 					for (int j = 0; j < iss2.size(); j++) {
 						u = iss2.elementAt(j);
 						nss.addElement(s0, action, u);
-						resState = u;
 					}
 				}
 				return resState;
