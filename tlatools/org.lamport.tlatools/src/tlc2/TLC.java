@@ -182,8 +182,8 @@ public class TLC {
     private final Map<String, Object> params;
     
     private int debugPort = -1;
-    private boolean suspend = true;
-    private boolean halt = true;
+    private boolean suspend = !Boolean.getBoolean(TLC.class.getName() + ".nosuspend");
+    private boolean halt = !Boolean.getBoolean(TLC.class.getName() + ".nohalt");
     
     /**
      * Interface to retrieve model properties.
@@ -492,7 +492,8 @@ public class TLC {
                 index++;
                 debugPort = 4712;  //standard port.
 				if ((index < args.length) && (args[index].contains("port=") || args[index].contains("nosuspend")
-						|| args[index].contains("nohalt"))) {
+						|| args[index].contains("nohalt") || args[index].contains("suspend")
+						|| args[index].contains("halt"))) {
 					suspend = !args[index].toLowerCase().contains("nosuspend");
 					halt = !args[index].toLowerCase().contains("nohalt");
 
