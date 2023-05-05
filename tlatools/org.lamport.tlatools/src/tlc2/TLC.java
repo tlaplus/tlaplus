@@ -9,6 +9,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,8 +33,10 @@ import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.tool.DFIDModelChecker;
+import tlc2.tool.IHooks;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
+import tlc2.tool.NoopHooks;
 import tlc2.tool.Simulator;
 import tlc2.tool.SingleThreadedSimulator;
 import tlc2.tool.fp.FPSet;
@@ -199,6 +202,11 @@ public class TLC {
      * Trace exploration spec generator.
      */
     private TraceExplorationSpec teSpec;
+
+    /**
+     * Hooks that are called in some points of the application.
+     */
+    private IHooks hooks = new NoopHooks();
     
     /**
      * Initialization
@@ -304,6 +312,9 @@ public class TLC {
     {
         final TLC tlc = new TLC();
 
+        tlc.buildHooks();
+        tlc.getHooks().preInit();
+
         // Try to parse parameters.
         if (!tlc.handleParameters(args)) {
             // This is a tool failure. We must exit with a non-zero exit
@@ -349,7 +360,9 @@ public class TLC {
 		ms.setSpecName(tlc.getSpecName());
 
         // Execute TLC.
+        tlc.getHooks().preProcess();
         final int errorCode = tlc.process();
+        tlc.getHooks().postProcess();
 
         // Send logged output by email.
         //
@@ -370,6 +383,24 @@ public class TLC {
 
         // Be explicit about tool success.
         System.exit(EC.ExitStatus.errorConstantToExitStatus(errorCode));
+    }
+
+    private void buildHooks() { 
+        String hooksProp = System.getProperty("tlc2.tool.IHooks");
+        if (hooksProp == null) {
+            return;
+        }
+        
+        Class hooksClass = null;
+        try { hooksClass = Class.forName(hooksProp); } catch (Exception ignore) { return; }
+
+        Constructor<IHooks> constructor;
+
+        try { constructor = (Constructor<IHooks>)hooksClass.getConstructor(TLC.class); } catch (Exception ignore) { return; } 
+
+         try { 
+            this.setHooks(constructor.newInstance(this)); 
+         } catch (Exception ignore) {}
     }
     
 	// false if the environment (JVM, OS, ...) makes model checking impossible.
@@ -1404,6 +1435,14 @@ public class TLC {
     
     public void setStateWriter(IStateWriter sw) {
     	this.stateWriter = sw;
+    }
+
+    public void setHooks(IHooks iHooks) {
+    	this.hooks = iHooks;
+    }
+
+    public IHooks getHooks() {
+    	return this.hooks;
     }
 
     /**
