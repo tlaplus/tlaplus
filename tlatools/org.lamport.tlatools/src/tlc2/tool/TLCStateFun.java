@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 15:29:58 PST by lamport
 //      modified on Fri Jul 20 23:54:51 PDT 2001 by yuanyu
 
@@ -26,9 +27,9 @@ import util.WrongInvocationException;
  * can not be used in getInitStates and getNextStates.
  */
 public final class TLCStateFun extends TLCState {
-  private SymbolNode name;
-  private IValue value;
-  private TLCStateFun next;
+  private final SymbolNode name;
+  private final IValue value;
+  private final TLCStateFun next;
 
   public final static TLCState Empty = new TLCStateFun(null, null, null);
   
@@ -64,10 +65,16 @@ public final class TLCStateFun extends TLCState {
   }
   
   public final TLCState copy() {
-      // The following code added blindly by LL on 28 May 2010
-      // to fix a bug.  I have no idea what's going on here.
-       return new TLCStateFun(this.name, this.value, this.next);
-      // throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
+    // NOTE 2023/4/10: Since instances of this class are immutable, there is no need
+    // to create an actual copy.  In addition to being more performant, this fixes a
+    // latent bug: LL's code below can copy the `Empty` TLCState, creating "corrupt"
+    // instances of TLCStateFun that have null fields but are not equal to `Empty`.
+    return this;
+    // The following code added blindly by LL on 28 May 2010
+    // to fix a bug.  I have no idea what's going on here.
+    // return new TLCStateFun(this.name, this.value, this.next);
+    // NOTE: the original implementation threw an exception:
+    // throw new WrongInvocationException("TLCStateFun.copy: This is a TLC bug.");
   }
   
   public final TLCState deepCopy() {
