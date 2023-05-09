@@ -1,4 +1,4 @@
--------- MODULE CdotWithContextB ---------
+-------- MODULE CdotWithContextD ---------
 EXTENDS Naturals
 
 VARIABLE x, S
@@ -17,7 +17,7 @@ Next ==
 	/\ UNCHANGED S
     /\ \E n \in S :
           /\ n \in S
-          /\ A(n) \cdot B(n)
+          /\ ( A(n) /\ S' = {} ) \cdot B(n) \* Next false
 
 Spec ==
     Init /\ [][Next]_<<S,x>>
@@ -26,6 +26,6 @@ Prop ==
 	[][Next]_<<S,x>>
 
 Prop2 ==
-	ENABLED Next
+	~(ENABLED Next)
 
 =======

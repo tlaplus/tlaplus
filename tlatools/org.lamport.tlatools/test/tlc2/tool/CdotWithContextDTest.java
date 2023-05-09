@@ -36,10 +36,10 @@ import tlc2.output.EC;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class CdotWithContextBTest extends ModelCheckerTestCase {
+public class CdotWithContextDTest extends ModelCheckerTestCase {
 
-	public CdotWithContextBTest() {
-		super("CdotWithContextB", "cdot");
+	public CdotWithContextDTest() {
+		super("CdotWithContextD", "cdot");
 		System.setProperty(Tool.CDOT_KEY, Boolean.TRUE.toString());
 	}
 
@@ -60,7 +60,7 @@ public class CdotWithContextBTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "3", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "1", "1", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
 	}
 }

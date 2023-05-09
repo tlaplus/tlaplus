@@ -199,4 +199,20 @@ public abstract class TLCState implements Cloneable, Serializable {
 	public TLCState evalStateLevelAlias() {
 		return this;
 	}
+
+	/**
+	 * Construct a state t such that its values are equal to the values of the
+	 * current state for which the corresponding value in the prototype is non-null.
+	 */
+	public TLCState copyWith(final TLCState prototype) {
+		final TLCState s = createEmpty();
+		for(int i = 0; i < vars.length; i++) {
+	        final UniqueString key = vars[i].getName();
+	        final IValue val = prototype.lookup(key);
+	        if (val != null) {
+	        	s.bind(key, this.lookup(key));
+	        }
+	    }
+		return this.copy(s);
+	}
 }

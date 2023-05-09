@@ -1421,7 +1421,7 @@ public abstract class Tool
 				
 				// next-state relation:
 				// s -(A \cdot B)-> u  <=>  s -A-> t -B-> u
-				TLCState t = TLCState.Empty.createEmpty();
+				TLCState t = s0.copyWith(s1);
 				
 				// s -A-> t
 				final StateVec iss = new StateVec(0);
@@ -1430,7 +1430,7 @@ public abstract class Tool
 				// t -B-> u
 				int sz = iss.size();
 				for (int i = 0; i < sz; i++) {
-					TLCState u = TLCState.Empty.createEmpty();
+					TLCState u = s1.copy();
 					t = iss.elementAt(i);
 					final StateVec iss2 = new StateVec(0);
 					this.getNextStates(action, args[1], acts, c, t, u, iss2, cm);
@@ -2716,7 +2716,16 @@ public abstract class Tool
 				if (Boolean.getBoolean(CDOT_KEY)) {
 					// Properties:
 					// s -(A \cdot B)-> u  <=>  s -A-> t -B-> u
-					TLCState t = TLCState.Empty.createEmpty();
+
+					// Let A and B be two sub-actions of the next-state relation, and let v and c be
+					// two variables such that c appears in either A or B, while v does not appear
+					// in both A and B. We cannot infer the value of variable v at state t from the
+					// initial state s0 and the *partial* state s1, unlike the handling of \cdot in
+					// the evaluation of the next-state relation as previously discussed, because s1
+					// is no longer partial. However, this is not a concern because the variable v
+					// will be addressed elsewhere, given that it does not appear in both A and B,
+					// and therefore, in the composed A \cdot B.
+					TLCState t = TLCState.Empty.createEmpty();  // not t = s0.copyWith(s1); !
 					
 					// s -A-> t
 					final StateVec iss = new StateVec(0);
@@ -3292,7 +3301,7 @@ public abstract class Tool
 				if (Boolean.getBoolean(CDOT_KEY)) {
 					// ENABLED:
 					// s -(A \cdot B)-> u  <=>  s -A-> t -B-> u
-					TLCState t = TLCState.Empty.createEmpty();
+					TLCState t = s0.copyWith(s1);
 					final StateVec iss = new StateVec(0);
 					this.getNextStates(Action.UNKNOWN, args[0], ActionItemList.Empty, c, s0, t, iss, cm);
 					final int sz = iss.size();
