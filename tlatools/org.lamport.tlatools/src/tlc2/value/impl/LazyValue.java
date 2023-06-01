@@ -10,7 +10,6 @@ package tlc2.value.impl;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Objects;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.EvalControl;
@@ -142,7 +141,12 @@ public class LazyValue extends Value {
    *         computing the requested value would require work
    */
   public Value getCachedValue(Tool tool, TLCState s0, TLCState s1, int control) {
-    if (val != null && isCachable() && tool.getId() == toolID && Objects.equals(s0, this.s0) && Objects.equals(s1, this.s1) && control == this.control) {
+    if (val != null &&
+            isCachable() &&
+            tool.getId() == toolID &&
+            TLCState.isSubset(s0, this.s0).isDefinitely(true) &&
+            TLCState.isSubset(s1, this.s1).isDefinitely(true) &&
+            control == this.control) {
       return val;
     }
     return null;
@@ -169,8 +173,8 @@ public class LazyValue extends Value {
       if (isCachable()) {
         this.val = res;
         this.toolID = tool.getId();
-        this.s0 = s0 == null ? null : s0.copy();
-        this.s1 = s1 == null ? null : s1.copy();
+        this.s0 = s0 != null ? s0.copy() : null;
+        this.s1 = s1 != null ? s1.copy() : null;
         this.control = control;
         ++cacheCount;
       }
