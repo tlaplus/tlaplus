@@ -224,7 +224,18 @@ jobs:
           token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
           repository: tlaplus/CommunityModules
           event-type: tlaplus-dispatch
-          
+
+      ##
+      ## Trigger CI run of tlaplus/examples as integration tests.
+      ##
+    - name: Integration tests with tlaplus/examples
+      if: matrix.operating-system == 'ubuntu-latest'
+      uses: peter-evans/repository-dispatch@v1
+      with:
+          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+          repository: tlaplus/examples
+          event-type: tlaplus-dispatch
+
       ##
       ## Trigger build of VSCode extension.
       ##

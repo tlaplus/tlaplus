@@ -4,6 +4,8 @@ on: [pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      TLAPS_VERSION: 202210041448
     steps:
 
     - uses: actions/checkout@v2
@@ -49,9 +51,38 @@ jobs:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: '0'
-    - name: Run Examples
+    - name: Download tlaplus/examples test dependencies
       run: |
-          cp tlatools/org.lamport.tlatools/dist/tla2tools.jar examples/
-          cd examples/
-          wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
-          bash .github/workflows/run.sh
+        # Get TLA⁺ community modules
+        wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+        wget https://github.com/tlaplus/CommunityModules/archive/master.tar.gz
+        tar -xf master.tar.gz
+        rm master.tar.gz
+        mv CommunityModules-master CommunityModules
+        # Get TLAPS
+        wget https://github.com/tlaplus/tlapm/archive/refs/tags/$TLAPS_VERSION.tar.gz
+        tar -xf $TLAPS_VERSION.tar.gz
+        rm $TLAPS_VERSION.tar.gz
+        mv tlapm-$TLAPS_VERSION tlapm
+    - name: Parse tlaplus/examples modules
+      run: |
+        python examples/.github/scripts/parse_modules.py                    \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path tlapm/library                                    \
+          --community_modules_path CommunityModules/modules                 \
+          --manifest_path examples/manifest.json
+    - name: Model-check small tlaplus/examples models
+      run: |
+        python examples/.github/scripts/check_small_models.py               \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path tlapm/library                                    \
+          --community_modules_jar_path CommunityModules-deps.jar            \
+          --manifest_path examples/manifest.json
+    - name: Smoke-test large tlaplus/examples models
+      run: |
+        python examples/.github/scripts/smoke_test_large_models.py          \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path tlapm/library                                    \
+          --community_modules_jar_path CommunityModules-deps.jar            \
+          --manifest_path examples/manifest.json
+
