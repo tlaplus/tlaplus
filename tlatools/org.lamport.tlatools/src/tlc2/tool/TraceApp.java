@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-public interface TraceApp {
+import tlc2.tool.impl.SymbolNodeValueLookupProvider;
+
+public interface TraceApp extends SymbolNodeValueLookupProvider {
 
   /* Reconstruct the initial state whose fingerprint is fp. */
   public TLCStateInfo getState(long fp);

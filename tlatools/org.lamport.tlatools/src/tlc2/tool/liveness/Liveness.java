@@ -33,8 +33,6 @@ import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
-import tlc2.value.impl.EvaluatingValue;
-import tlc2.value.impl.MethodValue;
 import util.Assert;
 import util.ToolIO;
 
@@ -105,15 +103,8 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		 * incurred at startup (during the construction of the liveness tableau).
 		 * Additionally, it only checks the level for MethodValues and EvaluatingValues.
 		 */
-		if (level == LevelConstants.ConstantLevel && expr instanceof OpApplNode) {
-			final Object realDef = tool.lookup(((OpApplNode) expr).getOperator(), Context.Empty, false);
-			if (realDef instanceof MethodValue || realDef instanceof EvaluatingValue) {
-				// The current level is determined by the maximum level of the arguments in the
-				// operator's application.
-				for (SymbolNode p : expr.getAllParams()) {
-					level = Math.max(level, p.getLevel());
-				}
-			}
+		if (level == LevelConstants.ConstantLevel) {
+			level = tool.getLevelBound(expr, con, tool.getId());
 		}
 
 		if (level == LevelConstants.ConstantLevel) {
