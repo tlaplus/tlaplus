@@ -1850,29 +1850,117 @@ public abstract class Tool
 //          if (val instanceof Supplier) {
 //        	  val = ((Supplier) val).get();
 //          }
-          
+
           // First, unlazy if it is a lazy value. We cannot use the cached
           // value when s1 == null or isEnabled(control).
-			if (val instanceof LazyValue) {
-				final LazyValue lv = (LazyValue) val;
-				if (s1 == null) {
-					// NOTE 2023/4/7: Strictly speaking, this branch is not necessary.  TLC could return
-					// `lv.getValue(...)` here as it does in the else-branch below.  Today I considered
-					// removing it since it prevents LazyValue's caching benefits in some cases.
-					// However, I retained it for two reasons:
-					//   (1) There are some debugger-related tests that make assertions about when certain
-					//       LazyValues are evaluated and cached.  Those tests fail if TLC skips this branch.
-					//       I suspect those tests need some additional thought; if it is really important
-					//       that TLC not cache LazyValues during certain debugger actions, it might need a
-					//       stronger prevention mechanism.
-					//   (2) I am worried that this branch serves some subtle purpose I do not yet understand.
-					//       I do not want to remove it unless I am sure that I understand why it was here to
-					//       begin with.
-					val = this.eval(lv.expr, lv.con, s0, TLCState.Null, control, lv.getCostModel());
-				} else {
-					return lv.getValue(this, s0, s1, control);
-				}
-			}
+          if (val instanceof LazyValue) {
+              final LazyValue lv = (LazyValue) val;
+              if (s1 == null) {
+                  // NOTE 2023/4/7: Strictly speaking, this branch is not necessary.  TLC could return
+                  // `lv.getValue(...)` here as it does in the else-branch below.  Today I considered
+                  // removing it since it prevents LazyValue's caching benefits in some cases.
+                  // However, I retained it for two reasons:
+                  //   (1) There are some debugger-related tests that make assertions about when certain
+                  //       LazyValues are evaluated and cached.  Those tests fail if TLC skips this branch.
+                  //       I suspect those tests need some additional thought; if it is really important
+                  //       that TLC not cache LazyValues during certain debugger actions, it might need a
+                  //       stronger prevention mechanism.
+                  //   (2) I am worried that this branch serves some subtle purpose I do not yet understand.
+                  //       I do not want to remove it unless I am sure that I understand why it was here to
+                  //       begin with.
+                  val = this.eval(lv.expr, lv.con, s0, TLCState.Null, control, lv.getCostModel());
+              } else {
+                  // NOTE 2023/6/15: TLC has historically had a few critical bugs due to mishandling of cached
+                  // LazyValues.  With a little refactoring we think we have finally squashed them by moving
+                  // the safety responsibility out of this method and into the LazyValue class itself.  So,
+                  // this branch can be simply:
+                  return lv.getValue(this, s0, s1, control);
+                  // However, I am retaining the big comment that used to live here about LazyValues.  It contains
+                  // some out-of-date notes about the code, but also some useful insights that are still relevant.
+                  //
+                  // ------------------------------------------------------------------------------------------------
+                  // Never use cached LazyValues in an ENABLED expression. This is why all
+                  // this.enabled* methods pass EvalControl.Enabled (the only exception being the
+                  // call on line line 2799 which passes EvalControl.Primed). This is why we can
+                  // be sure that ENABLED expressions are not affected by the caching bug tracked
+                  // in Github issue 113 (see below).
+                  //
+                  // This check has been suggested by Yuan Yu on 01/15/2018:
+                  //
+                  // If init-states are being generated, level has to be <= ConstantLevel for
+                  // caching/LazyValue to be allowed. If next-states are being generated, level
+                  // has to be <= VariableLevel. The level indicates if the expression to be
+                  // evaluated contains only constants, constants & variables, constants &
+                  // variables and primed variables (thus action) or is a temporal formula.
+                  //
+                  // This restriction is in place to fix Github issue 113
+                  // (https://github.com/tlaplus/tlaplus/issues/113) -
+                  // TLC can generate invalid sets of init or next-states caused by broken
+                  // LazyValue evaluation. The related tests are AssignmentInit* and
+                  // AssignmentNext*. Without this fix, TLC essentially reuses a stale lv.val when
+                  // it needs to re-evaluate res because the actual operands to eval changed.
+                  // Below is Leslie's formal description of the bug:
+                  //
+                  // The possible initial values of some variable  var  are specified by a subformula
+                  //
+                  // F(..., var, ...)
+                  //
+                  // in the initial predicate, for some operator F such that expanding the
+                  // definition of F results in a formula containing more than one occurrence of
+                  // var , not all occurring in separate disjuncts of that formula.
+                  //
+                  // The possible next values of some variable  var  are specified by a subformula
+                  //
+                  // F(..., var', ...)
+                  //
+                  // in the next-state relation, for some operator F such that expanding the
+                  // definition of F results in a formula containing more than one occurrence of
+                  // var' , not all occurring in separate disjuncts of that formula.
+                  //
+                  // An example of the first case is an initial predicate  Init  defined as follows:
+                  //
+                  // VARIABLES x, ...
+                  // F(var) == \/ var \in 0..99 /\ var % 2 = 0
+                  //           \/ var = -1
+                  // Init == /\ F(x)
+                  //         /\ ...
+                  //
+                  // The error would not appear if  F  were defined by:
+                  //
+                  // F(var) == \/ var \in {i \in 0..99 : i % 2 = 0}
+                  //           \/ var = -1
+                  //
+                  // or if the definition of  F(x)  were expanded in  Init :
+                  //
+                  // Init == /\ \/ x \in 0..99 /\ x % 2 = 0
+                  //            \/ x = -1
+                  //         /\ ...
+                  //
+                  // A similar example holds for case 2 with the same operator F and the
+                  // next-state formula
+                  //
+                  // Next == /\ F(x')
+                  //         /\ ...
+                  //
+                  // The workaround is to rewrite the initial predicate or next-state relation so
+                  // it is not in the form that can cause the bug. The simplest way to do that is
+                  // to expand (in-line) the definition of F in the definition of the initial
+                  // predicate or next-state relation.
+                  //
+                  // Note that EvalControl.Init is only set in the scope of this.getInitStates*,
+                  // but not in the scope of methods such as this.isInModel, this.isGoodState...
+                  // which are invoked by DFIDChecker and ModelChecker#doInit and doNext. These
+                  // invocation however don't pose a problem with regards to issue 113 because
+                  // they don't generate the set of initial or next states but get passed fully
+                  // generated/final states.
+                  //
+                  // !EvalControl.isInit(control) means Tool is either processing the spec in
+                  // this.process* as part of initialization or that next-states are being
+                  // generated. The latter case has to restrict usage of cached LazyValue as
+                  // discussed above.
+                  // ------------------------------------------------------------------------------------------------
+              }
+          }
 
 			Value res = null;
           if (val instanceof OpDefNode) {
