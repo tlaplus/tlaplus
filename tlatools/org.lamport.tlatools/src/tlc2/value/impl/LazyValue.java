@@ -146,7 +146,7 @@ public class LazyValue extends Value {
             tool.getId() == toolID &&
             TLCState.isSubset(s0, this.s0).isDefinitely(true) &&
             TLCState.isSubset(s1, this.s1).isDefinitely(true) &&
-            control == this.control) {
+            EvalControl.semanticallyEquivalent(control, this.control).isDefinitely(true)) {
       return val;
     }
     return null;

@@ -5,6 +5,8 @@
 
 package tlc2.tool;
 
+import tlc2.util.PartialBoolean;
+
 public class EvalControl {
 
   public static final int KeepLazy = 1;
@@ -81,4 +83,46 @@ public class EvalControl {
 	public static boolean isConst(int control) {
 		return isSet(control, Const);
 	}
+
+    /**
+     * Determine whether two {@link EvalControl} settings are semantically equivalent.  Formally,
+     * they are semantically equivalent if
+     * <pre>
+     *     \A expr, context, behavior:
+     *         eval(expr, context, behavior, control1) =
+     *         eval(expr, context, behavior, control2)
+     * </pre>
+     *
+     * <p>Many control settings like {@link #Clear} and {@link #Enabled} are not equivalent; they
+     * will often result in different computed values.
+     *
+     * <p>This function always returns {@link PartialBoolean#YES} when
+     * <code>control1 == control2</code>, and it can identify a small set of other cases where
+     * the inputs are semantically equivalent.
+     *
+     * @param control1 the first control value
+     * @param control2 the second control value
+     * @return whether the values are semantically equivalent
+     */
+    public static PartialBoolean semanticallyEquivalent(int control1, int control2) {
+        // *** CAUTION ***
+        // The implementation of this function is quite subtle.  First we'll define `flagsThatCanBeSafelyIgnored`
+        // as a special whitelist of flags we know won't affect the evaluation outcome.  Each whitelisted flag
+        // has to be carefully justified:
+        //   - KeepLazy: this is a performance hint that affects handling of function definitions.  Although it
+        //     can change the exact structure of the IValue returned by eval(...), it does not affect the semantic
+        //     meaning of that value.
+        //   - Init: this is a flag to indicate that we are evaluating part of a specification's initial condition.
+        //     It is used for debugging.
+        //   - Const: similar to Init, this is a flag to indicate that we are evaluating part of a specification's
+        //     constant definitions.  It is used for debugging.
+        int flagsThatCanBeSafelyIgnored = KeepLazy | Init | Const;
+
+        // Compute a mask capturing all possible flags that CAN'T be safely ignored.
+        int mask = ~flagsThatCanBeSafelyIgnored;
+
+        // If the two inputs are identical on all flags not present in `flagsThatCanBeSafelyIgnored`, then they are
+        // certainly equivalent.  Otherwise, conservatively return `MAYBE`.
+        return (control1 & mask) == (control2 & mask) ? PartialBoolean.YES : PartialBoolean.MAYBE;
+    }
 }
