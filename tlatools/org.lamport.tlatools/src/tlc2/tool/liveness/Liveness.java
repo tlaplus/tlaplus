@@ -226,6 +226,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					LiveExprNode kid = astToLive(tool, body, con1);
 					res.addDisj(kid);
 				}
+				if (res.getCount() == 0) {
+					// This is a contradiction because the context (Enum) was the empty set.
+					return LNBool.FALSE;
+				}
 				int level = res.getLevel();
 				if (level > LevelConstants.ActionLevel) {
 					return res;
@@ -252,6 +256,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				while ((con1 = Enum.nextElement()) != null) {
 					LiveExprNode kid = astToLive(tool, body, con1);
 					res.addConj(kid);
+				}
+				if (res.getCount() == 0) {
+					// This is a tautology because the context (Enum) was the empty set.
+					return LNBool.TRUE;
 				}
 				int level = res.getLevel();
 				if (level > LevelConstants.ActionLevel) {
