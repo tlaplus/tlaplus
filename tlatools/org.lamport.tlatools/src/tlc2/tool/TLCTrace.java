@@ -415,8 +415,8 @@ public class TLCTrace {
 		if (s2 == null) {
 			lastState = null;
 		}
-		sinfo = this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo);
-		StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++idx);
+		StatePrinter.printInvariantViolationStateTraceState(
+				this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo), lastState, ++idx);
 		lastState = sinfo.state;
 
 		// Print s2:

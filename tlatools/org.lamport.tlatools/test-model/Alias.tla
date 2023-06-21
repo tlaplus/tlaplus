@@ -52,7 +52,7 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           TLCGetAction |-> TLCGet("action"),
           lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
          ELSE 
-         [y |-> y, \* x and y reordered.
+         [yy |-> y, \* x and y reordered.
           x |-> x, 
           a |-> x' - x, 
           b |-> x' = x,
