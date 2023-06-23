@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 15:30:01 PST by lamport
 //      modified on Wed Dec  5 23:18:37 PST 2001 by yuanyu
 
@@ -127,9 +128,7 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
   public final TLCState copy() {
     int len = this.values.length;
     IValue[] vals = new IValue[len];
-    for (int i = 0; i < len; i++) {
-      vals[i] = this.values[i];
-    }
+    System.arraycopy(this.values, 0, vals, 0, len);
     return copyExt(new TLCStateMutExt(vals));
   }
 
