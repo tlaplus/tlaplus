@@ -165,7 +165,7 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 						+ "/\\ pc = (A :> \"e3\" @@ B :> \"e2\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
-		assertBackToState(9, "<e2 line 66, col 13 to line 74, col 21 of module OneBitMutex>");
+		assertBackToState(9, "<e2(B) line 66, col 13 to line 74, col 21 of module OneBitMutex>");
 
 		assertUncovered("line 80, col 38 to line 80, col 69 of module OneBitMutex: 0\n"
 				+ "line 96, col 16 to line 96, col 47 of module OneBitMutex: 0\n"

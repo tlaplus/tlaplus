@@ -291,7 +291,7 @@ public abstract class Tool
           this.getActions(next1.getBody(), con, opDefNode, cm);
         }
         else {
-          Action action = new Action(next1, con, opDefNode);
+          Action action = new Action(this, next1, con, opDefNode);
           this.actionVec.addElement(action);
         }
         return;
@@ -306,7 +306,7 @@ public abstract class Tool
             this.getActions(next1.getBody(), con, opDefNode, cm);
           }
           else {
-            Action action = new Action(next1, con, opDefNode);
+            Action action = new Action(this, next1, con, opDefNode);
             this.actionVec.addElement(action);
           }
           return;
@@ -362,7 +362,7 @@ public abstract class Tool
         }
       }
       if (opcode == 0) {
-        Action action = new Action(next, con, (OpDefNode) opNode);
+        Action action = new Action(this, next, con, (OpDefNode) opNode);
         this.actionVec.addElement(action);
         return;
       }
@@ -380,7 +380,7 @@ public abstract class Tool
         	  // \E i \in {} : ...
         	  // \E i \in Nat: FALSE
         	  // ...
-        	  this.actionVec.addElement(new Action(next, con, actionName));
+        	  this.actionVec.addElement(new Action(this, next, con, actionName));
         	  return;
           }
           Context econ;
@@ -391,7 +391,7 @@ public abstract class Tool
 					: "AssertionError when creating Actions. This case should have been handled by Enum.isDone conditional above!";
         }
         catch (Throwable e) {
-          Action action = new Action(next, con, actionName);
+          Action action = new Action(this, next, con, actionName);
           this.actionVec.removeAll(cnt);
           this.actionVec.addElement(action);
         }
@@ -408,7 +408,7 @@ public abstract class Tool
     default:
       {
         // We handle all the other builtin operators here.
-        Action action = new Action(next, con, actionName);
+        Action action = new Action(this, next, con, actionName);
         this.actionVec.addElement(action);
         return;
       }

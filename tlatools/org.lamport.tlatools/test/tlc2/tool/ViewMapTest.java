@@ -66,13 +66,13 @@ public class ViewMapTest extends ModelCheckerTestCase {
 		expectedActions.add(isExtendedTLCState()
 				? "<Init line 53, col 9 to line 56, col 63 of module ViewMap>"
 				: TLCStateInfo.INITIAL_PREDICATE);
-		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
-		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
-		expectedActions.add("<lbp line 58, col 14 to line 69, col 60 of module ViewMap>");
-		expectedActions.add("<lbp line 58, col 14 to line 69, col 60 of module ViewMap>");
-		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
-		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
-		expectedActions.add("<lbc line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc(c1) line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc(c2) line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbp(p1) line 58, col 14 to line 69, col 60 of module ViewMap>");
+		expectedActions.add("<lbp(p1) line 58, col 14 to line 69, col 60 of module ViewMap>");
+		expectedActions.add("<lbc(c1) line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc(c1) line 73, col 14 to line 84, col 60 of module ViewMap>");
+		expectedActions.add("<lbc(c2) line 73, col 14 to line 84, col 60 of module ViewMap>");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
 		assertUncovered("line 91, col 60 to line 91, col 73 of module ViewMap: 0");

@@ -4,6 +4,8 @@
 package tlc2.tool;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
@@ -25,6 +27,7 @@ public final class Action implements ToolGlobals, Serializable {
   public final SemanticNode pred;     // Expression of the action
   public final Context con;           // Context of the action
   private final UniqueString actionName;
+  private String parameters = "";
   private OpDefNode opDef = null;
   private int id;
   private final boolean isInitPred;
@@ -52,11 +55,33 @@ public final class Action implements ToolGlobals, Serializable {
 	  this(pred, con, opDef, false, false);
   }
 
+  public Action(ITool t, SemanticNode pred, Context con, OpDefNode opDef) {
+	  this(t, pred, con, opDef, false, false);
+  }
+
   public Action(SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred, final boolean isInternal) {
 	  this(pred, con, opDef != null ? opDef.getName() : UNNAMED_ACTION, isInitPred, isInternal);
 	  // opDef null when action not declared, i.e. Spec == x = 0 /\ ...
 	  // See test64 and test64a and others.
 	  this.opDef = opDef;
+  }
+
+  public Action(ITool t, SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred, final boolean isInternal) {
+	  this(pred, con, opDef, isInitPred, isInternal);
+		// Compute the parameters eagerly instead of lazily in getLocation(str) below.
+		// We have access to the tool here and don't have to look it up from TLCGlobals,
+		// where we would need to distinguish between TLC's modes, such as BFS and
+		// simulation.
+		if (opDef != null && opDef.getParams().length > 0 && !con.isEmpty()) {
+			// Conjoining !con.isEmpty() takes care of not printing Next(line 4, col 5, ...)
+			// for actions with state-level parameters. For example:
+			// VARIABLE x
+			// ...
+			// Next(a) == x' = x + a
+			// Spec == Init /\ [][Next(IF x = x THEN 1 ELSE 1)]_x
+			parameters = "(" + Arrays.stream(opDef.getParams()).map(p -> t.lookup(p, con, false).toString())
+					.collect(Collectors.joining(", ")) + ")";
+		}
   }
 
 /* Returns a string representation of this action.  */
@@ -74,7 +99,7 @@ public final class Action implements ToolGlobals, Serializable {
   }
   
   public final String getLocation(final String actionName) {
-      return "<" + actionName + " " +  pred.getLocation() + ">";
+      return String.format("<%s%s %s>", actionName, parameters, pred.getLocation());
   }
   
   public final boolean isNamed() {
