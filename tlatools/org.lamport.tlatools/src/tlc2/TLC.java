@@ -974,6 +974,36 @@ public class TLC {
                     printErrorMsg("Error: fpbits required.");
                     return false;
                 }
+            } else if (args[index].equals("-progressInterval"))
+            {
+                index++;
+                if (index < args.length)
+                {
+                    try
+                    {
+                    	int progressIntervalS = Integer.parseInt(args[index]);
+
+                    	// make sure it's in valid range
+                    	if (progressIntervalS <= 0) {
+                            
+                            printErrorMsg("Error: expect a positive integer for -progressInterval option.");
+                            return false;
+                    	}
+                    	
+                        // convert seconds to milliseconds
+                        TLCGlobals.progressInterval = progressIntervalS * 1000;
+                    	
+                        index++;
+                    } catch (Exception e)
+                    {
+                        printErrorMsg("Error: A positive integer for progressInterval required. But encountered " + args[index]);
+                        return false;
+                    }
+                } else
+                {
+                    printErrorMsg("Error: progressInterval required.");
+                    return false;
+                }
             } else
             {
                 if (args[index].charAt(0) == '-')
@@ -1579,6 +1609,9 @@ public class TLC {
 															+ "SPEC-directory/states if not specified", true));
     	sharedArguments.add(new UsageGenerator.Argument("-nowarning",
 														"disable all warnings; defaults to reporting warnings", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-progressInterval", "num",
+														"the number of seconds to wait between printing progress updates; \n"
+                                                            + "defaults to 60", true));
     	sharedArguments.add(new UsageGenerator.Argument("-recover", "id",
 														"recover from the checkpoint with the specified id", true));
     	sharedArguments.add(new UsageGenerator.Argument("-terse",
