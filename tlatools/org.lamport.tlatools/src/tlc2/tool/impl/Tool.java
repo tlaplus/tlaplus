@@ -904,8 +904,7 @@ public abstract class Tool
           }
         case LetInKind:
           {
-            LetInNode pred1 = (LetInNode)pred;
-            return this.getNextStates(action, pred1.getBody(), acts, c, s0, s1, nss, cm);
+            return getNextStatesImplLetInKind(action, (LetInNode) pred, acts, c, s0, s1, nss, cm);
           }
         case SubstInKind:
           {
@@ -928,6 +927,19 @@ public abstract class Tool
           }
         }
     	return s1;
+  }
+
+  @ExpectInlined
+  private final TLCState getNextStatesImplLetInKind(final Action action, LetInNode pred1, ActionItemList acts, Context c, TLCState s0, TLCState s1, INextStateFunctor nss, final CostModel cm) {
+    OpDefNode[] letDefs = pred1.getLets();
+    Context c1 = c;
+    for (OpDefNode opDef : letDefs) {
+      if (opDef.getArity() == 0) {
+        Value rhs = new LazyValue(opDef.getBody(), c1, cm);
+        c1 = c1.cons(opDef, rhs);
+      }
+    }
+    return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
 
   @ExpectInlined
