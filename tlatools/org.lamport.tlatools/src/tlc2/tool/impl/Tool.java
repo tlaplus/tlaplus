@@ -477,7 +477,15 @@ public abstract class Tool
         case LetInKind:
           {
             LetInNode init1 = (LetInNode)init;
-            this.getInitStates(init1.getBody(), acts, c, ps, states, cm);
+            OpDefNode[] letDefs = init1.getLets();
+            Context c1 = c;
+            for (OpDefNode opDef : letDefs) {
+              if (opDef.getArity() == 0) {
+                Value rhs = new LazyValue(opDef.getBody(), c1, cm);
+                c1 = c1.cons(opDef, rhs);
+              }
+            }
+            this.getInitStates(init1.getBody(), acts, c1, ps, states, cm);
             return;
           }
         case SubstInKind:
