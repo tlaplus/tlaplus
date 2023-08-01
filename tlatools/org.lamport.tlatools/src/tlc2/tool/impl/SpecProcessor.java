@@ -820,12 +820,45 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION, new String[] { lhs.toString(), rhs });
                 }
-                if ((myVal instanceof OpDefNode)
-                        && rootOpDefs[i].getNumberOfArgs() != ((OpDefNode) myVal).getNumberOfArgs())
+                if ((myVal instanceof OpDefNode))
                 {
-                    Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(), rhs });
+                	OpDefNode odn = (OpDefNode) myVal;
+                	if (rootOpDefs[i].getNumberOfArgs() != odn.getNumberOfArgs()) {
+                		Assert.fail(EC.TLC_CONFIG_WRONG_SUBSTITUTION_NUMBER_OF_ARGS, new String[] { lhs.toString(), rhs });
+                	}
+                	if (Boolean.getBoolean(SpecProcessor.class.getName() + ".allowCyclicRedefinitions")
+							&& odn.isDefinedWith(rootOpDefs[i])) {
+                		// A cyclic redefinition RF is a formula that is defined from another formula
+                		// F, while also re-defining F:
+                		// 
+                		// F == /\ A
+                		//      /\ B
+                		//      /\ C
+                		//
+                		// RF == /\ F
+                		//       /\ D
+                		//
+                		// CONSTANT F <- RF
+                		//
+                		// Note that non-cyclic definitions are handled lazily, i.e., F's
+                		// OpDefNode#tools references RF's OpDefNode, which the
+                		// SymbolNodeValueLookupProvider will look up during evaluation. Here, we
+                		// eagerly replace F's OpDefNode with RF's OpDefNode at all call-sites of F.
+                		//
+                		// The call to substituteFor may or may not substitute. For example, if
+                		// rootOpDefs[i] is an root definition such as Init & Next or Spec,
+                		// substituteFor will be a no-op, because there are OpApplNodes referencing
+                		// rootOpDefs[i].
+                		getRootModule().substituteFor(odn, rootOpDefs[i]);
+
+                		// Call rootOpDefs[i].setToolObject(toolId, myVal) here would cause a stack
+                		// overflow when evaluating/applying RF: RF -> F -> RF -> ...
+                	} else {
+                    	rootOpDefs[i].setToolObject(toolId, myVal);
+                	}
+                } else {
+                	rootOpDefs[i].setToolObject(toolId, myVal);
                 }
-                rootOpDefs[i].setToolObject(toolId, myVal);
                 this.defns.put(lhs, myVal);
                 overriden.add(lhs.toString());
             }

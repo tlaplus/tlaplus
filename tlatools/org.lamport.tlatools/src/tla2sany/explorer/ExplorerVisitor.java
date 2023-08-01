@@ -25,13 +25,17 @@
  ******************************************************************************/
 package tla2sany.explorer;
 
-public class ExplorerVisitor {
+public class ExplorerVisitor<T> {
 
-	public static final ExplorerVisitor NoopVisitor = new ExplorerVisitor();
+	public static final ExplorerVisitor<Void> NoopVisitor = new ExplorerVisitor<>();
 
 	public void preVisit(final ExploreNode exploreNode) {
 	}
 	
 	public void postVisit(final ExploreNode exploreNode) {
+	}
+	
+	public T get() {
+		return null;
 	}
 }
