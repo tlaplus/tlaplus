@@ -354,6 +354,8 @@ public abstract class Tool
                 IValue aval = this.eval(args[i], con, TLCState.Empty, cm);
                 con1 = con1.cons(formals[i], aval);
               }
+              // Recurse/go deeper if none of the (formal) parameters are of state-level or
+              // higher. In other words, only recurse if the params are constant level.
               this.getActions(opDef.getBody(), con1, opDef, cm);
               return;
             }

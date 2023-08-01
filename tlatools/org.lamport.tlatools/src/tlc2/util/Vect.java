@@ -5,9 +5,11 @@
 package tlc2.util;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+import java.util.stream.Stream;
 
 /**
  * TODO it's unclear why we've written our own list implementation; we should consider using existing framework code for this;
@@ -210,4 +212,8 @@ public class Vect<E> implements Serializable {
     return buf.toString();
   }
 
+  public Stream<E> stream() {
+	  return Arrays.stream(elementData, 0, elementCount);
+  }
+  
 }

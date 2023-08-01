@@ -6,9 +6,11 @@ package tla2sany.semantic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -300,6 +302,56 @@ public abstract class SemanticNode
     semNodesTable.put(uid, this);
     visitor.preVisit(this);
     visitor.postVisit(this);
+  }
+  
+  public boolean isDefinedWith(final SemanticNode sn) {
+	final ExplorerVisitor<Boolean> visitor = new ExplorerVisitor<Boolean>() {
+		private boolean cycle = false;
+		private boolean substInNode = false;
+
+		@Override
+		public void preVisit(ExploreNode exploreNode) {
+			if (exploreNode instanceof SubstInNode) {
+				//TODO This is nothing but a band-aid.
+				substInNode = true;
+			}
+			if (exploreNode == sn) {
+				cycle = true;
+			}
+		}
+			
+		public Boolean get() {
+			return cycle && !substInNode;
+		}
+	};
+	this.walkGraph(new Hashtable<>(), visitor);
+	return visitor.get();
+  }
+
+  // Replaces all occurrences of OpDefNode o with OpDefNode s.
+  public void substituteFor(final OpDefNode s, final OpDefNode o) {
+    final Set<OpApplNode> matches = new HashSet<OpApplNode>();
+	// Traverse the semantic graph starting at its root node and find all
+	// applications (OpApplNode) of o and replace them with s, except the
+	// applications of o that appear in the definition of s.
+	// TODO Is there a cheaper way to find all applications (OpApplNode) of a
+	// definition (OpDefNode)?
+	final ExplorerVisitor<Void> explorerVisitor = new ExplorerVisitor<Void>() {
+		public void preVisit(final ExploreNode en) {
+			if (en instanceof OpApplNode) {
+				final OpApplNode oan = (OpApplNode) en;
+				if (oan.getOperator() == o) {
+					if (!s.isDefinedWith(oan)) {
+						matches.add(oan);
+					}
+				}
+			}
+		}
+	};
+	this.walkGraph(new Hashtable<>(), explorerVisitor);
+	// Mutation of the semantic graph, i.e. call to resetOperator below, is delayed
+	// until *after* the graph traversal to prevent unintended side effects.
+	matches.forEach(oan -> oan.resetOperator(s));
   }
 
   /**
