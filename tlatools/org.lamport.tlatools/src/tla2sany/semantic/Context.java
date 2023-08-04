@@ -21,7 +21,7 @@ import util.UniqueString;
 
 // A context contains def/declNodes only.
 // Implements a simple context for symbol decls and defs. Also
-// supports the intial (or global) context of built-in operators.
+// supports the initial (or global) context of built-in operators.
 
 // The pair construct is used to maintain a linked list of
 // definitions.  This in turn will allow the extraction of a full
@@ -29,7 +29,7 @@ import util.UniqueString;
 
 // Merging: different forms of merging should be offered, depending
 // what is being merged.  We always start with a clone of the
-// initialContext.  Alterwards, we can Extend or Instantiate.  In one
+// initialContext.  Afterwards, we can Extend or Instantiate.  In one
 // case, we import defs and decls; in the other, only defs; but we
 // need to keep track of substitutions.
 
@@ -128,7 +128,7 @@ public class Context implements ExploreNode {
                                       // null ModuleTable arg because this is shared by all modules
 
   private ExternalModuleTable exMT;   // The external ModuleTable that this context's SymbolTable
-                                      // belongs to is null for global contex shared by all modules.
+                                      // belongs to is null for global context shared by all modules.
 
   private Errors         errors;      // Object in which to register errors
   private Hashtable<Object, Pair>      table;       // Mapping from symbol name to Pair's that include SymbolNode's

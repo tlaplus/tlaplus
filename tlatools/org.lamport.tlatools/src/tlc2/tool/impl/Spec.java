@@ -398,7 +398,7 @@ abstract class Spec
 
 		// CalvinL/LL/MAK 02/2021: Added conditional as part of Github issue #362 Name
 		// clash between variable in refined spec and operator in instantiated spec. See
-		// releated test in Github362.java.
+		// related test in Github362.java.
         if (opNode.getKind() != UserDefinedOpKind) {
 			result = s.lookup(opNode.getName());
 			if (result != null) {
