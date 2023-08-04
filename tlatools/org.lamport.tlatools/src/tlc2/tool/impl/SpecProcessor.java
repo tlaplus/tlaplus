@@ -799,6 +799,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		}
 
         // Apply config file overrides to operator definitions:
+		// Note that we  can define recursion this way without declaring an operator to be recursive (see UndeclaredRecursion.tla)!
         for (int i = 0; i < rootOpDefs.length; i++)
         {
             UniqueString lhs = rootOpDefs[i].getName();
