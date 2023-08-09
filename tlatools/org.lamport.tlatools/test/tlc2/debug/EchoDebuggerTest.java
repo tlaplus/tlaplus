@@ -214,11 +214,19 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 		frame = (TLCStateStackFrame) stackFrames[0];
 		assertEquals(2, frame.state.getLevel());
+		
+		// Debug TypeOK with a debug expression breakpoint that is referencing TypeOK via NotTypeOK.
+		debugger.unsetBreakpoints();
+		SetBreakpointsArguments sba = createBreakpointArgument(RM, 167, "NotNotTypeOK");
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(12, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 167, 15, 167, 18, RM, Context.Empty);
 
 		// Replace the previous breakpoint with the same one except for a hit condition
 		// corresponding to a trace length of four states.
 		debugger.unsetBreakpoints();
-		SetBreakpointsArguments sba = createBreakpointArgument(RM, 104);
+		sba = createBreakpointArgument(RM, 104);
 		sba.getBreakpoints()[0].setHitCondition("5");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();

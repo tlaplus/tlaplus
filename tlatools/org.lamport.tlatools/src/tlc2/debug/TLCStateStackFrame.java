@@ -360,7 +360,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						ctxt = ctxt.cons(p, getContext().lookup(s -> s.getName().equals(p.getName())));
 					}
 					
-					final IValue eval = tool.eval(odn.getBody(), ctxt, getS(), getT(), EvalControl.Clear);
+					final IValue eval = tool.getLiveness().eval(odn.getBody(), ctxt, getS(), getT(), EvalControl.Clear);
 					if (eval instanceof BoolValue) {
 //						return 
 								fire &= ((BoolValue) eval).val;

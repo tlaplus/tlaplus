@@ -199,6 +199,8 @@ DebugExpression(self) ==
 DebugExpression2(self) ==
 	self = initiator
 
+NotNotTypeOK ==
+	~~TypeOK
 =============================================================================
 \* Modification History
 \* Last modified Wed Jun 17 09:23:17 PDT 2020 by markus
