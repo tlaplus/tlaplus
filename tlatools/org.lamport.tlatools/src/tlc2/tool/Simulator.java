@@ -107,9 +107,9 @@ public class Simulator {
 		if (this.checkLiveness) {
 			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
 				final String tmpDir = Files.createTempDirectory("tlc-simulator-").toString();
-				liveCheck = new LiveCheck(this.tool.getLiveness(), tmpDir, new DummyBucketStatistics());
+				liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
 			} else {
-				liveCheck = new LiveCheck1(this.tool.getLiveness());
+				liveCheck = new LiveCheck1(this.tool.noDebug());
 			}
 		} else {
 			liveCheck = new NoOpLiveCheck(tool, metadir);

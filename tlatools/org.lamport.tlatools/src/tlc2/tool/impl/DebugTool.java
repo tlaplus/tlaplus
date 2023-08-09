@@ -680,7 +680,7 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	public ITool getLiveness() {
+	public ITool noDebug() {
 		return this.fastTool;
 	}
 }

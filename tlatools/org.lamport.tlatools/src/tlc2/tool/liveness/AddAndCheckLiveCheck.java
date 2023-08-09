@@ -49,7 +49,7 @@ import tlc2.util.statistics.IBucketStatistics;
 public class AddAndCheckLiveCheck extends LiveCheck {
 
 	public AddAndCheckLiveCheck(ITool tool, String metadir, IBucketStatistics stats) throws IOException {
-		super(tool.getLiveness(), metadir, stats);
+		super(tool.noDebug(), metadir, stats);
 		MP.printWarning(EC.UNIT_TEST, new String[]{ "!!!WARNING: TLC is running in inefficient unit testing mode!!!", ""} );
 	}
 

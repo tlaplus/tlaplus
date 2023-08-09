@@ -290,7 +290,7 @@ public interface ITool extends TraceApp {
 		return this;
 	}
 
-	default ITool getLiveness() {
+	default ITool noDebug() {
 		return this;
 	}
 

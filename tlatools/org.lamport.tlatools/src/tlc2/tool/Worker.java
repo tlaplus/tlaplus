@@ -182,7 +182,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		// CallStackTool cannot always be enabled at the site where exceptions
 		// originate, and c) there is no global exception handling.
 		try {
-			this.tlc.liveCheck.addNextState(tlc.tool.getLiveness(), curState, curStateFP, liveNextStates);
+			this.tlc.liveCheck.addNextState(tlc.tool.noDebug(), curState, curStateFP, liveNextStates);
 		} catch (EvalException | TLCRuntimeException origExp) {
 			synchronized (this.tlc) {
 				if (this.tlc.printedLivenessErrorStack) {
@@ -199,7 +199,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 
 				// TODO: Try to pass DebugTool instead of tool.getLiveness to enable the TLC
 				// debugger for liveness checking.
-				final CallStackTool cTool = new CallStackTool(tlc.tool.getLiveness());
+				final CallStackTool cTool = new CallStackTool(tlc.tool.noDebug());
 				try {
 					this.tlc.liveCheck.addNextState(cTool, curState, curStateFP, liveNextStates);
 					// Regular evaluation with tlc.tool.getLiveness failed but CallStackTool

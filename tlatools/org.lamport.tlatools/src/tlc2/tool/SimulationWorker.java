@@ -542,7 +542,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		checkForInterrupt();
 
 		// Check if the current trace satisfies liveness properties.
-		liveCheck.checkTrace(tool.getLiveness(), new Supplier<StateVec>() {
+		liveCheck.checkTrace(tool.noDebug(), new Supplier<StateVec>() {
 			@Override
 			public StateVec get() {
 				// Pass a supplier instead of the trace directly to convert
