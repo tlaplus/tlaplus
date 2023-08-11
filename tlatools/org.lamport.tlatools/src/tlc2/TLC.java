@@ -574,7 +574,22 @@ public class TLC {
             } else if (args[index].equals("-dump"))
             {
                 index++; // consume "-dump".
-                if (((index + 1) < args.length) && args[index].startsWith("dot"))
+                if (args[index].startsWith("class,"))
+                {
+                    // The provided class must extend the {@link tlc2.util.IStateWriter} interface
+                    // and a 0-arity constructor.  It will be searched on the classpath.
+					final String cls = args[index++].replace("class,", "");
+					try {
+						Class<? extends IStateWriter> clazz = Class.forName(cls).asSubclass(IStateWriter.class);
+						this.stateWriter = clazz.getDeclaredConstructor().newInstance();
+					} catch (final Exception e) {
+						e.printStackTrace();
+						printErrorMsg(
+								String.format("Trying to instantiate a custom IStateWriter implementation %s.", cls));
+						return false;
+					}
+                }
+                else if (((index + 1) < args.length) && args[index].startsWith("dot"))
                 {
                 	final String dotArgs = args[index].toLowerCase();
                 	index++; // consume "dot...".

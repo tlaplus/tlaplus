@@ -81,6 +81,10 @@ public class DotStateWriter extends StateWriter {
 	// Determines whether or not stuttering edges should be rendered.
 	private final boolean stuttering;
 	
+	public DotStateWriter() throws IOException {
+		this("DotStateWriter.dot", "", false, false, false, false);
+	}
+	
 	public DotStateWriter(final String fname, final String strict) throws IOException {
 		this(fname, strict, false, false, false, false);
 	}
