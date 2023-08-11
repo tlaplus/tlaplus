@@ -144,6 +144,18 @@ public class TLC {
     private IStateWriter stateWriter = new NoopStateWriter();
 
     /**
+     * Allow to use a custom state writer for exporting states and transitions
+     * visited by model checker. Can be enabled by passing a state writer
+     * full class name to the JVM with "-Dtlc2.TLC.customStateWriter=...".
+     * <p>
+     * The provided class must extend {@link tlc2.util.IStateWriter} interface
+     * and will be searched in the classpath.
+     * The custom state writer is used if the property is specified
+     * and no -dump options are present in the command line arguments.
+     */
+    private static final String CUSTOM_STATE_WRITER = System.getProperty(TLC.class.getName() + ".customStateWriter");
+
+    /**
      * Name of checkpoint from which TLC should recover.
      */
     private String fromChkpt;
@@ -1106,7 +1118,20 @@ public class TLC {
 				printErrorMsg(String.format("Error: Given file name %s for dumping states invalid.", dumpFile));
 				return false;
 			}
-		}
+		} else if (CUSTOM_STATE_WRITER != null) {
+            try {
+                Class<? extends IStateWriter> clazz = Class.forName(CUSTOM_STATE_WRITER).asSubclass(IStateWriter.class);
+                this.stateWriter = clazz.getDeclaredConstructor().newInstance();
+            } catch (ClassNotFoundException | ClassCastException e) {
+                printWelcome();
+                MP.printError(EC.GENERAL, "trying to load a custom IStateWriter implementation", e);
+                return false;
+            } catch (Exception e) {
+                printWelcome();
+                MP.printError(EC.GENERAL, "trying to instantiate a custom IStateWriter implementation", e);
+                return false;
+            }
+        }
         
 		if (TLCGlobals.debug) {
 			final StringBuilder buffer = new StringBuilder("TLC arguments:");
