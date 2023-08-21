@@ -72,6 +72,7 @@ import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazySupplierValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MVPerm;
@@ -2861,6 +2862,19 @@ public abstract class Tool
     return true;
   }
   
+  @Override
+  public final double evalReward(TLCState s1, TLCState s2, final double fallback) throws EvalException {
+	    final ExprNode constrs = this.getRLReward();
+	    if (constrs != null) {
+	    	Value bval = this.eval(constrs, Context.Empty, s1, s2, EvalControl.Clear, CostModel.DO_NOT_RECORD);
+	    	if (!(bval instanceof IntValue)) {
+	    		Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"integer", constrs.toString()}, constrs);
+	    	}
+	    	return ((IntValue) bval).val * 1d;
+	    }
+	    return fallback;
+	  }
+
   @Override
   public final boolean hasStateOrActionConstraints() {
 	  return this.getModelConstraints().length > 0 || this.getActionConstraints().length > 0;

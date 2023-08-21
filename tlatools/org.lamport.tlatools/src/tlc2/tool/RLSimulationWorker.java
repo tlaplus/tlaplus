@@ -66,13 +66,12 @@ public class RLSimulationWorker extends SimulationWorker {
 		}
 	}
 	
-	protected double getReward(final long fp, final Action a) {
+	protected double getReward(final TLCState s, final Action a, final TLCState t) {
 		// The reward is negative to force RL to find alternative solutions instead of
 		// finding the best (one) solution over again. For example, in a maze, RL would
 		// be rewarded +1 if it makes it to the exit. Here, we want to find other paths
 		// elsewhere.
-		return REWARD;
-		// TODO Experiment with other rewards. 
+		return tool.evalReward(s, t, REWARD);
 	}
 	
 	private final double getMaxQ(final long fp) {
@@ -156,7 +155,8 @@ public class RLSimulationWorker extends SimulationWorker {
 			final Action ai = s.getAction();
 			
 			final double qi = this.q.get(ai).get(fp);
-			final double q = ((1d - ALPHA) * qi) + (ALPHA * (getReward(fp, ai) + (GAMMA * maxQ)));
+			final double r = getReward(p, ai, s);
+			final double q = ((1d - ALPHA) * qi) + (ALPHA * (r + (GAMMA * maxQ)));
 			
 			this.q.get(ai).put(fp, q);
 			

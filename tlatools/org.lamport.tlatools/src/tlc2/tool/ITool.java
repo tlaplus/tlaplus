@@ -108,6 +108,8 @@ public interface ITool extends TraceApp {
 	/* This method determines if a pair of states satisfy the action constraints. */
 	boolean isInActions(TLCState s1, TLCState s2) throws EvalException;
 
+	double evalReward(TLCState s1, TLCState s2, final double fallback) throws EvalException;
+
 	boolean hasStateOrActionConstraints();
 
 	/**

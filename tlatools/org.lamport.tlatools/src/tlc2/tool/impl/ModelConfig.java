@@ -70,6 +70,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String Props = "PROPERTIES";
     private static final String Alias = "ALIAS";
     private static final String PostCondition = "POSTCONDITION";
+    private static final String RLReward = "_RL_REWARD";
     public static final String CheckDeadlock = "CHECK_DEADLOCK";
 
     private static final long serialVersionUID = 1L;
@@ -79,7 +80,7 @@ public class ModelConfig implements ValueConstants, Serializable {
      */
     public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
             ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Alias,
-            PostCondition, CheckDeadlock };
+            PostCondition, RLReward, CheckDeadlock };
 
     private Hashtable configTbl;
     private Hashtable<String, String> overrides;
@@ -134,6 +135,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.configTbl.put(Props, temp);
         this.configTbl.put(Alias, "");
         this.configTbl.put(PostCondition, "");
+        this.configTbl.put(RLReward, "");
         this.configTbl.put(CheckDeadlock, "undef");
         
         this.modConstants = new Hashtable<>();
@@ -268,6 +270,21 @@ public class ModelConfig implements ValueConstants, Serializable {
                     {
                         throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc),
                                 PostCondition });
+                    }
+                    tt = getNextToken(tmgr);
+                } else if (tval.equals(RLReward))
+                {
+                    tt = getNextToken(tmgr);
+                    if (tt.kind == TLAplusParserConstants.EOF)
+                    {
+                        throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc),
+                        		RLReward });
+                    }
+                    String old = (String) this.configTbl.put(RLReward, tt.image);
+                    if (old.length() != 0)
+                    {
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc),
+                        		RLReward });
                     }
                     tt = getNextToken(tmgr);
                 } else if (tval.equals(Constant) || tval.equals(Constants))
@@ -716,6 +733,10 @@ public class ModelConfig implements ValueConstants, Serializable {
     {
         return (String) this.configTbl.get(PostCondition);
     }
+
+	public synchronized final String getRLReward() {
+        return (String) this.configTbl.get(RLReward);
+	}
 
     public synchronized final boolean getCheckDeadlock()
     {

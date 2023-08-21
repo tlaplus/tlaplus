@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.LongAdder;
 import tlc2.tool.liveness.ILiveCheck;
 
 public class RLActionSimulationWorker extends RLSimulationWorker {
-	
+
 	public RLActionSimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
@@ -46,12 +46,13 @@ public class RLActionSimulationWorker extends RLSimulationWorker {
 	}
 
 	@Override
-	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState state) {
+	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState t) {
 		// Action at state is not enabled; assign a negative weight/reward.
-		this.q.get(actions[index]).put(getHash(state), ALPHA * (getReward(getHash(state), actions[index])));
-		return super.getNextActionAltIndex(index, p, actions, state);
+		final TLCState s = t.getPredecessor();
+		this.q.get(actions[index]).put(getHash(t), ALPHA * (getReward(s, actions[index], t)));
+		return super.getNextActionAltIndex(index, p, actions, t);
 	}
-	
+
 	@Override
 	protected boolean postTrace(TLCState s) {
 		// no-op

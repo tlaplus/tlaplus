@@ -179,6 +179,10 @@ abstract class Spec
 		return specProcessor.getActionConstraints();
 	}
 
+	public final ExprNode getRLReward() {
+		return specProcessor.getRLReward();
+	}
+	
     /* Get the initial state predicate of the specification.  */
 	public final Vect<Action> getInitStateSpec() {
 		return specProcessor.getInitPred();

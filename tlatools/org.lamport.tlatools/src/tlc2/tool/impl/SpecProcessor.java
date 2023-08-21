@@ -136,6 +136,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private String[] impliedActNames; // ... and their names
     private ExprNode[] modelConstraints; // Model constraints
     private ExprNode[] actionConstraints; // Action constraints
+    private ExprNode rlReward;
     private ExprNode[] assumptions; // Assumpt	ions
     private boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
                                            // is an AXIOM.  Added 26 May 2010 by LL
@@ -1042,6 +1043,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         processModelConstraints();
         
         processActionConstraints();
+        
+        processRLReward();
     }
 
     /** 
@@ -1499,6 +1502,35 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
     
+	private void processRLReward() {
+        String name = this.config.getRLReward();
+        if (name.length() != 0)
+        {        	
+			// Lookup in snapshot instead of defns because any constant expression in defns
+			// will have been evaluated into a Value. However, rlReward has type ExprNode
+			// and not Value.  More importantly, RLReward is allowed to be a constant expression.
+        	// Alternatively, the name of the RLReward definition could be added to vetoes, i.e.
+        	// vetos.add(this.config.getRLReward()); in this class' constructor.
+        	Object type = this.snapshot.get(name);
+        	if (type == null)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "rlreward", name });
+        	}
+        	if (!(type instanceof OpDefNode))
+        	{
+        		// TODO This error message is bogus because we accept constant expressions as an RL_REWARD. 
+        		Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "rlreward", name });
+        	}
+        	OpDefNode def = (OpDefNode) type;
+        	if (def.getArity() != 0)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "rlreward", name });
+        		
+        	}
+        	rlReward = def.getBody();
+        }
+	}
+    
 	private void processActionConstraints() {
 	    Vect names = this.config.getActionConstraints();
 	    this.actionConstraints = new ExprNode[names.size()];
@@ -1889,6 +1921,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 	public ExprNode[] getActionConstraints() {
 		return actionConstraints;
+	}
+
+	public ExprNode getRLReward() {
+		return rlReward;
 	}
 
 	public ExprNode[] getAssumptions() {

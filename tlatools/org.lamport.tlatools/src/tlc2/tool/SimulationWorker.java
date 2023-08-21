@@ -112,7 +112,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	// no trace files are generated.
 	private final String traceFile;
 
-	private final ITool tool;
+	protected final ITool tool;
 	private final ILiveCheck liveCheck;	
 
 	final SimulationWorkerStatistics statistics;
