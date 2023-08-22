@@ -659,7 +659,7 @@ public class Simulator {
 		long[][] aggregateActionStats = new long[len][len];
 		final List<SimulationWorker> workers = Simulator.this.workers;
 		for (SimulationWorker sw : workers) {
-			final long[][] s = sw.actionStats;
+			final long[][] s = sw.statistics.actionStats;
 			for (int i = 0; i < len; i++) {
 				for (int j = 0; j < len; j++) {
 					aggregateActionStats[i][j] += s[i][j];
@@ -706,7 +706,7 @@ public class Simulator {
 		long[][] aggregateActionStats = new long[len][len];
 		final List<SimulationWorker> workers = Simulator.this.workers;
 		for (SimulationWorker sw : workers) {
-			final long[][] s = sw.actionStats;
+			final long[][] s = sw.statistics.actionStats;
 			for (int i = 0; i < len; i++) {
 				for (int j = 0; j < len; j++) {
 					aggregateActionStats[i][j] += s[i][j];
@@ -826,9 +826,9 @@ public class Simulator {
 	public final Value getWorkerStatistics(TLCState s) {
 		if (Thread.currentThread() instanceof SimulationWorker) {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
-			return w.getWorkerStatistics(s);
+			return w.statistics.getWorkerStatistics(s);
 		} else {
-			return workers.get(0).getWorkerStatistics(s);
+			return workers.get(0).statistics.getWorkerStatistics(s);
 		}	
 	}
 	
