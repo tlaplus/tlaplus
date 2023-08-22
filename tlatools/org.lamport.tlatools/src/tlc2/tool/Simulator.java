@@ -32,6 +32,7 @@ import tlc2.output.MP;
 import tlc2.output.StatePrinter;
 import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.SimulationWorker.SimulationWorkerResult;
+import tlc2.tool.SimulationWorker.SimulationWorkerStatistics;
 import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool;
@@ -61,6 +62,10 @@ import util.UniqueString;
 
 public class Simulator {
 
+	public static boolean EXTENDED_STATISTICS = Boolean
+			.getBoolean(Simulator.class.getName() + ".extendedStatistics");
+	public static boolean EXTENDED_STATISTICS_NAIVE = Boolean
+			.getBoolean(Simulator.class.getName() + ".extendedStatistics.naive");
 	public static boolean EXPERIMENTAL_LIVENESS_SIMULATION = Boolean
 			.getBoolean(Simulator.class.getName() + ".experimentalLiveness");
 	private final String traceActions;
@@ -823,17 +828,17 @@ public class Simulator {
 		return this.traceDepth;
 	}
 
-	public final Value getWorkerStatistics(TLCState s) {
+	public final SimulationWorkerStatistics getWorkerStatistics() {
 		if (Thread.currentThread() instanceof SimulationWorker) {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
-			return w.statistics.getWorkerStatistics(s);
+			return w.statistics;
 		} else {
-			return workers.get(0).statistics.getWorkerStatistics(s);
+			return workers.get(0).statistics;
 		}	
 	}
 	
 	public final Value getStatistics(final TLCState s) {
-		final UniqueString[] n = new UniqueString[5];
+		final UniqueString[] n = new UniqueString[9];
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.TRACES;
@@ -846,11 +851,23 @@ public class Simulator {
 		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
 
 		n[3] = TLCGetSet.BEHAVIOR;
-		v[3] = getWorkerStatistics(s);
+		v[3] = getWorkerStatistics().getTraceStatistics(s);
 
 		n[4] = TLCGetSet.WORKER;
 		v[4] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
+
+		n[5] = TLCGetSet.DISTINCT;
+		v[5] = getWorkerStatistics().getDistinctStates();
 		
+		n[6] = TLCGetSet.DISTINCT_VALUES;
+		v[6] = getWorkerStatistics().getDistinctValues();
+		
+		n[7] = TLCGetSet.RETRIES;
+		v[7] = getWorkerStatistics().getNextRetries();
+		
+		n[8] = TLCGetSet.SPEC_ACTIONS;
+		v[8] = getWorkerStatistics().getActions();
+
 		return new RecordValue(n, v, false);
 	}
 

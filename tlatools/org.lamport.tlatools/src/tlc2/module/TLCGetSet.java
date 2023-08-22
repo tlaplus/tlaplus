@@ -138,6 +138,10 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString INITIAL = UniqueString.uniqueStringOf("initial");
 	// BFS: The number of unexplored distinct states.
 	public static final UniqueString QUEUE = UniqueString.uniqueStringOf("queue");
+	// Simulation: The number of times the simulator picked a disabled action.
+	public static final UniqueString RETRIES = UniqueString.uniqueStringOf("retries");
+	// Simulation: The number of times the simulator picked a disabled action.
+	public static final UniqueString DISTINCT_VALUES = UniqueString.uniqueStringOf("distinctvalues");
 
 	
 	public static final long serialVersionUID = 20210330L;

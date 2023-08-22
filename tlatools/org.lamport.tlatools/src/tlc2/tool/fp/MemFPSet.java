@@ -24,6 +24,16 @@ import util.FileUtil;
  */
 
 public class MemFPSet extends FPSet {
+	
+	public static MemFPSet NewMemFPSetUnchecked() {
+		try {
+			return new MemFPSet();
+		} catch (RemoteException notExpectedToHappen) {
+			notExpectedToHappen.printStackTrace();
+		}
+		return null;
+	}
+	
   private String metadir;
   private String filename;
 

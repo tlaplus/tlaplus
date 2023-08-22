@@ -50,6 +50,8 @@ import tlc2.tool.liveness.LiveCounterExampleException;
 import tlc2.util.IdThread;
 import tlc2.util.RandomGenerator;
 import tlc2.util.SetOfStates;
+import tlc2.util.Vect;
+import tlc2.util.statistics.CountDistinct;
 import tlc2.value.impl.CounterExample;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.RecordValue;
@@ -276,6 +278,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			return numOfGenTraces.incrementAndGet();
 		}
 
+		public void collectNextRetries() {
+			//no-op
+		}
+
 		public void collectPostTrace(final TLCState s) {
 			// Take the minimum of maxTraceDepth and getLevel here because - historically -
 			// the for loop above would add the chosen next-state from loop N in loop N+1.
@@ -297,7 +303,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		//*************************** Reporting **************************//
 
-		public Value getWorkerStatistics(TLCState s) {
+		public Value getTraceStatistics(TLCState s) {
 			final UniqueString[] n = new UniqueString[2];
 			final Value[] v = new Value[n.length];
 			
@@ -315,6 +321,114 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			v[1] = TLCGetSet.narrowToIntValue(globalTraceCnt);
 			
 			return new RecordValue(n, v, false);
+		}
+
+		public Value getDistinctStates() {
+			return IntValue.ValNegOne;
+		}
+		
+		public Value getDistinctValues() {
+			return IntValue.ValNegOne;
+		}
+
+		public Value getActions() {
+			return RecordValue.EmptyRcd;
+		}
+	
+		public Value getNextRetries() {
+			return IntValue.ValNegOne;
+		}
+	}
+	
+	class ExtendedSimulationWorkerStatistics extends SimulationWorkerStatistics {
+		
+		private long numOfNextRetries;
+		
+		private final Map<UniqueString, Integer> numOfActions = new HashMap<>();	
+		
+		private final CountDistinct numOfDistinctStates;
+		
+		private final CountDistinct[] numOfDistinctValues;
+
+		/**
+		 * Careful!!!
+		 * 
+		 * Extended statistics are way more expensive compared to the base class -- even
+		 * though it is only only by a constant factor, it is a huge one because
+		 * fingerprinting of values and states is really expensive.
+		 */
+		public ExtendedSimulationWorkerStatistics(String traceActions, LongAdder numOfGenStates,
+				AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
+			super(traceActions, numOfGenStates, numOfGenTraces, m2AndMean);
+			
+			// Prob: Cheap (constant) in space.
+			// Naive: Expensive (linear) in space, i.e., number of states.
+			this.numOfDistinctStates = Simulator.EXTENDED_STATISTICS_NAIVE ? new CountDistinct.Naive()
+					: new CountDistinct.HyperLogLog(8);
+			
+			this.numOfDistinctValues = new CountDistinct[TLCState.vars.length];
+			for (int i = 0; i < TLCState.vars.length; i++) {
+				final OpDeclNode odn = TLCState.vars[i];
+				final int varLoc = odn.getName().getVarLoc();
+				// Prob: Cheap (linear in the number of variables) in space
+				// Naive: Expensive (linear in the number of distinct variable values) in space,
+				// i.e., number of states.
+				this.numOfDistinctValues[varLoc] = Simulator.EXTENDED_STATISTICS_NAIVE
+						? new CountDistinct.Naive()
+						: new CountDistinct.HyperLogLog(10);
+			}
+		}
+
+		@Override
+		public void collectPreSuccessor(final TLCState s, final Action a, final TLCState t) {
+			super.collectPreSuccessor(s, a, t);
+			
+			for (int i = 0; i < TLCState.vars.length; i++) {
+				final OpDeclNode odn = TLCState.vars[i];
+				final int varLoc = odn.getName().getVarLoc();
+				this.numOfDistinctValues[varLoc].add(t.lookup(odn.getName()));
+			}
+			
+			numOfDistinctStates.add(t);
+			
+			numOfActions.merge(s.getAction().getName(), 1, Integer::sum);
+		}
+
+		@Override
+		public void collectNextRetries() {
+			numOfNextRetries += 1L;
+		}
+
+		@Override
+		public Value getActions() {
+			final Map<UniqueString, IntValue> m = new HashMap<>();
+			final Vect<Action> specActions = tool.getSpecActions();
+			for (int i = 0; i < specActions.size(); i++) {
+				Action a = specActions.elementAt(i);
+				m.put(a.getName(), IntValue.gen(numOfActions.getOrDefault(a.getName(), 0)));
+			}
+			return new RecordValue(m);
+		}
+
+		@Override
+		public Value getDistinctStates() {
+			return TLCGetSet.narrowToIntValue(numOfDistinctStates.count());
+		}
+		
+		@Override
+		public Value getDistinctValues() {
+			final Map<UniqueString, Value> m = new HashMap<>(TLCState.vars.length);
+			for (int i = 0; i < TLCState.vars.length; i++) {
+				final OpDeclNode odn = TLCState.vars[i];
+				final int varLoc = odn.getName().getVarLoc();
+				m.put(odn.getName(), IntValue.gen((int) this.numOfDistinctValues[varLoc].count()));
+			}
+			return new RecordValue(m);
+		}
+		
+		@Override
+		public Value getNextRetries() {
+			return TLCGetSet.narrowToIntValue(numOfNextRetries);
 		}
 	}
 	
@@ -337,7 +451,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.checkDeadlock = checkDeadlock;
 		this.traceFile = traceFile;
 		this.liveCheck = liveCheck;
-		this.statistics = new SimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces, m2AndMean);
+		this.statistics = Simulator.EXTENDED_STATISTICS
+				? new ExtendedSimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces, m2AndMean)
+				: new SimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces, m2AndMean);
 	}
 	
 	/**
@@ -444,8 +560,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		// state in the trace. To correctly print its state number, it needs to know its
 		// predecessor.
 		t.setPredecessor(s).setAction(a);
-		
-		this.statistics.collectPreSuccessor(s, a, t);
 
 		if (!tool.isGoodState(t)) {
 			final Set<OpDeclNode> unassigned = t.getUnassigned();
@@ -463,6 +577,8 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, parameters, t, getTrace());
 		}
+		
+		this.statistics.collectPreSuccessor(s, a, t);
 
 		// Check invariants.
 		int idx = 0;
@@ -525,6 +641,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 	
 	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState curState) {
+		statistics.collectNextRetries();
 		return (index + p) % actions.length;
 	}
 
