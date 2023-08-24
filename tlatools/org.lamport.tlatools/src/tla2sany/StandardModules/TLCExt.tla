@@ -1,6 +1,7 @@
 ------------------------------- MODULE TLCExt -------------------------------
 
 LOCAL INSTANCE TLC
+LOCAL INSTANCE Integers
   (*************************************************************************)
   (* Imports the definitions from the modules, but doesn't export them.    *)
   (*************************************************************************)
@@ -45,7 +46,7 @@ Trace ==
 
 -----------------------------------------------------------------------------
 
-(* HERE BE DRAGONS! The operators below are experimental! *)
+(* HERE BE DRAGONS! The operators below are experimental! You will probably not need them! *)
 
 CounterExample ==
     (****************************************************************************)
@@ -152,5 +153,13 @@ TLCCache(expression, closure) ==
   (* constant-level formulas.                                                   *)
   (******************************************************************************)
   expression
+
+TLCFP(var) ==
+  (******************************************************************************)
+  (* Equals the value that TLC gives to the given input when the value is       *)
+  (* being fingerprinted.                                                       *)
+  (* Implementation note: Equals the lower 32 bits until TLC supports longs     *)
+  (******************************************************************************)
+  CHOOSE i \in Int: TRUE
 
 ============================================================================

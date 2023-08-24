@@ -53,10 +53,12 @@ import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.util.FP64;
 import tlc2.util.IdThread;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
+import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
@@ -344,5 +346,13 @@ public class TLCExt {
 		// For constant, action or temporal formulas, all we do is to evaluate the TLA+
 		// expression--nothing is cached!
 		return null; // Returning null here causes Tool.java to evaluate the original expression.
+	}
+
+	@TLAPlusOperator(identifier = "TLCFP", module = "TLCExt", warn = false)
+	public static synchronized IntValue tlcFingerprint(final Value val) {
+		val.deepNormalize();
+		// TLC has no value to represent a long, thus, downcast to int.
+		// However, note tla2sany.semantic.NumeralNode#bigVal
+		return IntValue.gen(FP64.Hash(val.fingerPrint(FP64.New())));
 	}
 }
