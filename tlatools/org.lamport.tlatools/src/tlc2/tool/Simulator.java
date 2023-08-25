@@ -838,11 +838,12 @@ public class Simulator {
 	}
 	
 	public final Value getStatistics(final TLCState s) {
-		final UniqueString[] n = new UniqueString[9];
+		final UniqueString[] n = new UniqueString[11];
 		final Value[] v = new Value[n.length];
 		
+		final long genTrace = numOfGenTraces.longValue();
 		n[0] = TLCGetSet.TRACES;
-		v[0] = TLCGetSet.narrowToIntValue(numOfGenTraces.longValue());
+		v[0] = TLCGetSet.narrowToIntValue(genTrace);
 		
 		n[1] = TLCGetSet.DURATION;
 		v[1] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
@@ -867,6 +868,15 @@ public class Simulator {
 		
 		n[8] = TLCGetSet.SPEC_ACTIONS;
 		v[8] = getWorkerStatistics().getActions();
+		
+		final long m2AndMean = welfordM2AndMean.get();
+		final long mean = m2AndMean & 0x00000000FFFFFFFFL; // could be int.
+		n[9] = TLCGetSet.LEVEL_MEAN;
+		v[9] = TLCGetSet.narrowToIntValue(mean);
+
+		final long m2 = m2AndMean >>> 32;
+		n[10] = TLCGetSet.LEVEL_VARIANCE;
+		v[10] = TLCGetSet.narrowToIntValue(Math.round(m2 / (genTrace + 1d)));// Var(X),  +1 to prevent div-by-zero.
 
 		return new RecordValue(n, v, false);
 	}

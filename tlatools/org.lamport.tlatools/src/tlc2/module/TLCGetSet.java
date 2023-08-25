@@ -142,7 +142,8 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString RETRIES = UniqueString.uniqueStringOf("retries");
 	// Simulation: The number of times the simulator picked a disabled action.
 	public static final UniqueString DISTINCT_VALUES = UniqueString.uniqueStringOf("distinctvalues");
-
+	public static final UniqueString LEVEL_MEAN = UniqueString.uniqueStringOf("levelmean");
+	public static final UniqueString LEVEL_VARIANCE = UniqueString.uniqueStringOf("levelvariance");
 	
 	public static final long serialVersionUID = 20210330L;
 
