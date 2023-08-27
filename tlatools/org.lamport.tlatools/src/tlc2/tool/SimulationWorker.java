@@ -665,8 +665,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		curState = randomState(this.localRng, initStates);
 		setCurrentState(curState);
 		
-		final Action[] actions = this.tool.getActions();
-		final int len = actions.length;
+		final Action[] allActions = this.tool.getActions();
 
 		// Simulate a trace up to the maximum specified length.
 		for (int traceIdx = 0; traceIdx < maxTraceDepth; traceIdx++) {
@@ -677,9 +676,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 			// b) Get the current state's successor states.
 			nextStates.clear();
+			final Action[] actions = filterActions(allActions, curState);
 			int index = getNextActionIndex(this.localRng, actions, curState);
 			final int p = this.localRng.nextPrime();
-			for (int i = 0; i < len; i++) {
+			for (int i = 0; i < actions.length; i++) {
 				try {
 					this.tool.getNextStates(this, curState, actions[index]);
 				} catch (SimulationWorkerError swe) {
@@ -766,6 +766,10 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	protected boolean postTrace(final TLCState finalState) throws FileNotFoundException {
 		return true;
+	}
+	
+	protected Action[] filterActions(final Action[] actions, final TLCState curState) {
+		return actions;
 	}
 	
 	public final long getTraceCnt() {
