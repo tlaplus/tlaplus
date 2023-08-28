@@ -49,7 +49,7 @@ public class RLActionSimulationWorker extends RLSimulationWorker {
 	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState t) {
 		// Action at state is not enabled; assign a negative weight/reward.
 		final TLCState s = t.getPredecessor();
-		this.q.get(getHash(t)).put(actions[index], ALPHA * (getReward(s, actions[index], t)));
+		this.q.get(actions[index]).put(getHash(t), ALPHA * (getReward(s, actions[index], t)));
 		return super.getNextActionAltIndex(index, p, actions, t);
 	}
 

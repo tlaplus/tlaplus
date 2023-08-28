@@ -49,7 +49,7 @@ public class RLSimulationWorker extends SimulationWorker {
 	protected static final double REWARD = Double.valueOf(System.getProperty(Simulator.class.getName() + ".rl.reward", "-10d"));
 	protected static final boolean ENABLED_ONLY = Boolean.getBoolean(Simulator.class.getName() + ".rl.enabledOnly");
 
-	protected final Map<Long, Map<Action, Double>> q = new HashMap<>();
+	protected final Map<Action, Map<Long, Double>> q = new HashMap<>();
 
 	public RLSimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile, ILiveCheck liveCheck) {
@@ -62,6 +62,10 @@ public class RLSimulationWorker extends SimulationWorker {
 			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
 		super(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, traceActions, checkDeadlock, traceFile, liveCheck,
 				numOfGenStates, numOfGenTraces, m2AndMean);
+		
+		for (final Action a : tool.getActions()) {
+			q.put(a, new HashMap<>());
+		}
 	}
 	
 	protected double getReward(final TLCState s, final Action a, final TLCState t) {
@@ -73,11 +77,10 @@ public class RLSimulationWorker extends SimulationWorker {
 	}
 	
 	private final double getMaxQ(final long fp) {
-		final Map<Action, Double> map = this.q.computeIfAbsent(fp, k -> new HashMap<>());
 		double max = -Double.MAX_VALUE;
-		for (Action a : map.keySet()) {
+		for (Action a : q.keySet()) {
 			// Map#get instead of Map#getOrDefaults causes an NPE in max when the fp is unknown.
-			double d = map.getOrDefault(a, -Double.MAX_VALUE);
+			double d = this.q.get(a).getOrDefault(fp, -Double.MAX_VALUE);
 			max = Math.max(max, d);
 		}
 		return max;
@@ -91,7 +94,7 @@ public class RLSimulationWorker extends SimulationWorker {
 	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState curState) {
 		if (!ENABLED_ONLY) {
 			// Action at state is not enabled.
-			this.q.get(getHash(curState)).put(actions[index], -Double.MAX_VALUE);
+			this.q.get(actions[index]).put(getHash(curState), -Double.MAX_VALUE);
 		}
 		return super.getNextActionAltIndex(index, p, actions, curState);
 	}
@@ -100,11 +103,14 @@ public class RLSimulationWorker extends SimulationWorker {
 	protected final int getNextActionIndex(final RandomGenerator rng, final Action[] actions, final TLCState state) {
 		final long s = getHash(state);
 		
+		// TODO Experiment with initializing to other values. 
+		this.q.values().forEach(m -> m.putIfAbsent(s, 0d));
+		
 		// Calculate the sum over all actions.
 		double denum = 0; 
 		double[] d = new double[actions.length];
 		for (int i = 0; i < d.length; i++) {
-			d[i] = Math.exp(this.q.computeIfAbsent(s, k -> new HashMap<>()).computeIfAbsent(actions[i], k -> 0d));
+			d[i] = Math.exp(this.q.get(actions[i]).get(s));
 			denum += d[i];
 		}		
 		
@@ -152,11 +158,11 @@ public class RLSimulationWorker extends SimulationWorker {
 			
 			final Action ai = s.getAction();
 			
-			final double qi = this.q.computeIfAbsent(fp, k -> new HashMap<>()).getOrDefault(ai, 0d);
+			final double qi = this.q.get(ai).get(fp);
 			final double r = getReward(p, ai, s);
 			final double q = ((1d - ALPHA) * qi) + (ALPHA * (r + (GAMMA * maxQ)));
 			
-			this.q.get(fp).put(ai, q);
+			this.q.get(ai).put(fp, q);
 			
 			s = p;
 		}
