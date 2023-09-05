@@ -40,11 +40,11 @@ public class StatePrinter
      * @param currentStateInfo
      */
     public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo) {
-    	if (currentStateInfo.predecessorState == null) {
+    	if (currentStateInfo.state.isInitial()) {
     		// It's an initial state
 			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, null, (int) currentStateInfo.stateNumber);
     	} else {
-			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, currentStateInfo.predecessorState.state, (int) currentStateInfo.stateNumber);
+			StatePrinter.printInvariantViolationStateTraceState(currentStateInfo, currentStateInfo.state.getPredecessor(), (int) currentStateInfo.stateNumber);
     	}
     }
     
