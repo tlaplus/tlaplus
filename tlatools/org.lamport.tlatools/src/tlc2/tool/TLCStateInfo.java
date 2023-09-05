@@ -18,7 +18,6 @@ public class TLCStateInfo {
 
   public static final String INITIAL_PREDICATE = "<" + INITIAL_PREDICATE_NO_ANGLE_BRACKET + ">";
   
-  public TLCStateInfo predecessorState;
   public long stateNumber;
   public Object info;
   public final TLCState state;

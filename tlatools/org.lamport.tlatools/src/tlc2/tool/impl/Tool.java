@@ -3673,7 +3673,6 @@ public abstract class Tool
       throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
     }
     tlcStateInfo.stateNumber = sinfo.stateNumber + 1;
-    tlcStateInfo.predecessorState = sinfo;
     tlcStateInfo.fp = fp;
     return tlcStateInfo;
   }

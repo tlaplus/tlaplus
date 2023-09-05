@@ -223,7 +223,6 @@ public class TLCTrace {
 					state = this.tool.getState(fp, predecessor.state);
 
 					// chain to predecessor
-					state.predecessorState = predecessor;
 					state.stateNumber = location / 12;
 
 					// store in map
