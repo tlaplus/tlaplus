@@ -756,6 +756,12 @@ public class RecordValue extends Value implements Applicable {
 	}
 
 	public TLCState toState() {
+		// rcd can be a superset or subset of the spec's variables, which is why we
+		// cannot simply redefine the values of the state created from
+		// TLCState.Empty.createEmpty(). If would be more elegant to add new
+		// functionality to TLCStateMut. However, the class is final and we should
+		// generally not add additional fields for performance reasons. Thus, create a
+		// nested TLCStateMut or TLCStateMutExt to correctly handle fingerprinting, ....
 			final TLCState state = TLCState.Empty.createEmpty();
 			final OpDeclNode[] vars = state.getVars();
 			for (int i = 0; i < vars.length; i++) {
