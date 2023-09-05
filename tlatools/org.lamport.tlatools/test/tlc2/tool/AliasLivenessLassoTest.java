@@ -71,5 +71,9 @@ public class AliasLivenessLassoTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		assertBackToState(1, "<B line 20, col 1 to line 22, col 9 of module Alias>");
+
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

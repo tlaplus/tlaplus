@@ -398,6 +398,7 @@ public class TLCTrace {
 		} else {
 			final int j = prefix.length - 1;
 			TLCStateInfo s0 = prefix[j];
+			s1.setPredecessor(s0);
 			StatePrinter.printInvariantViolationStateTraceState(
 					this.tool.evalAlias(s0, s1, prefix), lastState, ++idx);
 			

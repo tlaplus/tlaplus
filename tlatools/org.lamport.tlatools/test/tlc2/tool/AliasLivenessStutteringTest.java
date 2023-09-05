@@ -64,5 +64,9 @@ public class AliasLivenessStutteringTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 		
 		assertStuttering(2);
+
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

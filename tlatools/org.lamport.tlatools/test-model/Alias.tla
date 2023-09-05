@@ -98,6 +98,67 @@ PostCondition ==
 			        <<2, [x |-> 2, y |-> TRUE]>>,
 			        <<3, [x |-> 3, y |-> FALSE]>>,
 			        <<4, [x |-> 4, y |-> TRUE]>> } ]
+	
+PostConditionLasso ==
+  	/\ IF CounterExample.state = {} THEN TRUE ELSE CounterExample = 
+			[ action |->
+			      { << <<1, [x |-> 1, y |-> FALSE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<2, [x |-> 2, y |-> TRUE]>> >>,
+			        << <<2, [x |-> 2, y |-> TRUE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<3, [x |-> 3, y |-> FALSE]>> >>,
+			        << <<3, [x |-> 3, y |-> FALSE]>>,
+			           [ name |-> "A",
+			             location |->
+			                 [ beginLine |-> 15,
+			                   beginColumn |-> 1,
+			                   endLine |-> 17,
+			                   endColumn |-> 13,
+			                   module |-> "Alias" ] ],
+			           <<4, [x |-> 4, y |-> TRUE]>> >>,
+			        << <<4, [x |-> 4, y |-> TRUE]>>,
+			           [ name |-> "B",
+			             location |->
+			                 [ beginLine |-> 20,
+			                   beginColumn |-> 1,
+			                   endLine |-> 22,
+			                   endColumn |-> 9,
+			                   module |-> "Alias" ] ],
+			           <<1, [x |-> 1, y |-> FALSE]>> >> },
+			  state |->
+			      { <<1, [x |-> 1, y |-> FALSE]>>,
+			        <<2, [x |-> 2, y |-> TRUE]>>,
+			        <<3, [x |-> 3, y |-> FALSE]>>,
+			        <<4, [x |-> 4, y |-> TRUE]>> } ]
+
+PostConditionStuttering ==
+  	/\ IF CounterExample.state = {} THEN TRUE ELSE CounterExample = 
+			[ action |->
+			      { << <<1, [x |-> 1, y |-> FALSE]>>,
+			           [ name |-> "UnnamedAction",
+			             location |->
+			                 [ beginLine |-> 26,
+			                   beginColumn |-> 18,
+			                   endLine |-> 26,
+			                   endColumn |-> 26,
+			                   module |-> "Alias" ] ],
+			           <<1, [x |-> 1, y |-> FALSE]>> >> },
+			  state |->
+			      { <<1, [x |-> 1, y |-> FALSE]>> } ]
+
 =======================
 
 ---- CONFIG Alias ----
