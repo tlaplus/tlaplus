@@ -217,12 +217,8 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		return getStateAsVariable(toRecordValue(), state.getLevel() + ": " + getActionName(getT()));
 	}
 
-	private String getActionName(final TLCState state) {
-		if (state.getAction() == null) {
-			return "<Initial predicate>";
-		}
-		final Action a = state.getAction();
-		return a.getName() == null ? "Action" : a.getName().toString();
+	private String getActionName(final TLCState t) {
+		return (t.hasAction() ? t.getAction().getLocation() : "<???>");
 	}
 	
 	protected RecordValue toRecordValue() {
