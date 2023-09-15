@@ -356,7 +356,7 @@ public final class TLCStateMut extends TLCState implements Cloneable, Serializab
   /* Returns a string representation of this state.  */
   public final String toString(TLCState lastState) {
     StringBuffer result = new StringBuffer();
-    TLCStateMut lstate = (TLCStateMut)lastState;
+    TLCState lstate = lastState;
 
     int vlen = vars.length;
     if (vlen == 1) {
