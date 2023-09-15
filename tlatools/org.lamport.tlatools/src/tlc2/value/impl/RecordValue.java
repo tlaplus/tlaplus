@@ -850,12 +850,23 @@ public class RecordValue extends Value implements Applicable {
 
 			@Override
 			public IValue lookup(UniqueString var) {
-				return this.state.lookup(var);
+				if (this.state.containsKey(var)) {
+					return this.state.lookup(var);
+				}
+				return this.rcd.select(new StringValue(var));
 			}
 
 			@Override
 			public boolean containsKey(UniqueString var) {
-				return this.state.containsKey(var);
+				if (this.state.containsKey(var)) {
+					return true;
+				}
+				for (int i = 0; i < this.rcd.names.length; i++) {
+					if (this.rcd.names[i] == var) {
+						return true;
+					}
+				}
+				return false;
 			}
 
 			@Override

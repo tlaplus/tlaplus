@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import util.FileUtil;
@@ -229,7 +230,11 @@ public class DotStateWriter extends StateWriter {
 				// Write the successor's label.
 				this.writer.append(successorsFP);
 				this.writer.append(" [label=\"");
-				this.writer.append(states2dot(successor.evalStateLevelAlias()));
+				if (TLCGlobals.printDiffsOnly) {
+					this.writer.append(states2dot(state.evalStateLevelAlias(), successor.evalStateLevelAlias()));
+				} else {
+					this.writer.append(states2dot(successor.evalStateLevelAlias()));
+				}
 				this.writer.append("\"]");
 				this.writer.append(";\n");
 			}
@@ -338,6 +343,12 @@ public class DotStateWriter extends StateWriter {
 //		}
 //		return sb.toString();
 //	}
+
+	protected static String states2dot(final TLCState predecessor, final TLCState state) {
+		// Replace "\" with "\\" and """ with "\"".	
+		return state.toString(predecessor).replace("\\", "\\\\").replace("\"", "\\\"").trim()
+				.replace("\n", "\\n"); // Do not remove remaining (i.e. no danling/leading) "\n". 
+	}
 
 	protected static String states2dot(final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
