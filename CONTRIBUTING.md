@@ -13,7 +13,7 @@ For build instructions, please read our [developers guide](https://github.com/tl
 Nightly Builds
 --------------
 
-Nightly builds of the [Toolbox](https://nightly.tlapl.us/products/) and [tla2tools](https://nightly.tlapl.us/dist/) are found at https://nightly.tlapl.us/products/ and https://nightly.tlapl.us/dist/, the [up-to-date changelog](https://nightly.tlapl.us/changelog.html) is at https://nightly.tlapl.us/changelog.html.  The Toolbox contains the latest version of tla2tools.jar for command-line usage in its root directory.
+Nightly builds of the [Toolbox](https://nightly.tlapl.us/products/) and [tla2tools](https://nightly.tlapl.us/dist/) are found at https://nightly.tlapl.us/products/ and https://nightly.tlapl.us/dist/.  The Toolbox contains the latest version of tla2tools.jar for command-line usage in its root directory.
 
 It is also possible to configure the Toolbox to [automatically update to nightly (experimental) builds](https://nightly.tlapl.us/doc/update/update-preferences.html).  
 
