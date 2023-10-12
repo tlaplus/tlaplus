@@ -85,7 +85,7 @@ public abstract class Specs {
 	    while (!subs.isEmpty())
 	    {
 	        SubstInNode sn = (SubstInNode) subs.car();
-	        res = new SubstInNode(sn.stn, sn.getSubsts(), res, sn.getInstantiatingModule(), sn.getInstantiatedModule());
+	        res = new SubstInNode(sn, res);
 	        subs = subs.cdr();
 	    }
 	    return res;

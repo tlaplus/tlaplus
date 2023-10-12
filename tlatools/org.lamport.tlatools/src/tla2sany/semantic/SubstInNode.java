@@ -65,7 +65,7 @@ public class SubstInNode extends ExprNode {
   private ModuleNode        instantiatedModule;
      // The module being instantiated
 
-  public SubstInNode(TreeNode treeNode, Subst[] subs, ExprNode expr,
+  private SubstInNode(TreeNode treeNode, Subst[] subs, ExprNode expr,
 		     ModuleNode ingmn, ModuleNode edmn) {
     super(SubstInKind, treeNode);
     this.substs = subs;
@@ -76,6 +76,21 @@ public class SubstInNode extends ExprNode {
       errors.addError(treeNode.getLocation(), "Substitution error, " +
 		      "probably due to error \nin module being instantiated.");
     }
+  }
+
+  public SubstInNode(final SubstInNode subst, final ExprNode expr) {
+	  this(subst.stn, subst.getSubsts(), expr, subst.getInstantiatingModule(),
+				subst.getInstantiatedModule());
+  }
+  
+  public SubstInNode(final APSubstInNode subst, final ExprNode expr) {
+	  this(subst.stn, subst.getSubsts(), expr, subst.getInstantiatingModule(),
+				subst.getInstantiatedModule());
+  }
+  
+  public SubstInNode(TreeNode treeNode, SubstInNode subst, ExprNode expr,
+		     ModuleNode ingmn, ModuleNode edmn) {
+	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn);
   }
 
   /**

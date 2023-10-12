@@ -62,7 +62,7 @@ public class APSubstInNode extends LevelNode {
   private ModuleNode        instantiatedModule;
      // The module being instantiated
 
-  public APSubstInNode(TreeNode treeNode, Subst[] subs, LevelNode expr,
+  private APSubstInNode(TreeNode treeNode, Subst[] subs, LevelNode expr,
 		     ModuleNode ingmn, ModuleNode edmn) {
     super(APSubstInKind, treeNode);
     this.substs = subs;
@@ -73,6 +73,11 @@ public class APSubstInNode extends LevelNode {
       errors.addError(treeNode.getLocation(), "Substitution error, " +
 		      "probably due to error in module being instantiated.");
     }
+  }
+  
+  public APSubstInNode(TreeNode treeNode, SubstInNode subst, LevelNode expr,
+		     ModuleNode ingmn, ModuleNode edmn) {
+	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn);
   }
 
   /**

@@ -1811,13 +1811,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			Object substOb = substInPrefix.elementAt(temp - 1);
 			if (substOb instanceof SubstInNode) {
 				SubstInNode subst = (SubstInNode) substOb;
-				curExprNode = new SubstInNode(subst.stn, subst.getSubsts(), curExprNode, subst.getInstantiatingModule(),
-						subst.getInstantiatedModule());
+				curExprNode = new SubstInNode(subst, curExprNode);
 			} else {
 				APSubstInNode subst = (APSubstInNode) substOb;
-				curExprNode = new SubstInNode(subst.stn, subst.getSubsts(), curExprNode, subst.getInstantiatingModule(),
-						subst.getInstantiatedModule());
-
+				curExprNode = new SubstInNode(subst, curExprNode);
 			}
 			temp = temp - 1;
 		}
@@ -4538,7 +4535,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// Create the "wrapping" SubstInNode as a clone of "subst"
 						// above, but with a body from the OpDefNode in the module
 						// being instantiated
-						SubstInNode substInNode = new SubstInNode(treeNode, substIn.getSubsts(), odn.getBody(), cm,
+						SubstInNode substInNode = new SubstInNode(treeNode, substIn, odn.getBody(), cm,
 								instanceeModule);
 
 						// MAK 02/2021: Store the individual segments of the compound id to not rely on
@@ -4626,7 +4623,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// Create the "wrapping" SubstInNode as a clone of "subst"
 					// above, but with a body from the ThmOrAssumpDefNode in the module
 					// being instantiated
-					APSubstInNode substInNode = new APSubstInNode(treeNode, substIn.getSubsts(), taOdn.getBody(), cm,
+					APSubstInNode substInNode = new APSubstInNode(treeNode, substIn, taOdn.getBody(), cm,
 							instanceeModule);
 
 					// Create the ThmOrAssumpDefNode for the new instance of this
@@ -5083,7 +5080,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// Create the "wrapping" SubstInNode as a clone of "subst" above,
 					// but with a body from the OpDefNode in the module being
 					// instantiated
-					substInTemplate = new SubstInNode(treeNode, subst.getSubsts(), odn.getBody(), cm,
+					substInTemplate = new SubstInNode(treeNode, subst, odn.getBody(), cm,
 							instanceeModuleNode);
 					newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(), localness,
 							substInTemplate, cm, symbolTable, treeNode, true, odn.getSource());
@@ -5178,7 +5175,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// Create the "wrapping" SubstInNode as a clone of "subst" above,
 					// but with a body from the ThmOrAssumpDefNode in the module being
 					// instantiated
-					tasubstInTemplate = new APSubstInNode(treeNode, subst.getSubsts(), tadn.getBody(), cm,
+					tasubstInTemplate = new APSubstInNode(treeNode, subst, tadn.getBody(), cm,
 							instanceeModuleNode);
 					newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), tasubstInTemplate, cm,
 							symbolTable, treeNode, tadn.getParams(), instanceeModuleNode, tadn.getSource());
