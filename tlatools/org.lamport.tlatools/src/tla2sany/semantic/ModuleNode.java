@@ -1271,5 +1271,9 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return ret;
   }
 
+	public boolean processConstantDefns() {
+		return !isInstantiated || isParameterFree();
+	}
+
 }
 

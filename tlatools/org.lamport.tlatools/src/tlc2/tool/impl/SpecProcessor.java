@@ -196,10 +196,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private void processConstantDefns() {
         ModuleNode[] mods = this.moduleTbl.getModuleNodes();
         for (int i = 0; i < mods.length; i++) {
-          if (   (! mods[i].isInstantiated())
-            || (   (mods[i].getConstantDecls().length == 0)
-              && (mods[i].getVariableDecls().length == 0) ) ) {
-              this.processConstantDefns(mods[i]);
+			if (mods[i].processConstantDefns()) {
+	              this.processConstantDefns(mods[i]);
           }
         }
     }
@@ -303,10 +301,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         // to prevent pre-evaluation of a definition from an EXTENDS of a module that
         // is also instantiated.
         ModuleNode moduleNode = opDef.getOriginallyDefinedInModuleNode() ;
-        boolean evaluate =    (moduleNode == null)
-                       || (! moduleNode.isInstantiated())
-                       || (   (moduleNode.getConstantDecls().length == 0)
-                           && (moduleNode.getVariableDecls().length == 0) ) ;
+		boolean evaluate = moduleNode == null || moduleNode.processConstantDefns();
 
         if (evaluate && opDef.getArity() == 0) {
           Object realDef = symbolNodeValueLookupProvider.lookup(opDef, Context.Empty, false, toolId);
