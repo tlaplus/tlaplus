@@ -124,8 +124,9 @@ public class TLCGlobals
     public static boolean warn = true;
 
     // The time interval to report progress (in milliseconds)
+    // max prevents div-by-zero if users passes 0.
 	public static final int progressInterval = Math
-			.abs(Integer.getInteger(TLC.class.getName() + ".progressInterval", 60)) * 1000 + 1; // prevent div-by-zero if users passes 0.
+			.max(Math.abs(Integer.getInteger(TLC.class.getName() + ".progressInterval", 60)), 1) * 1000;
 
     // The time interval to checkpoint. (in milliseconds)
 	public static long chkptDuration = Integer.getInteger(
