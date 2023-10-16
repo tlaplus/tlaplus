@@ -62,15 +62,15 @@ public class DotLivenessStateWriter extends DotStateWriter implements ILivenessS
 	 * @see tlc2.tool.liveness.ILivenessStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, boolean)
 	 */
 	public void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor,
-			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
-		writeState(state, tableauNode, successor, tableauNodeSuccessor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT);
+			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, short stateFlags) {
+		writeState(state, tableauNode, successor, tableauNodeSuccessor, actionChecks, from, length, stateFlags, Visualization.DEFAULT);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILivenessStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, tlc2.tool.TLCState, tlc2.tool.liveness.TBGraphNode, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
 	public void writeState(TLCState state, TBGraphNode tableauNode, TLCState successor,
-			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, boolean successorStateIsNew, Visualization visualization) {
+			TBGraphNode tableauNodeSuccessor, BitVector actionChecks, int from, int length, short stateFlags, Visualization visualization) {
 
 		final String successorsFP = Long.toString(successor.fingerPrint());
 
@@ -101,7 +101,7 @@ public class DotLivenessStateWriter extends DotStateWriter implements ILivenessS
 		// when writeState sees the successor. It does not print the label for
 		// the current state. If it would print the label for the current state,
 		// the init state labels would be printed twice.
-		if (successorStateIsNew) {
+		if (!isSet(stateFlags, IStateWriter.IsSeen)) {
 			// Write the successor's label
 			this.writer.append("\"");
 			this.writer.append(successorsFP);

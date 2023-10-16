@@ -42,14 +42,14 @@ public final class NoopStateWriter implements IStateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean)
 	 */
-	public final void writeState(final TLCState state, final TLCState successor, final boolean successorStateIsNew) {
+	public final void writeState(final TLCState state, final TLCState successor, final short stateFlags) {
 		// noop
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
+	public void writeState(TLCState state, TLCState successor, short stateFlags, Visualization visualization) {
 		// noop
 	}
 
@@ -63,14 +63,14 @@ public final class NoopStateWriter implements IStateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
-	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew) {
+	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, short stateFlags) {
 		// noop
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, boolean successorStateIsNew,
+	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int to, short stateFlags,
 			Visualization visualization) {
 		// noop
 	}
@@ -78,7 +78,7 @@ public final class NoopStateWriter implements IStateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.tool.Action)
 	 */
-	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Action action) {
+	public void writeState(TLCState state, TLCState successor, short stateFlags, Action action) {
 		// noop
 	}
 
@@ -94,6 +94,14 @@ public final class NoopStateWriter implements IStateWriter {
 	 */
 	@Override
 	public boolean isDot() {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#isConstrained()
+	 */
+	@Override
+	public boolean isConstrained() {
 		return false;
 	}
 		

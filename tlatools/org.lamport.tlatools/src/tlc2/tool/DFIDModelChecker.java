@@ -432,7 +432,7 @@ public class DFIDModelChecker extends AbstractChecker
                         allSuccNonLeaf = allSuccNonLeaf && !FPIntSet.isLeaf(status);
 
                         // Write out the state when new and asked:
-                        this.allStateWriter.writeState(curState, succState, status == FPIntSet.NEW);
+                        this.allStateWriter.writeState(curState, succState, status == FPIntSet.NEW ? IStateWriter.IsUnseen : IStateWriter.IsSeen);
 
                         // Remember succState if it has not been completed at this level:
                         if (!FPIntSet.isCompleted(status))
@@ -568,7 +568,7 @@ public class DFIDModelChecker extends AbstractChecker
             	final long curStateFP = curState.fingerPrint();
                 // Add a stuttering step for curState:
                 liveNextStates.put(curStateFP, curState);
-            	this.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
+            	this.allStateWriter.writeState(curState, curState, IStateWriter.IsUnseen, IStateWriter.Visualization.STUTTERING);
                 // Add curState to the behavior graph:
                 liveCheck.addNextState(tool, curState, curStateFP, liveNextStates);
 

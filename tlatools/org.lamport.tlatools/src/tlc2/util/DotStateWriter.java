@@ -79,15 +79,18 @@ public class DotStateWriter extends StateWriter {
 	// Create a valid fname_snapshot.dot file after a state is written.
 	private final boolean snapshot;
 	
+	// Include states in the dot file that are excluded from the model via a state or action constraint.
+	private final boolean constrained;
+	
 	// Determines whether or not stuttering edges should be rendered.
 	private final boolean stuttering;
 	
 	public DotStateWriter() throws IOException {
-		this("DotStateWriter.dot", "", false, false, false, false);
+		this("DotStateWriter.dot", "", false, false, false, false, false);
 	}
 	
 	public DotStateWriter(final String fname, final String strict) throws IOException {
-		this(fname, strict, false, false, false, false);
+		this(fname, strict, false, false, false, false, false);
 	}
 	
 	/**
@@ -101,16 +104,17 @@ public class DotStateWriter extends StateWriter {
 	 * @throws IOException
 	 */
 	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot, final boolean stuttering) throws IOException {
-		this(fname, "strict ", colorize, actionLabels, snapshot, stuttering);
+			final boolean snapshot, final boolean constrained, final boolean stuttering) throws IOException {
+		this(fname, "strict ", colorize, actionLabels, snapshot, constrained, stuttering);
 	}
 	
 	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot, final boolean stuttering) throws IOException {
+			final boolean snapshot, final boolean constrained, final boolean stuttering) throws IOException {
 		super(fname);
 		this.colorize = colorize;
 		this.actionLabels = actionLabels;
 		this.snapshot = snapshot;
+		this.constrained = constrained;
 		this.stuttering = stuttering;
 		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
@@ -140,6 +144,10 @@ public class DotStateWriter extends StateWriter {
 	@Override
 	public boolean isDot() {
 		return true;
+	}
+	
+	public boolean isConstrained() {
+		return this.constrained;
 	}
 
 	/* (non-Javadoc)
@@ -173,33 +181,33 @@ public class DotStateWriter extends StateWriter {
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean)
 	 */
-	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew) {
-		writeState(state, successor, successorStateIsNew, Visualization.DEFAULT);
+	public void writeState(TLCState state, TLCState successor, short stateFlags) {
+		writeState(state, successor, stateFlags, Visualization.DEFAULT);
 	}
 	
-    public void writeState(final TLCState state, final TLCState successor, final boolean successorStateIsNew, Action action)
+    public void writeState(final TLCState state, final TLCState successor, final short stateFlags, Action action)
     {
-		writeState(state, successor, null, 0, 0, successorStateIsNew, Visualization.DEFAULT, action);
+		writeState(state, successor, null, 0, 0, stateFlags, Visualization.DEFAULT, action);
     }
 	
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	public void writeState(TLCState state, TLCState successor, boolean successorStateIsNew, Visualization visualization) {
-		writeState(state, successor, null, 0, 0, successorStateIsNew, visualization, null);
+	public void writeState(TLCState state, TLCState successor, short stateFlags, Visualization visualization) {
+		writeState(state, successor, null, 0, 0, stateFlags, visualization, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, tlc2.util.BitVector, int, int, boolean)
 	 */
-	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew) {
-		writeState(state, successor, actionChecks, from, length, successorStateIsNew, Visualization.DEFAULT, null);
+	public void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, short stateFlags) {
+		writeState(state, successor, actionChecks, from, length, stateFlags, Visualization.DEFAULT, null);
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.util.StateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, java.lang.String, boolean, tlc2.util.IStateWriter.Visualization)
 	 */
-	private synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, boolean successorStateIsNew,
+	private synchronized void writeState(TLCState state, TLCState successor, BitVector actionChecks, int from, int length, short stateFlags,
 			Visualization visualization, Action action) {
 		if (!stuttering && visualization == Visualization.STUTTERING) {
 			// Do not render stuttering transitions unless requested.
@@ -226,7 +234,7 @@ public class DotStateWriter extends StateWriter {
 			// when writeState sees the successor. It does not print the label for
 			// the current state. If it would print the label for the current state,
 			// the init state labels would be printed twice.
-			if (successorStateIsNew) {
+	    	if (!isSet(stateFlags, IStateWriter.IsSeen)) {
 				// Write the successor's label.
 				this.writer.append(successorsFP);
 				this.writer.append(" [label=\"");
@@ -235,7 +243,11 @@ public class DotStateWriter extends StateWriter {
 				} else {
 					this.writer.append(states2dot(successor.evalStateLevelAlias()));
 				}
-				this.writer.append("\"]");
+		    	if (isSet(stateFlags, IStateWriter.IsNotInModel)) {
+		    		this.writer.append("\",style = filled, fillcolor=lightyellow]");
+				} else {
+					this.writer.append("\"]");
+				}
 				this.writer.append(";\n");
 			}
 		}

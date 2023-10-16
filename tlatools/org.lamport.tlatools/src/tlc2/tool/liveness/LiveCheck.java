@@ -524,7 +524,8 @@ public class LiveCheck implements ILiveCheck {
 					} else {
 						cnt++;
 					}
-					writer.writeState(s0, successorState, checkActionResults, sidx * alen, alen, ptr1 == -1);
+					writer.writeState(s0, successorState, checkActionResults, sidx * alen, alen,
+							ptr1 == -1 ? IStateWriter.IsUnseen : IStateWriter.IsSeen);
 				}
 				nextStates.resetNext();
 				// In simulation mode (see Simulator), it's possible that this
@@ -679,7 +680,7 @@ public class LiveCheck implements ILiveCheck {
 									&& (ptr1 == -1 || !node0.transExists(successor, tnode1.getIndex()))) {
 								node0.addTransition(successor, tnode1.getIndex(), checkStateResults.length, alen,
 										checkActionResults, sidx * alen, allocationHint - cnt);
-								writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, true);
+								writer.writeState(s0, tnode0, s1, tnode1, checkActionResults, sidx * alen, alen, IStateWriter.IsUnseen);
 								// Record that we have seen <successor,tnode1>. If fp1 is done, we have
 								// to compute the next states for <successor, tnode1>.
 								if (ptr1 == -1) {
@@ -880,7 +881,7 @@ public class LiveCheck implements ILiveCheck {
 							final int total = actions.length * nextCnt * tnode.nextSize();
 							if (tnode1.isConsistent(s1, tool) && (ptr1 == -1 || !node.transExists(fp1, tidx1))) {
 								node.addTransition(fp1, tidx1, slen, alen, checkActionRes, 0, (total - cnt));
-								writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, false, Visualization.DOTTED);
+								writer.writeState(s, tnode, s1, tnode1, checkActionRes, 0, alen, IStateWriter.IsSeen, Visualization.DOTTED);
 								// Record that we have seen <fp1, tnode1>. If
 								// fp1 is done, we have to compute the next
 								// states for <fp1, tnode1>.

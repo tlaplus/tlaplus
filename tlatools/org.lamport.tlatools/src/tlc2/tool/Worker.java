@@ -169,7 +169,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 
 		// Add the stuttering step:
 		liveNextStates.put(curStateFP, curState);
-		this.tlc.allStateWriter.writeState(curState, curState, true, IStateWriter.Visualization.STUTTERING);
+		this.tlc.allStateWriter.writeState(curState, curState, IStateWriter.IsUnseen, IStateWriter.Visualization.STUTTERING);
 
 		// Contrary to exceptions that are thrown during the evaluation of the init
 		// predicate and the next-state relation, the code below causes the call stack
@@ -436,6 +436,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			boolean unseen = true;
 			if (inModel) {
 				unseen = !isSeenState(curState, succState, action);
+			} else if (this.allStateWriter.isConstrained()) {
+				this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action);
 			}
 			
 			// Check if succState violates any invariant:
@@ -493,7 +495,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		final long fp = succState.fingerPrint();
 		final boolean seen = this.theFPSet.put(fp);
 		// Write out succState when needed:
-		this.allStateWriter.writeState(curState, succState, !seen, action);
+		this.allStateWriter.writeState(curState, succState, seen ? IStateWriter.IsSeen : IStateWriter.IsUnseen, action);
 		if (!seen) {
 			// Write succState to trace only if it satisfies the
 			// model constraints. Do not enqueue it yet, but wait
