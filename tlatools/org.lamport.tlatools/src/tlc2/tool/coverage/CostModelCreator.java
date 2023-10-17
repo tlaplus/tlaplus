@@ -163,8 +163,9 @@ public class CostModelCreator extends ExplorerVisitor {
 	private ActionWrapper root;
 	private Context ctx = Context.Empty;
 	
-	private CostModelCreator(final SemanticNode root, final ITool tool) {
+	private CostModelCreator(final SemanticNode root, final ActionWrapper aw, final ITool tool) {
 		this.tool = tool;
+		this.root = aw;
 		this.stack.push(new RecursiveOpApplNodeWrapper());
 		root.walkGraph(new CoverageHashTable(opDefNodes), this);
 	}
@@ -172,7 +173,7 @@ public class CostModelCreator extends ExplorerVisitor {
 	// root cannot be type OpApplNode but has to be SemanticNode (see Test216).
 	private CostModelCreator(final ITool tool) {
 		this.tool = tool;
-		// MAK 10/08/2018: Annotate OApplNodes in the semantic tree that correspond to
+		// MAK 10/08/2018: Annotate OpApplNodes in the semantic tree that correspond to
 		// primed vars. It is unclear why OpApplNodes do not get marked as primed when
 		// instantiated. The logic in Tool#getPrimedLocs is too obscure to tell.
 		final ObjLongTable<SemanticNode>.Enumerator<SemanticNode> keys = tool.getPrimedLocs().keys();
@@ -245,7 +246,7 @@ public class CostModelCreator extends ExplorerVisitor {
 				final OpDefNode odn = (OpDefNode) val;
 				final ExprNode body = odn.getBody();
 				if (body instanceof OpApplNode) {
-					final CostModelCreator substitution = new CostModelCreator(body, tool);
+					final CostModelCreator substitution = new CostModelCreator(body, root, tool);
 					oan.addChild((OpApplNodeWrapper) substitution.getModel());
 				}
 			}			
