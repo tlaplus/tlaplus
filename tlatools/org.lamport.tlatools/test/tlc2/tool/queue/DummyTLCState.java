@@ -129,4 +129,11 @@ public class DummyTLCState extends TLCState {
 	public String toString(TLCState lastState) {
 		return null;
 	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.tool.TLCState#toString(util.UniqueString[], tlc2.tool.TLCState)
+	 */
+	public String toString(UniqueString[] vars, TLCState lastState) {
+		return null;
+	}
 }

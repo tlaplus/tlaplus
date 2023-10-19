@@ -830,7 +830,12 @@ public class RecordValue extends Value implements Applicable {
 
 			@Override
 			public String toString(TLCState lastState) {
-				return this.state.toString(lastState);
+				return this.state.toString(this.rcd.names, lastState);
+			}
+
+			@Override
+			public String toString(UniqueString[] vars, TLCState lastState) {
+				return this.state.toString(vars, lastState);
 			}
 
 			@Override

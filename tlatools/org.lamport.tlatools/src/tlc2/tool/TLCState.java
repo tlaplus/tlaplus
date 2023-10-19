@@ -167,6 +167,7 @@ public abstract class TLCState implements Cloneable, Serializable {
   /* Returns a string representation of this state.  */
   public abstract String toString();
   public abstract String toString(TLCState lastState);
+  public abstract String toString(UniqueString[] vars, TLCState lastState);
   
   public Object execCallable() throws Exception {
 	  // no-op - see TLAPlusExecutorState

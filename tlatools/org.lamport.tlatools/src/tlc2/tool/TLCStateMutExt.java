@@ -8,12 +8,14 @@ package tlc2.tool;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
@@ -354,12 +356,19 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
   
   /* Returns a string representation of this state.  */
   public final String toString(TLCState lastState) {
+		return toString(
+				Arrays.stream(vars).map(o -> o.getName()).collect(Collectors.toList()).toArray(UniqueString[]::new),
+				lastState);
+  }
+  
+  /* Returns a string representation of this state.  */
+  public final String toString(UniqueString[] vars, TLCState lastState) {
     StringBuffer result = new StringBuffer();
     TLCStateMutExt lstate = (TLCStateMutExt)lastState;
 
     int vlen = vars.length;
     if (vlen == 1) {
-      UniqueString key = vars[0].getName();
+      UniqueString key = vars[0];
       IValue val = this.lookup(key);
       IValue lstateVal = lstate.lookup(key);
       if (!lstateVal.equals(val)) {
@@ -369,7 +378,7 @@ public final class TLCStateMutExt extends TLCState implements Cloneable, Seriali
     }
     else {
       for (int i = 0; i < vlen; i++) {
-	UniqueString key = vars[i].getName();
+	UniqueString key = vars[i];
 	IValue val = this.lookup(key);
 	IValue lstateVal = lstate.lookup(key);
 	if (!lstateVal.equals(val)) {
