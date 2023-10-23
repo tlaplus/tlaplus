@@ -372,9 +372,10 @@ public class SubstInNode extends ExprNode {
     /***********************************************************************
     * 23 February 2009: Added ".clone" to the following statements to fix  *
     * bug.                                                                 *
+    * 23 October 2023: Replaced ".clone" with copy constructor.            *
     ***********************************************************************/
-    this.allParams        = (HashSet<SymbolNode>)this.body.getAllParams().clone() ;
-    this.nonLeibnizParams = (HashSet<SymbolNode>)this.body.getNonLeibnizParams().clone() ;
+    this.allParams        = new HashSet<>(this.body.getAllParams());
+    this.nonLeibnizParams = new HashSet<>(this.body.getNonLeibnizParams());
     for (int i = 0 ; i < this.substs.length ; i++) {
       OpDeclNode param = substs[i].getOp() ;
       if (this.allParams.contains(param)) {

@@ -3348,7 +3348,7 @@ public class PcalTLAGen
                      * that is commented out.  Note that this change can add a token with
                      * type ADDED rather than IDENT.  I don't think this matters.
                      */
-                    TLAToken newTok = tok.Clone() ;
+                    TLAToken newTok = new TLAToken(tok);
                     /*
                      * The new token should inherit nothing from the baggage of tok, whose
                      * only function is to provide the name
@@ -3590,7 +3590,7 @@ public class PcalTLAGen
     /***********************************************************/
     private static Vector SortSass(Vector vec)
     {
-        Vector v = (Vector) vec.clone();
+        Vector v = new Vector<>(vec);
         Vector r = new Vector(); // The sorted version of v.
         while (v.size() > 0)
         { // Good old n^2 insertion sort.

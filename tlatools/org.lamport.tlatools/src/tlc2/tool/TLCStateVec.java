@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-public class TLCStateVec implements Cloneable, Serializable {
+public class TLCStateVec implements Serializable {
   private TLCState[] elementData;
   private int elementCount;
          

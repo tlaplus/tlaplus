@@ -144,9 +144,10 @@ implements ExploreNode, LevelConstants {
     * don't think this is needed and that everything works fine despite    *
     * the aliasing of the levelParams and allParams fields of this node    *
     * and its body to the same HashSets, but it doesn't hurt to be safe.   *
+    * 23 October 2023: Replaced ".clone" with copy constructor.            *
     ***********************************************************************/
-    this.levelParams = (HashSet<SymbolNode>)this.body.getLevelParams().clone();
-    this.allParams   = (HashSet<SymbolNode>) this.body.getAllParams().clone();
+    this.levelParams = new HashSet<>(this.body.getLevelParams());
+    this.allParams   = new HashSet<>(this.body.getAllParams());
 
 //    this.levelConstraints = new SetOfLevelConstraints();
     this.levelConstraints.putAll(this.body.getLevelConstraints());

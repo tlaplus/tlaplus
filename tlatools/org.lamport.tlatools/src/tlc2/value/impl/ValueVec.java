@@ -11,7 +11,7 @@ import java.util.Collection;
 import tlc2.TLCGlobals;
 import util.WrongInvocationException;
 
-public class ValueVec implements Cloneable, Serializable {
+public class ValueVec implements Serializable {
   private Value [] elementData;
   private int elementCount;
          
@@ -72,15 +72,6 @@ public class ValueVec implements Cloneable, Serializable {
   }
 
   public final int capacity() { return elementData.length; }
-
-  @Override
-  public final Object clone() {
-    ValueVec v = new ValueVec(this.elementData.length);
-	
-    System.arraycopy(elementData, 0, v.elementData, 0, elementCount);
-    v.elementCount = elementCount;
-    return v;
-  }
 
   public final boolean contains(Value  elem) {
     return (indexOf(elem) != -1);

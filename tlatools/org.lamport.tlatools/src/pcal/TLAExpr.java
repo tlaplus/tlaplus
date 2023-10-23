@@ -502,7 +502,7 @@ public class TLAExpr
             Vector line = (Vector) this.tokens.elementAt(i) ;
             int j = 0 ;
             while (j < line.size())
-              { newline.add(((TLAToken) line.elementAt(j)).Clone()) ;
+              { newline.add(new TLAToken((TLAToken) line.elementAt(j)));
                 j = j + 1 ;
               } ;
             result.tokens.add(newline) ;

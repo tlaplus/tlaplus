@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.Random;
 
 
-public class BigInt extends BigInteger implements Cloneable, ExternalSortable {
+public class BigInt extends BigInteger implements ExternalSortable {
 
   public final static BigInt BigZero = new BigInt("0");
   public final static BigInt BigOne = new BigInt("1");

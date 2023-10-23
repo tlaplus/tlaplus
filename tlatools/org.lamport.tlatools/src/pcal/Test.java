@@ -77,7 +77,7 @@ class Test
         int nextCol = 0 ;
         int i = 0 ;
         while (i < vec.size())
-          { TLAToken tok = ((TLAToken) vec.elementAt(i)).Clone() ;
+          { TLAToken tok = new TLAToken((TLAToken) vec.elementAt(i));
             tok.column = nextCol ;
             firstLine.addElement(tok) ;
             nextCol = nextCol + tok.getWidth() + spaces ;

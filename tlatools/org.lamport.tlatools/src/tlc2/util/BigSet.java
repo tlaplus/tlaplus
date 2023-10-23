@@ -15,7 +15,7 @@ import util.Set;
  * @deprecated currently not used
  * @version $Id$
  */
-public class BigSet implements Cloneable {
+public class BigSet {
   private static int MaxSize = 10000;
   // four rehashings give ~(>) 13440 els., and .75*13440 ~ 10000
   private static int InitialSize = 840; 

@@ -36,7 +36,7 @@ import util.WrongInvocationException;
  * Attention! Copy of TLCStateMut except for getter/setter and fields callable,
  * predecessor and action.
  */
-public final class TLCStateMutExt extends TLCState implements Cloneable, Serializable {
+public final class TLCStateMutExt extends TLCState implements Serializable {
   private IValue values[];
   private static ITool mytool = null;
 

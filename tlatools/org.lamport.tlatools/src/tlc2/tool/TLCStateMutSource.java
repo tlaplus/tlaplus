@@ -37,7 +37,7 @@
 // * The viewMap was added by Rajeev Joshi.
 // */
 //public final class TLCStateMutSource extends TLCState
-//implements Cloneable, Serializable {
+//implements Serializable {
 //  private Value[] values;
 //  private SemanticNode[] asts;
 //  private static Tool mytool = null;

@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 import util.FileUtil;
 
-public class LongVec implements Cloneable, Serializable {
+public class LongVec implements Serializable {
 	private static final long serialVersionUID = 2406899362740899071L;
 	protected long[] elementData;
 	protected int elementCount;
