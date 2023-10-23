@@ -2200,7 +2200,7 @@ public class ParseAlgorithm
      /**********************************************************************
      * Returns S \cup T.                                                   *
      **********************************************************************/
-     { Vector result = (Vector) S.clone() ;
+     { Vector result = new Vector<>(S);
        int i = 0 ;
        while (i < T.size())
          { String str = (String) T.elementAt(i) ;

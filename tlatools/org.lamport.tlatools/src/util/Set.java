@@ -9,24 +9,27 @@
 package util;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
 
 class SetEntry {
-  /*
-   * Set collision list.
-   */
-  int hash;
-  Object key;
-  SetEntry next;
+    /*
+     * Set collision list.
+     */
+    int hash;
+    Object key;
+    SetEntry next;
 
-  protected Object clone() {
-    SetEntry entry = new SetEntry();
-    entry.hash = hash;
-    entry.key = key;
-    entry.next = (next != null) ? (SetEntry)next.clone() : null;
-    return entry;
-  }
+    public SetEntry() {
+    }
+
+    public SetEntry(SetEntry toCopy) {
+        this.hash = toCopy.hash;
+        this.key = toCopy.key;
+        this.next = toCopy.next;
+    }
 }
 
 /**
@@ -52,7 +55,7 @@ class SetEntry {
  * <p>
  * </pre></blockquote>
  */
-public class Set implements Cloneable, java.io.Serializable {
+public class Set implements java.io.Serializable {
     /*
      * A set of objects.
      */
@@ -105,6 +108,25 @@ public class Set implements Cloneable, java.io.Serializable {
      * factor. 
      */
     public Set() { this(101, 0.75f); }
+
+    /**
+     * Create a copy of the given set.  The elements themselves are not copied.
+     * Similar to e.g. {@link java.util.HashSet#HashSet(Collection)}.
+     * This is a relatively expensive operation since its run time is linear in the size of <code>s</code>.
+     * @param s the set to copy
+     */
+    public Set(Set s) {
+        loadFactor = s.loadFactor;
+        count = s.count;
+        threshold = s.threshold;
+        set = new SetEntry[s.set.length];
+        for (int i = 0; i < set.length; ++i) {
+            SetEntry toCopy = s.set[i];
+            if (toCopy != null) {
+                set[i] = new SetEntry(toCopy);
+            }
+        }
+    }
 
     /*
      * Returns the number of keys in this set.
@@ -254,27 +276,6 @@ public class Set implements Cloneable, java.io.Serializable {
     }
 
     /*
-     * Creates a shallow copy of this set. The elements themselves are
-     * not cloned. 
-     * This is a relatively expensive operation.
-     *
-     * @return  a clone of the set.
-     */
-    public synchronized Object clone() {
-      try { 
-	Set t = (Set)super.clone();
-	t.set = new SetEntry[set.length];
-	for (int i = set.length ; i-- > 0 ; ) {
-	  t.set[i] = (set[i] != null) ? (SetEntry)set[i].clone() : null;
-	}
-	return t;
-      } catch (CloneNotSupportedException e) { 
-	// this shouldn't happen, since we are Cloneable
-	throw new InternalError();
-      }
-    }
-
-    /*
      * Returns a rather long string representation of this set.
      *
      * @return a string representation of this set.
@@ -375,18 +376,21 @@ public class Set implements Cloneable, java.io.Serializable {
   }
 
   /**
-   * Create a new set which is the intersection of x and y.  We clone
-   * the smaller (set size) of x, y because that's what intersection
-   * iterates on.
+   * Create a new set which is the intersection of x and y.  We make
+   * a shallow copy of the smaller (set size) of x, y because that's
+   * what intersection iterates on.
+   *
+   * TODO 2023/10/23: the comment above is wrong; the branches are identical.
+   *     We are missing out on whatever performance benefits could be gained.
    */
   public static Set intersection(Set x, Set y) {
-    Set result = new Set();
+    Set result;
     if (x.size() < y.size()) {
-      result = (Set) x.clone();
+      result = new Set(x);
       result.intersection(y);
     }
     else {
-      result = (Set) x.clone();
+      result = new Set(x);
       result.intersection(y);
     }
     return result;
@@ -404,18 +408,20 @@ public class Set implements Cloneable, java.io.Serializable {
   }
 
   /**
-   * Create a new set which is the union of x and y.  We clone the
-   * larger (set size) of x, y because union iterates on the one not
-   * cloned.
+   * Create a new set which is the union of x and y.  We make a shallow copy
+   * of the larger (set size) of x, y because union iterates on the argument.
+   *
+   * TODO 2023/10/23: the comment above is wrong; the branches are identical.
+   *     We are missing out on whatever performance benefits could be gained.
    */
   public static Set union(Set x, Set y) {
-    Set result = new Set();
+    Set result;
     if (x.size() > y.size()) {
-      result = (Set) x.clone();
+      result = new Set(x);
       result.union(y);
     }
     else {
-      result = (Set) x.clone();
+      result = new Set(x);
       result.union(y);
     }
     return result;
@@ -446,7 +452,7 @@ public class Set implements Cloneable, java.io.Serializable {
 
   /* Create a new set which equals x - y.  */
   public static Set minus(Set x, Set y) {
-    Set result = (Set) x.clone();
+    Set result = new Set(x);
     result.minus(y);
     return result;
   }

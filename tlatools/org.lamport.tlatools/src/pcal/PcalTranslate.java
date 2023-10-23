@@ -179,7 +179,7 @@ public class PcalTranslate {
         int nextCol = 0 ;
         int i = 0 ;
         while (i < vec.size())
-          { TLAToken tok = ((TLAToken) vec.elementAt(i)).Clone() ;
+          { TLAToken tok = new TLAToken((TLAToken) vec.elementAt(i));
             tok.column = nextCol ;
             firstLine.addElement(tok) ;
             nextCol = nextCol + tok.getWidth() + spaces ;
@@ -675,7 +675,7 @@ public class PcalTranslate {
         }
         AST.LabeledStmt newast = new AST.LabeledStmt();
         Vector pair = 
-                CopyAndExplodeLastStmtWithGoto((Vector) ast.stmts.clone(), 
+                CopyAndExplodeLastStmtWithGoto(new Vector<>(ast.stmts),
                                                next);
         Vector result = new Vector();
         newast.setOrigin(ast.getOrigin()) ;
@@ -789,11 +789,11 @@ public class PcalTranslate {
         /* explode unlabDo */
         String unlabDoNext = (firstLS == null) ? ast.label : firstLS.label ;
         Vector pair1 = 
-                CopyAndExplodeLastStmtWithGoto((Vector) w.unlabDo.clone(),
+                CopyAndExplodeLastStmtWithGoto(new Vector<>(w.unlabDo),
                                                 unlabDoNext);
         /* explode the rest of the statements */
-        Vector rest = (Vector) ast.stmts.clone();
-           // Note: experimentation shows that clone() does a shallow copy, so
+        Vector rest = new Vector<>(ast.stmts);
+           // Note: `rest` is a shallow copy, so
            // the elements of rest are == to the elements of ast.stmts.
         rest.remove(0);
         Vector pair2 = CopyAndExplodeLastStmtWithGoto(rest, next);

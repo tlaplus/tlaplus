@@ -25,7 +25,7 @@ import tlc2.value.impl.Value;
 import util.Assert;
 import util.UniqueString;
 
-public abstract class TLCState implements Cloneable, Serializable {
+public abstract class TLCState implements Serializable {
   public short workerId = Short.MAX_VALUE; // Must be set to a non-negative number. Valid worker ids \in [0,Short.MAX_VALUE] and start at 0.
   public static final int INIT_UID = -1;
   public long uid = INIT_UID;   // Must be set to a non-negative number

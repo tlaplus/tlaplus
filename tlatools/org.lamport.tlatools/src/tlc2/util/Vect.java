@@ -14,7 +14,7 @@ import java.util.Vector;
  * 		we've also written our own "Vector" class in SANY...
  */
 @SuppressWarnings("unchecked")
-public class Vect<E> implements Cloneable, Serializable {
+public class Vect<E> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	
@@ -80,13 +80,6 @@ public class Vect<E> implements Cloneable, Serializable {
   }
 
   public int capacity() { return this.elementData.length; }
-
-  public Object clone() {
-    Vect<E> v = new Vect<>(this.elementData.length);
-    System.arraycopy(this.elementData, 0, v.elementData, 0, this.elementCount);
-    v.elementCount = this.elementCount;
-    return v;
-  }
 
   public final boolean contains(Object elem) {
     return (this.indexOf(elem) != -1);

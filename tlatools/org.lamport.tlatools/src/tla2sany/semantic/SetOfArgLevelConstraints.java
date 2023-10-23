@@ -17,7 +17,14 @@ class SetOfArgLevelConstraints extends HashMap<ParamAndPosition, Integer> implem
   * be able to accept an argument of level v in its argument number        *
   * k.position.                                                            *
   *************************************************************************/
-  
+
+  public SetOfArgLevelConstraints() {
+  }
+
+  public SetOfArgLevelConstraints(Map<? extends ParamAndPosition, ? extends Integer> m) {
+    super(m);
+  }
+
   /**
    * This method adds <pap, level> into this set, and "subsumes"
    * it with another one for the same parameter if one is there, or

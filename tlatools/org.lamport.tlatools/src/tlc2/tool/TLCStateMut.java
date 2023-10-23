@@ -36,7 +36,7 @@ import util.WrongInvocationException;
  *
  * The viewMap was added by Rajeev Joshi.
  */
-public final class TLCStateMut extends TLCState implements Cloneable, Serializable {
+public final class TLCStateMut extends TLCState implements Serializable {
   private IValue values[];
   private static ITool mytool = null;
 

@@ -503,12 +503,12 @@ public class ThmOrAssumpDefNode extends SymbolNode
          } ;
       }
 
-      this.levelConstraints = (SetOfLevelConstraints)lcSet.clone();
+      this.levelConstraints = new SetOfLevelConstraints(lcSet);
       for (int i = 0; i < this.params.length; i++) {
         this.levelConstraints.remove(this.params[i]);
       }
 
-      this.argLevelConstraints = (SetOfArgLevelConstraints)alcSet.clone();
+      this.argLevelConstraints = new SetOfArgLevelConstraints(alcSet);
       for (int i = 0; i < this.params.length; i++) {
         int alen = this.params[i].getArity();
         for (int j = 0; j < alen; j++) {

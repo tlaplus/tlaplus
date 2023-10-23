@@ -14,7 +14,14 @@ class SetOfLevelConstraints extends HashMap<SymbolNode, Integer> implements Leve
   * SymbolNode and whose value is an int.  An entry in this table means    *
   * that the key/parameter must have a level <= the value/int.             *
   *************************************************************************/
-  
+
+  public SetOfLevelConstraints() {
+  }
+
+  public SetOfLevelConstraints(Map<? extends SymbolNode, ? extends Integer> m) {
+    super(m);
+  }
+
   /**
    * This method adds <param, level> into this map. It subsumes
    * any existing one. 

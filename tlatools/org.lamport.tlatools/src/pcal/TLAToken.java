@@ -266,6 +266,19 @@ public class TLAToken
         type   = 0 ;
       } ;
 
+    /**
+     * Create a copy of the given token.
+     *
+     * @param other the token to copy
+     */
+    public TLAToken(TLAToken other) {
+        this(other.string, other.column, other.type);
+        this.source = other.source;
+        this.beginSubst = new Vector<>(other.beginSubst);
+        this.endSubst = new Vector<>(other.endSubst);
+        this.isAppended = other.isAppended;
+    }
+
     public int getWidth() 
       /*********************************************************************
       * Returns a width, which is the number of columns the token spans    *
@@ -313,23 +326,6 @@ public class TLAToken
 //        }
         return result; 
       };
- 
-
-   /**
-    * Modified by LL on 6 Dec 2011 to set the source field too.
-    * And on 14 Dec 2011 to set the beginSubst and endSubst fields.
-    * 
-    * @return
-    */
-   public TLAToken Clone()
-     { 
-	   TLAToken result = new TLAToken(this.string, this.column, this.type) ;
-	   result.source = this.source ;
-	   result.beginSubst = (Vector) this.beginSubst.clone();
-	   result.endSubst = (Vector) this.endSubst.clone();
-	   result.isAppended = this.isAppended;
-	   return result ;
-     }
 
   }
 
