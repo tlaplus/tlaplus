@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -780,21 +781,31 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return getTrace(curState);
 	}
 
-	public synchronized final StateVec getTrace(TLCState s) {
-		if (s == null) {
+	public synchronized final StateVec getTrace(TLCState t) {
+		if (t == null) {
 			return new StateVec(0);
 		}
 
-		final int level = s.getLevel();
-		final TLCState[] t = new TLCState[level];
+		final LinkedList<TLCState> trace = new LinkedList<>();
 
-		for (int i = level - 1; i >= 0; i--) {
-			t[i] = s;
-			s = s.getPredecessor();
+		while (t != null) {
+			// Eliminate (finite) stuttering steps from the trace. This should have no
+			// observable effect on counterexamples, except for properties such as
+			// TLCGt("level") < 5 because the counterexample can be shorter than 5.
+			final TLCState s = t.getPredecessor();
+			if (t.equals(s)) {
+				t = s;
+				continue;
+			}
+			if (!trace.isEmpty()) {
+				// Correct the predecessor of t.getFirst to point to the new s state.
+				trace.getFirst().setPredecessor(t);
+			}
+			trace.addFirst(t);
+			t = t.getPredecessor();
 		}
-		assert t[0] != null && s == null;
 		
-		return new StateVec(t);
+		return new StateVec(trace.toArray(TLCState[]::new));
 	}
 	
 	public final TLCStateInfo[] getTraceInfo(final int level) {
