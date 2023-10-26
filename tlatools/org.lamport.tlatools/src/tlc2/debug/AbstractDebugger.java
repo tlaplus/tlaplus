@@ -47,11 +47,10 @@ import org.eclipse.lsp4j.debug.ReadMemoryResponse;
 import org.eclipse.lsp4j.debug.RestartArguments;
 import org.eclipse.lsp4j.debug.RestartFrameArguments;
 import org.eclipse.lsp4j.debug.ReverseContinueArguments;
-import org.eclipse.lsp4j.debug.RunInTerminalRequestArguments;
-import org.eclipse.lsp4j.debug.RunInTerminalResponse;
 import org.eclipse.lsp4j.debug.SetDataBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SetDataBreakpointsResponse;
 import org.eclipse.lsp4j.debug.SetExceptionBreakpointsArguments;
+import org.eclipse.lsp4j.debug.SetExceptionBreakpointsResponse;
 import org.eclipse.lsp4j.debug.SetExpressionArguments;
 import org.eclipse.lsp4j.debug.SetExpressionResponse;
 import org.eclipse.lsp4j.debug.SetFunctionBreakpointsArguments;
@@ -118,12 +117,6 @@ public abstract class AbstractDebugger implements IDebugProtocolServer{
 	}
 
 	@Override
-	public CompletableFuture<RunInTerminalResponse> runInTerminal(RunInTerminalRequestArguments args) {
-		System.out.println("runInTerminal");
-		return CompletableFuture.completedFuture(new RunInTerminalResponse());
-	}
-
-	@Override
 	public CompletableFuture<SetFunctionBreakpointsResponse> setFunctionBreakpoints(
 			SetFunctionBreakpointsArguments args) {
 		System.out.println("setFunctionBreakpoint");
@@ -131,9 +124,9 @@ public abstract class AbstractDebugger implements IDebugProtocolServer{
 	}
 
 	@Override
-	public CompletableFuture<Void> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
+	public CompletableFuture<SetExceptionBreakpointsResponse> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
 		System.out.println("setExceptionBreakpoints");
-		return CompletableFuture.completedFuture(null);
+		return CompletableFuture.completedFuture(new SetExceptionBreakpointsResponse());
 	}
 
 	@Override

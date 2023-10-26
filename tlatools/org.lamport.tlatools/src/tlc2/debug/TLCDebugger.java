@@ -60,6 +60,7 @@ import org.eclipse.lsp4j.debug.ScopesResponse;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SetBreakpointsResponse;
 import org.eclipse.lsp4j.debug.SetExceptionBreakpointsArguments;
+import org.eclipse.lsp4j.debug.SetExceptionBreakpointsResponse;
 import org.eclipse.lsp4j.debug.SetVariableArguments;
 import org.eclipse.lsp4j.debug.SetVariableResponse;
 import org.eclipse.lsp4j.debug.Source;
@@ -270,11 +271,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized CompletableFuture<Void> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
+	public synchronized CompletableFuture<SetExceptionBreakpointsResponse> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
 		final List<String> asList = Arrays.asList(args.getFilters());
 		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asList.contains("InvariantBreakpointsFilter");
-		return CompletableFuture.completedFuture(null);
+		return CompletableFuture.completedFuture(new SetExceptionBreakpointsResponse());
 	}
 
 	@Override
