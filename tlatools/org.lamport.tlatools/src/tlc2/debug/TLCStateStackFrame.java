@@ -229,6 +229,21 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	@Override
+	protected Variable getStateAsVariable(final IValue value, String varName) {
+		final Variable variable = getVariable(value, UniqueString.of(varName));
+		// Because we convert the TLCState (getT) to a RecordValue to re-use the
+		// getVariable(..) implementation, the type (shown when hovering over the
+		// variable in the debugger's variable view) would be RecordValue. This would be
+		// bogus and is, thus, corrected to TLCState here.
+		try {
+			variable.setType(String.format("FP64: %s", Long.toString(getT().fingerPrint())));
+			return variable;
+		} catch (Exception e) {
+			return super.getStateAsVariable(value, varName);
+		}
+	}
+
+	@Override
 	protected Variable getVariable(final LinkedList<SemanticNode> path) {
 		assert !path.isEmpty();
 		
