@@ -133,6 +133,11 @@ public class AttachingDebugger extends TLCDebugger {
 	public CompletableFuture<Void> launch(Map<String, Object> args) {
 		LOGGER.finer("launch");
 		Executors.newSingleThreadExecutor().submit(() -> {
+			// Debuggee -> Frontend initialize has to come after the capabilities according
+			// to https://github.com/Microsoft/vscode/issues/4902#issuecomment-368583522.
+			// Also see https://github.com/eclipse-lsp4j/lsp4j/issues/229#issuecomment-413826135
+			launcher.getRemoteProxy().initialized();
+
 			if (!"".equals(buffer)) {
 				// Send buffered TLC output that was printed before the debugger connected.
 				final OutputEventArguments oea = new OutputEventArguments();

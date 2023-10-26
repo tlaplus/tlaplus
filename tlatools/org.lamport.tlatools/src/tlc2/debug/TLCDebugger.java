@@ -137,13 +137,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Capabilities> initialize(InitializeRequestArguments args) {
 		LOGGER.finer("initialize");
 
-		Executors.newSingleThreadExecutor().submit(() -> {
-			LOGGER.finer("initialize -> initialized");
-			// Signal the debugger that we are ready. It seem not relevant in what order the
-			// response below and the initialized signal arrive at the debugger.
-			launcher.getRemoteProxy().initialized();
-		});
-
 		// The capabilities define customizations how the debugger will interact with
 		// this debuggee. Declaring no capabilities causes the most simple protocol to
 		// be used.
