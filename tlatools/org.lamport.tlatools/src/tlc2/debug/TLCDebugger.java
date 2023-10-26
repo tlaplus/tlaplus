@@ -109,12 +109,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
+		this.haltUnsat = true;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltUnsat = halt;
 	}
 
 	/*
@@ -124,6 +126,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltUnsat = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -247,19 +250,24 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
 
+		final ExceptionBreakpointsFilter unsat = new ExceptionBreakpointsFilter();
+		unsat.setDefault_(this.haltUnsat);
+		unsat.setFilter("UnsatisfiedBreakpointsFilter");
+		unsat.setLabel("Halt (break) on unsatisfied");
+
 		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
 			// See the following two git commits to find out why:
 			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
 			// 42f251546ce99c19f1a7a44310816527a15ade2b
-			return new ExceptionBreakpointsFilter[] { filter };
+			return new ExceptionBreakpointsFilter[] { filter, unsat };
 		} else {
 			final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
 			violations.setDefault_(this.haltInv);
 			violations.setFilter("InvariantBreakpointsFilter");
 			violations.setLabel("Halt (break) on violations");
 
-			return new ExceptionBreakpointsFilter[] { filter, violations };
+			return new ExceptionBreakpointsFilter[] { filter, unsat, violations };
 		}
 	}
 
@@ -267,6 +275,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<SetExceptionBreakpointsResponse> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
 		final List<String> asList = Arrays.asList(args.getFilters());
 		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
+		this.haltUnsat = asList.contains("UnsatisfiedBreakpointsFilter");
 		this.haltInv = asList.contains("InvariantBreakpointsFilter");
 		return CompletableFuture.completedFuture(new SetExceptionBreakpointsResponse());
 	}
@@ -353,6 +362,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
+		haltUnsat = false;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -656,6 +666,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
+	private volatile boolean haltUnsat;
 
 	private volatile boolean executionIsHalted = false;
 	
@@ -854,6 +865,26 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
 			Action a, TLCState t, StatefulRuntimeException e) {
 		return popExceptionFrame(tool, expr, c, null, e);
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState state) {
+		final TLCStackFrame frame = new TLCStateStackFrame(stack.peek(), expr, c, tool, state);
+		stack.push(frame);
+		if (haltUnsat) {
+			haltExecution(frame);
+		}
+		return this;
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state) {
+		final TLCStackFrame frame = new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, a, state);
+		stack.push(frame);
+		if (haltUnsat) {
+			haltExecution(frame);
+		}
+		return this;
 	}
 
 	@Override

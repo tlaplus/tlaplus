@@ -547,6 +547,7 @@ public abstract class Tool
 						// Increase "states found".
 						cm.getRoot().incSecondary();
 					}
+					this.processUnsatisfied(ps, acts.carPred(), acts.carContext());
 					return;
 				}
 				// Move on to the next action in the ActionItemList.
@@ -1028,7 +1029,7 @@ public abstract class Tool
 						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() }, pred, c);
 			  }
 			  if (!((BoolValue) bval).val) {
-				  return s1;
+				  return this.processUnsatisfied(s0, action, s1, pred, c);
 			  }
 		  } else if (kind == -2) {
 			  // Identical to default handling below (line 876). Ignored during this optimization.
@@ -1051,6 +1052,17 @@ public abstract class Tool
 	  return s1.copy();
   }
 
+  @ExpectInlined
+  protected TLCState processUnsatisfied(final TLCState ps, final SemanticNode pred, final Context c) {
+	  return ps;
+  }
+
+  @ExpectInlined
+  protected TLCState processUnsatisfied(final TLCState s0, final Action action, final TLCState s1,
+			final SemanticNode pred, final Context c) {
+	return s1;
+  }
+  
   /* getNextStatesAppl */
 
   @ExpectInlined

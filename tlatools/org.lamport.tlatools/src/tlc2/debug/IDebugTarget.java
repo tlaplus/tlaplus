@@ -133,6 +133,11 @@ public interface IDebugTarget {
 
 	IDebugTarget markAssumptionViolatedFrame(Tool debugTool, SemanticNode pred, Context c);
 
+	IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState state);
+
+	IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a,
+			TLCState state);
+
 	//------------------------ Wrapper --------------------------//
 	
 	IDebugTarget pushFrame(TLCState state);

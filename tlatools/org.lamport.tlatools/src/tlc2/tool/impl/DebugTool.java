@@ -485,7 +485,23 @@ public class DebugTool extends Tool {
 			throw e;
 		}		
 	}
-	
+
+    @Override
+	protected TLCState processUnsatisfied(final TLCState state, final SemanticNode pred, final Context c) {
+    	target.pushUnsatisfiedFrame(this, pred, c, state);
+    	target.popFrame(this, pred, c, state);
+		return state;
+	}
+
+    @Override
+	protected TLCState processUnsatisfied(final TLCState curState, final Action action, final TLCState succState,
+			final SemanticNode pred, final Context c) {
+    	succState.setAction(action).setPredecessor(curState);
+    	target.pushUnsatisfiedFrame(this, pred, c, curState, action, succState);
+    	target.popFrame(this, pred, c, curState, succState);
+		return succState;
+	}
+
     @Override
 	protected void getInitStates(SemanticNode init, ActionItemList acts, Context c, TLCState ps, IStateFunctor states,
 			CostModel cm) {
