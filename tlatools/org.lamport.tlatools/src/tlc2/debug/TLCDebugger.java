@@ -92,6 +92,7 @@ import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
 import tlc2.value.impl.Value;
 
@@ -252,7 +253,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
 
-		if (TLCGlobals.mainChecker != null) {
+		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
 			// See the following two git commits to find out why:
 			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
