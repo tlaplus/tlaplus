@@ -249,11 +249,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		filter.setDefault_(this.haltExp);
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
+		filter.setDescription("TLC will halt when it encounters a silly expression");
 
 		final ExceptionBreakpointsFilter unsat = new ExceptionBreakpointsFilter();
 		unsat.setDefault_(this.haltUnsat);
 		unsat.setFilter("UnsatisfiedBreakpointsFilter");
 		unsat.setLabel("Halt (break) on unsatisfied");
+		unsat.setDescription("TLC will halt when a successor state does not satisfy the next-state relation.");
 
 		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
@@ -266,6 +268,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			violations.setDefault_(this.haltInv);
 			violations.setFilter("InvariantBreakpointsFilter");
 			violations.setLabel("Halt (break) on violations");
+			violations.setDescription("TLC will halt when an invariant is violated.");
 
 			return new ExceptionBreakpointsFilter[] { filter, unsat, violations };
 		}
