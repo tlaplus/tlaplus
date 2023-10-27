@@ -570,9 +570,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	@Override
 	public synchronized CompletableFuture<ContinueResponse> continue_(ContinueArguments args) {
 		LOGGER.finer("continue_");
-		
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().continue_(this);
+
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.Continue, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().continue_(this);
+			}
 		}
 
 		targetLevel = -1;
@@ -585,8 +588,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> next(NextArguments args) {
 		LOGGER.finer("next/stepOver");
 		
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().stepOver(this);
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.Over, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().stepOver(this);
+			}
 		}
 
 		targetLevel = this.stack.size();
@@ -599,8 +605,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepIn(StepInArguments args) {
 		LOGGER.finer("stepIn");
 		
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().stepIn(this);
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.In, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().stepIn(this);
+			}
 		}
 		// matches(..) below does not take targetLevel into account, thus not changing
 		// it here. The reason is that it is surprising if step.in on a leaf-frame
@@ -614,8 +623,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
 
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().stepOut(this);
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.Out, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().stepOut(this);
+			}
 		}
 		
 		targetLevel = this.stack.size();
@@ -641,8 +653,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepBack(StepBackArguments args) {
 		LOGGER.finer("stepBack");
 
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().stepBack(this);
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.Reset, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().stepBack(this);
+			}
 		}
 
 		step = Step.Reset;
@@ -655,8 +670,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> reverseContinue(ReverseContinueArguments args) {
 		LOGGER.finer("reverseContinue");
 		
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().reverseContinue(this);
+		if (!stack.isEmpty()) {
+			stack.peek().stepped(Step.Reset_Start, this);
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().reverseContinue(this);
+			}
 		}
 		
 		step = Step.Reset_Start;
