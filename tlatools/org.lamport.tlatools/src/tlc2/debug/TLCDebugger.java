@@ -33,10 +33,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.Capabilities;
@@ -109,14 +111,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
-		this.haltUnsat = true;
+		this.haltUnsat = 0;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltUnsat = halt;
+		this.haltUnsat = halt ? 0 : Integer.MAX_VALUE;
 	}
 
 	/*
@@ -126,7 +128,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltUnsat = halt;
+		this.haltUnsat = halt ? 0 : Integer.MAX_VALUE;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -160,7 +162,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// Don't support more sophisticated configuration of exception breakpoint
 		// filters such as ignoring some exceptions. When TLC hits an exception, it
 		// terminates anyway.
-		capabilities.setSupportsExceptionOptions(false);
+		capabilities.setSupportsExceptionFilterOptions(true);
 		// Breakpoints:
 		capabilities.setSupportsHitConditionalBreakpoints(true);
 		// TODO: Log points and conditional (expression-based) breakpoints require to
@@ -252,10 +254,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		filter.setDescription("TLC will halt when it encounters a silly expression");
 
 		final ExceptionBreakpointsFilter unsat = new ExceptionBreakpointsFilter();
-		unsat.setDefault_(this.haltUnsat);
+		unsat.setDefault_(this.haltUnsat != Integer.MAX_VALUE ? true : false);
 		unsat.setFilter("UnsatisfiedBreakpointsFilter");
 		unsat.setLabel("Halt (break) on unsatisfied");
 		unsat.setDescription("TLC will halt when a successor state does not satisfy the next-state relation.");
+		unsat.setSupportsCondition(true);
 
 		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
@@ -276,10 +279,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized CompletableFuture<SetExceptionBreakpointsResponse> setExceptionBreakpoints(SetExceptionBreakpointsArguments args) {
-		final List<String> asList = Arrays.asList(args.getFilters());
-		this.haltExp = asList.contains("ExceptionBreakpointsFilter");
-		this.haltUnsat = asList.contains("UnsatisfiedBreakpointsFilter");
-		this.haltInv = asList.contains("InvariantBreakpointsFilter");
+		final Set<String> asSet = Arrays.stream(args.getFilterOptions()).map(fo -> fo.getFilterId()).collect(Collectors.toSet());
+		this.haltExp = asSet.contains("ExceptionBreakpointsFilter");
+		this.haltInv = asSet.contains("InvariantBreakpointsFilter");
+
+		this.haltUnsat = Arrays.stream(args.getFilterOptions())
+				.filter(fo -> fo.getFilterId().equals("UnsatisfiedBreakpointsFilter")).mapToInt(fo -> {
+					try {
+						return Integer.parseInt(fo.getCondition());
+					} catch (NumberFormatException e) {
+						return 0;
+					}
+				}).findAny().orElse(Integer.MAX_VALUE);
+
 		return CompletableFuture.completedFuture(new SetExceptionBreakpointsResponse());
 	}
 
@@ -365,7 +377,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
-		haltUnsat = false;
+		haltUnsat = Integer.MAX_VALUE;
 		this.notify();
 		
 		return CompletableFuture.completedFuture(null);
@@ -669,7 +681,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
-	private volatile boolean haltUnsat;
+	private volatile int haltUnsat;
 
 	private volatile boolean executionIsHalted = false;
 	
@@ -874,7 +886,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState state) {
 		final TLCStackFrame frame = new TLCStateStackFrame(stack.peek(), expr, c, tool, state);
 		stack.push(frame);
-		if (haltUnsat) {
+		if (state.getLevel() >= haltUnsat) {
 			haltExecution(frame);
 		}
 		return this;
@@ -884,7 +896,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget pushUnsatisfiedFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state) {
 		final TLCStackFrame frame = new TLCActionStackFrame(stack.peek(), expr, c, tool, predecessor, a, state);
 		stack.push(frame);
-		if (haltUnsat) {
+		if (state.getLevel() >= haltUnsat) {
 			haltExecution(frame);
 		}
 		return this;
