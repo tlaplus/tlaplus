@@ -62,7 +62,6 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.debug.IDebugTarget.Granularity;
-import tlc2.debug.IDebugTarget.Step;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
@@ -125,10 +124,6 @@ public class TLCStackFrame extends StackFrame {
 
 	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
 		this.parent = parent;
-		// Pass the parent's (if any) step information on to its child. This way,
-		// matches does not have to traverse the parent pointers to determine the user's
-		// step decision.
-		this.stepped = parent != null ? parent.stepped : Step.In;
 		this.tool = tool;
 		Assert.check(this.tool != null, EC.GENERAL);
 		
@@ -650,11 +645,6 @@ public class TLCStackFrame extends StackFrame {
 	}
 
 	public boolean matches(final TLCSourceBreakpoint bp) {
-		// step \in {Over, Out, Continue}
-		if (this.stepped == Step.Over || this.stepped == Step.Continue || this.stepped == Step.Out) {
-			return false;
-		}
-
 		// TODO: For const-level expression (TLCStackFrame),
 		// TLCSourceBreakpoint#getHits() should have the traditional meaning. Question
 		// is, where do we keep the hit count. A user would select the meaning by
@@ -723,21 +713,5 @@ public class TLCStackFrame extends StackFrame {
 
 	public boolean handle(final TLCDebugger debugger) {
 		return false;
-	}
-	
-	// This step is different from the one in TLCDebugger. The step - related to
-	// targetLevel - is about stopping/halting the debugger independent of
-	// breakpoints. For example, TLC has halted on the first assume or Init and the
-	// user is manually advancing or reversing trough the formula evaluation.  Here,
-	// we determine where to step in the presence of breakpoints.  For example, a
-	// user might be stepping over a conjunct of a formula without removing the
-	// conjunct's breakpoint. Since stepping over the conjunct means we have to
-	// ignore the TLCStackFrames created for the conjunct's nested formula that are
-	// pushed and pop from the stack, we remember the user's intent as part of the
-	// TLCStackFrames.
-	private Step stepped = Step.In;
-
-	public void stepped(final Step s, final TLCDebugger debugger) {
-		this.stepped = s;
 	}
 }
