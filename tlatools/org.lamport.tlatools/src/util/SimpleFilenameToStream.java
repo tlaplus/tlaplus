@@ -68,6 +68,10 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), anLibraryPaths);
   }
 
+    public static boolean isInJar(final String aString) {
+        return aString.startsWith("jar:") || aString.endsWith(".jar");
+    }
+
   // Find the absolute path in the file system to the directory
   // that is the base of the entire installation of tlaSANY; this path
   // must have separators appropriate to the Unix ('/') or Windows ('\') world.
@@ -81,7 +85,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     final String path = url.toString();
 	try {
     	// convert to URI which handles paths correctly (even OS dependently)
-    	if(!FilenameToStream.isInJar(path)) {
+    	if(!isInJar(path)) {
     	final URI uri = new URI(path);
     		return new File(uri).getAbsolutePath();
     	}
@@ -205,7 +209,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
         	//
         	// This would be a lot simpler if TLC would not depend on
         	// File but on InputStream instead
-        	if(FilenameToStream.isInJar(prefix)) {
+        	if(isInJar(prefix)) {
 				is = cl.getResourceAsStream(STANDARD_MODULES + name);
 				if(is != null) {
 					sourceFile = read(name, cl.getResource(STANDARD_MODULES + name), is);
