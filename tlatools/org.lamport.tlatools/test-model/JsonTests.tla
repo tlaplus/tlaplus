@@ -163,4 +163,24 @@ RoundTrip ==
        /\ JsonSerialize("target/json/test.json", output)
        /\ output = JsonDeserialize("target/json/test.json")
 ASSUME(RoundTrip)
+
+-----
+
+ASSUME AssertError(
+           "The second argument of JsonSerialize should be a sequence, but instead it is:\n[a |-> 1, b |-> TRUE]",
+           JsonSerialize("target/json/test.json", [a |-> 1, b |-> TRUE] ))
+
+ASSUME AssertError(
+           "The second argument of ndJsonSerialize should be a sequence, but instead it is:\n[a |-> 1, b |-> TRUE]",
+           ndJsonSerialize("target/json/test.json", [a |-> 1, b |-> TRUE] ))
+
+
+ASSUME AssertError(
+           "The second argument of JsonSerialize should be a sequence, but instead it is:\n42",
+           JsonSerialize("target/json/test.json", 42 ))
+
+ASSUME AssertError(
+           "The second argument of ndJsonSerialize should be a sequence, but instead it is:\n42",
+           ndJsonSerialize("target/json/test.json", 42 ))
+
 =============================================================================
