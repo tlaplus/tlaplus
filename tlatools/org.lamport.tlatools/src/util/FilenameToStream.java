@@ -164,6 +164,22 @@ public interface FilenameToStream
      */
     boolean isStandardModule(String moduleName);
 
+    /**
+     * @deprecated use {@link #isStandardModule(String)} instead
+     */
+    @Deprecated
+    default boolean isLibraryModule(String moduleName) {
+        return isStandardModule(moduleName);
+    }
+
+    static boolean isInJar(final String aString) {
+        return aString.startsWith("jar:") || aString.endsWith(".jar");
+    }
+
+    static boolean isArchive(String aString) {
+        return isInJar(aString) || aString.endsWith(".zip");
+    }
+
     static Path getTempDirectory() {
         try {
             return Files.createTempDirectory("tlc-");
