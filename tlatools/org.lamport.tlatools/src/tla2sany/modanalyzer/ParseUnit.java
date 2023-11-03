@@ -306,6 +306,8 @@ public class ParseUnit {
             // Here is the one true REAL call to the parseTree.parse() for a file;
             // The root node of the parse tree is left in parseTree.
             parseSuccess = parseTree.parse();
+            
+            parseTree.rootNode().setLevel(0);
 
             // set the parse time stamp
             parseStamp = System.currentTimeMillis();

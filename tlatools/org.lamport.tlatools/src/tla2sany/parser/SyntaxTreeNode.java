@@ -148,6 +148,25 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     * post-comment.                                                        *
     ***********************************************************************/
 
+	private int level = -1;
+
+	@Override
+	public int getLevel() {
+		return level;
+	}
+
+	@Override
+	public void setLevel(final int lvl) {
+		this.level = lvl;
+
+		for (int i = 0; zero != null && i < zero.length; i++) {
+			zero[i].setLevel(lvl + 1);
+		}
+		for (int i = 0; one != null && i < one.length; i++) {
+			one[i].setLevel(lvl + 1);
+		}
+	}
+  
   public static SyntaxTreeNode nullSTN =
     new SyntaxTreeNode( UniqueString.uniqueStringOf("***I do not exist***") );
 
@@ -597,5 +616,9 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
       res = res +  ((i==0)?"":"\n             ") + i + " " + pcarray[i];
     };
     return res ;
+  }
+  
+  public String toString() {
+	  return getHumanReadableImage();
   }
   }

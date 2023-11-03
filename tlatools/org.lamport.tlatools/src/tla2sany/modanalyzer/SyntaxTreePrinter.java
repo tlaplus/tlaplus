@@ -49,6 +49,7 @@ public class SyntaxTreePrinter {
 // ADDED BY LL
 // if (h == null) {
   outS.append(" (kind: " + ((SyntaxTreeNode) node).getKind() + ") ");
+  outS.append(" (level: " + node.getLevel() + ") ");
 // } ;
 // END ADDED BY LL
     if (h != null) {
