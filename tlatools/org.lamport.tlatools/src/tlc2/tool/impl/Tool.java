@@ -1454,7 +1454,9 @@ public abstract class Tool
 				}
 				return resState;
 			} else {
-				Assert.fail("The current version of TLC does not support action composition.", pred, c);
+				Assert.fail(
+						"The current version of TLC does not support action composition.  An incomplete implementation can be enabled via the tlc2.tool.impl.Tool.cdot=true java property.",
+						pred, c);
 				return s1;
 			}
 	  }
@@ -2746,7 +2748,9 @@ public abstract class Tool
 					}
 					return BoolValue.ValFalse;
 				} else {
-					Assert.fail("The current version of TLC does not support action composition.", expr, c);
+					Assert.fail(
+							"The current version of TLC does not support action composition.  An incomplete implementation can be enabled via the tlc2.tool.impl.Tool.cdot=true java property.",
+							expr, c);
 					return null; // make compiler happy
 				}
 	          }
@@ -3325,7 +3329,9 @@ public abstract class Tool
 					}
 					return null;
 				} else {
-					Assert.fail("The current version of TLC does not support action composition.", pred, c);
+					Assert.fail(
+							"The current version of TLC does not support action composition.  An incomplete implementation can be enabled via the tlc2.tool.impl.Tool.cdot=true java property.",
+							pred, c);
 					return null; // make compiler happy
 				}
 	          }
