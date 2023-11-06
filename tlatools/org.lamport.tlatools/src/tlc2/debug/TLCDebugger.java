@@ -1055,7 +1055,17 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// If no breakpoints are set, stream over an empty list.
 		return breakpoints.getOrDefault(frame.getNode().getLocation().source(), new ArrayList<>(0)).stream()
 				.anyMatch(b -> {
-					return frame.matches(b);
+					if (!frame.matches(b)) {
+						return false;
+					}
+					TLCStackFrame parent = frame.parent;
+					while (parent != null) {
+						if (parent.matches(b)) {
+							return false;
+						}
+						parent = parent.parent;
+					}
+					return true;
 				});
 	}
 	

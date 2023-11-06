@@ -98,18 +98,6 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[0], vars[2], vars[3]);
 			assertTLCStateFrame(stackFrames[1], 22, 22, RM, vars[0], vars[2]);
 			assertTLCStateFrame(stackFrames[0], 23, 23, RM, vars[2]);
-
-			// TODO: The semantics of continue are broken because we hit the same line
-			// breakpoint again, which is not what one would "continue" to do.
-			stackFrames = debugger.continue_();
-
-			assertEquals(6, stackFrames.length);
-			assertTLCStateFrame(stackFrames[5], 20, 23, RM, vars);
-			assertTLCStateFrame(stackFrames[4], 20, 20, RM, vars);
-			assertTLCStateFrame(stackFrames[3], 21, 21, RM, vars[0], vars[2], vars[3]);
-			assertTLCStateFrame(stackFrames[2], 22, 22, RM, vars[0], vars[2]);
-			assertTLCStateFrame(stackFrames[1], 23, 23, RM, vars[2]);
-			assertTLCStateFrame(stackFrames[0], 23, 23, RM);
 		}
 
 		// Debug the InitiateProbe action of the next-state relation.
@@ -188,13 +176,13 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 				The breakpoint on this line (46) means that step in/out/over
 				takes precedence.
 		 */
-		stackFrames = debugger.next();
+		stackFrames = debugger.stepIn();
 		assertEquals(7, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 46, 46, RM, context, vars);
 		/*
 		        /\ color' = [color EXCEPT ![i] = IF j>i THEN "black" ELSE @]
 		 */
-		stackFrames = debugger.next(4);
+		stackFrames = debugger.stepIn(5);
 		assertEquals(8, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[0], vars[2], vars[3]);
 

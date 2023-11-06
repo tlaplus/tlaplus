@@ -221,7 +221,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
 		assertEquals(12, stackFrames.length);
-		assertTLCStateFrame(stackFrames[0], 167, 15, 167, 18, RM, Context.Empty);
+		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 
 		// Replace the previous breakpoint with the same one except for a hit condition
 		// corresponding to a trace length of four states.
