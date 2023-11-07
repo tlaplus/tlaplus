@@ -23,4 +23,6 @@ public interface TreeNode {
   public String					getHumanReadableImage();
   public void setLevel(int lvl);
   public int getLevel();
+  public TreeNode getParent();
+  public void setParent();
 }

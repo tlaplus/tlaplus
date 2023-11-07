@@ -166,6 +166,25 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
 			one[i].setLevel(lvl + 1);
 		}
 	}
+	
+	private TreeNode parent;
+	
+	@Override
+	public TreeNode getParent() {
+		return parent;
+	}
+	
+	@Override
+	public void setParent() {
+		for (int i = 0; zero != null && i < zero.length; i++) {
+			zero[i].parent = this;
+			zero[i].setParent();
+		}
+		for (int i = 0; one != null && i < one.length; i++) {
+			one[i].parent = this;
+			one[i].setParent();
+		}
+	}
   
   public static SyntaxTreeNode nullSTN =
     new SyntaxTreeNode( UniqueString.uniqueStringOf("***I do not exist***") );

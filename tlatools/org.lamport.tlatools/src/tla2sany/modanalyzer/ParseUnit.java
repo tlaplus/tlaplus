@@ -308,6 +308,7 @@ public class ParseUnit {
             parseSuccess = parseTree.parse();
             
             parseTree.rootNode().setLevel(0);
+            parseTree.rootNode().setParent();
 
             // set the parse time stamp
             parseStamp = System.currentTimeMillis();
