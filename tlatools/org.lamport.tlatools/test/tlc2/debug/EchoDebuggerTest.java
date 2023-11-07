@@ -164,9 +164,14 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(3, stackFrames.length);
 		assertTLCFrame(stackFrames[2], 12,  8, 21, 30, RM);
 		assertTLCFrame(stackFrames[1], 13, 11, 13, 41, RM);
-		assertTLCFrame(stackFrames[0], 13, 17, 13, 41, RM); // [Node \X Node -> BOOLEAN] in Echo
+		assertTLCFrame(stackFrames[0], 13, 11, 13, 11, RM); // [Node \X Node -> BOOLEAN] in Echo
 
 		stackFrames = debugger.stepOut();
+		assertEquals(2, stackFrames.length);
+		assertTLCFrame(stackFrames[1], 12,  8, 21, 30, RM);
+		assertTLCFrame(stackFrames[0], 13, 11, 13, 41, RM);
+
+		stackFrames = debugger.next();
 		assertEquals(2, stackFrames.length);
 		assertTLCFrame(stackFrames[1], 12,  8, 21, 30, RM);
 		assertTLCFrame(stackFrames[0], 15, 11, 15, 32, RM); // IsIrreflexive(R, Node)
@@ -174,11 +179,12 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.next();
 		assertEquals(2, stackFrames.length);
 		assertTLCFrame(stackFrames[1], 12,  8, 21, 30, RM);
-		assertTLCFrame(stackFrames[0], 18, 11, 18, 30, RM); // IsSymmetric(R, Node)
+		assertTLCFrame(stackFrames[0], 15, 11, 15, 32, RM); // IsSymmetric(R, Node)
+		
 
 		// Breakpoint takes precedence over manual steps.
 		debugger.replaceAllBreakpointsWith("Relation", 49);
-		stackFrames = debugger.next(2);
+		stackFrames = debugger.continue_();
 		assertEquals(8, stackFrames.length);
 		assertTLCFrame(stackFrames[0], 49, 3, 50, 38, "Relation", null); //TODO Replace null with the expected Context.
 		// Too lazy to check all the in-between frames.

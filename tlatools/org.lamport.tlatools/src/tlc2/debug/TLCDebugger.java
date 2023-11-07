@@ -68,6 +68,7 @@ import org.eclipse.lsp4j.debug.SetVariableResponse;
 import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
+import org.eclipse.lsp4j.debug.StackFramePresentationHint;
 import org.eclipse.lsp4j.debug.StackTraceArguments;
 import org.eclipse.lsp4j.debug.StackTraceResponse;
 import org.eclipse.lsp4j.debug.StepBackArguments;
@@ -373,7 +374,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// "Unlock" evaluation, i.e. set step to Continue and clear all breakpoints.
 		// Afterwards, resume TLC in case it's waiting for the debugger too.
 		breakpoints.clear();
-		targetLevel = -1;
+		sourceFrame = null;
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
@@ -575,7 +576,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return this.stack.peek().continue_(this);
 		}
 
-		targetLevel = -1;
+		sourceFrame = null;
 		step = Step.Continue;
 		this.notify();
 		return CompletableFuture.completedFuture(new ContinueResponse());
@@ -589,7 +590,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return this.stack.peek().stepOver(this);
 		}
 
-		targetLevel = this.stack.size();
+		sourceFrame = this.stack.peek();
 		step = Step.Over;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -602,9 +603,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (!stack.isEmpty() && stack.peek().handle(this)) {
 			return this.stack.peek().stepIn(this);
 		}
-		// matches(..) below does not take targetLevel into account, thus not changing
-		// it here. The reason is that it is surprising if step.in on a leaf-frame
-		// would amount to resume/continue.
+
 		step = Step.In;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
@@ -614,12 +613,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized CompletableFuture<Void> stepOut(StepOutArguments args) {
 		LOGGER.finer("stepOut");
 
-		if (!stack.isEmpty() && stack.peek().handle(this)) {
-			return this.stack.peek().stepOut(this);
+		if (!stack.isEmpty()) {
+			if (stack.peek().handle(this)) {
+				return this.stack.peek().stepOut(this);
+			}
+			sourceFrame = stack.peek().parent;
+			step = Step.Out;
 		}
 		
-		targetLevel = this.stack.size();
-		step = Step.Out;
 		this.notify();
 		return CompletableFuture.completedFuture(null);
 	}
@@ -675,7 +676,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	protected final LinkedList<TLCStackFrame> stack = new LinkedList<>();
 	
 	// Initialize the debugger to immediately halt on the first frame.
-	private volatile int targetLevel = 1;
+	private volatile TLCStackFrame sourceFrame;
 	private volatile Step step = Step.In;
 	private volatile Granularity granularity = Granularity.Formula;
 	
@@ -764,7 +765,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			LOGGER.finer(String.format("%s Call popFrame: [%s], level: %s\n",
 					new String(new char[this.stack.size()]).replace('\0', '#'), expr, this.stack.size()));
 		}
-		final TLCStackFrame pop = stack.pop();
+		TLCStackFrame pop = stack.peek(); 
+		if (pop == sourceFrame) {
+			// Clear old step source/targets.
+			sourceFrame = null;
+			step = Step.In;
+			// Annotate the frame we are stepping out of/existing from as such. 
+			pop.setName("Exit: " + pop.getName());
+			pop.setPresentationHint(StackFramePresentationHint.SUBTLE);
+			// Pause the debugger (triggers a call of stackFrames by the front-end).
+			haltExecution(pop);
+			// Reset the frame's presentation if the user reverses the execution and the
+			// frame gets reused.
+			pop.setName("Exit: " + pop.getName().replace("Exit: ", ""));
+			pop.setPresentationHint(StackFramePresentationHint.NORMAL);
+		}
+		pop = stack.pop();
 		assert pop.matches(expr);
 		return this;
 	}
@@ -951,7 +967,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (LOGGER.isLoggable(Level.FINER)) {
 			LOGGER.finer(String.format("%s(%s): [%s]\n", new String(new char[level]).replace('\0', '#'), level, frame.getNode()));
 		}
-		if (matches(step, targetLevel, level)) {
+		if (matches(step, sourceFrame, frame)) {
 			haltExecution(frame);
 		} else if (matches(frame)) {
 			// Calling pre/postHalt because stack frame decided to halt and might want to do
@@ -1022,22 +1038,11 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		return this.granularity;
 	}
 
-	private static boolean matches(Step dir, int targetLevel, int currentLevel) {
+	private static boolean matches(final Step dir, final TLCStackFrame sourceFrame, final TLCStackFrame currentFrame) {
 		if (dir == Step.In) {
-			// TODO With this conditional, step.in becomes continue when one steps into a
-			// leave frame.  The debuggers that I know don't continue in this case.
-//			if (currentLevel >= targetLevel) {
-				return true;
-//			}
-		} else if (dir == Step.Over) {
-			if (currentLevel == targetLevel) {
-				return true;
-			}
-		} else if (dir == Step.Out) {
-			// When stepping out, level has to be greater than or zero/0;
-			if (currentLevel < targetLevel || currentLevel == 0) {
-				return true;
-			}
+			return true;
+		} else if (sourceFrame != null && dir == Step.Over || dir == Step.Out) {
+			return sourceFrame.matches(currentFrame);
 		}
 		return false;
 	}

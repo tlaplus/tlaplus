@@ -656,6 +656,25 @@ public class TLCStackFrame extends StackFrame {
 		return eventArguments;
 	}
 
+	public boolean matches(final TLCStackFrame f) {
+		// Both frames have to be at the same *syntax* level and be part of the same operator definition:
+		// 
+		// Bar ==
+		//     /\ K1:: "SomeExpressionOfBarWithLevelM"
+		// 
+		// Foo ==
+		//     /\ L1:: "SomeExpressionOfFooWithLevelM'
+		//     /\ L2:: n' = Bar  \* Less than level M
+		//     /\ L3:: "SomeExpressionOfFooWithLevelM'
+		//
+		// Stepping over L1 should not take us to K1 but L3.
+		if (node.getTreeNode().getLevel() == f.node.getTreeNode().getLevel()) {
+			return SyntaxTreeNode.getOperatorDefinition(node.getTreeNode()) == SyntaxTreeNode
+					.getOperatorDefinition(f.node.getTreeNode());
+		}
+		return false;
+	}
+
 	public boolean matches(final TLCSourceBreakpoint bp) {
 		// TODO: For const-level expression (TLCStackFrame),
 		// TLCSourceBreakpoint#getHits() should have the traditional meaning. Question

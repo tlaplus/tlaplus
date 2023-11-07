@@ -640,4 +640,14 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
   public String toString() {
 	  return getHumanReadableImage();
   }
+
+  public static TreeNode getOperatorDefinition(TreeNode tn) {
+		while (tn != null) {
+			if (tn.getKind() == SyntaxTreeConstants.N_OperatorDefinition) {
+				return tn;
+			}
+			tn = tn.getParent();
+		}
+		return null;
+  }
   }
