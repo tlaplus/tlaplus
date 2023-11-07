@@ -124,6 +124,9 @@ public class TLCStackFrame extends StackFrame {
 
 	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool, RuntimeException e) {
 		this.parent = parent;
+		// This frame may share the node, ctxt, and tool with its parent. For example, a
+		// TLCStateStackFrame and its parent TLCStateStackFrame may differ only in the
+		// TLCState.
 		this.tool = tool;
 		Assert.check(this.tool != null, EC.GENERAL);
 		
