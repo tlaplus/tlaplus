@@ -157,6 +157,8 @@ public class TLCStackFrame extends StackFrame {
 		} else {
 			setName(node.getHumanReadableImage());
 		}
+//		setName(parent == null ? "0" : parent.getLevel() + 1 + ":" + node.stn.getLevel() + " " + getName());
+		
 		// There is a 1:n mapping between SemanticNode and TLCStackFrames. For example,
 		// the same SN appears multiple times on the stack in case of recursion. Thus,
 		// node.myUID doesn't suffice as a frame's id, which - by definition - has to
@@ -179,6 +181,13 @@ public class TLCStackFrame extends StackFrame {
 		
 		this.ctxtId = rnd.nextInt(Integer.MAX_VALUE - 1) + 1;
 	}
+	
+//	private int getLevel() {
+//		if (parent == null) {
+//			return 0;
+//		}
+//		return parent.getLevel() + 1;
+//	}
 
 	public TLCStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, final Tool tool) {
 		this(parent, node, ctxt, tool, null);
