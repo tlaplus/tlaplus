@@ -796,9 +796,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 
 	@Override
 	public synchronized IDebugTarget popFrame(Tool tool, SemanticNode expr, Context c, TLCState s) {
-		final TLCStackFrame pop = stack.pop();
-		assert pop.matches(expr);
-		return this;
+		return popFrame(tool, expr, c);
 	}
 
 	@Override
