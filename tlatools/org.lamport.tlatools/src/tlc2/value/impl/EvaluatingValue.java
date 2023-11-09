@@ -1,5 +1,6 @@
 /*******************************************************************************
- * Copyright (c) 2019 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2019 Microsoft Research. All rights reserved.
+ * Copyright (c) 2023, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -45,7 +46,7 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
-public class EvaluatingValue extends OpValue implements Applicable {
+public class EvaluatingValue extends OpValue {
   protected final MethodHandle mh;
   protected final Method md;
   protected final int minLevel;
@@ -93,6 +94,17 @@ public class EvaluatingValue extends OpValue implements Applicable {
             return null; // make compiler happy
 		}
 	}
+
+    @Override
+    public final Value eval(Value[] args, int control) {
+        try {
+            throw new WrongInvocationException("It is a TLC bug: Should use the other eval method.");
+        }
+        catch (RuntimeException | OutOfMemoryError e) {
+            if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+            else { throw e; }
+        }
+    }
 
   public final byte getKind() { return METHODVALUE; }
 
@@ -144,36 +156,6 @@ public class EvaluatingValue extends OpValue implements Applicable {
     }
   }
 
-  public final Value apply(Value arg, int control) {
-    try {
-      throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  public final Value apply(Value[] args, int control) {
-	    try {
-	        throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
-	      }
-	      catch (RuntimeException | OutOfMemoryError e) {
-	        if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-	        else { throw e; }
-	      }
-  }
-
-  public final Value select(Value arg) {
-    try {
-      throw new WrongInvocationException("It is a TLC bug: Attempted to call MethodValue.select().");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
   public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
@@ -191,18 +173,6 @@ public class EvaluatingValue extends OpValue implements Applicable {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       this.toString() + ".", getSource());
       return null;   // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  public final Value getDomain() {
-    try {
-      Assert.fail("Attempted to compute the domain of the operator " +
-      this.toString() + ".", getSource());
-      return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

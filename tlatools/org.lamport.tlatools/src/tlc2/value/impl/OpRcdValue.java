@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2022, Oracle and/or its affiliates.
+// Copyright (c) 2022, 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:21:01 PST by lamport
 //      modified on Sat Nov 13 12:43:44 PST 1999 by yuanyu
@@ -24,7 +24,7 @@ import util.WrongInvocationException;
  *         op(1, 2) = "b"
  * </pre>
  */
-public class OpRcdValue extends OpValue implements Applicable {
+public class OpRcdValue extends OpValue {
   public final Vect<Value[]> domain;
   public final Vect<Value> values;
 
@@ -128,18 +128,7 @@ public class OpRcdValue extends OpValue implements Applicable {
   }
 
   @Override
-  public final Value apply(Value arg, int control) {
-    try {
-      throw new WrongInvocationException("Should use the other apply method.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value apply(Value[] args, int control) {
+  public final Value eval(Value[] args, int control) {
     try {
       int sz = this.domain.size();
       for (int i = 0; i < sz; i++) {
@@ -174,18 +163,6 @@ public class OpRcdValue extends OpValue implements Applicable {
   }
 
   @Override
-  public final Value select(Value arg) {
-    try {
-      Assert.fail("Attempted to call OpRcdValue.select(). This is a TLC bug.", getSource());
-      return null;   // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
@@ -204,19 +181,6 @@ public class OpRcdValue extends OpValue implements Applicable {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".", getSource());
       return null;     // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value getDomain() {
-    try {
-      Assert.fail("Attempted to compute the domain of the operator " +
-      Values.ppr(this.toString()) + ".", getSource());
-      return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:21:00 PST by lamport
 //      modified on Fri Sep 22 13:18:45 PDT 2000 by yuanyu
@@ -26,7 +27,7 @@ import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.WrongInvocationException;
 
-public class MethodValue extends OpValue implements Applicable {
+public class MethodValue extends OpValue {
 
 	public static Value get(final Method md) {
 		// Call from e.g. STRING (see tlc2.module.Strings.STRING()), which has no operator
@@ -40,7 +41,7 @@ public class MethodValue extends OpValue implements Applicable {
 		// evaluate once at startup and not during state exploration.
 		final int acnt = md.getParameterTypes().length;
     	final boolean isConstant = (acnt == 0) && Modifier.isFinal(md.getModifiers());
-    	return isConstant ? mv.apply(Tool.EmptyArgs, EvalControl.Clear) : mv;
+    	return isConstant ? mv.eval(Tool.EmptyArgs, EvalControl.Clear) : mv;
 	}
 	
   private final MethodHandle mh;
@@ -133,18 +134,7 @@ public class MethodValue extends OpValue implements Applicable {
   }
 
   @Override
-  public final Value apply(Value arg, int control) {
-    try {
-      throw new WrongInvocationException("It is a TLC bug: Should use the other apply method.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value apply(Value[] args, int control) {
+  public final Value eval(Value[] args, int control) {
     try {
       Value res = null;
       try
@@ -187,17 +177,6 @@ public class MethodValue extends OpValue implements Applicable {
   }
 
   @Override
-  public final Value select(Value arg) {
-    try {
-      throw new WrongInvocationException("It is a TLC bug: Attempted to call MethodValue.select().");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
       Assert.fail("Attempted to appy EXCEPT construct to the operator " +
@@ -216,19 +195,6 @@ public class MethodValue extends OpValue implements Applicable {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       this.toString() + ".", getSource());
       return null;   // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value getDomain() {
-    try {
-      Assert.fail("Attempted to compute the domain of the operator " +
-      this.toString() + ".", getSource());
-      return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

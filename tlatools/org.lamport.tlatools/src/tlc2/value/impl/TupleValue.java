@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 15:30:09 PST by lamport
 //      modified on Fri Aug 10 15:10:22 PDT 2001 by yuanyu
@@ -28,7 +29,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 
-public class TupleValue extends Value implements Applicable, ITupleValue {
+public class TupleValue extends Value implements FunctionValue, ITupleValue {
   public final Value[] elems;          // the elements of this tuple.
   public static final TupleValue EmptyTuple = new TupleValue(new Value[0]);
 

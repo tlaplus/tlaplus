@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at  9:19:45 PST by lamport
 //      modified on Tue Aug  7 10:46:55 PDT 2001 by yuanyu
 
@@ -16,11 +17,11 @@ import tlc2.tool.impl.TLARegistry;
 import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.IntervalValue;
+import tlc2.value.impl.OpValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.SetOfFcnsValue;
@@ -252,12 +253,12 @@ public class TLC implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SortSeq", "natural number",
                     Values.ppr(s.toString()) });
         }
-        if (!(cmp instanceof Applicable))
+        if (!(cmp instanceof OpValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "function",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SortSeq", "operator",
                     Values.ppr(cmp.toString()) });
         }
-        Applicable fcmp = (Applicable) cmp;
+        OpValue fcmp = (OpValue) cmp;
         Value [] elems = seq.elems;
         int len = elems.length;
         if (len == 0)
@@ -283,9 +284,9 @@ public class TLC implements ValueConstants
         return new TupleValue(newElems);
     }
 
-    private static boolean compare(Applicable fcmp, Value [] args)
+    private static boolean compare(OpValue fcmp, Value[] args)
     {
-        Value  res = fcmp.apply(args, EvalControl.Clear);
+        Value  res = fcmp.eval(args, EvalControl.Clear);
         if (res instanceof IBoolValue)
         {
             return ((BoolValue) res).val;

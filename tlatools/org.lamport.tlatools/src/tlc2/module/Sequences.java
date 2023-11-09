@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Sat 23 February 2008 at  9:53:48 PST by lamport
 //      modified on Fri Jun 29 23:58:36 PDT 2001 by yuanyu
 
@@ -12,12 +13,11 @@ import tlc2.tool.impl.TLARegistry;
 import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Applicable;
+import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
-import tlc2.value.impl.OpLambdaValue;
-import tlc2.value.impl.OpRcdValue;
+import tlc2.value.impl.OpValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.UserObj;
@@ -199,13 +199,13 @@ public class Sequences extends UserObj implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "SelectInSeq", "sequence",
                     Values.ppr(s.toString()) });
         }
-        if (!(test instanceof Applicable))
+        if (!(test instanceof FunctionValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectInSeq", "function",
                     Values.ppr(test.toString()) });
         }
         int len = seq.size();
-        Applicable ftest = (Applicable) test;
+        FunctionValue ftest = (FunctionValue) test;
         Value[] args = new Value[1];
         for (int i = 0; i < len; i++)
         {
@@ -335,18 +335,18 @@ public class Sequences extends UserObj implements ValueConstants
         int len = seq.size();
         if (len == 0)
             return TupleValue.EmptyTuple;
-        if (!(test instanceof OpLambdaValue) && !(test instanceof OpRcdValue))
+        if (!(test instanceof OpValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SelectSeq", "operator",
                     Values.ppr(test.toString()) });
         }
         ValueVec vals = new ValueVec();
-        Applicable ftest = (Applicable) test;
+        OpValue ftest = (OpValue) test;
         Value[] args = new Value[1];
         for (int i = 0; i < len; i++)
         {
             args[0] = seq.elems[i];
-            Value val = ftest.apply(args, EvalControl.Clear);
+            Value val = ftest.eval(args, EvalControl.Clear);
             if (val instanceof IBoolValue)
             {
                 if (((BoolValue) val).val)
@@ -443,13 +443,13 @@ public class Sequences extends UserObj implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "first", "Insert", "sequence",
                     Values.ppr(s.toString()) });
         }
-        if (!(test instanceof Applicable))
+        if (!(test instanceof FunctionValue))
         {
-            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "SubSeq", "function",
+            throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "Insert", "function",
                     Values.ppr(test.toString()) });
         }
         int len = seq.size();
-        Applicable ftest = (Applicable) test;
+        FunctionValue ftest = (FunctionValue) test;
         Value[] args = new Value[2];
         args[0] = v;
         Value[] values = new Value[len + 1];
