@@ -62,11 +62,10 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Applicable;
+import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.Enumerable.Ordering;
-import tlc2.value.impl.EvaluatingValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
@@ -75,7 +74,6 @@ import tlc2.value.impl.LazySupplierValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.MVPerm;
 import tlc2.value.impl.MVPerms;
-import tlc2.value.impl.MethodValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.OpLambdaValue;
 import tlc2.value.impl.OpValue;
@@ -612,18 +610,8 @@ public abstract class Tool
           }
 
           Object bval = val;
-          if (alen == 0) {
-            if (val instanceof MethodValue) {
-              bval = ((MethodValue)val).apply(EmptyArgs, EvalControl.Init);
-            } else if (val instanceof EvaluatingValue) {
-              // Allow EvaluatingValue overwrites to have zero arity.
-              bval = ((EvaluatingValue) val).eval(this, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
-            }
-          }
-          else {
-            if (val instanceof OpValue) {
-          	  bval = ((OpValue) val).eval(this, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
-            }
+          if (val instanceof OpValue) {
+            bval = ((OpValue) val).eval(this, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
           }
 
           if (opcode == 0)
@@ -740,11 +728,11 @@ public abstract class Tool
               }
               fval = fcn.fcnRcd;
             }
-            else if (!(fval instanceof Applicable)) {
+            else if (!(fval instanceof FunctionValue)) {
               Assert.fail("In computing initial states, a non-function (" +
                           fval.getKindString() + ") was applied as a function.\n" + init, init, c);
             }
-            Applicable fcn = (Applicable) fval;
+            FunctionValue fcn = (FunctionValue) fval;
             Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
             Value bval = fcn.apply(argVal, EvalControl.Init);
             if (!(bval instanceof BoolValue))
@@ -1128,17 +1116,8 @@ public abstract class Tool
   
   private final Object getNextStatesApplEvalAppl(final int alen, final ExprOrOpArgNode[] args, final Context c,
 			final TLCState s0, final TLCState s1, final CostModel cm, final Object val) {
-	      if (alen == 0) {
-        if (val instanceof MethodValue) {
-        	return ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
-        } else if (val instanceof EvaluatingValue) {
-        	return ((EvaluatingValue)val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
-       }
-      }
-      else {
-        if (val instanceof OpValue) { // EvaluatingValue sub-class of OpValue!
-       	  return ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
-        }
+      if (val instanceof OpValue) { // EvaluatingValue sub-class of OpValue!
+        return ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Clear, cm);
       }
       return val;
   }
@@ -1250,11 +1229,11 @@ public abstract class Tool
 	      }
 	      fval = fcn.fcnRcd;
 	    }
-	    if (!(fval instanceof Applicable)) {
+	    if (!(fval instanceof FunctionValue)) {
 	      Assert.fail("In computing next states, a non-function (" +
 	                  fval.getKindString() + ") was applied as a function.\n" + pred, pred, c);
 	    }
-	    Applicable fcn = (Applicable)fval;
+	    FunctionValue fcn = (FunctionValue)fval;
 	    Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	    Value bval = fcn.apply(argVal, EvalControl.Clear);
 	    if (!(bval instanceof BoolValue)) {
@@ -1972,19 +1951,8 @@ public abstract class Tool
           }
           else if (val instanceof Value) {
             res = (Value)val;
-            int alen = args.length;
-            if (alen == 0) {
-              if (val instanceof MethodValue) {
-                res = ((MethodValue)val).apply(EmptyArgs, EvalControl.Clear);
-              } else if (val instanceof EvaluatingValue) {
-            	  // Allow EvaluatingValue overwrites to have zero arity.
-            	  res = ((EvaluatingValue) val).eval(this, args, c, s0, s1, control, cm);
-              }
-            }
-            else {
-              if (val instanceof OpValue) {
-            	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);
-               } 
+            if (val instanceof OpValue) {
+           	  res = ((OpValue) val).eval(this, args, c, s0, s1, control, cm);
             }
           }
           /*********************************************************************
@@ -2273,13 +2241,13 @@ public abstract class Tool
             Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(control), cm);
             if ((fval instanceof FcnRcdValue) ||
                 (fval instanceof FcnLambdaValue)) {
-              Applicable fcn = (Applicable)fval;
+              FunctionValue fcn = (FunctionValue)fval;
               Value argVal = this.eval(args[1], c, s0, s1, control, cm);
               result = fcn.apply(argVal, control);
             }
             else if ((fval instanceof TupleValue) ||
                      (fval instanceof RecordValue)) {
-              Applicable fcn = (Applicable)fval;
+              FunctionValue fcn = (FunctionValue)fval;
               if (args.length != 2) {
                 Assert.fail("Attempted to evaluate an expression of form f[e1, ... , eN]" +
                             "\nwith f a tuple or record and N > 1.\n" + expr, expr, c);
@@ -2511,11 +2479,11 @@ public abstract class Tool
         case OPCODE_domain:
           {
             Value arg = this.eval(args[0], c, s0, s1, control, cm);
-            if (!(arg instanceof Applicable)) {
+            if (!(arg instanceof FunctionValue)) {
               Assert.fail("Attempted to apply the operator DOMAIN to a non-function\n(" +
                           arg.getKindString() + ")\n" + expr, expr, c);
             }
-            return setSource(expr, ((Applicable)arg).getDomain());
+            return setSource(expr, ((FunctionValue)arg).getDomain());
           }
         case OPCODE_enabled:
           {
@@ -3050,20 +3018,9 @@ public abstract class Tool
           }
 
           Object bval = val;
-          if (alen == 0)
+          if (val instanceof OpValue)
           {
-            if (val instanceof MethodValue)
-            {
-              bval = ((MethodValue) val).apply(EmptyArgs, EvalControl.Clear); // EvalControl.Clear is ignored by MethodValuea#apply
-            } else if (val instanceof EvaluatingValue) {
-              bval = ((EvaluatingValue) val).eval(this, args, c, s0, s1, EvalControl.Enabled, cm);
-            }
-          } else
-          {
-            if (val instanceof OpValue)
-            {
-            	bval = ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Enabled, cm);
-             }
+          	bval = ((OpValue) val).eval(this, args, c, s0, s1, EvalControl.Enabled, cm);
           }
 
           if (opcode == 0)
@@ -3183,9 +3140,9 @@ public abstract class Tool
               }
               fval = fcn.fcnRcd;
             }
-            if (fval instanceof Applicable)
+            if (fval instanceof FunctionValue)
             {
-              Applicable fcn = (Applicable) fval;
+              FunctionValue fcn = (FunctionValue) fval;
               Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
               Value bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
               if (!(bval instanceof BoolValue))

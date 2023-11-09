@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at  9:18:39 PST by lamport
 //      modified on Tue Jan  2 11:40:25 PST 2001 by yuanyu
 
@@ -13,10 +14,10 @@ import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.Applicable;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
+import tlc2.value.impl.OpValue;
 import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.Value;
 import tlc2.value.impl.ValueVec;
@@ -355,7 +356,7 @@ public class Bags implements ValueConstants
 
     public static Value BagOfAll(Value f, Value b)
     {
-        if (!(f instanceof Applicable))
+        if (!(f instanceof OpValue))
         {
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR_AN, new String[] { "first", "BagOfAll", "operator",
                     Values.ppr(f.toString()) });
@@ -366,7 +367,7 @@ public class Bags implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "BagOfAll",
                     "function with a finite domain", Values.ppr(b.toString()) });
         }
-        Applicable ff = (Applicable) f;
+        OpValue ff = (OpValue) f;
         ValueVec dVec = new ValueVec();
         ValueVec vVec = new ValueVec();
         Value[] domain = fcn.getDomainAsValues();
@@ -375,7 +376,7 @@ public class Bags implements ValueConstants
         for (int i = 0; i < domain.length; i++)
         {
             args[0] = domain[i];
-            Value val = ff.apply(args, EvalControl.Clear);
+            Value val = ff.eval(args, EvalControl.Clear);
             boolean found = false;
             for (int j = 0; j < dVec.size(); j++)
             {

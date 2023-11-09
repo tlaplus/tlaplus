@@ -30,7 +30,7 @@ import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
 
-public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
+public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 	
 	// -Dtlc2.value.impl.FcnRcdValue.threshold=16
 	private static final int LINEAR_SEARCH_THRESHOLD = Integer.getInteger(FcnRcdValue.class.getName() + ".threshold", 32);
@@ -357,18 +357,6 @@ public class FcnRcdValue extends Value implements Applicable, IFcnRcdValue {
         " not in the domain of the function.", getSource());
       }
       return result;
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  /* This one does not seem to be needed anymore.  */
-  @Override
-  public final Value apply(Value[] args, int control) {
-    try {
-      return this.apply(new TupleValue(args), EvalControl.Clear);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

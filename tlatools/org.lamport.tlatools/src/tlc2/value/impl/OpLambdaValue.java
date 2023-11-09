@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 15:30:09 PST by lamport
 //      modified on Fri Sep 22 13:18:45 PDT 2000 by yuanyu
@@ -18,7 +19,7 @@ import tlc2.value.Values;
 import util.Assert;
 import util.WrongInvocationException;
 
-public class OpLambdaValue extends OpValue implements Applicable {
+public class OpLambdaValue extends OpValue {
   public final OpDefNode opDef;       // the operator definition.
   public final ITool tool;
   public final Context con;
@@ -100,18 +101,7 @@ public class OpLambdaValue extends OpValue implements Applicable {
   }
 
   @Override
-  public final Value apply(Value arg, int control) {
-    try {
-      throw new WrongInvocationException("Should use the other apply method.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value apply(Value[] args, int control) {
+  public final Value eval(Value[] args, int control) {
     try {
       int alen = this.opDef.getArity();
       if (alen != args.length) {
@@ -125,17 +115,6 @@ public class OpLambdaValue extends OpValue implements Applicable {
       }
       return (Value) this.tool.eval(this.opDef.getBody(), c1, this.state, this.pstate,
           control);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value select(Value arg) {
-    try {
-      throw new WrongInvocationException("Error(TLC): attempted to call OpLambdaValue.select().");
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -162,19 +141,6 @@ public class OpLambdaValue extends OpValue implements Applicable {
       Assert.fail("Attempted to apply EXCEPT construct to the operator " +
       Values.ppr(this.toString()) + ".", getSource());
       return null;   // make compiler happy
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final Value getDomain() {
-    try {
-      Assert.fail("Attempted to compute the domain of the operator " +
-      Values.ppr(this.toString()) + ".", getSource());
-      return SetEnumValue.EmptySet;   // make compiler happy
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

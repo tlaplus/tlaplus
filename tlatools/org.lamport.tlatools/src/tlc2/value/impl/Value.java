@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2023, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 15:30:13 PST by lamport
 //      modified on Wed Dec  5 23:18:07 PST 2001 by yuanyu
@@ -272,18 +273,22 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 
   /**
    * This method selects the component of this value. The component is
-   * specified by path.
+   * specified by <code>path</code>. For instance, <code>val.select([1, "a"])</code>
+   * is equivalent to the TLA+ <code>val[1].a</code>.
+   *
+   * @return the selected value, or null if reading some component of the path cannot
+   *         be done because the value is not in the function's domain
    */
   public final Value select(Value[] path) {
     try {
       Value result = this;
       for (int i = 0; i < path.length; i++) {
-        if (!(result instanceof Applicable)) {
+        if (!(result instanceof FunctionValue)) {
           Assert.fail("Attempted to apply EXCEPT construct to the value " +
                 Values.ppr(result.toString()) + ".", getSource());
         }
         Value elem = path[i];
-        result = ((Applicable)result).select(elem);
+        result = ((FunctionValue)result).select(elem);
         if (result == null) return null;
       }
       return result;
