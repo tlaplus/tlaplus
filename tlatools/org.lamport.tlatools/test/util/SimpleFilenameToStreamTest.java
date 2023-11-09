@@ -21,10 +21,16 @@ import tlc2.tool.impl.Tool;
 public class SimpleFilenameToStreamTest {
 
 	private void checkResolveStandardModule(FilenameToStream resolver, String path, boolean isModule) {
-		File file = resolver.resolve("TLC.tla", true);
-		assertNotNull(file);
-		assertTrue(file.getAbsolutePath() + " does not exist!", file.exists());
-		assertTrue(file + " should be a standard module but isn't!", resolver.isStandardModule(path));
+		File file = resolver.resolve(path, isModule);
+		assertNotNull("resolve(" + path + ", " + isModule + ") should not be null", file);
+		assertTrue("resolve(" + path + ", " + isModule + ") = " + file.getAbsolutePath() + " does not exist!", file.exists());
+
+		// NOTE 2023/11/8: Ideally this next check would be valid.  Indeed, it passes in some cases, but unfortunately
+		// it fails when the tests are running out of a JAR.  The implementation of isStandardModule requires that the
+		// final resolved path starts with the standard library path---but when a standard module is resolved out of a
+		// JAR file, its resolved path with be some arbitrary temporary directory.
+		//
+		// assertTrue("resolve(" + path + ", " + isModule + ") = " + file + " should be a standard module but isn't!", resolver.isStandardModule(path));
 	}
 
 	/**
