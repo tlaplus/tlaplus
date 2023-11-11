@@ -76,9 +76,13 @@ jobs:
           --manifest_path examples/manifest.json
     - name: Smoke-test large tlaplus/examples models
       run: |
+        # SimKnuthYao requires certain number of states to have been generated
+        # before termination or else it fails. This makes it not amenable to
+        # smoke testing.
         python examples/.github/scripts/smoke_test_large_models.py          \
           --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
           --tlapm_lib_path tlapm/library                                    \
           --community_modules_jar_path CommunityModules-deps.jar            \
-          --manifest_path examples/manifest.json
+          --manifest_path examples/manifest.json                            \
+          --skip specifications/KnuthYao/SimKnuthYao.cfg
 
