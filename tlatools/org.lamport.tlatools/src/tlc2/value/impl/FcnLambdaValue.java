@@ -360,7 +360,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             }
           }
         }
-        res = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+        res = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control, this.cm);
       }
 
       // Finally, apply the matching excepts on the result.
