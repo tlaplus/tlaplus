@@ -55,6 +55,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	private long snapshotEvalCount = 0;
 	private long snapshotSecondCount = 0;
 	private boolean primed = false;
+	private boolean ite = false;
 	private int level;
 	private CostModelNode recursive;
 	protected final Map<SemanticNode, CostModelNode> lets = new LinkedHashMap<>();
@@ -215,6 +216,18 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		return this.primed;
 	}
 	
+	// ----------------  --------------------- //
+	
+	private boolean isITE() {
+		return this.ite;
+	}
+	
+	public OpApplNodeWrapper setChildrenITE() {
+		this.children.values().stream().filter(node -> node instanceof OpApplNodeWrapper)
+				.map(node -> (OpApplNodeWrapper) node).forEach(oanw -> oanw.ite = true);
+		return this;
+	}
+	
 	// ---------------- Print ---------------- //
 
 	protected long getEvalCount(Calculate fresh) {
@@ -243,7 +256,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		this.collectChildren(collectedEvalCounts, fresh);
 		if (collectedEvalCounts.isEmpty()) {
 			// Subtree has nothing to report.
-			if (getEvalCount(fresh) == 0l && !isPrimed()) {
+			if (getEvalCount(fresh) == 0l && !isPrimed() && !isITE()) {
 				// ..this node neither (eval count zero => secondary zero).
 				return;
 			} else {
@@ -264,7 +277,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 				printChildren(level);
 				return;
 			}
-			if (!isPrimed() && node.isZero() && consistentChildren.isNonZero()) {
+			if (!isPrimed() && !isITE() && node.isZero() && consistentChildren.isNonZero()) {
 				// Collapse consistent subtree into this node unless this node is primed.
 				if (consistentChildren.secondary == 0l) {
 					printSelf(level++, consistentChildren.primary);
@@ -274,7 +287,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 				return;
 			}
 			if (node.isZero() && consistentChildren.isZero()) {
-				if (isPrimed()) {
+				if (isPrimed() || isITE()) {
 					printSelf(level++);
 				}
 				// Have a primed in subtree.
@@ -289,7 +302,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		}
 
 		// Subtree is inconsistent and needs to report itself.
-		if (node.isNonZero() || isPrimed()) {
+		if (node.isNonZero() || isPrimed() || isITE()) {
 			printSelf(level++);
 		}
 		printChildren(level);
@@ -390,7 +403,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 			snapshotEvalCount = this.getEvalCount(c);
 			snapshotSecondCount = this.getSecondCount(c);
 			childCounts.clear();
-			if (snapshotEvalCount > 0 || snapshotSecondCount > 0 || this.isPrimed()) {
+			if (snapshotEvalCount > 0 || snapshotSecondCount > 0 || this.isPrimed() || isITE()) {
 				childCounts.add(new Pair(snapshotEvalCount, snapshotSecondCount));
 			}
 			collectChildren(childCounts, c);
