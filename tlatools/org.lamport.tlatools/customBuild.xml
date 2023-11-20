@@ -149,16 +149,7 @@
 
 		<!-- copy the resource files -->
 		<copy todir="${class.dir}">
-			<fileset dir="${src.dir}">
-				<include name="**/*.*" />
-				<exclude name="**/*.java" />
-				<exclude name="**/*.~*" />
-				<exclude name="**/*##*" />
-				<exclude name="**/*.09-09-07" />
-				<exclude name="**/*.09-07-02" />
-				<exclude name="**/*.11-02-10" />
-				<exclude name="**/*.jpg" />
-			</fileset>
+			<fileset dir="${resources.dir}" />
 		</copy>
 	</target>
 
@@ -311,20 +302,6 @@
 			</patternset>
 		</unzip>
 
-		<!-- Include a few LICENSE files -->
-		<copy todir="${class.dir}">
-			<fileset dir="lib/jline">
-				<include name="jline-LICENSE.txt" />
-			</fileset>
-			<fileset dir="lib/gson">
-				<include name="gson-LICENSE.txt" />
-			</fileset>
-			<fileset dir="src/org/apache/commons/math3/">
-				<include name="CommonsMath-NOTICE.txt" />
-				<include name="CommonsMath-LICENSE.txt" />
-			</fileset>
-		</copy>
-		
 		<unzip src="lib/gson/gson-2.8.6.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.class"/>
@@ -355,26 +332,9 @@
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}" level="9">
 			<fileset dir="${class.dir}" includes="**/*" excludes="
-					**/*.jpg,
-					README.txt,
-				    heapstats.jfc,
-				    jpf.properties,
-					tlc2/tool/fp/*.tla,
-					tlc2/value/*.tla,
-					pcal/*.tla,
-					META-INF/maven/,
-					src/tla2sany/parser/ParseException.09-09-07,
-					src/tla2sany/parser/TLAplusParser.09-07-02,
-					src/tla2sany/parser/TLAplusParser.11-02-10,
-					src/tla2sany/parser/TLAplusParserConstants.09-07-02,
-					src/tla2sany/parser/TLAplusParserConstants.09-09-07,
-					src/tla2sany/parser/TLAplusParserConstants.11-02-10,
-					src/tla2sany/parser/TLAplusParserTokenManager.09-07-02,
-					src/tla2sany/parser/TLAplusParserTokenManager.09-09-07,
-					src/tla2sany/parser/TLAplusParserTokenManager.11-02-10,
-					src/tla2sany/parser/Token.09-09-07,
-					src/tla2sany/parser/TokenMgrError.09-09-07"/>
-			<fileset dir="${doc.dir}" includes="License.txt"/>
+					heapstats.jfc,
+					jpf.properties,
+					META-INF/maven/"/>
 			<fileset dir="${test.class.dir}">
 				<include name="**/tlc2/tool/CommonTestCase*.class" />
 				<include name="**/tlc2/tool/liveness/ModelCheckerTestCase*.class" />
