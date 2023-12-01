@@ -104,16 +104,14 @@ public class FingerprintException extends RuntimeException {
   }
 
   public final List<SemanticNode> asTrace() {
-	  final List<SemanticNode> stack = new ArrayList<>();
-	  
-	  if (value != null) {
-		  stack.add(this.value.getSource());
-	  }
+    final List<SemanticNode> stack = new ArrayList<>();
 
-	  while (next != null && next.value != null) {
-		stack.add(next.value.getSource());
-	  }
-	  
-	  return stack;
+    FingerprintException ptr = this;
+    while (ptr != null && ptr.value != null) {
+      stack.add(ptr.value.getSource());
+      ptr = ptr.next;
+    }
+
+    return stack;
   }
 }
