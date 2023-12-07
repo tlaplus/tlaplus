@@ -57,32 +57,15 @@
   <setupTask
       xsi:type="setup.p2:P2Task">
     <requirement
-        name="org.eclipse.swtbot.eclipse.feature.group"
-        filter=""/>
-    <requirement
-        name="org.eclipse.swtbot.feature.group"/>
-    <requirement
-        name="org.eclipse.ajdt.feature.group"/>
-    <requirement
         name="org.eclipse.pde.feature.group"/>
     <requirement
         name="org.eclipse.egit.feature.group"/>
-    <requirement
-        name="org.eclipse.e4.tools.spies.feature.feature.group"/>
-    <requirement
-        name="org.eclipse.rcptt.platform.feature.group"/>
-    <repository
-        url="http://download.eclipse.org/technology/swtbot/releases/latest/"/>
-    <repository
-        url="http://download.eclipse.org/tools/ajdt/410/dev/update/"/>
     <repository
         url="http://download.eclipse.org/technology/m2e/releases/latest/"/>
     <repository
         url="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
     <repository
         url="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/master/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
-    <repository
-        url="https://download.eclipse.org/rcptt/release/2.5.1/repository/"/>
     <description>Install the tools needed in the IDE to work with the source code for ${scope.project.label}</description>
   </setupTask>
   <setupTask
