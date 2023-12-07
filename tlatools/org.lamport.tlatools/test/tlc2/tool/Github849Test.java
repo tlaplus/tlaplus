@@ -1,9 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2023 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2023 Microsoft Research. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -11,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -23,32 +23,32 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.module;
+package tlc2.tool;
 
-import java.io.File;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
-import tlc2.overrides.TLAPlusOperator;
-import tlc2.value.IValue;
-import tlc2.value.ValueOutputStream;
-import tlc2.value.impl.BoolValue;
-import tlc2.value.impl.StringValue;
+import org.junit.Test;
 
-public class _TLCTrace {
+import tlc2.output.EC;
+import tlc2.tool.liveness.ModelCheckerTestCase;
 
-	@TLAPlusOperator(identifier = "_TLCTraceSerialize", module = "_TLCTrace", warn = false)
-	public static final IValue ioSerialize(final IValue value, final StringValue absolutePath)
-			throws IOException {
-		final ValueOutputStream vos = new ValueOutputStream(new File(absolutePath.val.toString()), true);
-		try {
-			// Calling IValue#fingerprint guarantees that value can be serialized because
-			// fingerprinting also finalizes any internal data structures. For example, it
-			// converts the pset of SubsetValue.
-			value.fingerPrint(0L);
-			value.write(vos);
-		} finally {
-			vos.close();
-		}
-		return BoolValue.ValTrue;
+public class Github849Test extends ModelCheckerTestCase {
+
+	public Github849Test() {
+		super("Github849", new String[] { "-config", "Github849.tla" }, EC.ExitStatus.VIOLATION_SAFETY);
+	}
+
+	@Override
+	protected boolean noGenerateSpec() {
+		return false;
+	}
+
+	@Test
+	public void testSpec() throws IOException {
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE));
 	}
 }

@@ -48,18 +48,14 @@ import tlc2.tool.EvalException;
 import tlc2.value.IValue;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.EnumerableValue;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.IntValue;
-import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.SetEnumValue;
-import tlc2.value.impl.SetOfFcnsValue;
-import tlc2.value.impl.SetOfRcdsValue;
-import tlc2.value.impl.SetOfTuplesValue;
 import tlc2.value.impl.StringValue;
-import tlc2.value.impl.SubsetValue;
 import tlc2.value.impl.TupleValue;
 import tlc2.value.impl.Value;
 import util.UniqueString;
@@ -220,16 +216,8 @@ public class Json {
       return getObjectNode((FcnRcdValue) ((FcnLambdaValue) value).toFcnRcd());
     } else if (value instanceof SetEnumValue) {
       return getArrayNode((SetEnumValue) value);
-    } else if (value instanceof SetOfRcdsValue) {
-      return getArrayNode((SetEnumValue) ((SetOfRcdsValue) value).toSetEnum());
-    } else if (value instanceof SetOfTuplesValue) {
-      return getArrayNode((SetEnumValue) ((SetOfTuplesValue) value).toSetEnum());
-    } else if (value instanceof SetOfFcnsValue) {
-      return getArrayNode((SetEnumValue) ((SetOfFcnsValue) value).toSetEnum());
-    } else if (value instanceof SubsetValue) {
-      return getArrayNode((SetEnumValue) ((SubsetValue) value).toSetEnum());
-    } else if (value instanceof IntervalValue) {
-      return getArrayNode((SetEnumValue) ((IntervalValue) value).toSetEnum());
+    } else if (value instanceof EnumerableValue) {
+      return getArrayNode((SetEnumValue) ((EnumerableValue) value).toSetEnum());
     } else {
       throw new IOException("Cannot convert value: unsupported value type " + value.getClass().getName());
     }
@@ -344,16 +332,8 @@ public class Json {
       return getArrayNode((FcnRcdValue) ((FcnLambdaValue) value).toFcnRcd());
     } else if (value instanceof SetEnumValue) {
       return getArrayNode((SetEnumValue) value);
-    } else if (value instanceof SetOfRcdsValue) {
-      return getArrayNode((SetEnumValue) ((SetOfRcdsValue) value).toSetEnum());
-    } else if (value instanceof SetOfTuplesValue) {
-      return getArrayNode((SetEnumValue) ((SetOfTuplesValue) value).toSetEnum());
-    } else if (value instanceof SetOfFcnsValue) {
-      return getArrayNode((SetEnumValue) ((SetOfFcnsValue) value).toSetEnum());
-    } else if (value instanceof SubsetValue) {
-      return getArrayNode((SetEnumValue) ((SubsetValue) value).toSetEnum());
-    } else if (value instanceof IntervalValue) {
-      return getArrayNode((SetEnumValue) ((IntervalValue) value).toSetEnum());
+    } else if (value instanceof EnumerableValue) {
+        return getArrayNode((SetEnumValue) ((EnumerableValue) value).toSetEnum());
     } else {
       throw new IOException("Cannot convert value: unsupported value type " + value.getClass().getName());
     }
