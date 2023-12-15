@@ -164,11 +164,22 @@ RoundTrip ==
        /\ output = JsonDeserialize("target/json/test.json")
 ASSUME(RoundTrip)
 
+RoundTrip2 ==
+    LET output == [a |-> 3, b |-> [c |-> <<4, 5, 6>>]]
+    IN
+       /\ JsonSerialize("target/json/test.json", output)
+       /\ output = JsonDeserialize("target/json/test.json")
+ASSUME(RoundTrip2)
+
 -----
 
 ASSUME AssertError(
-           "The second argument of JsonSerialize should be a sequence, but instead it is:\n[a |-> 1, b |-> TRUE]",
-           JsonSerialize("target/json/test.json", [a |-> 1, b |-> TRUE] ))
+           "The second argument of JsonSerialize should be a sequence or record, but instead it is:\n{1, 2, 3}",
+           JsonSerialize("target/json/test.json", {1,2,3} ))
+
+ASSUME AssertError(
+           "The second argument of JsonSerialize should be a sequence or record, but instead it is:\n({\"a\"} :> 3 @@ {\"b\"} :> [c |-> <<4, 5, 6>>])",
+           JsonSerialize("target/json/test.json", [ n \in {{"a"}} |-> 3 ] @@ [ n \in {{"b"}} |-> [c |-> <<4, 5, 6>>]] ))
 
 ASSUME AssertError(
            "The second argument of ndJsonSerialize should be a sequence, but instead it is:\n[a |-> 1, b |-> TRUE]",
@@ -176,7 +187,7 @@ ASSUME AssertError(
 
 
 ASSUME AssertError(
-           "The second argument of JsonSerialize should be a sequence, but instead it is:\n42",
+           "The second argument of JsonSerialize should be a sequence or record, but instead it is:\n42",
            JsonSerialize("target/json/test.json", 42 ))
 
 ASSUME AssertError(

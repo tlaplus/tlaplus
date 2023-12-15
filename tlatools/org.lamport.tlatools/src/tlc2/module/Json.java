@@ -162,7 +162,7 @@ public class Json {
   }
 
   /**
-   * Serializes a tuple of values to newline delimited JSON.
+   * Serializes a TLA+ TupleValue or RecordValue to JSON.
    *
    * @param path  the file to which to write the values
    * @param value the values to write
@@ -170,23 +170,19 @@ public class Json {
    */
   @TLAPlusOperator(identifier = "JsonSerialize", module = "Json", warn = false)
   public synchronized static BoolValue serialize(final StringValue path, final Value v) throws IOException {
-	final TupleValue value = (TupleValue) v.toTuple();
+	Value value = v.toTuple();
+	if (value == null) {
+		value = v.toRcd();
+	}
 	if (value == null) {
 		throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
-				new String[] { "second", "JsonSerialize", "sequence", Values.ppr(v.toString()) });
+				new String[] { "second", "JsonSerialize", "sequence or record", Values.ppr(v.toString()) });
 	}
+		
     final File file = new File(path.val.toString());
     if (file.getParentFile() != null) {file.getParentFile().mkdirs();} // Cannot create parent dir for relative path.
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(path.val.toString())))) {
-    	writer.write("[\n");
-		for (int i = 0; i < value.elems.length; i++) {
-			writer.write(getNode(value.elems[i]).toString());
-			if (i < value.elems.length - 1) {
-				// No dangling "," after last element.
-				writer.write(",\n");
-			}
-		}
-    	writer.write("\n]\n");
+    	writer.write(getNode(v).toString());
     }
     return BoolValue.ValTrue;
   }
