@@ -22,6 +22,7 @@ public class TLCStateInfo {
   public Object info;
   public final TLCState state;
   public Long fp;
+  private Action action;
 
   public TLCStateInfo(final TLCState state) {
 	this.state = state;
@@ -40,6 +41,7 @@ public class TLCStateInfo {
 
   public TLCStateInfo(final TLCState state, final Action action) {
 	this.state = state;
+	this.action = action;
 	this.stateNumber = state.getLevel();
 	
 	this.info = toInfo(state.isInitial(), action);
@@ -103,6 +105,8 @@ public class TLCStateInfo {
   public Action getAction() {
 	  if (state.hasAction()) {
 		  return state.getAction();
+	  } else if (action != null) {
+		  return action;
 	  }
 	  return Action.UNKNOWN;
   }

@@ -53,6 +53,12 @@ public class Github807Test extends ModelCheckerTestCase {
 		return false;
 	}
 
+	@Override
+	protected boolean runWithDebugger() {
+		// Force TLC to use TLCStateMut instead of TLCStateMutExt.  The latter has TLCStateMutExt#action.
+		return false;
+	}
+
 	@Test
 	public void testSpec() throws IOException {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
@@ -76,5 +82,9 @@ public class Github807Test extends ModelCheckerTestCase {
 		expectedActions.add("<Add line 13, col 8 to line 13, col 15 of module Github807>");
 
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
+
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }
