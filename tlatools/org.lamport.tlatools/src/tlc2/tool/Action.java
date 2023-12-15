@@ -5,6 +5,8 @@ package tlc2.tool;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
 
@@ -16,6 +18,7 @@ import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
+import tlc2.value.impl.Value;
 import util.UniqueString;
 
 public final class Action implements ToolGlobals, Serializable {
@@ -170,6 +173,28 @@ public final class Action implements ToolGlobals, Serializable {
 
 	public final Location getDefinition() {
 	   return pred.getLocation();
+	}
+	
+	public final Map<UniqueString, Value> getParameters() {
+		// Tool#getActionsAppl suggests that either all or no params can be resolved
+		// from the context.
+		final Map<UniqueString, Value> m = new HashMap<>();
+		if (opDef != null) {
+			for (FormalParamNode p : opDef.getParams()) {
+				final Object lookup = con.lookup(p);
+				// Filtering the remaining FMN after lookup takes care of parameters that
+				// cannot be resolved, such as non-constant parameters.
+				//
+				// VARIABLE x
+				// ...
+				// Next(a) == x' = x + a
+				// Spec == Init /\ [][Next(IF x = x THEN 1 ELSE 1)]_x
+				if (lookup instanceof Value) {
+					m.put(p.getName(), (Value) lookup);
+				}
+			}
+		}
+		return m;
 	}
 
 	public void setId(int id) {

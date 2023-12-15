@@ -31,7 +31,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "ncs",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 56,
 				                   beginColumn |-> 14,
 				                   endLine |-> 58,
@@ -48,7 +48,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "ncs",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 56,
 				                   beginColumn |-> 14,
 				                   endLine |-> 58,
@@ -65,7 +65,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e1",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 60,
 				                   beginColumn |-> 13,
 				                   endLine |-> 64,
@@ -82,7 +82,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {A}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
@@ -99,7 +99,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e3",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 76,
 				                   beginColumn |-> 13,
 				                   endLine |-> 82,
@@ -116,7 +116,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
@@ -133,7 +133,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e1",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 60,
 				                   beginColumn |-> 13,
 				                   endLine |-> 64,
@@ -150,7 +150,7 @@ PostCondition ==
 				                unchecked |-> (A :> {B} @@ B :> {}),
 				                other |-> (A :> A @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
@@ -167,7 +167,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "cs",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 99,
 				                   beginColumn |-> 13,
 				                   endLine |-> 102,
@@ -184,7 +184,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e3",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 76,
 				                   beginColumn |-> 13,
 				                   endLine |-> 82,
@@ -201,7 +201,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "f",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 104,
 				                   beginColumn |-> 12,
 				                   endLine |-> 107,
@@ -218,7 +218,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "ncs",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 56,
 				                   beginColumn |-> 14,
 				                   endLine |-> 58,
@@ -235,7 +235,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e4",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 84,
 				                   beginColumn |-> 13,
 				                   endLine |-> 87,
@@ -252,7 +252,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e5",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 89,
 				                   beginColumn |-> 13,
 				                   endLine |-> 92,
@@ -269,7 +269,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e1",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 60,
 				                   beginColumn |-> 13,
 				                   endLine |-> 64,
@@ -286,7 +286,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {A}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
@@ -303,7 +303,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e3",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 76,
 				                   beginColumn |-> 13,
 				                   endLine |-> 82,
@@ -320,7 +320,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e1",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 60,
 				                   beginColumn |-> 13,
 				                   endLine |-> 64,
@@ -337,7 +337,7 @@ PostCondition ==
 				                unchecked |-> (A :> {B} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> A], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
@@ -354,7 +354,7 @@ PostCondition ==
 				                unchecked |-> (A :> {} @@ B :> {}),
 				                other |-> (A :> B @@ B :> A) ] >>,
 				           [ name |-> "e2",
-				             location |->
+				             parameter |-> [self |-> B], location |->
 				                 [ beginLine |-> 66,
 				                   beginColumn |-> 13,
 				                   endLine |-> 74,
