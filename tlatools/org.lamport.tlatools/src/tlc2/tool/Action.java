@@ -5,10 +5,10 @@ package tlc2.tool;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
@@ -40,7 +40,6 @@ public final class Action implements ToolGlobals, Serializable {
   public final SemanticNode pred;     // Expression of the action
   public final Context con;           // Context of the action
   private final UniqueString actionName;
-  private String parameters = "";
   private OpDefNode opDef = null;
   private int id;
   private final boolean isInitPred;
@@ -81,24 +80,6 @@ public final class Action implements ToolGlobals, Serializable {
 
   public Action(ITool t, SemanticNode pred, Context con, OpDefNode opDef, boolean isInitPred, final boolean isInternal) {
 	  this(pred, con, opDef, isInitPred, isInternal);
-		// Compute the parameters eagerly instead of lazily in getLocation(str) below.
-		// We have access to the tool here and don't have to look it up from TLCGlobals,
-		// where we would need to distinguish between TLC's modes, such as BFS and
-		// simulation.
-		if (opDef != null && opDef.getParams().length > 0) {
-			// Tool#getActionsAppl suggests that either all or no params can be resolved
-			// from the context.
-			parameters = Arrays.stream(opDef.getParams()).map(p -> t.lookup(p, con, false))
-					// Filtering the remaining FMN after lookup takes care of parameters that
-					// cannot be resolved, such as non-constant parameters.
-					//
-					// VARIABLE x
-					// ...
-					// Next(a) == x' = x + a
-					// Spec == Init /\ [][Next(IF x = x THEN 1 ELSE 1)]_x
-					.filter(o -> !(o instanceof FormalParamNode)).map(Object::toString)
-					.collect(PARAMETER_LIST);
-		}
   }
 
 /* Returns a string representation of this action.  */
@@ -116,7 +97,11 @@ public final class Action implements ToolGlobals, Serializable {
   }
   
   public final String getLocation(final String actionName) {
-      return String.format("<%s%s %s>", actionName, parameters, pred.getLocation());
+	return String.format("<%s%s %s>", actionName,
+			Arrays.stream(opDef != null ? opDef.getParams() : new FormalParamNode[0]).map(p -> con.lookup(p))
+					.filter(o -> o != null).map(Object::toString)
+					.collect(PARAMETER_LIST),
+			pred.getLocation());
   }
   
   public final boolean isNamed() {
@@ -176,26 +161,10 @@ public final class Action implements ToolGlobals, Serializable {
 	}
 	
 	public final Map<UniqueString, Value> getParameters() {
-		// Tool#getActionsAppl suggests that either all or no params can be resolved
-		// from the context.
-		final Map<UniqueString, Value> m = new HashMap<>();
-		if (opDef != null) {
-			for (FormalParamNode p : opDef.getParams()) {
-				final Object lookup = con.lookup(p);
-				// Filtering the remaining FMN after lookup takes care of parameters that
-				// cannot be resolved, such as non-constant parameters.
-				//
-				// VARIABLE x
-				// ...
-				// Next(a) == x' = x + a
-				// Spec == Init /\ [][Next(IF x = x THEN 1 ELSE 1)]_x
-				if (lookup instanceof Value) {
-					m.put(p.getName(), (Value) lookup);
-				}
-			}
-		}
-		return m;
-	}
+		return Arrays.stream(opDef != null ? opDef.getParams() : new FormalParamNode[0])
+				.filter(p -> con.lookup(p) instanceof Value)
+				.collect(Collectors.toMap(FormalParamNode::getName, p -> (Value) con.lookup(p)));
+    }
 
 	public void setId(int id) {
 		this.id = id;
