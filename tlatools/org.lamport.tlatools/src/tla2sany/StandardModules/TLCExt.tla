@@ -65,7 +65,16 @@ CounterExample ==
     TRUE
 
 ToTrace(CE) ==
-	TRUE
+	(* 
+	This definition is implemented by the TLCExt#toTrace Java module override. It
+	is commented because FiniteSetsExt is part of the CommunityModules, but not
+	tla2tools.
+
+	LET F == INSTANCE FiniteSetsExt
+	IN F!FoldSet(LAMBDA a, acc: acc @@ [n \in {a[1]} |-> a[2]], [n \in {} |-> n], CounterExample.state)
+
+	*)
+	TRUE 
 
 -----------------------------------------------------------------------------
 
