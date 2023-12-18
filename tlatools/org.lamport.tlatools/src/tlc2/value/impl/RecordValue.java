@@ -27,7 +27,6 @@ import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.coverage.CostModel;
-import tlc2.util.Context;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
@@ -136,22 +135,6 @@ public class RecordValue extends Value implements FunctionValue {
 		this.isNorm = false;
   }
 
-  public RecordValue(final Action action, final Context ctxt) {
-		this.names = new UniqueString[3];
-		this.values = new Value[this.names.length];
-
-		this.names[0] = NAME;
-		this.values[0] = new StringValue(action.getName());
-		
-		this.names[1] = LOC;
-		this.values[1] = new RecordValue(action.getDefinition());
-		
-		this.names[2] = CTXT;
-		this.values[2] = new RecordValue(ctxt.toMap());
-		
-		this.isNorm = false;
-  }
-
   public RecordValue(final TLCStateInfo info) {
 	  this(info.state);
   }
@@ -178,7 +161,7 @@ public class RecordValue extends Value implements FunctionValue {
 
 		//TODO: _action too verbose?
 		this.names[0] = ACTION;
-		this.values[0] = new RecordValue(action, action.con);
+		this.values[0] = new RecordValue(action);
 		
 		for (int i = 0; i < vars.length; i++) {
 			this.names[i+1] = vars[i].getName();

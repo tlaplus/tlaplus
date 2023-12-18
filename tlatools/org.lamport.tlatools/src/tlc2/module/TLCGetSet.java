@@ -79,7 +79,7 @@ public class TLCGetSet implements ValueConstants {
 	// TLCGet(..)
 	private static final UniqueString CONFIG = UniqueString.uniqueStringOf("config");
 	private static final UniqueString SPEC = UniqueString.uniqueStringOf("spec");
-	private static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
+	public static final UniqueString ACTION = UniqueString.uniqueStringOf("action");
 	public static final UniqueString INSTALL = UniqueString.uniqueStringOf("install");
 	public static final UniqueString ID = UniqueString.uniqueStringOf("id");
 
@@ -397,9 +397,9 @@ public class TLCGetSet implements ValueConstants {
 				have more confidence in its usefulness.
 			 */
 			if (s0 == null || s0.getAction() == null) {
-				return new RecordValue(Action.UNKNOWN, Context.Empty);
+				return new RecordValue(Action.UNKNOWN);
 			} else {
-				return new RecordValue(s0.getAction(), s0.getAction().con);
+				return new RecordValue(s0.getAction());
 			}
 		} else if (ALL_VALUES == sv.val) {
 			/*
