@@ -143,7 +143,7 @@ PostCondition ==
 		                waitset |-> {},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbc",
-		             parameter |-> [self |-> c1],
+		             context |-> [self |-> c1],
 		             location |->
 		                 [ beginLine |-> 73,
 		                   beginColumn |-> 14,
@@ -159,7 +159,7 @@ PostCondition ==
 		                waitset |-> {c1},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbc",
-		             parameter |-> [self |-> c2],
+		             context |-> [self |-> c2],
 		             location |->
 		                 [ beginLine |-> 73,
 		                   beginColumn |-> 14,
@@ -175,7 +175,7 @@ PostCondition ==
 		                waitset |-> {c1, c2},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbp",
-		             parameter |-> [self |-> p1],
+		             context |-> [self |-> p1],
 		             location |->
 		                 [ beginLine |-> 58,
 		                   beginColumn |-> 14,
@@ -191,7 +191,7 @@ PostCondition ==
 		                waitset |-> {c2},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbp",
-		             parameter |-> [self |-> p1],
+		             context |-> [self |-> p1],
 		             location |->
 		                 [ beginLine |-> 58,
 		                   beginColumn |-> 14,
@@ -207,7 +207,7 @@ PostCondition ==
 		                waitset |-> {c2, p1},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbc",
-		             parameter |-> [self |-> c1],
+		             context |-> [self |-> c1],
 		             location |->
 		                 [ beginLine |-> 73,
 		                   beginColumn |-> 14,
@@ -223,7 +223,7 @@ PostCondition ==
 		                waitset |-> {p1},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbc",
-		             parameter |-> [self |-> c1],
+		             context |-> [self |-> c1],
 		             location |->
 		                 [ beginLine |-> 73,
 		                   beginColumn |-> 14,
@@ -239,7 +239,7 @@ PostCondition ==
 		                waitset |-> {c1, p1},
 		                pc |-> (c1 :> "lbc" @@ c2 :> "lbc" @@ p1 :> "lbp") ] >>,
 		           [ name |-> "lbc",
-		             parameter |-> [self |-> c2],
+		             context |-> [self |-> c2],
 		             location |->
 		                 [ beginLine |-> 73,
 		                   beginColumn |-> 14,

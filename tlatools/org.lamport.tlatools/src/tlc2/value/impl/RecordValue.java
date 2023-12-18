@@ -46,7 +46,6 @@ public class RecordValue extends Value implements FunctionValue {
   private static final UniqueString ECOL = UniqueString.of("endColumn");
   private static final UniqueString MOD = UniqueString.of("module");
   private static final UniqueString NAME = UniqueString.of("name");
-  private static final UniqueString PARAMS = UniqueString.of("parameter");
   private static final UniqueString LOC = UniqueString.of("location");
   private static final UniqueString CTXT = UniqueString.of("context");
   private static final UniqueString ACTION = UniqueString.of("_action");
@@ -124,7 +123,7 @@ public class RecordValue extends Value implements FunctionValue {
 	    	this.names = new UniqueString[3];	    	
 	    	this.values = new Value[this.names.length];
 	    	
-	    	this.names[2] = PARAMS;
+	    	this.names[2] = CTXT;
 	    	this.values[2] = new RecordValue(parameters);
 	    }
 

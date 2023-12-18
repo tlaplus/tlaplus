@@ -87,7 +87,7 @@ PostCondition ==
 			                tpos |-> 3,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "SendMsg",
-			             parameter |-> [i |-> 3],
+			             context |-> [i |-> 3],
 			             location |->
 			                 [ beginLine |-> 61,
 			                   beginColumn |-> 3,
@@ -113,7 +113,7 @@ PostCondition ==
 			                tpos |-> 3,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "SendMsg",
-			             parameter |-> [i |-> 2],
+			             context |-> [i |-> 2],
 			             location |->
 			                 [ beginLine |-> 61,
 			                   beginColumn |-> 3,
@@ -139,7 +139,7 @@ PostCondition ==
 			                tpos |-> 3,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "Deactivate",
-			             parameter |-> [i |-> 3],
+			             context |-> [i |-> 3],
 			             location |->
 			                 [ beginLine |-> 69,
 			                   beginColumn |-> 3,
@@ -165,7 +165,7 @@ PostCondition ==
 			                tpos |-> 3,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "Deactivate",
-			             parameter |-> [i |-> 0],
+			             context |-> [i |-> 0],
 			             location |->
 			                 [ beginLine |-> 69,
 			                   beginColumn |-> 3,
@@ -193,7 +193,7 @@ PostCondition ==
 			                tpos |-> 3,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "PassToken",
-			             parameter |-> [i |-> 3],
+			             context |-> [i |-> 3],
 			             location |->
 			                 [ beginLine |-> 47,
 			                   beginColumn |-> 3,
@@ -221,7 +221,7 @@ PostCondition ==
 			                tpos |-> 2,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "SendMsg",
-			             parameter |-> [i |-> 2],
+			             context |-> [i |-> 2],
 			             location |->
 			                 [ beginLine |-> 61,
 			                   beginColumn |-> 3,
@@ -247,7 +247,7 @@ PostCondition ==
 			                tpos |-> 2,
 			                tcolor |-> "white" ] >>,
 			           [ name |-> "PassToken",
-			             parameter |-> [i |-> 2],
+			             context |-> [i |-> 2],
 			             location |->
 			                 [ beginLine |-> 47,
 			                   beginColumn |-> 3,
@@ -273,7 +273,7 @@ PostCondition ==
 			                tpos |-> 1,
 			                tcolor |-> "black" ] >>,
 			           [ name |-> "Deactivate",
-			             parameter |-> [i |-> 2],
+			             context |-> [i |-> 2],
 			             location |->
 			                 [ beginLine |-> 69,
 			                   beginColumn |-> 3,
@@ -301,7 +301,7 @@ PostCondition ==
 			                tpos |-> 1,
 			                tcolor |-> "black" ] >>,
 			           [ name |-> "PassToken",
-			             parameter |-> [i |-> 1],
+			             context |-> [i |-> 1],
 			             location |->
 			                 [ beginLine |-> 47,
 			                   beginColumn |-> 3,
