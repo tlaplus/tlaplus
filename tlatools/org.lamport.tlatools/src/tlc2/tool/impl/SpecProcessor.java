@@ -784,7 +784,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
 
 		// set variables to the static filed in the state
-		if (mode == Mode.Simulation || mode == Mode.MC_DEBUG) {
+		if (mode == Mode.Simulation || mode == Mode.MC_DEBUG || Boolean.getBoolean(Tool.TLCSTATEMUTEXT_KEY)) {
 			TLCStateMutExt.setVariables(this.variablesNodes);
 		} else if (hasCallableValue) {
 			assert mode == Mode.Executor;

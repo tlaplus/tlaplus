@@ -114,6 +114,9 @@ public abstract class Tool
     implements ValueConstants, ToolGlobals, ITool
 {
 
+	
+  	public static final String TLCSTATEMUTEXT_KEY = Tool.class.getName() + "." + TLCStateMutExt.class.getSimpleName();
+
 	/*
 	 * LL: It's probably a good thing that TLC doesn't implement [\cdot] because it
 	 * describes the semicolon in programming languages, and it might encourage
@@ -209,7 +212,7 @@ public abstract class Tool
 
       this.toolMode = mode;
 		// set variables to the static filed in the state
-		if (mode == Mode.Simulation || mode == Mode.Executor || mode == Mode.MC_DEBUG) {
+		if (mode == Mode.Simulation || mode == Mode.Executor || mode == Mode.MC_DEBUG || Boolean.getBoolean(TLCSTATEMUTEXT_KEY)) {
 			assert TLCState.Empty instanceof TLCStateMutExt;
 			TLCStateMutExt.setTool(this);
 		} else {
