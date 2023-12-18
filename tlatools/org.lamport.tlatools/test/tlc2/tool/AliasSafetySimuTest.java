@@ -93,5 +93,9 @@ public class AliasSafetySimuTest extends ModelCheckerTestCase {
 		expectedActions.addAll(Collections.nCopies(expectedTrace.size() - 1,
 				"<A line 15, col 1 to line 17, col 13 of module Alias>"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions );
+		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

@@ -63,7 +63,7 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
          
 
 PostCondition ==
-	/\ TLCSet(42, TLCGet("generated"))
+	/\ TLCGet("config").mode = "bfs" => TLCSet(42, TLCGet("generated"))
   	/\ CounterExample = 
 			[ action |->
 			      { << <<1, [x |-> 1, y |-> FALSE]>>,
