@@ -55,6 +55,7 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
+import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.OpDefOrDeclNode;
@@ -414,7 +415,12 @@ public class TLCStackFrame extends StackFrame {
 		if (sn instanceof SymbolNode) {
 			o = tool.lookup((SymbolNode) sn, this.ctxt, false);
 		} else if (sn instanceof ExprOrOpArgNode) {
-			o = tool.getVal((ExprOrOpArgNode) sn, ctxt, false);
+			o = tool.getVal(
+					// Find the first OpApplNode in the path.  For example, this shows the
+					// value of a RecordValue, i.e., the value  42  of the the record
+					// [ foo |-> 42, bar |-> "abc" ].  Without it, the debugger just shows "foo".
+					(ExprOrOpArgNode) path.stream().filter(seg -> seg instanceof OpApplNode).findFirst().orElse(sn),
+					ctxt, false);
 		} else {
 			o = sn;
 		}
