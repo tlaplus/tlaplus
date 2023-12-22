@@ -368,11 +368,11 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("FormalParamNode", var.getType());
 		assertEquals("line 117, col 9 to line 117, col 9 of module EWD998Chan", var.getResult());
 		var = debugger.evaluate(RM, "j", 118, 23, 118, 23);
-		assertEquals("LazyValue: a value represented in lazy form", var.getType());
-		assertEquals("<LAZY line 118, col 23 to line 118, col 23 of module EWD998Chan>", var.getResult());
+		assertEquals("OpApplNode", var.getType());
+		assertEquals("line 118, col 23 to line 118, col 23 of module EWD998Chan", var.getResult());
 		var = debugger.evaluate(RM, "j", 119, 56, 119, 56);
-		assertEquals("LazyValue: a value represented in lazy form", var.getType());
-		assertEquals("<LAZY line 119, col 56 to line 119, col 56 of module EWD998Chan>", var.getResult());
+		assertEquals("OpApplNode", var.getType());
+		assertEquals("line 119, col 56 to line 119, col 56 of module EWD998Chan", var.getResult());
 
 		// PassToken
 		debugger.replaceAllBreakpointsWith(RM, 81);

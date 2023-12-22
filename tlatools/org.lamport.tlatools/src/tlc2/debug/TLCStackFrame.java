@@ -422,7 +422,7 @@ public class TLCStackFrame extends StackFrame {
 		if (o instanceof LazyValue) {
 			// Unlazying might fail if the lazy value is not within the scope of this frame.
 			// In this case, fall-back to sn.
-			o = unlazy((LazyValue) o, o);
+			o = unlazy((LazyValue) o, sn);
 		}
 		
 		final Variable variable;
