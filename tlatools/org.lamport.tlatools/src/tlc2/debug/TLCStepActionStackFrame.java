@@ -126,8 +126,12 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 			final Action nextPred = tool.getSpecProcessor().getNextPred();
 			final Location loc = nextPred.getDefinition();
 			if (loc.includes(bp.getLocation())) {
-				// We do not support hit count with state-level stepping because stepping back
-				// to level/diameter < bp.getHits() does not work.
+				// We do not support a hit count with state-level stepping because stepping back
+				// to level/diameter < bp.getHits() does not work:  Suppose the user configured
+				// a hit count of N, and this breakpoint fires at level N.  The user cannot step
+				// back past N, i.e., to a level < N, because this breakpoint does not fire for
+				// any level less than N.  To support hit counts, the debugger would somehow have
+				// to remember the step direction until the user is done stepping back.
 //				if (bp.getHits() > 0) {
 //					return getT().getLevel() >= bp.getHits(); 
 //				}
