@@ -1041,7 +1041,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	private static boolean matches(final Step dir, final TLCStackFrame sourceFrame, final TLCStackFrame currentFrame) {
 		if (dir == Step.In) {
 			return true;
-		} else if (sourceFrame != null && dir == Step.Over || dir == Step.Out) {
+		} else if (sourceFrame != null && (dir == Step.Over || dir == Step.Out)) {
 			return sourceFrame.matches(currentFrame);
 		}
 		return false;
