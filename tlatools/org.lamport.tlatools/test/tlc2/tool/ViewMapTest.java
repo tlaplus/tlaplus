@@ -59,9 +59,9 @@ public class ViewMapTest extends ModelCheckerTestCase {
 		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2}");
 
 		expectedTrace.add("/\\ buffer = <<\"d\">>\n/\\ waitset = {c2, p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, p1}");
-		expectedTrace.add("/\\ buffer = << >>\n/\\ waitset = {c1, c2, p1}");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {p1}");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, p1}");
+		expectedTrace.add("/\\ buffer = <<>>\n/\\ waitset = {c1, c2, p1}");
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add(isExtendedTLCState()
 				? "<Init line 53, col 9 to line 56, col 63 of module ViewMap>"

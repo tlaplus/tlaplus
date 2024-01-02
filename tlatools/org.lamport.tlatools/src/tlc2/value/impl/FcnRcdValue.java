@@ -929,7 +929,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
       int len = this.values.length;
       if (len == 0) {
-        sb.append("<< >>");
+        sb.append("<<>>");
       }
       else if (this.isRcd()) {
         sb.append("[");
