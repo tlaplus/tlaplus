@@ -91,8 +91,11 @@
 ***************************************************************************/
 package tla2tex ;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Vector;
 
 import util.ToolIO;
@@ -395,17 +398,25 @@ class TeX
         *******************************************************************/
         infile.close() ;
         outfile.close() ;
-        File iFile = new File(Parameters.LaTeXOutputFile + ".tex") ;
-        File oFile = new File(Parameters.LaTeXOutputFile + ".new") ;
+        final Path iFile = Paths.get(Parameters.LaTeXOutputFile + ".tex");
+        final Path oFile = Paths.get(Parameters.LaTeXOutputFile + ".new");
 
         /*******************************************************************
-        * Delete the old version of the .old file, if there is one.        *
+        * Move LaTeXOutputFile.tex to LaTeXOutputFile.old, deleting the    *
+        * current LaTeXOutputFile.old, if any exists.  Move *after*        *
+        * creating LaTeXOutputFile.new to avoid moving when creation fails.*
+        * Move LaTeXOutputFile.new (created above) to LaTeXOutputFile.tex  *
         *******************************************************************/
-        (new File(Parameters.LaTeXOutputFile + ".old")).delete();
-
-        if (   !iFile.renameTo(new File(Parameters.LaTeXOutputFile + ".old"))
-            || !oFile.renameTo(new File(Parameters.LaTeXOutputFile + ".tex")))
-         { Debug.ReportError("Error while renaming files"); }
+        try {
+        	if (Files.exists(iFile)) {
+        		Files.move(iFile, iFile.resolveSibling(Parameters.LaTeXOutputFile + ".old"), StandardCopyOption.REPLACE_EXISTING);
+        	}
+        	// Consider using a ByteArrayOutputStream, which is backed by memory, to save a file rename operation. However,
+        	// OutputFileWriter is used in many places.
+        	Files.move(oFile, oFile.resolveSibling(Parameters.LaTeXOutputFile + ".tex"), StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception e) {
+        	Debug.ReportError("Error while renaming files");
+        }
        }
       catch (Exception e)
        { Debug.ReportError("I/O error: " + e.getMessage());
