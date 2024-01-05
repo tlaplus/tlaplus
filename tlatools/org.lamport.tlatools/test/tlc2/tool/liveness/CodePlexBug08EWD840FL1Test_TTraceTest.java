@@ -50,62 +50,86 @@ public class CodePlexBug08EWD840FL1Test_TTraceTest extends TTraceModelCheckerTes
 	public void testSpec() {
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "11", "10", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "17", "16", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
-		assertNodeAndPtrSizes(296L, 160L);
+		assertNodeAndPtrSizes(464L, 256L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(10);
-		expectedTrace.add("/\\ tpos = 0\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"black\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 3\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 3\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 3\n"
-		                + "/\\ active = (0 :> TRUE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 3\n"
-		                + "/\\ active = (0 :> TRUE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 3\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 2\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> FALSE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 2\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"white\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"black\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 1\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"black\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 1\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
-		                + "/\\ tcolor = \"black\"\n"
-		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 0\n"
+				+ "/\\ tcolor = \"black\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 3\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 2\n"
+				+ "/\\ tcolor = \"white\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 1\n"
+				+ "/\\ tcolor = \"black\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 1\n"
+				+ "/\\ tcolor = \"black\"");
+		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
+				+ "/\\ tpos = 1\n"
+				+ "/\\ tcolor = \"black\"");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertBackToState(1);
 
-	assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }
