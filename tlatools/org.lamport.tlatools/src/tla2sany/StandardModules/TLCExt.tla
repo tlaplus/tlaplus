@@ -27,6 +27,12 @@ AssertError(err, exp) ==
 
 -----------------------------------------------------------------------------
 
+TLCGetAndSet(key, Op(_,_), val, defaultVal) ==
+    LET oldVal == IF key \in DOMAIN TLCGet("all") THEN TLCGet(key) ELSE defaultVal
+    IN CHOOSE v \in {oldVal} : TLCSet(key, Op(oldVal, val))
+
+-----------------------------------------------------------------------------
+
 Trace == 
   (******************************************************************************)
   (* The sequence of states (represented as a record whose DOMAIN is the set of *)
