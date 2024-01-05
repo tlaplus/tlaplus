@@ -5,7 +5,7 @@
 (* Shmuel Safra's version of termination detection.                        *)
 (* https://www.cs.utexas.edu/users/EWD/ewd09xx/EWD998.PDF                  *)
 (***************************************************************************)
-EXTENDS Integers, FiniteSets, Utils
+EXTENDS Integers, FiniteSets, Utils, TLC, TLCExt
 
 CONSTANT N
 ASSUME NAssumption == N \in Nat \ {0} \* At least one node.
@@ -169,5 +169,40 @@ Liveness ==
 
 ActionConstraint ==
     token \in Token \* Some non-constant expression that would otherwise optimized out.
+
+-----------------------------------------------------------------------------
+
+Lvl ==
+	TLCGet("level") < 100
+   
+MyAlias ==
+    LET Pairwise(f,g,Op(_,_)) == [ e \in DOMAIN f |-> Op(f[e], g[e]) ]
+    IN 
+    [
+        active |-> active,
+        pending |-> pending,
+        color |-> color,
+        counter |-> counter,
+        token |-> token,
+
+        TokenInits  |-> TLCGetAndSet(0, +, IF InitiateProbe THEN 1 ELSE 0, 0),
+        
+        TokenPasses |-> TLCGetAndSet(1, +, IF \E i \in Nodes: PassToken(i) THEN 1 ELSE 0, 0),
+
+        Activations |-> TLCGetAndSet(2, 
+                            LAMBDA o, v: Pairwise(o, v, +), 
+                                        [ n \in Nodes |-> IF ~active[n] /\ active'[n] THEN 1 ELSE 0 ],
+                            [ n \in Nodes |-> 0 ]),
+                            
+        Activations2|-> TLCGetAndSet(3, 
+                            LAMBDA o, v: [ n \in Nodes |-> o[n] + IF ~v[n] /\ v'[n] THEN 1 ELSE 0 ], 
+                                        active,
+                            [ n \in Nodes |-> 0 ]),
+
+        Actives     |-> TLCGetAndSet(4, \cup, {active}, {active}),
+        
+        SumQ        |-> TLCGetAndSet(5, +, token.q, 0),
+        SumQP       |-> TLCGetAndSet(6, +, token.q', 0)
+    ]
 
 =============================================================================

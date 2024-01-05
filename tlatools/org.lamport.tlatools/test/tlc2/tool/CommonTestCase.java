@@ -70,6 +70,19 @@ public abstract class CommonTestCase {
 	protected boolean isExtendedTLCState() {
 		return TLCState.Empty instanceof TLCStateMutExt;
 	}
+	
+	protected void assertState(final List<Object> actual, final int ordinal, final String expectedState, final String expectedAction) {
+		assertTrue(actual.size() >= ordinal);
+		final Object[] objs = (Object[]) actual.get(ordinal - 1);
+
+		assertEquals(ordinal, objs[1]);
+
+		final TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
+		assertEquals(expectedState, stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
+
+		final String info = (String) stateInfo.info;
+		assertEquals(expectedAction, info);
+	}
 
 	/**
 	 * Asserts that the actual trace and the expected error trace are equal.
