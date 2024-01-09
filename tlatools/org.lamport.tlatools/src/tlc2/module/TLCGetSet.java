@@ -469,6 +469,9 @@ public class TLCGetSet implements ValueConstants {
 					}
 				}
 				return BoolValue.ValTrue;
+			} else if (sv.val.startsWith("-D")) {
+				System.setProperty(sv.val.substring(2), val.toString());
+				return BoolValue.ValTrue;
 			}
 		}
 		throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,

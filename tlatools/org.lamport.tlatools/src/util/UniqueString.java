@@ -351,4 +351,12 @@ public final class UniqueString implements Serializable
     {
         internTbl.setSource(source);
     }
+
+	public boolean startsWith(final String prefix) {
+		return this.s.startsWith(prefix);
+	}
+
+	public String substring(final int beginIndex) {
+		return this.s.substring(beginIndex);
+	}
 }
