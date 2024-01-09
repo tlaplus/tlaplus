@@ -463,7 +463,7 @@ public class Simulator {
 				} else {
 					sinfo = new TLCStateInfo(curState);
 					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState,
-							curState.getLevel());
+							curState.getLevel(), i + 1 == stateTrace.size());
 					lastState = curState;
 					continue;
 				}
@@ -488,7 +488,7 @@ public class Simulator {
 				} else {
 					// print the state's actual level and not a monotonically increasing state
 					// number => Numbering will have gaps with difftrace.
-					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel());
+					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel(), i + 1 == stateTrace.size());
 				}
 				lastState = curState;
 			}

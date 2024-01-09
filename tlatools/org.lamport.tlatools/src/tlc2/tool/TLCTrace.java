@@ -364,7 +364,7 @@ public class TLCTrace {
 				
 				// Print successor state.
 				StatePrinter.printInvariantViolationStateTraceState(
-						this.tool.evalAlias(state, s2, prefix), s1, 2);
+						this.tool.evalAlias(state, s2, prefix), s1, 2, true);
 			}
 			return;
 		}
@@ -416,7 +416,7 @@ public class TLCTrace {
 			lastState = null;
 		}
 		StatePrinter.printInvariantViolationStateTraceState(
-				this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo), lastState, ++idx);
+				this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo), lastState, ++idx, s2 == null);
 		lastState = sinfo.state;
 
 		// Print s2:
@@ -433,7 +433,7 @@ public class TLCTrace {
 			sinfo.state.uid = s2.uid;
 			sinfo.state.workerId = s2.workerId;
 			sinfo = this.tool.evalAlias(sinfo, s2, prefix, si1, sinfo);
-			StatePrinter.printInvariantViolationStateTraceState(sinfo, null, ++idx);
+			StatePrinter.printInvariantViolationStateTraceState(sinfo, null, ++idx, true);
 		}
 	}
 

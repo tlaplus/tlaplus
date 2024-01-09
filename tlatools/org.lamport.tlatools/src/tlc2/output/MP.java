@@ -1631,17 +1631,19 @@ public class MP
      * Prints the state
      * @param parameters
      */
-    public static void printState(int code, String[] parameters, TLCState state, int num)
+    public static String printState(int code, String[] parameters, TLCState state, int num)
     {
-        printState(code, parameters, new TLCStateInfo(state, num), num);
+        return printState(code, parameters, new TLCStateInfo(state, num), num);
     }
     
-    public static void printState(int code, String[] parameters, TLCStateInfo stateInfo, int num)
+    public static String printState(int code, String[] parameters, TLCStateInfo stateInfo, int num)
     {
 		recorder.record(code, stateInfo, num);
         DebugPrinter.print("entering printState(String[])"); //$NON-NLS-1$
-        ToolIO.out.println(getMessage(STATE, code, parameters));
+        final String message = getMessage(STATE, code, parameters);
+		ToolIO.out.println(message);
         DebugPrinter.print("leaving printState(String[])"); //$NON-NLS-1$
+        return message;
     }
 
     /**

@@ -167,7 +167,7 @@ public class DFIDWorker extends IdThread implements IWorker {
       
       final int ordinal = idx + 1;
 	  final TLCStateInfo currentState = new TLCStateInfo(s2, ordinal);
-	  StatePrinter.printInvariantViolationStateTraceState(currentState, s1, ordinal);
+	  StatePrinter.printInvariantViolationStateTraceState(currentState, s1, ordinal, true);
   }
 
   /* This method does a depth-first search up to the depth of toLevel. */

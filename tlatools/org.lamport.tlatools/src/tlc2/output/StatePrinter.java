@@ -3,6 +3,7 @@ package tlc2.output;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
+import util.ToolIO;
 
 /**
  * Helper for printing states
@@ -11,6 +12,8 @@ import tlc2.tool.TLCStateInfo;
  */
 public class StatePrinter
 {
+	private static final int STATE_OVERWRITE_INTERVAL = Integer.getInteger(StatePrinter.class.getName() + ".overwrite", -1);
+
 	/**
 	 * Prints a single state out of a larger error trace, when the error is not
 	 * related to invalidation of an invariant. This would be used if, for
@@ -59,6 +62,11 @@ public class StatePrinter
      */
     public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState previousState, int num)
     {
+    	printInvariantViolationStateTraceState(currentStateInfo, previousState, num, false);
+    }
+
+    public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState previousState, int num, final boolean isFinal)
+    {
         final String stateString =
         		null != previousState && TLCGlobals.printDiffsOnly
         		? currentStateInfo.state.toString(previousState)
@@ -79,7 +87,20 @@ public class StatePrinter
 				fingerprint
         };
 
-		MP.printState(EC.TLC_STATE_PRINT2, metadata, currentStateInfo, num);
+		final String message = MP.printState(EC.TLC_STATE_PRINT2, metadata, currentStateInfo, num);
+		
+		if (STATE_OVERWRITE_INTERVAL > 0) {
+			try {
+				Thread.sleep(STATE_OVERWRITE_INTERVAL);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (!isFinal) {
+				// Reset as many lines as MP.printState(...) wrote to stdout.
+				int lines = (int) (message.chars().filter(x -> x == '\n').count() + 1);
+				ToolIO.out.printf("%s", "\033[F\033[K".repeat(lines));
+			}
+		}
     }
 
     /**
