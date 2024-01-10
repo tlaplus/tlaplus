@@ -771,6 +771,7 @@ public class RecordValue extends Value implements FunctionValue {
 
 		private static final class PrintTLCState extends TLCState {
 
+			private static final UniqueString _FORMAT = UniqueString.of("_format");
 			private final RecordValue rcd;
 			private final TLCState state;
 
@@ -782,22 +783,30 @@ public class RecordValue extends Value implements FunctionValue {
 			@Override
 			public String toString() {
 				final StringBuffer result = new StringBuffer();
-				int vlen = rcd.names.length;
-				if (vlen == 1) {
-					result.append(rcd.names[0].toString());
-					result.append(" = ");
-					result.append(Values.ppr(rcd.values[0]));
-					result.append("\n");
+				final int vlen = rcd.names.length;
+				
+				final int idx = Arrays.asList(rcd.names).indexOf(_FORMAT);
+
+				final String format;
+				if (idx > -1) {
+					format = ((StringValue) rcd.values[idx]).val.toString();
 				} else {
-					for (int i = 0; i < vlen; i++) {
-						UniqueString key = rcd.names[i];
-						result.append("/\\ ");
-						result.append(key.toString());
-						result.append(" = ");
-						result.append(Values.ppr(rcd.values[i]));
-						result.append("\n");
+					if (vlen == 1) {
+						format = "%s = %s\n";
+					} else {
+						format = "/\\ %s = %s\n";
 					}
 				}
+				
+				for (int i = 0; i < vlen; i++) {
+					if (i == idx) {
+						continue;
+					}
+					final String key = rcd.names[i].toString();
+					final String value = Values.ppr(rcd.values[i]);
+					result.append(String.format(format, key, value));
+				}
+
 				return result.toString();
 			}
 
