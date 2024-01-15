@@ -211,13 +211,13 @@
 		<dependency>
 		    <groupId>org.jline</groupId>
 		    <artifactId>jline-terminal</artifactId>
-		    <version>3.14.1</version>
+		    <version>3.25.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.jline/jline-reader -->
 		<dependency>
 		    <groupId>org.jline</groupId>
 		    <artifactId>jline-reader</artifactId>
-		    <version>3.14.1</version>
+		    <version>3.25.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 		<dependency>

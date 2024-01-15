@@ -44,8 +44,8 @@ Require-Bundle: org.aspectj.runtime;bundle-version="1.6.0";resolution:=optional;
  org.junit;bundle-version="4.12.0";resolution:=optional;x-installation:=greedy,
  javax.mail;bundle-version="1.4.0";resolution:=optional,
  org.easymock;bundle-version="2.4.0";resolution:=optional,
- org.jline.reader;bundle-version="3.14.1";resolution:=optional,
- org.jline.terminal;bundle-version="3.14.1";resolution:=optional,
+ org.jline.reader;bundle-version="3.25.0";resolution:=optional,
+ org.jline.terminal;bundle-version="3.25.0";resolution:=optional,
  com.google.gson;bundle-version="2.8.6";resolution:=optional,
  org.eclipse.lsp4j.jsonrpc;bundle-version="0.12.0";resolution:=optional,
  org.eclipse.lsp4j.debug;bundle-version="0.12.0";resolution:=optional
