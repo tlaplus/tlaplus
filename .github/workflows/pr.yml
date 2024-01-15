@@ -26,6 +26,12 @@ jobs:
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true compile compile-test test dist
 
       ##
+      ## Build TLC and Toolbox (logger reduces verbosity).
+      ##
+    - name: Build with Maven (Linux)
+      run: ${{ matrix.MVN_COMMAND }} -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+
+      ##
       ## Trigger build of CommunityModule as integration tests.
       ##
     - uses: actions/checkout@v2
