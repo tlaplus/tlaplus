@@ -139,8 +139,8 @@
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
-				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
-				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-reader-3.25.0.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar" />
@@ -231,13 +231,13 @@
 			</patternset>
 		</unzip>
 		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
-		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="${class.dir}">
+		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
 
-		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="${class.dir}">
+		<unzip src="lib/jline/jline-reader-3.25.0.jar" dest="${class.dir}">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
@@ -274,13 +274,13 @@
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
 
-		<unzip src="lib/jline/jline-terminal-3.14.1.jar" dest="target/classes">
+		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
 		</unzip>
 
-		<unzip src="lib/jline/jline-reader-3.14.1.jar" dest="target/classes">
+		<unzip src="lib/jline/jline-reader-3.25.0.jar" dest="target/classes">
 			<patternset>
 				<include name="**/*.*"/>
 			</patternset>
@@ -466,8 +466,8 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
-				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
-				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-reader-3.25.0.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
@@ -606,8 +606,8 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
-				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
-				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-reader-3.25.0.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
@@ -659,8 +659,8 @@
 				<pathelement location="lib/objenesis-2.1.jar" />
 				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
-				<pathelement location="lib/jline/jline-terminal-3.14.1.jar" />
-				<pathelement location="lib/jline/jline-reader-3.14.1.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-reader-3.25.0.jar" />
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
