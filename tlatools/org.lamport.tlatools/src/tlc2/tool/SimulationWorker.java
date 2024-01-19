@@ -121,7 +121,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	/**
 	 * Encapsulates information about an error produced by a simulation worker.
 	 */
-	 public static class SimulationWorkerError extends InvariantViolatedException  {
+	 public class SimulationWorkerError extends InvariantViolatedException  {
 		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace) {
 			this(errorCode, parameters, state, stateTrace, null);
 		}
@@ -162,8 +162,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		public List<TLCStateInfo> getTrace() {
 			final ArrayList<TLCStateInfo> trace = new ArrayList<>();
 			for (int j = 0; j < stateTrace.size(); j++) {
-				final TLCState state = stateTrace.elementAt(j);
-				trace.add(new TLCStateInfo(state, state.getAction()));
+				final TLCState s = stateTrace.elementAt(j);
+                final TLCState t = j + 1< stateTrace.size() ? stateTrace.elementAt(j+1) : s;
+				trace.add(tool.evalAlias(new TLCStateInfo(s, s.getAction()), t));
 			}			
 			return trace;
 		}

@@ -614,6 +614,21 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			trace.addAll(Arrays.asList(tlc.getTraceInfo(succState)));
 			trace.add(tool.getState(succState, curState));
 		}
-		tool.checkPostConditionWithCounterExample(new CounterExample(trace));
+        
+		// Evaluate the ALIAS on the actions (pairs of states) of the trace before the
+        // trace is wrapped in a CounterExample below (ALIAS won't be evaluated on a
+        // trace of length 1, i.e., just an initial state).
+        // Evaluating the ALIAS e.g. gives users a way to format a counterexample that
+        // is serialized into some custom format such as JSON with TLC's `-dumptrace`,
+        // *without* a) implementing their own `-dumptrace` exporter (see e.g. _JsonTrace.tla),
+        // while b) having the expressiveness of action- as opposed to state-level formulas.
+        for (int i = 0; i < trace.size(); i++) {
+                final TLCStateInfo s = trace.get(i);
+                final TLCStateInfo t = i + 1< trace.size() ? trace.get(i+1) : s;
+                final TLCStateInfo alias = tool.evalAlias(s, t.getOriginalState());
+                trace.set(i, alias);
+        }
+        
+        tool.checkPostConditionWithCounterExample(new CounterExample(trace));
 	}
 }
