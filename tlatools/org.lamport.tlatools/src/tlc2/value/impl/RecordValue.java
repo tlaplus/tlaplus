@@ -769,7 +769,7 @@ public class RecordValue extends Value implements FunctionValue {
 			return new PrintTLCState(this, state);
 		}
 
-		private static final class PrintTLCState extends TLCState {
+		public static final class PrintTLCState extends TLCState {
 
 			private static final UniqueString _FORMAT = UniqueString.of("_format");
 			private final RecordValue rcd;
@@ -904,6 +904,10 @@ public class RecordValue extends Value implements FunctionValue {
 			@Override
 			public TLCState createEmpty() {
 				return this.state.createEmpty();
+			}
+
+			public Value getRecord() {
+				return rcd;
 			}
 		}
 

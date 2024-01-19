@@ -5,6 +5,10 @@
 
 package tlc2.tool;
 
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.RecordValue.PrintTLCState;
+import tlc2.value.impl.Value;
+
 // TLCStateInfo is largely obsolete and should be replaced in favor of
 // TLCStateMutExt, which has support for storing the predecessor, action,
 // and level (stateNum), but doesn't have to be created after the fact,
@@ -109,5 +113,14 @@ public class TLCStateInfo {
 		  return action;
 	  }
 	  return Action.UNKNOWN;
+  }
+
+  public Value toRecordValue() {
+      if (state instanceof PrintTLCState) {
+          final PrintTLCState p = (PrintTLCState) state;
+          return p.getRecord();
+      }
+
+      return new RecordValue(this);
   }
 }
