@@ -69,7 +69,8 @@ public class CounterExample extends RecordValue {
 		// A sequence of distinct states...
 		for (int i = 0; i < trace.size(); i++) {
 			final TLCStateInfo info = trace.get(i);
-			final Value r = new TupleValue(new Value[] { IntValue.gen(info.state.getLevel()), info.toRecordValue() });
+			final Value r = new TupleValue(
+					new Value[] { IntValue.gen(info.getOriginalState().getLevel()), info.toRecordValue() });
 			if (i > 0) {
 				final TupleValue edge = new TupleValue(
 						new Value[] { states.getLast(), new RecordValue(info.getAction()), r });
