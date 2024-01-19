@@ -74,6 +74,7 @@ public class TLCStateInfo {
 	  this.info = info.info;
 	  this.stateNumber = info.stateNumber;
 	  this.fp = info.fp;
+	  this.action = info.action;
   }
 
   public final long fingerPrint() {
