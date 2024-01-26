@@ -22,6 +22,8 @@ public interface IStateQueue {
 		final String name = System.getProperty(IStateQueue.class.getName());
 		if ("MemStateQueue".equals(name)) {
 			return new MemStateQueue(metaDir);
+		} else if ("StateDeque".equals(name)) {
+			return new StateDeque();
 		} else if ("DiskByteArrayQueue".equals(name)) {
 			return new DiskByteArrayQueue(metaDir);
 		} else {
