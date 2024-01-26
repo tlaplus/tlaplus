@@ -2,11 +2,32 @@ package tlc2.tool.queue;
 
 import java.io.IOException;
 
+import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 
 public interface IStateQueue {
+    
+	public static String getStateQueueName() {
+		return System.getProperty(IStateQueue.class.getName(), "DiskStateQueue");
+	}
+
+	public static IStateQueue get(final String metaDir) {
+		if (Boolean.getBoolean(ModelChecker.class.getName() + ".BAQueue")) {
+			//legacy support for .BAQueue property.
+			return new DiskByteArrayQueue(metaDir);
+		}
+		
+		final String name = System.getProperty(IStateQueue.class.getName());
+		if ("MemStateQueue".equals(name)) {
+			return new MemStateQueue(metaDir);
+		} else if ("DiskByteArrayQueue".equals(name)) {
+			return new DiskByteArrayQueue(metaDir);
+		} else {
+			return new DiskStateQueue(metaDir);
+		}
+	}
 
 	/* Enqueues the state. It is not thread-safe. */
 	public abstract void enqueue(final TLCState state);

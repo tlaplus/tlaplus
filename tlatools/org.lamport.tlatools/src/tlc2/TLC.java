@@ -46,6 +46,7 @@ import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
+import tlc2.tool.queue.IStateQueue;
 import tlc2.util.DotStateWriter;
 import tlc2.util.FP64;
 import tlc2.util.IStateWriter;
@@ -1346,7 +1347,7 @@ public class TLC {
 		final String fpSetClassSimpleName = fpSetConfig.getImplementation()
 				.substring(fpSetConfig.getImplementation().lastIndexOf(".") + 1);
 		
-		final String stateQueueClassSimpleName = ModelChecker.getStateQueueName();
+		final String stateQueueClassSimpleName = IStateQueue.getStateQueueName();
 		
 		//  fpSetClassSimpleName and stateQueueClassSimpleName ignored in DFS mode.
 		final Map<String, String> result = new LinkedHashMap<>();
