@@ -448,6 +448,7 @@ public class LiveWorker implements Callable<Boolean> {
 								// UNDONE (a non-UNDONE negative nextLink is
 								// probably a bug).
 								// isFinalCheck => nextLink # UNDONE
+								// This assertion will be violated if TLC terminates prematurely triggered by TLCSet("exit", TRUE).
 								assert !isFinalCheck || nextLink != TableauNodePtrTable.UNDONE;
 							}
 						}
