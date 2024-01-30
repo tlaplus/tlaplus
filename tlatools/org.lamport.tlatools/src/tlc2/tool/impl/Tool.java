@@ -62,13 +62,13 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.Enumerable.Ordering;
 import tlc2.value.impl.FcnLambdaValue;
 import tlc2.value.impl.FcnParams;
 import tlc2.value.impl.FcnRcdValue;
+import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazySupplierValue;
 import tlc2.value.impl.LazyValue;
@@ -2707,12 +2707,7 @@ public abstract class Tool
 					for (int i = 0; i < sz; i++) {
 						t = iss.elementAt(i);
 						
-						Value res = this.eval(args[0], c, s0, t, control, cm);
-						if (!((BoolValue) res).val) {
-							continue;
-						}
-						
-						res = this.eval(args[1], c, t, s1, control, cm);
+						final Value res = this.eval(args[1], c, t, s1, control, cm);
 						if (((BoolValue) res).val) {
 							return BoolValue.ValTrue;
 						}
