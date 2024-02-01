@@ -409,9 +409,6 @@ public class Json {
         return new StringValue(primitive.getAsString());
       }
     }
-    else if (node.isJsonNull()) {
-      return null;
-    }
     throw new IOException("Cannot convert value: unsupported JSON value " + node.toString());
   }
 
