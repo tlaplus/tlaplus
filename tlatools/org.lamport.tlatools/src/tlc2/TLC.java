@@ -450,6 +450,10 @@ public class TLC {
 							System.setProperty(Simulator.class.getName() + ".rlaction", Boolean.TRUE.toString());
 						}
 					}
+                    if(traceNum == Long.MAX_VALUE && traceFile != null) {
+                        printErrorMsg("Error: You need to specify a 'num' argument when using the 'file' argument, for example: '\"num=5,file=test.txt\"'.");
+                        return false;
+                    }
 				}
 			} else if (args[index].equals("-modelcheck")) {
 				index++;
