@@ -122,7 +122,20 @@ public class TLCTest {
 				TLAConstants.Files.MODEL_CHECK_FILE_BASENAME }));
 		assertTrue(TLCGlobals.setBound == Integer.MAX_VALUE);
 	}
-	
+
+	@Test
+	public void testHandleParametersSimulateFileNum() {
+		TLC tlc = new TLC();
+		assertTrue(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "num=5,file=test.txt"}));
+		// reset static field
+		tlc.setTraceNum(Long.MAX_VALUE);
+		assertFalse(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "file=test.txt"}));
+		// reset static fields.
+		tlc.setTraceNum(Long.MAX_VALUE);
+		assertFalse(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "num=10"}));
+    }
+
+
 	@Test
 	public void testRuntimeConversion() {
 		assertEquals("59s", TLC.convertRuntimeToHumanReadable(59000L));
