@@ -27,6 +27,7 @@ package tlc2.util;
 
 import java.io.IOException;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 
@@ -79,6 +80,13 @@ public final class NoopStateWriter implements IStateWriter {
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.tool.Action)
 	 */
 	public void writeState(TLCState state, TLCState successor, short stateFlags, Action action) {
+		// noop
+	}
+	
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.tool.Action)
+	 */
+	public void writeState(TLCState state, TLCState successor, short stateFlags, Action action, SemanticNode pred) {
 		// noop
 	}
 

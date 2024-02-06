@@ -27,6 +27,7 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.util.BitVector;
@@ -103,6 +104,13 @@ public class NoopLivenessStateWriter implements ILivenessStateWriter {
 	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.tool.Action)
 	 */
 	public void writeState(TLCState state, TLCState successor, short stateFlags, Action action) {
+		// noop
+	}
+
+	/* (non-Javadoc)
+	 * @see tlc2.util.IStateWriter#writeState(tlc2.tool.TLCState, tlc2.tool.TLCState, boolean, tlc2.tool.Action)
+	 */
+	public void writeState(TLCState state, TLCState successor, short stateFlags, Action action, SemanticNode pred) {
 		// noop
 	}
 
