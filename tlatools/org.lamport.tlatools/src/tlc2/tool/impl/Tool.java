@@ -548,7 +548,7 @@ public abstract class Tool
 						// Increase "states found".
 						cm.getRoot().incSecondary();
 					}
-					this.processUnsatisfied(ps, acts.carPred(), acts.carContext());
+					this.processUnsatisfied(ps, acts.carPred(), acts.carContext(), states, cm);
 					return;
 				}
 				// Move on to the next action in the ActionItemList.
@@ -1020,7 +1020,7 @@ public abstract class Tool
 						  new String[] { "next states", "boolean", bval.toString(), acts.pred.toString() }, pred, c);
 			  }
 			  if (!((BoolValue) bval).val) {
-				  return this.processUnsatisfied(s0, action, s1, pred, c);
+				  return this.processUnsatisfied(s0, action, s1, pred, c, nss, cm);
 			  }
 		  } else if (kind == -2) {
 			  // Identical to default handling below (line 876). Ignored during this optimization.
@@ -1044,14 +1044,14 @@ public abstract class Tool
   }
 
   @ExpectInlined
-  protected TLCState processUnsatisfied(final TLCState ps, final SemanticNode pred, final Context c) {
-	  return ps;
+  protected TLCState processUnsatisfied(final TLCState ps, final SemanticNode pred, final Context c, IStateFunctor states, CostModel cm) {
+	  return states.addUnsatisfiedState(ps, pred, c);
   }
 
   @ExpectInlined
   protected TLCState processUnsatisfied(final TLCState s0, final Action action, final TLCState s1,
-			final SemanticNode pred, final Context c) {
-	return s1;
+			final SemanticNode pred, final Context c, final INextStateFunctor nss, final CostModel cm) {
+	return nss.addUnsatisfiedState(s0, action, s1, pred, c);
   }
   
   /* getNextStatesAppl */

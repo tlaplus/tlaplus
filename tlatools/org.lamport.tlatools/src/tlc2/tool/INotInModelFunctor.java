@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024 Microsoft Research. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -23,18 +23,20 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package tlc2.tool;
 
-/**
- * An {@link IStateFunctor}'s responsibility is to accept generated (init)
- * states via addElement and to process them. As the time of writing, known
- * implementors are StateVec which simply stores all states passed to it for
- * later use and ModelChecker.DoInitFunctor which checks each state right
- * away.
- */
-public interface IStateFunctor extends INotInModelFunctor {
+import tla2sany.semantic.SemanticNode;
+import tlc2.util.Context;
 
-	Object addElement(TLCState state);
+public interface INotInModelFunctor {
+
+	default TLCState addUnsatisfiedState(final TLCState state, final SemanticNode pred, final Context c) {
+		return state;
+	}
+
+	default TLCState addUnsatisfiedState(final TLCState curState, final Action action, final TLCState succState,
+			final SemanticNode pred, final Context c) {
+		return succState;
+	}
 
 }

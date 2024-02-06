@@ -23,6 +23,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.BufferedRandomAccessFile;
+import tlc2.util.Context;
 import tlc2.util.IStateWriter;
 import tlc2.util.IdThread;
 import tlc2.util.SetOfStates;
@@ -484,6 +485,15 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			throw new WrappingRuntimeException(e, succState);
 		}
 	}
+	
+	@Override
+	public TLCState addUnsatisfiedState(final TLCState curState, final Action action, final TLCState succState,
+			final SemanticNode pred, final Context c) {
+		if (this.allStateWriter.isConstrained()) {
+			this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, pred);
+		}
+		return succState;
+	}	
 	
 	@SuppressWarnings("serial")
 	private static class WrappingRuntimeException extends RuntimeException {
