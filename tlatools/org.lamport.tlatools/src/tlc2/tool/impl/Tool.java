@@ -1422,6 +1422,7 @@ public abstract class Tool
 				
 				// t -B-> u
 				int sz = iss.size();
+				nss.incrementStatesGenerated(sz);
 				for (int i = 0; i < sz; i++) {
 					TLCState u = s1.copy();
 					t = iss.elementAt(i);

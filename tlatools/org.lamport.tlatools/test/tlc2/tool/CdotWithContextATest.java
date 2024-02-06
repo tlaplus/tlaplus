@@ -56,7 +56,7 @@ public class CdotWithContextATest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "3", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "3", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 	}
 }

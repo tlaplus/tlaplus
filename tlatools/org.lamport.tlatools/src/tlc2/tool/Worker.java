@@ -248,7 +248,8 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	/* Statistics */
 
-	final void incrementStatesGenerated(long l) {
+	@Override
+	public final void incrementStatesGenerated(long l) {
 		this.statesGenerated += l;		
 	}
 	

@@ -59,4 +59,7 @@ public interface INextStateFunctor extends IStateFunctor {
 	default SetOfStates getStates() {
 		return new SetOfStates(0);
 	}
+
+	default void incrementStatesGenerated(long sz) {
+	}
 }
