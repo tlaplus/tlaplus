@@ -104,9 +104,13 @@ public interface ITool extends TraceApp {
 
 	/* This method determines if a state satisfies the model constraints. */
 	boolean isInModel(TLCState state) throws EvalException;
+	
+	boolean isInModel(final ExprNode constraint, TLCState state) throws EvalException;
 
 	/* This method determines if a pair of states satisfy the action constraints. */
 	boolean isInActions(TLCState s1, TLCState s2) throws EvalException;
+	
+	boolean isInActions(final ExprNode constraint, TLCState s1, TLCState s2) throws EvalException;
 
 	double evalReward(TLCState s1, TLCState s2, final double fallback) throws EvalException;
 

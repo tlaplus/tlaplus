@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -437,8 +439,20 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			boolean unseen = true;
 			if (inModel) {
 				unseen = !isSeenState(curState, succState, action);
-			} else if (this.allStateWriter.isConstrained()) {
-				this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action);
+			} else if (allStateWriter.isConstrained()) {
+				final ExprNode[] constraints = this.tool.getModelConstraints();
+				for (int i = 0; i < constraints.length; i++) {
+					if (!this.tool.isInModel(constraints[i], succState)) {
+						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, constraints[i]);				
+					}
+				}
+			    final ExprNode[] constrs = this.tool.getActionConstraints();
+			    for (int i = 0; i < constrs.length; i++) {
+			    	if (!this.tool.isInActions(constrs[i], curState, succState)) {
+						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, constraints[i]);				
+			    	}
+			    }
+			    return true;
 			}
 			
 			// Check if succState violates any invariant:

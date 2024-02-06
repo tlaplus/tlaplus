@@ -2785,12 +2785,21 @@ public abstract class Tool
   /* This method determines if a state satisfies the model constraints. */
   @Override
   public final boolean isInModel(TLCState state) throws EvalException {
-    ExprNode[] constrs = this.getModelConstraints();
-    for (int i = 0; i < constrs.length; i++) {
-      final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
-      IValue bval = this.eval(constrs[i], Context.Empty, state, cm);
+	    ExprNode[] constrs = this.getModelConstraints();
+	    for (int i = 0; i < constrs.length; i++) {
+	    	if (!isInModel(constrs[i], state)) {
+	    		return false;
+	    	}
+	    }
+	    return true;
+  }
+
+  @Override
+  public final boolean isInModel(final ExprNode constraint, final TLCState state) throws EvalException {
+      final CostModel cm = coverage ? ((Action) constraint.getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
+      IValue bval = this.eval(constraint, Context.Empty, state, cm);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()}, constrs[i]);
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constraint.toString()}, constraint);
       }
       if (!((BoolValue)bval).val) {
   		  if (coverage) {
@@ -2801,20 +2810,27 @@ public abstract class Tool
   		  if (coverage) {
   			  cm.incSecondary();
 		  }
+  		  return true;
       }
-    }
-    return true;
   }
 
   /* This method determines if a pair of states satisfy the action constraints. */
   @Override
   public final boolean isInActions(TLCState s1, TLCState s2) throws EvalException {
-    ExprNode[] constrs = this.getActionConstraints();
-    for (int i = 0; i < constrs.length; i++) {
-      final CostModel cm = coverage ? ((Action) constrs[i].getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
-      Value bval = this.eval(constrs[i], Context.Empty, s1, s2, EvalControl.Clear, cm);
+	    final ExprNode[] constrs = this.getActionConstraints();
+	    for (int i = 0; i < constrs.length; i++) {
+	    	if (!isInActions(constrs[i], s1, s2)) {
+	    		return false;
+	    	}
+	    }
+	    return true;
+  }
+  
+  public final boolean isInActions(final ExprNode constraint, TLCState s1, TLCState s2) throws EvalException {
+      final CostModel cm = coverage ? ((Action) constraint.getToolObject(toolId)).cm : CostModel.DO_NOT_RECORD;
+      Value bval = this.eval(constraint, Context.Empty, s1, s2, EvalControl.Clear, cm);
       if (!(bval instanceof BoolValue)) {
-        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constrs[i].toString()}, constrs[i]);
+        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", constraint.toString()}, constraint);
       }
       if (!((BoolValue)bval).val) {
   		  if (coverage) {
@@ -2825,9 +2841,8 @@ public abstract class Tool
   		  if (coverage) {
   			  cm.incSecondary();
 		  }
+  		  return true;
       }
-    }
-    return true;
   }
   
   @Override
