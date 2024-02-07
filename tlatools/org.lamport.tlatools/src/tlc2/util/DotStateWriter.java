@@ -249,6 +249,8 @@ public class DotStateWriter extends StateWriter {
 				} else {
 					this.writer.append(states2dot(successor.evalStateLevelAlias()));
 				}
+				this.writer.append("\",tooltip=\"");
+				this.writer.append(states2dot(successor));
 		    	if (isSet(stateFlags, IStateWriter.IsNotInModel)) {
 		    		this.writer.append("\",style = filled, fillcolor=lightyellow]");
 				} else {
