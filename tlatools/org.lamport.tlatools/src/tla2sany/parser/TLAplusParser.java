@@ -645,7 +645,7 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
       msg.append("\"\n");
     }
 
-    msg.append(e.getShortMessage());
+    msg.append(ParseExceptionExtended.getShortMessage(e));
 //    msg.append(" while parsing ");
 //    msg.append(name);
 //
@@ -6523,7 +6523,7 @@ SyntaxTreeNode tn;
   final public SyntaxTreeNode Junctions() throws ParseException {
   BStack.newReference(getToken(1).endColumn, getToken(1).kind);
     /***********************************************************************
-    * Pushes onto BStack an element of the appropriate kind with offest    *
+    * Pushes onto BStack an element of the appropriate kind with offset    *
     * equal to the column of the last character in the /\ or \/ token.     *
     ***********************************************************************/
 
@@ -8435,6 +8435,11 @@ ClosedStart() : {
     try { return !jj_3_77(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(76, xla); }
+  }
+
+  final private boolean jj_3R_155() {
+    if (jj_3R_145()) return true;
+    return false;
   }
 
   final private boolean jj_3_64() {
@@ -11665,11 +11670,6 @@ ClosedStart() : {
     lookingAhead = false;
     if (!jj_semLA || jj_3R_106()) return true;
     }
-    return false;
-  }
-
-  final private boolean jj_3R_155() {
-    if (jj_3R_145()) return true;
     return false;
   }
 
