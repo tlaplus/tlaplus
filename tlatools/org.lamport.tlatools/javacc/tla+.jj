@@ -732,7 +732,7 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
     StringBuffer msg;
 
     msg = new StringBuffer("***Parse Error***\n");
-    if ( !expecting.equals(emptyString) ) {
+    if ( !emptyString.equals(expecting) ) {
       msg.append("Was expecting \"");
       msg.append( expecting );
       msg.append("\"\n");
