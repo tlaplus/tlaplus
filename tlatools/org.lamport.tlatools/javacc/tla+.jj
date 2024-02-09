@@ -96,13 +96,13 @@ package tla2sany.parser;
 
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tlc2.output.EC;
-
-import tla2sany.utilities.Vector;
 import tla2sany.utilities.Stack;
+import tla2sany.utilities.Vector;
+import tlc2.output.EC;
 import util.Assert;
-import util.UniqueString;
+import util.TLAConstants;
 import util.ToolIO;
+import util.UniqueString;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree {
 
@@ -730,17 +730,15 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
 
   private final String msgStackToString(ParseException e) {
     StringBuffer msg;
-    String name = " *unknown* (error occurred before module header)";
-    if (mn != null) name = mn.toString();
 
     msg = new StringBuffer("***Parse Error***\n");
-    if ( expecting != emptyString ) {
+    if ( !expecting.equals(emptyString) ) {
       msg.append("Was expecting \"");
       msg.append( expecting );
       msg.append("\"\n");
     }
 
-    msg.append(e.getShortMessage());
+    msg.append(ParseExceptionExtended.getShortMessage(e));
 //    msg.append(" while parsing ");
 //    msg.append(name);
 //
@@ -1791,7 +1789,7 @@ ParamDeclaration() : {
   SyntaxTreeNode tn, sn[];
   Token t;
   bpa("Parameter declaration");
-  expecting = "CONSTANT";
+  expecting = TLAConstants.KeyWords.CONSTANT;
 } {
   tn = ParamSubDecl()  { addHeir(tn); }
 {expecting = "Identifier, operator or _";}
