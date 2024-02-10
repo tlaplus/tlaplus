@@ -8,9 +8,7 @@
 	<property environment="env" />
 
 	<!-- setup classpath -->
-	<path id="project.classpath">
-
-	</path>
+	<path id="project.classpath" />
 
 	<!-- timestamp -->
 	<tstamp>
@@ -101,7 +99,24 @@
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		<antcall target="test-dist-long" inheritall="true" inheritrefs="true" />
 	</target>
-	
+
+	<!-- Runs JavaCC to generate the TLA+ parser files. -->
+	<target name="generate">
+		<tempfile property="javacc-tmpdir" destdir="${java.io.tmpdir}" prefix="javacc_" />
+		<mkdir dir="${javacc-tmpdir}" />
+		<java classpath="lib/javacc-4.0.jar" classname="javacc" fork="true" failonerror="true">
+			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
+			<arg value="javacc/tla+.jj" />
+		</java>
+		<fixcrlf srcdir="${javacc-tmpdir}" eol="crlf" includes="*.java" />
+		<move todir="src/tla2sany/parser">
+			<fileset dir="${javacc-tmpdir}">
+				<include name="*.java" />
+			</fileset>
+		</move>
+		<delete dir="${javacc-tmpdir}" />
+	</target>
+
 	<!-- ===========================================================-->
 	<!-- Don't call any of the targets below, use the umbrella      -->
 	<!-- targets above which correctly call a target's dependencies -->
@@ -123,7 +138,7 @@
 	</target>
 
 	<!-- Compiles the TLA+ tools code -->
-	<target name="compile" depends="clean">
+	<target name="compile" depends="clean, generate">
 		<echo>
 			================================================================
 			= The following warnings about sun.misc.Unsafe can be ignored. = 
