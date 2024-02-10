@@ -1430,6 +1430,11 @@ public abstract class Tool
 					// iss2 does not call the unsatisfied next feature 
 					this.getNextStates(action, args[1], acts, c, t, u, new INextStateFunctor() {
 						@Override
+						public TLCState addUnsatisfiedState(final TLCState t, final Action action, final TLCState u,
+								final SemanticNode pred, final Context c) {
+							return nss.addUnsatisfiedState(s0, action, u.setPredecessor(s0), pred, c);
+						}
+						@Override
 						public Object addElement(final TLCState t, final Action a, final TLCState u) {
 							// s -(A \cdot B)-> u 
 							return nss.addElement(s0, action, u.setPredecessor(s0));
