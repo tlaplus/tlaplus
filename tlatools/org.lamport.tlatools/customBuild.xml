@@ -107,6 +107,17 @@
 			<arg value="-OUTPUT_DIRECTORY=src/tla2sany/parser" />
 			<arg value="javacc/tla+.jj" />
 		</java>
+		<fixcrlf srcdir="src/tla2sany/parser" eol="lf"
+			includes="
+				ParseException.java,
+				SimpleCharStream.java,
+				TLAplusParserConstants.java,
+				TLAplusParser.java,
+				TLAplusParserTokenManager.java,
+				Token.java,
+				TokenMgrError.java
+			">
+		</fixcrlf>
 	</target>
 
 	<!-- ===========================================================-->
