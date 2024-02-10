@@ -1432,7 +1432,7 @@ public abstract class Tool
 					// s -(A \cdot B)-> u 
 					for (int j = 0; j < iss2.size(); j++) {
 						u = iss2.elementAt(j);
-						nss.addElement(s0, action, u);
+						nss.addElement(s0, action, u.setPredecessor(s0));
 					}
 				}
 				return resState;
