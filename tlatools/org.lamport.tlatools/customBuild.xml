@@ -102,22 +102,19 @@
 
 	<!-- Runs JavaCC to generate the TLA+ parser files. -->
 	<target name="generate">
-		<unzip src="javacc/README/javacc-4.0.zip" dest="javacc" />
-		<java classpath="javacc/javacc-4.0/bin/lib/javacc.jar" classname="javacc" fork="true" failonerror="true">
-			<arg value="-OUTPUT_DIRECTORY=src/tla2sany/parser" />
+		<tempfile property="javacc-tmpdir" destdir="${java.io.tmpdir}" prefix="javacc_" />
+		<mkdir dir="${javacc-tmpdir}" />
+		<unzip src="javacc/README/javacc-4.0.zip" dest="${javacc-tmpdir}" />
+		<java classpath="${javacc-tmpdir}/javacc-4.0/bin/lib/javacc.jar" classname="javacc" fork="true" failonerror="true">
+			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
 			<arg value="javacc/tla+.jj" />
 		</java>
-		<fixcrlf srcdir="src/tla2sany/parser" eol="lf"
-			includes="
-				ParseException.java,
-				SimpleCharStream.java,
-				TLAplusParserConstants.java,
-				TLAplusParser.java,
-				TLAplusParserTokenManager.java,
-				Token.java,
-				TokenMgrError.java
-			">
-		</fixcrlf>
+		<fixcrlf srcdir="${javacc-tmpdir}" eol="lf" includes="*.java" />
+		<move todir="src/tla2sany/parser">
+			<fileset dir="${javacc-tmpdir}">
+				<include name="*.java" />
+			</fileset>
+		</move>
 	</target>
 
 	<!-- ===========================================================-->
