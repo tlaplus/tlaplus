@@ -1424,16 +1424,16 @@ public abstract class Tool
 				int sz = iss.size();
 				nss.incrementStatesGenerated(sz);
 				for (int i = 0; i < sz; i++) {
-					TLCState u = s1.copy();
+					final TLCState u = s1.copy();
 					t = iss.elementAt(i);
-					final StateVec iss2 = new StateVec(0);
-					this.getNextStates(action, args[1], acts, c, t, u, iss2, cm);
 
-					// s -(A \cdot B)-> u 
-					for (int j = 0; j < iss2.size(); j++) {
-						u = iss2.elementAt(j);
-						nss.addElement(s0, action, u.setPredecessor(s0));
-					}
+					// iss2 does not call the unsatisfied next feature 
+					this.getNextStates(action, args[1], acts, c, t, u, new INextStateFunctor() {
+						@Override
+						public Object addElement(final TLCState t, final Action a, final TLCState u) {
+							// s -(A \cdot B)-> u 
+							return nss.addElement(s0, action, u.setPredecessor(s0));
+						}}, cm);
 				}
 				return resState;
 			} else {
