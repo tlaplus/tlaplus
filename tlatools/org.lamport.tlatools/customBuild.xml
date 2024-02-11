@@ -115,6 +115,7 @@
 				<include name="*.java" />
 			</fileset>
 		</move>
+		<delete dir="${javacc-tmpdir}" />
 	</target>
 
 	<!-- ===========================================================-->
