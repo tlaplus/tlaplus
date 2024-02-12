@@ -751,25 +751,20 @@ public class LiveCheck implements ILiveCheck {
 					long curFP = prefix.elementAt(i);
 					if (curFP != fp) {
 						sinfo = tool.getState(curFP, sinfo);
+						states.set(states.size() - 1,
+								tool.evalAlias(states.get(states.size() - 1), sinfo.state));
 						states.add(sinfo);	
 						fp = curFP;
 					}
 				}
-
-				for (int i = 0; i < states.size() - 1; i++) {
-					final int j = i;
-					StatePrinter.printInvariantViolationStateTraceState(
-							tool.noDebug().evalAlias(states.get(i), states.get(i + 1).state, () -> {
-								return new ArrayList<>(states.subList(0, j));
-							}));
-				}
 				// Evaluate alias on the last state that completes the violation of the safety
 				// property.
 				final TLCStateInfo last = states.get(states.size() - 1);
-				StatePrinter.printInvariantViolationStateTraceState(
-						tool.noDebug().evalAlias(last, last.state, () -> {
-							return new ArrayList<>(states.subList(0, states.size() - 1));
-						}));
+				states.set(states.size() -1 , tool.evalAlias(last, last.state));
+
+				for (int i = 0; i < states.size(); i++) {
+					StatePrinter.printInvariantViolationStateTraceState(states.get(i));
+				}
 				
 				// Stop subsequent state-space exploration.
 				//TODO stop() ignores TLCGlobals.continuation!
