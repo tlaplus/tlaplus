@@ -64,6 +64,9 @@ public class DotStateWriter extends StateWriter {
 	
 	// A mapping from ranks to nodes.
 	private final Map<Integer, Set<Long>> rankToNodes = new HashMap<>();
+	
+	// Forbids the creation of multi-edges.
+	private final Set<Long> strict;
 
 	// Determines whether or not transition edges should be colorized in the state
 	// graph.
@@ -87,11 +90,11 @@ public class DotStateWriter extends StateWriter {
 	private final boolean stuttering;
 	
 	public DotStateWriter() throws IOException {
-		this("DotStateWriter.dot", "", false, false, false, false, false);
+		this("DotStateWriter.dot", "", false, false, false, false, false, false);
 	}
 	
 	public DotStateWriter(final String fname, final String strict) throws IOException {
-		this(fname, strict, false, false, false, false, false);
+		this(fname, strict, false, false, false, false, false, false);
 	}
 	
 	/**
@@ -105,19 +108,24 @@ public class DotStateWriter extends StateWriter {
 	 * @throws IOException
 	 */
 	public DotStateWriter(final String fname, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot, final boolean constrained, final boolean stuttering) throws IOException {
-		this(fname, "strict ", colorize, actionLabels, snapshot, constrained, stuttering);
+			final boolean snapshot, final boolean constrained, final boolean stuttering, final boolean strict) throws IOException {
+		this(fname, "strict ", colorize, actionLabels, snapshot, constrained, stuttering, strict);
 	}
 	
-	public DotStateWriter(final String fname, final String strict, final boolean colorize, final boolean actionLabels,
-			final boolean snapshot, final boolean constrained, final boolean stuttering) throws IOException {
+	public DotStateWriter(final String fname, final String prefix, final boolean colorize, final boolean actionLabels,
+			final boolean snapshot, final boolean constrained, final boolean stuttering, final boolean strict) throws IOException {
 		super(fname);
 		this.colorize = colorize;
 		this.actionLabels = actionLabels;
 		this.snapshot = snapshot;
 		this.constrained = constrained;
 		this.stuttering = stuttering;
-		this.writer.append(strict + "digraph DiskGraph {\n"); // strict removes redundant edges
+		if (strict) {
+			this.strict = new HashSet<>();
+		} else {
+			this.strict = null;
+		}
+		this.writer.append(prefix + "digraph DiskGraph {\n"); // strict removes redundant edges
 		// Turned off LR because top to bottom provides better results with GraphViz viewer.
 //		this.writer.append("rankdir=LR;\n"); // Left to right rather than top to bottom
 		
@@ -219,10 +227,23 @@ public class DotStateWriter extends StateWriter {
 			// Do not render stuttering transitions unless requested.
 			return;
 		}
-		final String successorsFP = Long.toString(successor.fingerPrint());
+		
+		final long sfp = successor.fingerPrint();
+		final long cfp = state.fingerPrint();
+
+		if (strict != null) {
+			// XORing the fingerprints of the two nodes may result in the omission of this
+			// edge. However, this is expected to be a minor issue, as the DotStateWriter
+			// primarily handles small graphs for visualization with GraphViz.
+			if (!strict.add(cfp ^ sfp)) {
+				return;
+			}
+		}
+		
+		final String successorsFP = Long.toString(sfp);
 		
 		// Write the transition edge.
-		this.writer.append(Long.toString(state.fingerPrint()));
+		this.writer.append(Long.toString(cfp));
 		this.writer.append(" -> ");
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
