@@ -1,121 +1,149 @@
-// Copyright (c) 2003 Compaq Corporation.  All rights reserved.
-// Last modified onFri  2 Mar 2007 at 15:40:00 PST by lamport
-/***************************************************************************
-* 2 Mar 2007: enum <- Enum                                                 *
-***************************************************************************/
-
 package tla2sany.parser;
+
+import tla2sany.configuration.ConfigConstants;
+import util.UniqueString;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import util.UniqueString;
-
+/**
+ * Holds information about the precedence, associativity, and synonyms of all
+ * TLA+ operator symbols.
+ */
 public class Operators {
-  static public int assocNone = 0;
-  static public int assocLeft = 1;
-  static public int assocRight = 2;
 
-  /*************************************************************************
-  * The following appear to be classes of operators.                       *
-  *************************************************************************/
-  static public int nofix = 0;
-    /***********************************************************************
-    * What is a nofix operator?????????                                    *
-    ***********************************************************************/
-  static public int prefix = 1;
-  static public int postfix = 2;
-  static public int infix = 3;
-  static public int nfix = 4;// \X
-    /***********************************************************************
-    * The only operator of class nfix seems to be \X (aka \times).         *
-    ***********************************************************************/
-  static Hashtable DefinitionTable = new Hashtable();
-    /***********************************************************************
-    * Contains the Operator objects for all operators.  It is constructed  *
-    * from the data in ConfigConstants.defaultConfig.                      *
-    ***********************************************************************/
-  static Hashtable BuiltinTable = new Hashtable();
-    /***********************************************************************
-    * It appears that this is not used.                                    *
-    ***********************************************************************/
+  /**
+   * The operator has no defined associativity. This is the case for prefix
+   * and postfix operators.
+   */
+  static public final int assocNone = 0;
+  
+  /**
+   * The operator is left-associative, like ((1 + 2) + 3).
+   */
+  static public final int assocLeft = 1;
+  
+  /**
+   * The operator is right-associative, like (1 + (2 + 3)).
+   * Currently, no TLA+ operators are right-associative.
+   */
+  static public final int assocRight = 2;
+
+  /**
+   * The operator has no -fix information associated with it.
+   * It is unknown what type of operator this could refer to.
+   */
+  static public final int nofix = 0;
+  
+  /**
+   * Indicates a prefix operator, like SUBSET S.
+   */
+  static public final int prefix = 1;
+  
+  /**
+   * Indicates a postfix operator, like x'.
+   */
+  static public final int postfix = 2;
+  
+  /**
+   * Indicates an infix operator, like 1 + 2.
+   */
+  static public final int infix = 3;
+  
+  /**
+   * Indicates an n-fix operator, currently only A \X B \X C \X D.
+   */
+  static public final int nfix = 4;
+  
+  /**
+   * The table holding the data for all operators defined in the language.
+   */
+  static private final Hashtable<UniqueString, Operator> DefinitionTable =
+      new Hashtable<UniqueString, Operator>();
+  
+  /**
+   * Statically initializes all operators in the definition table. This will
+   * be executed when this class loads into memory.
+   */
+  static {
+    for (Operator op : ConfigConstants.CanonicalOperators) {
+      DefinitionTable.put(op.getIdentifier(), op);
+    }
     
-  static public void addOperator( UniqueString name, Operator op ) {
-    DefinitionTable.put(name, op);
+    for (String[] synonyms : ConfigConstants.OperatorSynonyms) {
+      UniqueString canonical = UniqueString.uniqueStringOf(synonyms[0]);
+      Operator canonicalOp = DefinitionTable.get(canonical);
+      if (null == canonicalOp) {
+        throw new IllegalArgumentException(
+            "Error during static initialization of definitions "
+            + "table: attempted to add synonym for nonexistent "
+            + "canonical operator " + canonical.toString());
+      }
+      for (int i = 1; i < synonyms.length; i++) {
+        UniqueString synonym = UniqueString.uniqueStringOf(synonyms[i]);
+        DefinitionTable.put(synonym, canonicalOp);
+      }
+    }
   }
 
-  static public Operator getOperator( UniqueString name ) {
-    return (Operator) DefinitionTable.get( name );
+  /**
+   * Gets the operator with the given name.
+   * 
+   * @param name The operator name.
+   * @return Details about the requested operator.
+   */
+  static public Operator getOperator(UniqueString name) {
+    return DefinitionTable.get(name);
   }
 
-  static public Operator getMixfix( Operator op ) {
+  /**
+   * Converts an operator into its mixfix form. This is really only
+   * applicable when turning the "-" negative prefix operator into its "-."
+   * symbol-reference form.
+   * 
+   * @param op The operator to convert.
+   * @return The mixfix form of the given operator.
+   */
+  static public Operator getMixfix(Operator op) {
      if (op.isPrefix()) return op;
      else {
-       UniqueString id = UniqueString.uniqueStringOf( op.getIdentifier().toString() + ".");
-       return (Operator) DefinitionTable.get( id );
+       UniqueString id = op.getIdentifier().concat(".");
+       return DefinitionTable.get(id);
      }
   }
   
-  static public boolean existsOperator( UniqueString name ) {
-    return ( DefinitionTable.get( name ) != null );
+  /**
+   * Check whether the given operator is defined.
+   * 
+   * @param name The name of the operator to check for existence.
+   * @return Whether the operator exists.
+   */
+  static public boolean existsOperator(UniqueString name) {
+    return DefinitionTable.containsKey(name);
   }
 
-  static public void addSynonym( UniqueString template, UniqueString match ) {
-    /*
-       do make sure that the operator already exists.
-       We make the new definition point to the other one.
-    */
-    Operator n = (Operator) DefinitionTable.get( match );
-    if (n != null) {
-      DefinitionTable.put(template, n);
-    } /* else {
-       error
-    } */
-  }
-  
   /*************************************************************************
   * resolveSynonym has the property that                                   *
   *                                                                        *
   *    resolveSynonym(a) = resolveSynonym(b)                               *
   *                                                                        *
   * iff either a = b or a and b are synonyms (like (+) and \oplus).  If a  *
-  * has no synonmys, then resolveSynonym(a) = a.                           *
+  * has no synonyms, then resolveSynonym(a) = a.                           *
+  *                                                                        *
+  * @param name Name of the synonym to resolve.                            *
+  * @return Name of the synonym to resolve.                                *
   *************************************************************************/
-  static public UniqueString resolveSynonym( UniqueString name ) {
-    Operator n = (Operator) DefinitionTable.get( name );
-    if ( n == null ) return name;
-    else return n.getIdentifier();
+  static public UniqueString resolveSynonym(UniqueString name) {
+    Operator op = DefinitionTable.get(name);
+    return null == op ? name : op.getIdentifier();
   }
 
-  static public void addBuiltinAssoc( UniqueString symbol, UniqueString builtin ) {
-    BuiltinTable.put( symbol, builtin );
-  }
-
-  /*************************************************************************
-  * It appears that the following method is not used.                      *
-  *************************************************************************/
-  static public UniqueString getBuiltinAssoc( UniqueString symbol ) {
-    /* first, resolve synonyms */
-    Operator n = (Operator) DefinitionTable.get(symbol);
-    if (n != null) {
-      UniqueString name = n.getIdentifier(); /* can't be null */
-      /* then lookup solution */
-      return (UniqueString) (BuiltinTable.get(name));
-    } else
-      return null;
-  }
-
-/* debugging help */
+  /**
+   * Useful for debugging purposes.
+   */
   static public void printTable() {
     System.out.println("printing Operators table");
-    Enumeration Enum = DefinitionTable.keys();
+    Enumeration<UniqueString> Enum = DefinitionTable.keys();
     while( Enum.hasMoreElements() ) { System.out.println("-> " + ((UniqueString)Enum.nextElement()).toString() ); }
   }
-
-// shouldn't be necessary
-//  static public Operator operatorFromASTNode ( ASTNode tn ) {
-//     Operator n = (Operator) DefinitionTable.get( tn.getToken().image );
-//        return n;
-//  }
-
 }

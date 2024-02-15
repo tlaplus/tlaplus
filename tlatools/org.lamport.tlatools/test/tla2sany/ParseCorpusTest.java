@@ -68,9 +68,14 @@ public class ParseCorpusTest {
 					//continue;
 				}
 				System.out.println(corpusTest.name);
-				String testSummary = String.format("\n%s\n%s\n%s", corpusTestFile.path, corpusTest.name, corpusTest.tlaplusInput);
-				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
-				TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
+				byte[] inputBytes = corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8);
+				InputStream inputStream = new ByteArrayInputStream(inputBytes);
+				TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
+				String testSummary = String.format(
+						"%s/%s\n%s",
+						corpusTestFile.path,
+						corpusTest.name,
+						corpusTest.tlaplusInput);
 				Assert.assertTrue(testSummary, parser.parse());
 				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
 				AstNode actual = SanyTranslator.toAst(parser);
@@ -91,7 +96,7 @@ public class ParseCorpusTest {
 	public void testAllNodesUsed() {
 		List<AstNode.Kind> unused = AstNode.Kind.getUnused();
 		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
-		System.out.println(AstNode.Kind.getUnused());
+		System.out.println(unused);
 		Assert.assertEquals(0, unused.size());
 	}
 }

@@ -10,19 +10,10 @@
 
 package tla2sany.configuration;
 
-interface ConfigConstants {
-  int nada = 0;
-  int infixOP = 1;
-  int prefixOP = 2;
-  int postfixOP = 3;
-  int preINfixOP = 4;
+import tla2sany.parser.Operator;
+import tla2sany.parser.Operators;
 
-  int leftAssoc = 10;
-  int rightAssoc = 11;
-  int noAssoc = 12;
-
-  int EOF = 0;
-  int SINGLE_LINE = 4;
+public interface ConfigConstants {
   int CONSTANT = 7;
   int OPERATOR = 8;
   int INFIX = 9;
@@ -35,14 +26,9 @@ interface ConfigConstants {
   int RIGHTASSOC = 16;
   int NOASSOC = 17;
   int BUILTIN = 18;
-  int OPCHAR = 19;
-  int LETTER = 20;
   int OPID = 21;
   int NUMBER = 22;
   int RESTRICTED = 23;
-
-  int DEFAULT = 0;
-  int IN_COMMENT = 1;
 
   String[] tokenImage = {
     "<EOF>",
@@ -73,141 +59,10 @@ interface ConfigConstants {
 
   String defaultConfig =
     /***********************************************************************
-    * This is used in config/Configuration.java to create Operator         *
-    * objects for each operator, which are put in the hashtable            *
-    * Operators.BuiltinTable.                                              *
+    * This is used in config/Configuration.java to create OpDefNode        *
+    * objects for each built-in operator, which are put in the             *
+    * Context.initialContext table.                                        *
     ***********************************************************************/
-    "operator [ 160 160 Left postfix \n" +
-    "operator . 170 170 Left infix \n" +
-    "operator ' 150 150 None postfix\n" +
-    "operator ^ 140 140 None infix\n" +  // None, verified.
-    "operator / 130 130 None infix\n" +
-    "operator * 130 130 Left infix\n" +
-    "operator - 110 110 Left infix\n" +
-    "operator -. 120 120 None prefix\n" +
-    "operator + 100 100 Left infix\n" +
-    "operator = 50 50 None infix\n" +
-    "operator \\lnot 40 40 Left prefix \n" +
-    "synonym  ~ \\lnot\n" +
-    "synonym \\neg \\lnot\n" +
-    "operator \\land 30 30 Left infix\n" +
-    "synonym  /\\ \\land\n" +
-    "operator \\lor 30 30 Left infix\n" +
-    "synonym  \\/ \\lor\n" +
-    "operator ~> 20 20 None infix\n" +
-    "operator => 10 10  None infix\n" +
-    //\n" +
-    "operator [] 40 150 None prefix \n" +
-    "operator <> 40 150 None prefix \n" +
-    "operator ENABLED 40 150 None prefix \n" +
-    "operator UNCHANGED 40 150 None prefix \n" +
-    "operator SUBSET 100 130 None prefix \n" +
-    "operator UNION 100 130 None prefix \n" +
-    "operator DOMAIN 100 130 None prefix \n" +
-    //\n" +
-    "operator ^+ 150 150 None postfix\n" +
-    "operator ^* 150 150 None postfix\n" +
-    "operator ^# 150 150 None postfix\n" +
-    //\n" +
-    "operator \\cdot 50 140  Left infix\n" +
-    //\n" +
-    "operator \\equiv 20 20  None infix\n" +
-    "synonym <=> \\equiv\n" +
-    //\n" +
-    "operator -+-> 20 20 None infix\n" +
-    "operator /= 50 50 None infix\n" +
-    "synonym # /=\n" +
-    "operator \\subseteq 50 50 None infix\n" +
-    "operator \\in 50 50 None infix\n" +
-    "operator \\notin 50 50 None infix\n" +
-    "operator < 50 50 None infix\n" +
-    "operator \\leq 50 50 None infix\n" +
-    "synonym <= \\leq\n" +
-    "synonym =< \\leq\n" +
-    "operator > 50 50 None infix\n" +
-    "operator \\geq 50 50 None infix\n" +
-    "synonym >= \\geq\n" +
-    //\n" +
-    "operator \\times 100 130 Left nfix\n" +
-    "synonym  \\X \\times\n" +
-    "operator \\ 80 80 None infix\n" +
-    "operator \\intersect 80 80 Left infix\n" +
-    "synonym \\cap \\intersect \n" +
-    "operator \\union 80 80 Left infix\n" +
-    "synonym \\cup \\union\n" +
-    //\n" +
-    "operator ... 90 90 None infix\n" +
-    "operator .. 90 90 None infix\n" +
-    "operator | 100 110 Left infix\n" +
-    "operator || 100 110 Left infix\n" +
-    "operator && 130 130 Left infix\n" +
-    "operator & 130 130 Left infix\n" +
-    "operator $$ 90 130 Left infix\n" +
-    "operator $ 90 130 Left infix\n" +  
-    "operator ?? 90 130 Left infix\n" +
-    //"operator ? 90 130 Left infix\n" +  // Removed requested by Leslie (16 Feb. 01)
-    "operator %% 100 110 Left infix\n" +
-    "operator % 100 110 None infix\n" +
-    "synonym \\mod %\n" +
-    "operator ## 90 130 Left infix\n" +
-    "operator ++ 100 100 Left infix\n" +
-    "operator -- 110 110 Left infix\n" +
-    "operator ** 130 130 Left infix\n" +
-    "operator // 130 130 None infix\n" +
-    "operator ^^ 140 140 None infix\n" +
-    "operator @@ 60 60 Left infix\n" +
-    "operator !! 90 130 None infix\n" +
-    "operator |- 50 50 None infix\n" +
-    "operator |= 50 50 None infix\n" +
-    "operator -| 50 50 None infix\n" +
-    "operator =| 50 50 None infix\n" +
-    "operator <: 70 70 None infix\n" +
-    "operator :> 70 70 None infix\n" +
-    "operator := 50 50 None infix\n" +
-    "operator ::= 50 50 None infix\n" +
-// \n" +
-    "operator \\oplus 100 100 Left infix\n" +
-    "synonym (+) \\oplus\n" +
-    "operator \\ominus 110 110 Left infix\n" +
-    "synonym (-) \\ominus\n" +
-    "operator \\odot 130 130 Left infix\n" +
-    "synonym (.) \\odot\n" +
-    "operator \\oslash 130 130 None infix\n" +
-    "synonym (/) \\oslash\n" +
-    "operator \\otimes 130 130 Left infix\n" +
-    "synonym (\\X) \\otimes\n" +
-// \n" +
-    "operator \\uplus 90 130 Left infix\n" +
-    "operator \\sqcap 90 130 Left infix\n" +
-    "operator \\sqcup 90 130 Left infix\n" +
-    "operator \\div 130 130 None infix\n" +
-    "operator \\wr 90 140 None infix\n" +
-    "operator \\star 130 130 Left infix\n" +
-    "operator \\o 130 130 Left infix\n" +
-    "synonym  \\circ \\o \n" +
-    "operator \\bigcirc 130 130 Left infix\n" +
-    "operator \\bullet 130 130 Left infix\n" +
-    "operator \\prec 50 50 None infix\n" +
-    "operator \\succ 50 50 None infix\n" +
-    "operator \\preceq 50 50 None infix\n" +
-    "operator \\succeq 50 50 None infix\n" +
-    "operator \\sim 50 50 None infix\n" +
-    "operator \\simeq 50 50 None infix\n" +
-    "operator \\ll 50 50 None infix\n" +
-    "operator \\gg 50 50 None infix\n" +
-    "operator \\asymp 50 50 None infix\n" +
-    "operator \\subset 50 50 None infix\n" + // subseteq is builtin
-    "operator \\supset 50 50 None infix\n" +
-    "operator \\supseteq 50 50 None infix\n" +
-    "operator \\approx 50 50 None infix\n" +
-    "operator \\cong 50 50 None infix\n" +
-    "operator \\sqsubset 50 50 None infix\n" +
-    "operator \\sqsubseteq 50 50 None infix\n" +
-    "operator \\sqsupset 50 50 None infix\n" +
-    "operator \\sqsupseteq 50 50 None infix\n" +
-    "operator \\doteq 50 50 None infix\n" +
-    "operator \\propto 50 50 None infix\n" +
-    //\n" +
     "builtin STRING    $$_string     constant\n" +
     "builtin FALSE     $$_false      constant\n" +
     "builtin TRUE      $$_true       constant\n" +
@@ -291,5 +146,138 @@ interface ConfigConstants {
     "builtin $Suffices                $$_null   1\n"   
 
   ;
+  
+  /**
+   * Canonical operators & symbols with their defining characteristics:
+   * symbol text, low precedence, high precedence, associativity, fix type.
+   */
+  Operator[] CanonicalOperators = {
+    new Operator("[",             160, 160, Operators.assocLeft, Operators.postfix),
+    new Operator(".",             170, 170, Operators.assocLeft, Operators.infix),
+    new Operator("'",             150, 150, Operators.assocNone, Operators.postfix),
+    new Operator("^",             140, 140, Operators.assocNone, Operators.infix),
+    new Operator("/",             130, 130, Operators.assocNone, Operators.infix),
+    new Operator("*",             130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("-",             110, 110, Operators.assocLeft, Operators.infix),
+    new Operator("-.",            120, 120, Operators.assocNone, Operators.prefix),
+    new Operator("+",             100, 100, Operators.assocLeft, Operators.infix),
+    new Operator("=",             50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\lnot",        40,  40,  Operators.assocLeft, Operators.prefix),
+    new Operator("\\land",        30,  30,  Operators.assocLeft, Operators.infix),
+    new Operator("\\lor",         30,  30,  Operators.assocLeft, Operators.infix),
+    new Operator("~>",            20,  20,  Operators.assocNone, Operators.infix),
+    new Operator("=>",            10,  10,  Operators.assocNone, Operators.infix),
+    new Operator("[]",            40,  150, Operators.assocNone, Operators.prefix),
+    new Operator("<>",            40,  150, Operators.assocNone, Operators.prefix),
+    new Operator("ENABLED",       40,  150, Operators.assocNone, Operators.prefix),
+    new Operator("UNCHANGED",     40,  150, Operators.assocNone, Operators.prefix),
+    new Operator("SUBSET",        100, 130, Operators.assocNone, Operators.prefix),
+    new Operator("UNION",         100, 130, Operators.assocNone, Operators.prefix),
+    new Operator("DOMAIN",        100, 130, Operators.assocNone, Operators.prefix),
+    new Operator("^+",            150, 150, Operators.assocNone, Operators.postfix),
+    new Operator("^*",            150, 150, Operators.assocNone, Operators.postfix),
+    new Operator("^#",            150, 150, Operators.assocNone, Operators.postfix),
+    new Operator("\\cdot",        50,  140, Operators.assocLeft, Operators.infix),
+    new Operator("\\equiv",       20,  20,  Operators.assocNone, Operators.infix),
+    new Operator("-+->",          20,  20,  Operators.assocNone, Operators.infix),
+    new Operator("/=",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\subseteq",    50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\in",          50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\notin",       50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("<",             50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\leq",         50,  50,  Operators.assocNone, Operators.infix),
+    new Operator(">",             50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\geq",         50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\times",       100, 130, Operators.assocLeft, Operators.nfix),
+    new Operator("\\",            80,  80,  Operators.assocNone, Operators.infix),
+    new Operator("\\intersect",   80,  80,  Operators.assocLeft, Operators.infix),
+    new Operator("\\union",       80,  80,  Operators.assocLeft, Operators.infix),
+    new Operator("...",           90,  90,  Operators.assocNone, Operators.infix),
+    new Operator("..",            90,  90,  Operators.assocNone, Operators.infix),
+    new Operator("|",             100, 110, Operators.assocLeft, Operators.infix),
+    new Operator("||",            100, 110, Operators.assocLeft, Operators.infix),
+    new Operator("&&",            130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("&",             130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("$$",            90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("$",             90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("??",            90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("%%",            100, 110, Operators.assocLeft, Operators.infix),
+    new Operator("%",             100, 110, Operators.assocNone, Operators.infix),
+    new Operator("##",            90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("++",            100, 100, Operators.assocLeft, Operators.infix),
+    new Operator("--",            110, 110, Operators.assocLeft, Operators.infix),
+    new Operator("**",            130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("//",            130, 130, Operators.assocNone, Operators.infix),
+    new Operator("^^",            140, 140, Operators.assocNone, Operators.infix),
+    new Operator("@@",            60,  60,  Operators.assocLeft, Operators.infix),
+    new Operator("!!",            90,  130, Operators.assocNone, Operators.infix),
+    new Operator("|-",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("|=",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("-|",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("=|",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("<:",            70,  70,  Operators.assocNone, Operators.infix),
+    new Operator(":>",            70,  70,  Operators.assocNone, Operators.infix),
+    new Operator(":=",            50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("::=",           50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\oplus",       100, 100, Operators.assocLeft, Operators.infix),
+    new Operator("\\ominus",      110, 110, Operators.assocLeft, Operators.infix),
+    new Operator("\\odot",        130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\oslash",      130, 130, Operators.assocNone, Operators.infix),
+    new Operator("\\otimes",      130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\uplus",       90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("\\sqcap",       90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("\\sqcup",       90,  130, Operators.assocLeft, Operators.infix),
+    new Operator("\\div",         130, 130, Operators.assocNone, Operators.infix),
+    new Operator("\\wr",          90,  140, Operators.assocNone, Operators.infix),
+    new Operator("\\star",        130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\o",           130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\bigcirc",     130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\bullet",      130, 130, Operators.assocLeft, Operators.infix),
+    new Operator("\\prec",        50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\succ",        50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\preceq",      50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\succeq",      50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\sim",         50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\simeq",       50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\ll",          50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\gg",          50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\asymp",       50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\subset",      50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\supset",      50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\supseteq",    50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\approx",      50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\cong",        50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\sqsubset",    50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\sqsubseteq",  50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\sqsupset",    50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\sqsupseteq",  50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\doteq",       50,  50,  Operators.assocNone, Operators.infix),
+    new Operator("\\propto",      50,  50,  Operators.assocNone, Operators.infix),
+  };
+  
+  /*
+   * Different ways of writing the same operator. The zeroeth item is the
+   * canonical way.
+   */
+  String[][] OperatorSynonyms = new String[][] {
+    new String[] {"\\lnot", "~", "\\neg"},
+    new String[] {"\\land", "/\\"},
+    new String[] {"\\lor", "\\/"},
+    new String[] {"\\equiv", "<=>"},
+    new String[] {"/=", "#"},
+    new String[] {"\\leq", "<=", "=<"},
+    new String[] {"\\geq", ">="},
+    // The \mod synonym doesn't seem to be recognized in other parts of the
+    // code but keeping it here because it was in the original config.
+    new String[] {"%", "\\mod"},
+    new String[] {"\\times", "\\X"},
+    new String[] {"\\intersect", "\\cap"},
+    new String[] {"\\union", "\\cup"},
+    new String[] {"\\o", "\\circ"},
+    new String[] {"\\oplus", "(+)"},
+    new String[] {"\\ominus", "(-)"},
+    new String[] {"\\odot", "(.)"},
+    new String[] {"\\oslash", "(/)"},
+    new String[] {"\\otimes", "(\\X)"},
+  };
 }
-

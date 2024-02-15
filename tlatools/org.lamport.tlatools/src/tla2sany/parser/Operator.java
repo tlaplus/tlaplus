@@ -35,6 +35,10 @@ public class Operator implements tla2sany.st.SyntaxTreeConstants {
     Id = id; Low = l; High = h; Associativity = a; Fix = f;
   }
 
+  public Operator(String id, int l, int h, int a, int f) {
+    this(UniqueString.uniqueStringOf(id), l, h, a, f);
+  }
+  
   public String toString() {
   switch ( Fix ) {
     case 0 /* Operators.nofix   */ : return Id.toString() + ", nofix";
