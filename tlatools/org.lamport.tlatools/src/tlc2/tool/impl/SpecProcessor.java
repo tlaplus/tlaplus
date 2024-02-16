@@ -26,6 +26,7 @@
 package tlc2.tool.impl;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -68,6 +69,7 @@ import tla2sany.semantic.TheoremNode;
 import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.module.TLCBuiltInOverrides;
+import tlc2.output.DelayedPrintStream;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.overrides.Evaluation;
@@ -368,6 +370,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             MP.printMessage(EC.TLC_SANY_START);
         }
+		final PrintStream ps = MP.isSuppressed(EC.TLC_SANY_START) ? new DelayedPrintStream(ToolIO.out) : ToolIO.out;
         try
         {
             // SZ Feb 20, 2009:
@@ -376,9 +379,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // checked errors (init, parse, semantic).
             // Only if something unexpected happens the
             // exception is thrown
-            SANY.frontEndMain(specObj, this.rootFile, ToolIO.out);
+			SANY.frontEndMain(specObj, this.rootFile, ps);
         } catch (FrontEndException e)
         {
+        	if (ps instanceof DelayedPrintStream) {
+        		DelayedPrintStream dps = (DelayedPrintStream) ps;
+        		dps.release();
+        	}
             Assert.fail(EC.TLC_PARSING_FAILED2, e);
         }
 

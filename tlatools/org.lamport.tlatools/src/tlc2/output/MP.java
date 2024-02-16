@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
@@ -213,6 +214,8 @@ public class MP
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
 	private static final DecimalFormat df = new DecimalFormat("###,###.###");
 	
+	private static final java.util.Set<Integer> SUPPRESSED = new HashSet<>();
+	
 	/**
 	 * By default, do not run in debug mode which means full stack traces do not
 	 * get printed to the console. Printing stack traces is known to screw up
@@ -227,6 +230,18 @@ public class MP
     static
     {
         instance = new MP();
+        
+        final String suppressed = System.getProperty("tlc2.output.MP", "");
+        for (String i : suppressed.split(",")) {
+        	try {
+        		SUPPRESSED.add(Integer.parseInt(i.trim()));
+        	} catch (NumberFormatException ignored) {
+        	}
+		}
+    }
+    
+    public static boolean isSuppressed(int messageCode) {
+    	return SUPPRESSED.contains(messageCode);
     }
 
     /**
@@ -1607,7 +1622,9 @@ public class MP
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printMessage(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // write the output
-		ToolIO.out.println(getMessage(NONE, errorCode, parameters));
+    	if (!isSuppressed(errorCode)) {
+    		ToolIO.out.println(getMessage(NONE, errorCode, parameters));
+    	}
 		// Don't log the start and end markers when in -tool mode.
 		TLAFlightRecorder.message(getMessage0(NONE, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
@@ -1618,7 +1635,9 @@ public class MP
     		recorder.record(tre.errorCode, (Object[]) new Object[] {tre});
     		DebugPrinter.print("entering printTLCRuntimeException(TLCRuntimeException) with errorCode " + tre.errorCode); //$NON-NLS-1$
     		// write the output
-    		ToolIO.out.println(getMessage(ERROR, tre.errorCode, tre.parameters));
+        	if (!isSuppressed(tre.errorCode)) {
+        		ToolIO.out.println(getMessage(ERROR, tre.errorCode, tre.parameters));
+        	}
     		DebugPrinter.print("leaving printTLCRuntimeException(TLCRuntimeException) with errorCode "); //$NON-NLS-1$
     	} else {
     		// Legacy code path except actual errorCode instead of EC.General.
@@ -1641,7 +1660,9 @@ public class MP
 		recorder.record(code, stateInfo, num);
         DebugPrinter.print("entering printState(String[])"); //$NON-NLS-1$
         final String message = getMessage(STATE, code, parameters);
-		ToolIO.out.println(message);
+    	if (!isSuppressed(code)) {
+    		ToolIO.out.println(message);
+    	}
         DebugPrinter.print("leaving printState(String[])"); //$NON-NLS-1$
         return message;
     }
@@ -1657,7 +1678,9 @@ public class MP
     	recorder.record(errorCode, (Object[]) parameters);
         DebugPrinter.print("entering printTLCBug(int, String[]) with errorCode " + errorCode); //$NON-NLS-1$
         // write the output
-        ToolIO.out.println(getMessage(TLCBUG, errorCode, parameters));
+    	if (!isSuppressed(errorCode)) {
+    		ToolIO.out.println(getMessage(TLCBUG, errorCode, parameters));
+    	}
         DebugPrinter.print("leaving printTLCBug(int, String[])"); //$NON-NLS-1$
     }
 
@@ -1696,7 +1719,9 @@ public class MP
             if (instance.warningHistory.put(message) == null)
             {
                 // print it
-                ToolIO.out.println(message);
+            	if (!isSuppressed(errorCode)) {
+            		ToolIO.out.println(message);
+            	}
             }
         }
         DebugPrinter.print("leaving printWarning(int, String[])"); //$NON-NLS-1$
@@ -1723,7 +1748,9 @@ public class MP
             if (instance.warningHistory.put(message) == null)
             {
                 // print it
-                ToolIO.out.println(message);
+            	if (!isSuppressed(errorCode)) {
+            		ToolIO.out.println(message);
+            	}
             }
             DebugPrinter.print("printing stacktrace in printError(int, Throwable, boolean)"); //$NON-NLS-1$
             e.printStackTrace(ToolIO.out);
