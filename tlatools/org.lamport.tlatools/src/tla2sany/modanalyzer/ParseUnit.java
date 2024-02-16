@@ -23,6 +23,7 @@ package tla2sany.modanalyzer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.file.Path;
@@ -234,7 +235,7 @@ public class ParseUnit {
      * We receive `rootParseUnit` so we are able to find the file location for a 
      * module part of a monolith spec. 
      */
-    public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit) throws AbortException
+    public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit, PrintStream syserr) throws AbortException
     {
         // Has it already been parsed since last modified? If yes, then no need to parse again
         if (parseStamp > nis.sourceFile().lastModified())
@@ -292,9 +293,9 @@ public class ParseUnit {
                     }
                 }
             }
-			      ToolIO.out.println(TLAFlightRecorder.message(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath)));            
+			syserr.println(TLAFlightRecorder.message(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath)));            
         } else {
-            ToolIO.out.println(TLAFlightRecorder.message(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath)));
+            syserr.println(TLAFlightRecorder.message(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath)));
         }
 
         boolean parseSuccess; 

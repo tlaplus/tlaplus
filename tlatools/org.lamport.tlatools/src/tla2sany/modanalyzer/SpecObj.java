@@ -5,6 +5,7 @@ package tla2sany.modanalyzer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -275,7 +276,7 @@ public class SpecObj
     // module in the ParseUnit created is the name of the entire
     // SpecObj. Returns the ParseUnit found or created. Aborts if
     // neither happens.
-    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall) throws AbortException
+    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall, PrintStream syserr) throws AbortException
     {
         ParseUnit parseUnit;
 
@@ -322,7 +323,7 @@ public class SpecObj
 
         // Actually parse the file named in "parseUnit" (or no-op if it
         // has already been parsed)
-        parseUnit.parseFile(errors, firstCall, name, rootParseUnit);
+        parseUnit.parseFile(errors, firstCall, name, rootParseUnit, syserr);
 
         return parseUnit;
         // return a non-null "parseUnit" iff named module has been found,
@@ -905,8 +906,8 @@ public class SpecObj
     /**
      * This invokes {@code loadSpec(rootExternalModuleName, errors, false);}
      */
-    public boolean loadSpec(final String rootExternalModuleName, final Errors errors) throws AbortException {
-    	return loadSpec(rootExternalModuleName, errors, false);
+    public boolean loadSpec(final String rootExternalModuleName, final Errors errors, PrintStream syserr) throws AbortException {
+    	return loadSpec(rootExternalModuleName, errors, false, syserr);
     }
     
     /**
@@ -919,13 +920,13 @@ public class SpecObj
 	 *                           followed by a validation of them if they exist
 	 * @see Validator
 	 */
-	public boolean loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits)
+	public boolean loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits, PrintStream syserr)
 			throws AbortException {
         // If rootExternalModuleName" has *not* already been parsed, then
         // go to the file system and find the file containing it, create a
         // ParseUnit for it, and parse it. Parsing includes determining
         // module relationships. Aborts if not found in file system
-        rootParseUnit = findOrCreateParsedUnit(rootExternalModuleName, errors, true /* first call */);
+        rootParseUnit = findOrCreateParsedUnit(rootExternalModuleName, errors, true /* first call */, syserr);
         rootModule = rootParseUnit.getRootModule();
         if (validateParseUnits) {
         	validateParseUnit(rootParseUnit);
@@ -953,7 +954,7 @@ public class SpecObj
             if (parseUnitContext.get(nextParseUnitName) == null)
             {
                 // find it in the file system (if there) and parse and analyze it.
-                nextExtentionOrInstantiationParseUnit = findOrCreateParsedUnit(nextParseUnitName, errors, false /* not first call */);
+                nextExtentionOrInstantiationParseUnit = findOrCreateParsedUnit(nextParseUnitName, errors, false /* not first call */, syserr);
             } else
             {
                 // or find it in the known parseUnitContext

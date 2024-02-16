@@ -221,7 +221,7 @@ public class SANY {
       try 
       {
           // Actual parsing method called from inside loadSpec()
-          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation)) 
+          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, syserr)) 
           {
               // dead code SZ 02. Aug 2009
               /*

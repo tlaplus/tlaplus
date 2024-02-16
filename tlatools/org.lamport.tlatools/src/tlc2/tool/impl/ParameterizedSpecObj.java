@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,9 +60,9 @@ public class ParameterizedSpecObj extends SpecObj {
 	}
 
 	@Override
-	protected final ParseUnit findOrCreateParsedUnit(final String name, final Errors errors, final boolean firstCall)
+	protected final ParseUnit findOrCreateParsedUnit(final String name, final Errors errors, final boolean firstCall, final PrintStream ps)
 			throws AbortException {
-		final ParseUnit pu = super.findOrCreateParsedUnit(name, errors, firstCall);
+		final ParseUnit pu = super.findOrCreateParsedUnit(name, errors, firstCall, ps);
 		if (firstCall && params.containsKey(POST_CONDITIONS)) {
 			final ModulePointer rootModule = pu.getRootModule();
 			
