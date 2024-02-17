@@ -25,11 +25,9 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
-/*
 import org.junit.Ignore;
 
 @Ignore("known bug, it Handles JSpec but not ISpec")
 public class Test61 extends SuiteTestCase {
 
 }
-*/
