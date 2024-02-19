@@ -233,11 +233,8 @@
 			</patternset>
 		</unzip>
 		<touch file="${class.dir}/META-INF/javamail.default.address.map"/>
-		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="${class.dir}">
-			<patternset>
-				<include name="**/*.*"/>
-			</patternset>
-		</unzip>
+		<!-- Extract all of -terminal*.jar, including META-INF service loaders. -->
+		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="${class.dir}"/>
 
 		<unzip src="lib/jline/jline-console-3.25.0.jar" dest="${class.dir}">
 			<patternset>
@@ -288,11 +285,8 @@
 		</unzip>
 		<touch file="target/classes/META-INF/javamail.default.address.map"/>
 
-		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="target/classes">
-			<patternset>
-				<include name="**/*.*"/>
-			</patternset>
-		</unzip>
+		<!-- Extract all of -terminal*.jar, including META-INF service loaders. -->
+		<unzip src="lib/jline/jline-terminal-3.25.0.jar" dest="target/classes"/>
 
 		<unzip src="lib/jline/jline-console-3.25.0.jar" dest="target/classes">
 			<patternset>
