@@ -1,0 +1,52 @@
+=============|||
+Basic Operator Definition
+=============|||
+
+---- MODULE Test ----
+op == f(10)
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (bound_op name: (identifier_ref) (nat_number))
+  )
+(double_line)))
+
+===============================|||
+INSTANCE With Jlist Substitutions
+===============================|||
+
+---- MODULE Test ----
+INSTANCE M WITH
+  A <- /\ 1,
+  B <- /\ 2,
+  C <- /\ \/ 3
+          \/ 4,
+  D <- \/ 5
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (instance (identifier_ref)
+    (substitution (identifier_ref) (gets)
+      (conj_list (conj_item (bullet_conj) (nat_number)))
+    )
+    (substitution (identifier_ref) (gets)
+      (conj_list (conj_item (bullet_conj) (nat_number)))
+    )
+    (substitution (identifier_ref) (gets)
+      (conj_list (conj_item (bullet_conj)
+        (disj_list
+          (disj_item (bullet_disj) (nat_number))
+          (disj_item (bullet_disj) (nat_number))
+        )
+      ))
+    )
+    (substitution (identifier_ref) (gets)
+      (disj_list (disj_item (bullet_disj) (nat_number)))
+    )
+  )
+(double_line)))

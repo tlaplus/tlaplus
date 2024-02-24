@@ -1,0 +1,68 @@
+=============|||
+Odd Alternative Operators
+=============|||
+
+---- MODULE Test ----
+alt_leq == a =< b
+alt_cup == a \union b
+alt_cap == a \intersect b
+alt_circ == a \o b
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op (identifier_ref) (leq) (identifier_ref))
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op (identifier_ref) (cup) (identifier_ref))
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op (identifier_ref) (cap) (identifier_ref))
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op (identifier_ref) (circ) (identifier_ref))
+  )
+(double_line)))
+
+=============|||
+Lexically-Conflicting Nonfix Operators
+=============|||
+
+---- MODULE Test ----
+conflicts_with_octal == \o (1,2)
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_nonfix_op (infix_op_symbol (circ)) (nat_number) (nat_number))
+  )
+(double_line)))
+
+=============|||
+Minus and Negative
+=============|||
+
+---- MODULE Test ----
+op == -. (1)
+op == - (1)
+op == - 1 - 2
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_nonfix_op (prefix_op_symbol (negative)) (nat_number))
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_prefix_op (negative) (parentheses (nat_number)))
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op (bound_prefix_op (negative) (nat_number)) (minus) (nat_number))
+  )
+(double_line)))
+

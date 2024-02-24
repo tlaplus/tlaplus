@@ -1,0 +1,33 @@
+=============|||
+Step Expression Or Stuttering
+=============|||
+
+---- MODULE Test ----
+op == [A]_B
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (step_expr_or_stutter (identifier_ref) (identifier_ref))
+  )
+(double_line)))
+
+=============|||
+Step Expression No Stuttering
+=============|||
+
+---- MODULE Test ----
+op == <<A>>_B
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (step_expr_no_stutter
+      (langle_bracket) (identifier_ref) (rangle_bracket_sub) (identifier_ref)
+    )
+  )
+(double_line)))

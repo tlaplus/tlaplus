@@ -1,6 +1,9 @@
 package tla2sany;
 
+import tla2sany.configuration.Configuration;
 import tla2sany.parser.TLAplusParser;
+import tla2sany.semantic.AbortException;
+import tla2sany.semantic.BuiltInLevel;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 
@@ -86,7 +89,9 @@ public class SANYDirectTest {
 	}
 
 	@Test
-	public void test() {
+	public void test() throws AbortException {
+		Configuration.load(null);
+		BuiltInLevel.load();
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
 				String testSummary = String.format("\n%s\n%s\n%s", corpusTestFile.path, corpusTest.name, corpusTest.tlaplusInput);

@@ -1,0 +1,55 @@
+=====================|||
+Set filter precedence
+=====================|||
+
+---- MODULE Test ----
+op == {x \in S : x \in T}
+====
+
+---------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (set_filter
+      (quantifier_bound
+        (identifier) (set_in) (identifier_ref)
+      )
+      (bound_infix_op
+        (identifier_ref) (in) (identifier_ref)
+      )
+    )
+  )
+(double_line)))
+
+======================|||
+Set filter with jlist
+======================|||
+
+---- MODULE Test ----
+op == {
+  x \in
+    /\ A
+    /\ B
+    /\ C
+      :
+        P
+}
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (set_filter
+      (quantifier_bound
+        (identifier) (set_in)
+        (conj_list
+          (conj_item (bullet_conj) (identifier_ref))
+          (conj_item (bullet_conj) (identifier_ref))
+          (conj_item (bullet_conj) (identifier_ref))
+        )
+      )
+      (identifier_ref)
+    )
+  )
+(double_line)))
