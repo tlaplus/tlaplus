@@ -6,10 +6,28 @@ import java.lang.Character;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class AstDsl {	
+	/**
+	 * Enumeration of all node kinds in the AST DSL. This list was generated
+	 * by running the following short Python3 script against node-types.json
+	 * in the tree-sitter-tlaplus repository:
+	 * 
+	 * import json
+	 * f = open('src/node-types.json', 'r', encoding='utf-8')
+	 * data = json.load(f)
+	 * f.close()
+	 * names = [
+     *   f'\t\t{item["type"].upper()} ("{item["type"]}")'
+     *   for item in data
+     *   if item['named'] and not item['type'].startswith('_')
+	 * ]
+	 * print(',\n'.join(names) + ';\n')
+	 */
 	public static enum AstNodeKind {
 		ADDRESS ("address"),
 		ALL_MAP_TO ("all_map_to"),
@@ -277,34 +295,100 @@ public class AstDsl {
 		VALUE ("value"),
 		VERT ("vert");
 
-		private final String name;
+		/**
+		 * The node kind name as found in the unparsed AST.
+		 */
+		public final String name;
 		
-		private static Map<String, AstNodeKind> nameMap = new HashMap<String, AstNodeKind>();
+		/**
+		 * A static map from node kind name to enum to avoid linear lookups.
+		 */
+		private static final Map<String, AstNodeKind> nameMap = new HashMap<String, AstNodeKind>();
 		
+		/**
+		 * Tracks node kinds that go unused; useful for identifying gaps in testing.
+		 */
+		private static final Set<AstNodeKind> unused = new HashSet<AstNodeKind>();
+		
+		/**
+		 * Initialize the static maps on class load.
+		 */
 		static {
 			for (AstNodeKind k : AstNodeKind.values()) {
 				AstNodeKind.nameMap.put(k.name, k);
 			}
+			
+			AstNodeKind.unused.addAll(AstNodeKind.nameMap.values());
 		}
 		
+		/**
+		 * Private constructor for the enum so it can have a string field.
+		 * 
+		 * @param name The node kind name as found in the unparsed AST.
+		 */
 		private AstNodeKind(String name) {
 			this.name = name;
 		}
 		
+		/**
+		 * Get list of unused AST node kinds; useful for identifying gaps in testing.
+		 * 
+		 * @return The list of AST node kinds that were never constructed during parsing.
+		 */
+		public List<AstNodeKind> getUnused() {
+			return new ArrayList<AstNodeKind>(AstNodeKind.unused);
+		}
+		
+		/**
+		 * Gets the AST node kind enum from the unparsed AST string.
+		 * 
+		 * @param text The node kind name from the unparsed AST string.
+		 * @return An enum corresponding to the given node kind name.
+		 * @throws ParseException If no such node kind name is found.
+		 */
 		public static AstNodeKind fromString(String text) throws ParseException {
 			if (AstNodeKind.nameMap.containsKey(text)) {
-				return AstNodeKind.nameMap.get(text);
+				AstNodeKind kind = AstNodeKind.nameMap.get(text);
+				AstNodeKind.unused.remove(kind);
+				return kind;
 			} else {
 				throw new ParseException(String.format("Could not find node %s", text), 0);
 			}
 		}
 	}
 	
+	/**
+	 * An abstract syntax tree (AST) node defining a parse tree.
+	 */
 	public static class AstNode {
+		/**
+		 * The kind of the AST node.
+		 */
 		public final AstNodeKind kind;
+		
+		/**
+		 * List of both named & unnamed children, in order of appearance.
+		 */
 		public final List<AstNode> children;
+		
+		/**
+		 * List of named children in order of appearance.
+		 */
 		public final Map<String, AstNode> fields;
+		
+		/**
+		 * Index to quickly check whether a child is named or not, and get its
+		 * field name if so.
+		 */
 		private final Map<AstNode, String> fieldNames;
+
+		/**
+		 * Constructs an AST node.
+		 * 
+		 * @param kind The kind of the AST node.
+		 * @param children The children of the AST node.
+		 * @param fields The named field children of the AST node.
+		 */
 		public AstNode(AstNodeKind kind, List<AstNode> children, Map<String, AstNode> fields) {
 			this.kind = kind;
 			this.children = children;
@@ -316,6 +400,11 @@ public class AstDsl {
 			this.fieldNames = fieldNames;
 		}
 		
+		/**
+		 * Builds a string representation of the subtree using a StringBuilder.
+		 * 
+		 * @param sb The StringBuilder onto which to append output.
+		 */
 		private void toString(StringBuilder sb) {
 			sb.append('(');
 			sb.append(this.kind.name);
@@ -335,6 +424,10 @@ public class AstDsl {
 			sb.append(')');
 		}
 		
+		/**
+		 * Dumps the AST node subtree to a string. Useful for debugging. The
+		 * inverse of the parse function.
+		 */
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			this.toString(sb);
@@ -342,6 +435,12 @@ public class AstDsl {
 		}
 	}
 	
+	/**
+	 * Actually constructs the SANY-generated AST string using a stringbuilder.
+	 * 
+	 * @param node The root node of the SANY-generated AST.
+	 * @param sb A StringBuilder instance to append output to.
+	 */
 	private static void treeNodeToString(TreeNode node, StringBuilder sb) {
 		sb.append('(');
 		sb.append(node.getImage());
@@ -355,37 +454,83 @@ public class AstDsl {
 		sb.append(')');
 	}
 	
+	/**
+	 * Dumps the SANY-generated AST as a string. Useful for debugging.
+	 * 
+	 * @param node The root node of the SANY-generated AST.
+	 * @return A string representation of the parse tree.
+	 */
 	public static String treeNodeToString(TreeNode node) {
 		StringBuilder sb = new StringBuilder();
 		treeNodeToString(node, sb);
 		return sb.toString();
 	}
 	
+	/**
+	 * Mutable class tracking parser state to avoid string copies.
+	 */
 	private static class ParserState {
+		/**
+		 * The parser's current index in the string.
+		 */
 		public int i;
+		
+		/**
+		 * The unparsed input string.
+		 */
 		public final String input;
+		
+		/**
+		 * Whether to log each character consumed.
+		 */
 		private final boolean log;
+		
+		/**
+		 * Initializes the parser state with the input string.
+		 * 
+		 * @param input The string to parse.
+		 * @param log Whether to log each consumed char.
+		 */
 		public ParserState(String input, boolean log) {
 			this.i = 0;
 			this.input = input;
 			this.log = log;
 		}
 		
+		/**
+		 * Whether the input has been fully consumed.
+		 * 
+		 * @return True if there is no input remaining.
+		 */
 		public boolean isEof() {
 			return i >= input.length();
 		}
 
+		/**
+		 * Consumes input until encountering a non-whitespace char.
+		 */
 		public void consumeWhitespace() {
 			while (!this.isEof() && Character.isWhitespace(input.charAt(i))) {
 				this.consume();
 			}
 		}
 		
+		/**
+		 * Whether the current char is the given char.
+		 * 
+		 * @param c The char to check.
+		 * @return True if not EOF and char matches.
+		 */
 		public boolean matches(char c) {
 			return !this.isEof() && input.charAt(i) == c;
 		}
 		
-		public char consume() {
+		/**
+		 * Consumes the current char without any checks. Possibly logs this act.
+		 * 
+		 * @return The consumed char.
+		 */
+		private char consume() {
 			char c = input.charAt(i);
 			if (this.log) {
 				System.out.println(c);
@@ -394,6 +539,12 @@ public class AstDsl {
 			return c;
 		}
 		
+		/**
+		 * Consume the current char if it is as expected.
+		 * 
+		 * @param c The expected char.
+		 * @return Whether the current char was consumed.
+		 */
 		public boolean consumeIf(char c) {
 			if (this.matches(c)) {
 				this.consume();
@@ -403,70 +554,120 @@ public class AstDsl {
 			}
 		}
 		
+		/**
+		 * Whether the current char is an identifier char.
+		 * 
+		 * @return True if it is an identifier char.
+		 */
 		public boolean isIdentifierChar() {
 			return !this.isEof() && (Character.isLetter(input.charAt(i)) || input.charAt(i) == '_');
 		}
 		
-		public ParseException error(char expected) {
+		/**
+		 * Consumes the upcoming identifier then returns it as a string.
+		 * 
+		 * @return The consumed identifier.
+		 */
+		public String consumeIdentifier() {
+			StringBuilder sb = new StringBuilder();
+			while (this.isIdentifierChar()) {
+				sb.append(this.consume());
+			}
+			
+			return sb.toString();
+		}
+		
+		/**
+		 * Constructs an appropriate parse exception for the current position.
+		 * 
+		 * @param expected The char or element that was expected instead.
+		 * @return A relatively informative parse exception to throw.
+		 */
+		public ParseException error(String expected) {
 			if (this.isEof()) {
-				return new ParseException(String.format("Unexpected EOF; expected %c: %s", expected, input), i);
+				return new ParseException(String.format("Unexpected EOF; expected %s: %s", expected, input), i);
 			} else {
-				return new ParseException(String.format("Unexpected char %c; expected %c: %s", input.charAt(i), expected, input), i);
+				return new ParseException(String.format("Unexpected char %c; expected %s at index %d: %s", input.charAt(i), expected, i, input), i);
 			}
 		}
 	}
 	
+	/**
+	 * Performs the actual parsing of the AST DSL by mutating a parser state
+	 * in place. Thankfully S-expressions are easy to parse in a single
+	 * recursive function.
+	 * 
+	 * @param s Parser state holding the input string and current index.
+	 * @return Root node of the AST subtree at this point in the input.
+	 * @throws ParseException If invalid S-expression syntax is encountered.
+	 */
 	private static AstNode parseAst(ParserState s) throws ParseException {
 		s.consumeWhitespace();
+		// Looking for ex. (source_file ...)
 		if (s.consumeIf('(')) {
 			s.consumeWhitespace();
-			StringBuilder nameBuilder = new StringBuilder();
-			while (s.isIdentifierChar()) {
-				nameBuilder.append(s.consume());
+			if (!s.isIdentifierChar()) {
+				throw s.error("Identifier Char");
 			}
-
-			ArrayList<AstNode> children = new ArrayList<AstNode>();
-			HashMap<String, AstNode> fields = new HashMap<String, AstNode>();
+			AstNodeKind kind = AstNodeKind.fromString(s.consumeIdentifier());
+			List<AstNode> children = new ArrayList<AstNode>();
+			Map<String, AstNode> fields = new HashMap<String, AstNode>();
 			s.consumeWhitespace();
-			while (!s.matches(')')) {
+			while (!s.isEof() && !s.matches(')')) {
 				if (s.matches('(')) {
+					// Found unnamed child ex. (source_file (module ... ))
 					children.add(parseAst(s));
 				} else if (s.isIdentifierChar()) {
-					StringBuilder fieldNameBuilder = new StringBuilder();
-					while (s.isIdentifierChar()) {
-						fieldNameBuilder.append(s.consume());
-					}
+					// Found named field child ex. (bound_op name: (...) ...)
+					String fieldName = s.consumeIdentifier();
 					s.consumeWhitespace();
 					if (s.consumeIf(':')) {
 						s.consumeWhitespace();
 						if (s.matches('(')) {
+							// Recurse to get actual named child
 							AstNode namedChild = parseAst(s);
-							fields.put(fieldNameBuilder.toString(), namedChild);
+							fields.put(fieldName, namedChild);
 							children.add(namedChild);
 						} else {
-							throw s.error('(');
+							throw s.error("(");
 						}
 					} else {
-						throw s.error(':');
+						throw s.error(":");
 					}
 				} else {
-					throw s.error('(');
+					throw s.error("(");
 				}
 				s.consumeWhitespace();
 			}
 			
-			s.consumeIf(')');
+			if (!s.consumeIf(')')) {
+				throw s.error(")");
+			}
 			
-			return new AstNode(AstNodeKind.fromString(nameBuilder.toString()), children, fields);
+			return new AstNode(kind, children, fields);
 		} else {
-			throw s.error('(');
+			throw s.error("(");
 		}
 	}
 	
+	/**
+	 * Parse the given S-expression string into an abstract syntax tree.
+	 * 
+	 * @param input The S-expression in string form.
+	 * @return Root node of the AST.
+	 * @throws ParseException If invalid S-expression syntax is encountered.
+	 */
 	public static AstNode parseAst(String input) throws ParseException {
 		return parseAst(new ParserState(input, false));
 	}
 	
+	/**
+	 * Whether the expected AST matches the actual AST from SANY.
+	 * 
+	 * @param expected The expected AST.
+	 * @param actual The actual AST generated by SANY.
+	 * @return True if match was successful.
+	 */
 	public static boolean matchesExpectedAst(AstNode expected, TreeNode actual) {
 		System.out.println(expected.toString());
 		System.out.println(treeNodeToString(actual));
