@@ -1,10 +1,17 @@
 package tla2sany;
 
+import tla2sany.modanalyzer.SyntaxTreePrinter;
+import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.TLAplusParser;
+import tla2sany.parser.TLAplusParserConstants;
+import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 
+import java.io.PrintWriter;
 import java.lang.Character;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -335,7 +342,7 @@ public class AstDsl {
 		 * 
 		 * @return The list of AST node kinds that were never constructed during parsing.
 		 */
-		public List<AstNodeKind> getUnused() {
+		public static List<AstNodeKind> getUnused() {
 			return new ArrayList<AstNodeKind>(AstNodeKind.unused);
 		}
 		
@@ -354,6 +361,10 @@ public class AstDsl {
 			} else {
 				throw new ParseException(String.format("Could not find node %s", text), 0);
 			}
+		}
+		
+		public AstNode asNode() {
+			return new AstNode(this);
 		}
 	}
 	
@@ -400,6 +411,28 @@ public class AstDsl {
 			this.fieldNames = fieldNames;
 		}
 		
+		public AstNode(AstNodeKind kind, List<AstNode> children) {
+			this(kind, children, new HashMap<String, AstNode>());
+		}
+		
+		public AstNode(AstNodeKind kind) {
+			this(kind, new ArrayList<AstNode>());
+		}
+		
+		public void addChild(AstNode child) {
+			this.children.add(child);
+		}
+		
+		public void addChildren(List<AstNode> children) {
+			this.children.addAll(children);
+		}
+		
+		public void addField(String name, AstNode child) {
+			this.children.add(child);
+			this.fields.put(name, child);
+			this.fieldNames.put(child, name);
+		}
+		
 		/**
 		 * Builds a string representation of the subtree using a StringBuilder.
 		 * 
@@ -411,7 +444,8 @@ public class AstDsl {
 			if (!this.children.isEmpty()) {
 				sb.append(' ');
 			}
-			for (AstNode child : this.children) {
+			for (int i = 0; i < this.children.size(); i++) {
+				AstNode child = this.children.get(i);
 				if (this.fieldNames.containsKey(child)) {
 					sb.append(this.fieldNames.get(child));
 					sb.append(": ");
@@ -419,7 +453,9 @@ public class AstDsl {
 				} else {
 					child.toString(sb);
 				}
-				sb.append(' ');
+				if (i < this.children.size() - 1) {
+					sb.append(' ');
+				}
 			}
 			sb.append(')');
 		}
@@ -433,37 +469,6 @@ public class AstDsl {
 			this.toString(sb);
 			return sb.toString();
 		}
-	}
-	
-	/**
-	 * Actually constructs the SANY-generated AST string using a stringbuilder.
-	 * 
-	 * @param node The root node of the SANY-generated AST.
-	 * @param sb A StringBuilder instance to append output to.
-	 */
-	private static void treeNodeToString(TreeNode node, StringBuilder sb) {
-		sb.append('(');
-		sb.append(node.getImage());
-		if (node.heirs().length != 0) {
-			sb.append(' ');
-		}
-		for (TreeNode child : node.heirs()) {
-			treeNodeToString(child, sb);
-			sb.append(' ');
-		}
-		sb.append(')');
-	}
-	
-	/**
-	 * Dumps the SANY-generated AST as a string. Useful for debugging.
-	 * 
-	 * @param node The root node of the SANY-generated AST.
-	 * @return A string representation of the parse tree.
-	 */
-	public static String treeNodeToString(TreeNode node) {
-		StringBuilder sb = new StringBuilder();
-		treeNodeToString(node, sb);
-		return sb.toString();
 	}
 	
 	/**
@@ -661,6 +666,157 @@ public class AstDsl {
 		return parseAst(new ParserState(input, false));
 	}
 	
+	private static void printSanyParseTree(TLAplusParser sanyTree) {
+		PrintWriter out = new PrintWriter(System.out);
+		SyntaxTreePrinter.print(sanyTree, out);
+		out.flush();
+	}
+	
+	private static AstNode optional(SyntaxTreeNode node) throws ParseException {
+		if (null != node && null != node.zero() && 0 != node.zero().length) {
+			return treeNodeToAstNode(node);
+		} else {
+			return null;
+		}
+	}
+	
+	private static List<AstNode> repeat(SyntaxTreeNode node) throws ParseException {
+		List<AstNode> children = new ArrayList<AstNode>();
+		for (SyntaxTreeNode child : node.getHeirs()) {
+			children.add(treeNodeToAstNode(child));
+		}
+		
+		return children;
+	}
+	
+	public static AstNode opFromString(String op) throws ParseException {
+		switch (op) {
+			case "SUBSET":
+				return AstNodeKind.SUBSET.asNode();
+			default:
+				throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
+		}
+	}
+	
+	/**
+	 * A somewhat monstrous function which translates the parse tree emitted
+	 * by SANY to the parse tree defined by the AST DSL. This function has a
+	 * lot of cases but the translation process is very mechanical.
+	 * 
+	 * In the event that a new test is added for a node kind which does not
+	 * yet have a defined translation, the thrown ParseException should
+	 * contain info on the kind ID. Search this kind ID in either SyntaxTreeConstants
+	 * or TLAplusParserConstants, add a new case to the top-level switch
+	 * statement for the kind ID, then set a debug breakpoint in that case.
+	 * Run the test in the debugger to look at the object emitted by SANY;
+	 * the node children will be in some order in the heirs array. In this
+	 * fashion you can define the necessary translation to the AST DSL by
+	 * copying the approach taken in other switch branches. Don't be
+	 * intimidated! It is easier than it looks. It helps to add assert
+	 * statements as documentation of what kinds SANY emits in each heir.
+	 * 
+	 * @param node The SANY syntax node to translate to the AST DSL node.
+	 * @return An AST DSL node corresponding to the given SANY node.
+	 * @throws ParseException If a translation is not yet defined for the node.
+	 */
+	public static AstNode treeNodeToAstNode(SyntaxTreeNode node) throws ParseException {
+		SyntaxTreeNode[] heirs = node.getHeirs();
+		switch (node.getKind()) {
+			case SyntaxTreeConstants.N_Module: {
+				AstNode sourceFile = AstNodeKind.SOURCE_FILE.asNode();
+				AstNode module = AstNodeKind.MODULE.asNode();
+				sourceFile.addChild(module);
+				module.addChild(AstNodeKind.HEADER_LINE.asNode()); // heirs[0].heirs[0]
+				module.addField("name", AstNodeKind.IDENTIFIER.asNode()); // heirs[0].heirs[1]
+				module.addChild(AstNodeKind.HEADER_LINE.asNode()); // heirs[0].heirs[2]
+				module.addChildren(repeat(heirs[1])); // EXTENDS statements
+				module.addChildren(repeat(heirs[2])); // unit definitions
+				module.addChild(AstNodeKind.DOUBLE_LINE.asNode()); // heirs[3]
+				return sourceFile;
+			} case SyntaxTreeConstants.N_OperatorDefinition: {
+				AstNode operatorDefinition = AstNodeKind.OPERATOR_DEFINITION.asNode();
+				operatorDefinition.addField("name", treeNodeToAstNode(heirs[0]));
+				operatorDefinition.addChild(AstNodeKind.DEF_EQ.asNode()); // heirs[1]
+				operatorDefinition.addField("definition", treeNodeToAstNode(heirs[2]));
+				return operatorDefinition;
+			} case SyntaxTreeConstants.N_PrefixExpr: {
+				AstNode boundPrefixOp = AstNodeKind.BOUND_PREFIX_OP.asNode();
+				boundPrefixOp.addField("symbol", treeNodeToAstNode(heirs[0]));
+				boundPrefixOp.addField("rhs", treeNodeToAstNode(heirs[1]));
+				return boundPrefixOp;
+			} case SyntaxTreeConstants.N_IdentLHS: {
+				return AstNodeKind.IDENTIFIER.asNode();
+			} case SyntaxTreeConstants.N_ConjList: {
+				AstNode conjList = AstNodeKind.CONJ_LIST.asNode();
+				for (SyntaxTreeNode child : heirs) {
+					conjList.addChild(treeNodeToAstNode(child));
+				}
+				return conjList;
+			} case SyntaxTreeConstants.N_ConjItem: {
+				AstNode conjItem = AstNodeKind.CONJ_ITEM.asNode();
+				assert(heirs[0].isKind(TLAplusParserConstants.AND));
+				conjItem.addChild(AstNodeKind.BULLET_CONJ.asNode());
+				conjItem.addChild(treeNodeToAstNode(heirs[1])); // expr
+				return conjItem;
+			} case SyntaxTreeConstants.N_DisjList: {
+				AstNode disjList = AstNodeKind.DISJ_LIST.asNode();
+				for (SyntaxTreeNode child : heirs) {
+					disjList.addChild(treeNodeToAstNode(child));
+				}
+				return disjList;
+			} case SyntaxTreeConstants.N_DisjItem: {
+				AstNode disjItem = AstNodeKind.DISJ_ITEM.asNode();
+				assert(heirs[0].isKind(TLAplusParserConstants.OR));
+				disjItem.addChild(AstNodeKind.BULLET_DISJ.asNode());
+				disjItem.addChild(treeNodeToAstNode(heirs[1])); // expr
+				return disjItem;
+			} case SyntaxTreeConstants.N_GeneralId: {
+				assert(heirs[0].isKind(SyntaxTreeConstants.N_IdPrefix));
+				assert(heirs[1].isKind(TLAplusParserConstants.IDENTIFIER));
+				return AstNodeKind.IDENTIFIER_REF.asNode();
+			} case SyntaxTreeConstants.N_Number: {
+				// TODO: parse & classify number
+				return AstNodeKind.NAT_NUMBER.asNode();
+			} case SyntaxTreeConstants.N_String: {
+				return AstNodeKind.STRING.asNode();
+			} case SyntaxTreeConstants.N_Tuple: {
+				AstNode tuple = AstNodeKind.TUPLE_LITERAL.asNode();
+				assert(heirs[0].isKind(TLAplusParserConstants.LAB));
+				tuple.addChild(AstNodeKind.LANGLE_BRACKET.asNode());
+				int i = 1;
+				while (i < heirs.length - 1) {
+					tuple.addChild(treeNodeToAstNode(heirs[i]));
+					i++;
+					if (i < heirs.length - 2) {
+						assert(heirs[i].isKind(TLAplusParserConstants.COMMA));
+						i++;
+					}
+				}
+				assert(heirs[heirs.length-1].isKind(TLAplusParserConstants.RAB));
+				tuple.addChild(AstNodeKind.RANGLE_BRACKET.asNode());
+				return tuple;
+			} case SyntaxTreeConstants.N_ActionExpr: {
+				boolean allowStutter = heirs[0].isKind(TLAplusParserConstants.LSB);
+				AstNode actionExpr = allowStutter ? AstNodeKind.STEP_EXPR_OR_STUTTER.asNode() : AstNodeKind.STEP_EXPR_NO_STUTTER.asNode();
+				assert(heirs[0].isKind(allowStutter ? TLAplusParserConstants.LSB : TLAplusParserConstants.LAB));
+				actionExpr.addChild(treeNodeToAstNode(heirs[1])); // expr
+				assert(heirs[2].isKind(allowStutter ? TLAplusParserConstants.ARSB : TLAplusParserConstants.ARAB));
+				actionExpr.addChild(treeNodeToAstNode(heirs[3])); // subscript expr
+				return actionExpr;
+			} case SyntaxTreeConstants.N_InfixExpr: {
+				AstNode boundInfixOp = AstNodeKind.BOUND_INFIX_OP.asNode();
+				return boundInfixOp;
+			} case SyntaxTreeConstants.N_GenPrefixOp: {
+				assert(heirs[0].isKind(SyntaxTreeConstants.N_IdPrefix));
+				return treeNodeToAstNode(heirs[1]); // N_PrefixOp
+			} case SyntaxTreeConstants.N_PrefixOp: {
+				return opFromString(node.image.toString());
+			} default: {
+				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
+			}
+		}
+	}
+	
 	/**
 	 * Whether the expected AST matches the actual AST from SANY.
 	 * 
@@ -668,9 +824,10 @@ public class AstDsl {
 	 * @param actual The actual AST generated by SANY.
 	 * @return True if match was successful.
 	 */
-	public static boolean matchesExpectedAst(AstNode expected, TreeNode actual) {
+	public static boolean matchesExpectedAst(AstNode expected, TLAplusParser sanyActual) throws ParseException {
 		System.out.println(expected.toString());
-		System.out.println(treeNodeToString(actual));
+		AstNode actual = treeNodeToAstNode(sanyActual.ParseTree);
+		System.out.println(actual.toString());
 		return true;
 	}
 }

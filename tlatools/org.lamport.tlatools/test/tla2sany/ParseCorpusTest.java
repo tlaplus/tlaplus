@@ -90,14 +90,14 @@ public class ParseCorpusTest {
 	}
 
 	@Test
-	public void test() {
+	public void test() throws ParseException {
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
 				String testSummary = String.format("\n%s\n%s\n%s", corpusTestFile.path, corpusTest.name, corpusTest.tlaplusInput);
 				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
-				ParseTree parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
+				TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
 				Assert.assertTrue(testSummary, parser.parse());
-				Assert.assertTrue(AstDsl.matchesExpectedAst(corpusTest.expectedAst, parser.rootNode()));
+				Assert.assertTrue(AstDsl.matchesExpectedAst(corpusTest.expectedAst, parser));
 			}
 		}
 	}
