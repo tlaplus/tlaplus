@@ -806,6 +806,30 @@ public class AstDsl {
 				Assert.assertEquals(1, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.END_MODULE, heirs[0].getKind());
 				return AstNodeKind.DOUBLE_LINE.asNode();
+			} case SyntaxTreeConstants.N_Instance: { // INSTANCE M
+				Assert.assertEquals(1, heirs.length);
+				return translate(heirs[0]);
+			} case SyntaxTreeConstants.N_NonLocalInstance: { // INSTANCE M WITH a <- b, c <- d
+				AstNode instance = AstNodeKind.INSTANCE.asNode();
+				Assert.assertTrue(heirs.length >= 2);
+				Assert.assertEquals(TLAplusParserConstants.INSTANCE, heirs[0].getKind());
+				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
+				instance.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+				if (heirs.length > 2) {
+					Assert.assertEquals(TLAplusParserConstants.WITH, heirs[2].getKind());
+					instance.addChildren(commaSeparated(Arrays.copyOfRange(heirs, 3, heirs.length)));
+				}
+				return instance;
+			} case SyntaxTreeConstants.N_Substitution: {
+				AstNode substitution = AstNodeKind.SUBSTITUTION.asNode();
+				Assert.assertEquals(3, heirs.length);
+				// heirs[0] is some identifier or prefix/infix/postfix op
+				substitution.addChild(translate(heirs[0]));
+				Assert.assertEquals(TLAplusParserConstants.SUBSTITUTE, heirs[1].getKind());
+				substitution.addChild(AstNodeKind.GETS.asNode());
+				// heirs[2] is some operator or expression
+				substitution.addChild(translate(heirs[2]));
+				return substitution;
 			} case SyntaxTreeConstants.N_OperatorDefinition: { // ex. op == expr
 				AstNode operatorDefinition = AstNodeKind.OPERATOR_DEFINITION.asNode();
 				Assert.assertEquals(3, heirs.length);
@@ -855,11 +879,14 @@ public class AstDsl {
 				// heirs[1] is of indeterminate expression type
 				disjItem.addChild(translate(heirs[1]));
 				return disjItem;
-			} case SyntaxTreeConstants.N_GeneralId: { // \/ foo!bar!baz!x
+			} case SyntaxTreeConstants.N_GeneralId: { // foo!bar!baz!x
 				Assert.assertEquals(2, heirs.length);
 				// TODO: handle ID prefix
 				Assert.assertEquals(SyntaxTreeConstants.N_IdPrefix, heirs[0].getKind());
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
+				return translate(heirs[1]);
+			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
+				Assert.assertEquals(0, heirs.length);
 				return AstNodeKind.IDENTIFIER_REF.asNode();
 			} case SyntaxTreeConstants.N_Number: { // 2, 3.14, etc.
 				// TODO: parse & classify number
