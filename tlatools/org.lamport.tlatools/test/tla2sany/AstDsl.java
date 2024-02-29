@@ -840,6 +840,12 @@ public class AstDsl {
 				// heirs[2] is of indeterminate expression type
 				operatorDefinition.addField("definition", translate(heirs[2]));
 				return operatorDefinition;
+			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _)
+				AstNode recursiveDeclaration = AstNodeKind.RECURSIVE_DECLARATION.asNode();
+				Assert.assertEquals(2, heirs.length);
+				Assert.assertEquals(TLAplusParserConstants.RECURSIVE, heirs[0].getKind());
+				Assert.assertEquals(SyntaxTreeConstants.N_IdentDecl, heirs[1].getKind());
+				return recursiveDeclaration;
 			} case TLAplusParserConstants.DEF: { // ==
 				Assert.assertEquals(0, heirs.length);
 				return AstNodeKind.DEF_EQ.asNode();
@@ -921,6 +927,16 @@ public class AstDsl {
 				// heirs[3] is of indeterminate subscript expression type
 				actionExpr.addChild(translate(heirs[3]));
 				return actionExpr;
+			} case SyntaxTreeConstants.N_LetIn: {
+				AstNode letIn = AstNodeKind.LET_IN.asNode();
+				Assert.assertEquals(4, heirs.length);
+				Assert.assertEquals(TLAplusParserConstants.LET, heirs[0].getKind());
+				Assert.assertEquals(SyntaxTreeConstants.N_LetDefinitions, heirs[1].getKind());
+				letIn.addChildren(repeat(heirs[1]));
+				Assert.assertEquals(TLAplusParserConstants.IN, heirs[2].getKind());
+				// heirs[3] is of indeterminate expression type
+				letIn.addField("expression", translate(heirs[3]));
+				return letIn;
 			} case SyntaxTreeConstants.N_OpApplication: { // ex. f(a, b, c)
 				AstNode boundOp = AstNodeKind.BOUND_OP.asNode();
 				Assert.assertEquals(2, heirs.length);
