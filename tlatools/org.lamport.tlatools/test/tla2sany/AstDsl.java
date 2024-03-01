@@ -365,6 +365,11 @@ public class AstDsl {
 			}
 		}
 		
+		/**
+		 * Quickly creates an AST node of this kind.
+		 * 
+		 * @return An AST node of this kind.
+		 */
 		public AstNode asNode() {
 			return new AstNode(this);
 		}
@@ -413,22 +418,49 @@ public class AstDsl {
 			this.fieldNames = fieldNames;
 		}
 		
+		/**
+		 * Constructs an AST node with no fields.
+		 * 
+		 * @param kind The kind of the AST node.
+		 * @param children The children of the AST node.
+		 */
 		public AstNode(AstNodeKind kind, List<AstNode> children) {
 			this(kind, children, new HashMap<String, AstNode>());
 		}
 		
+		/**
+		 * Constructs an AST node with no children or fields.
+		 * 
+		 * @param kind The kind of the AST node.
+		 */
 		public AstNode(AstNodeKind kind) {
 			this(kind, new ArrayList<AstNode>());
 		}
 		
+		/**
+		 * Adds a child to this AST node.
+		 * 
+		 * @param child The child to add.
+		 */
 		public void addChild(AstNode child) {
 			this.children.add(child);
 		}
 		
+		/**
+		 * Adds multiple children to this AST node.
+		 * 
+		 * @param children The children to add.
+		 */
 		public void addChildren(List<AstNode> children) {
 			this.children.addAll(children);
 		}
 		
+		/**
+		 * Adds a field to this AST node.
+		 * 
+		 * @param name The name of the field to add.
+		 * @param child The child to add for that field name.
+		 */
 		public void addField(String name, AstNode child) {
 			this.children.add(child);
 			this.fields.put(name, child);
@@ -470,6 +502,24 @@ public class AstDsl {
 			StringBuilder sb = new StringBuilder();
 			this.toString(sb);
 			return sb.toString();
+		}
+		
+		/**
+		 * Test the subtree of the given AST node for equality with this one.
+		 * 
+		 * @param other The AST node to test for equality.
+		 */
+		public void testEquality(AstNode other) {
+			Assert.assertEquals(this.kind, other.kind);
+			Assert.assertEquals(this.children.size(), other.children.size());
+			for (int i = 0; i < this.children.size(); i++) {
+				AstNode thisChild = this.children.get(i);
+				AstNode otherChild = other.children.get(i);
+				if (this.fieldNames.containsKey(thisChild)) {
+					Assert.assertEquals(this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
+				}
+				thisChild.testEquality(otherChild);
+			}
 		}
 	}
 	
@@ -698,10 +748,10 @@ public class AstDsl {
 	 * @return AST node corresponding to the given prefix operator string.
 	 * @throws ParseException If op string has no corresponding AST node.
 	 */
-	public static AstNode prefixOpFromString(String op) throws ParseException {
+	private static AstNode prefixOpFromString(String op) throws ParseException {
 		switch (op) {
 			case "SUBSET":
-				return AstNodeKind.SUBSET.asNode();
+				return AstNodeKind.POWERSET.asNode();
 			default:
 				throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
@@ -714,13 +764,25 @@ public class AstDsl {
 	 * @return AST node corresponding to the given infix operator string.
 	 * @throws ParseException If op string has no corresponding AST node.
 	 */
-	public static AstNode infixOpFromString(String op) throws ParseException {
+	private static AstNode infixOpFromString(String op) throws ParseException {
 		switch (op) {
 			case "+":
 				return AstNodeKind.PLUS.asNode();
 			default:
 				throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
+	}
+	
+	/**
+	 * Chops the beginning & ending elements off of the given array, starting
+	 * from the given index.
+	 * 
+	 * @param input The array to chop.
+	 * @param startIndex Index from which to start chopping.
+	 * @return Array with first and last elements removed.
+	 */
+	private static SyntaxTreeNode[] chop(SyntaxTreeNode[] input, int startIndex) {
+		return Arrays.copyOfRange(input, startIndex, input.length - 1);
 	}
 	
 	/**
@@ -731,8 +793,8 @@ public class AstDsl {
 	 * @param input The array to chop.
 	 * @return Array with first and last elements removed.
 	 */
-	public static SyntaxTreeNode[] chop(SyntaxTreeNode[] input) {
-		return Arrays.copyOfRange(input, 1, input.length - 1);
+	private static SyntaxTreeNode[] chop(SyntaxTreeNode[] input) {
+		return chop(input, 1);
 	}
 	
 	/**
@@ -743,7 +805,7 @@ public class AstDsl {
 	 * @return Corresponding list of AST nodes.
 	 * @throws ParseException If unable to parse one of the nodes.
 	 */
-	public static List<AstNode> commaSeparated(SyntaxTreeNode[] heirs) throws ParseException {
+	private static List<AstNode> commaSeparated(SyntaxTreeNode[] heirs) throws ParseException {
 		List<AstNode> children = new ArrayList<AstNode>();
 		for (int i = 0; i < heirs.length; i += 2) {
 			children.add(translate(heirs[i]));
@@ -817,7 +879,7 @@ public class AstDsl {
 				instance.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
 				if (heirs.length > 2) {
 					Assert.assertEquals(TLAplusParserConstants.WITH, heirs[2].getKind());
-					instance.addChildren(commaSeparated(Arrays.copyOfRange(heirs, 3, heirs.length)));
+					instance.addChildren(commaSeparated(chop(heirs, 3)));
 				}
 				return instance;
 			} case SyntaxTreeConstants.N_Substitution: {
@@ -830,29 +892,64 @@ public class AstDsl {
 				// heirs[2] is some operator or expression
 				substitution.addChild(translate(heirs[2]));
 				return substitution;
-			} case SyntaxTreeConstants.N_OperatorDefinition: { // ex. op == expr
+			} case SyntaxTreeConstants.N_OperatorDefinition: { // ex. op(a, b) == expr
 				AstNode operatorDefinition = AstNodeKind.OPERATOR_DEFINITION.asNode();
 				Assert.assertEquals(3, heirs.length);
-				Assert.assertEquals(SyntaxTreeConstants.N_IdentLHS, heirs[0].getKind());
-				operatorDefinition.addField("name", translate(heirs[0]));
+				switch (heirs[0].getKind()) {
+					case SyntaxTreeConstants.N_IdentLHS: {
+						SyntaxTreeNode[] lhsHeirs = heirs[0].getHeirs();
+						Assert.assertTrue(lhsHeirs.length >= 1);
+						Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, lhsHeirs[0].getKind());
+						operatorDefinition.addField("name", AstNodeKind.IDENTIFIER.asNode());
+						if (lhsHeirs.length > 1) {
+							Assert.assertEquals(TLAplusParserConstants.LBR, lhsHeirs[1].getKind());
+							operatorDefinition.addChildren(commaSeparated(chop(lhsHeirs, 2)));
+							Assert.assertEquals(TLAplusParserConstants.RBR, lhsHeirs[lhsHeirs.length-1].getKind());
+						}
+						break;
+					} case SyntaxTreeConstants.N_PrefixLHS: {
+						Assert.fail("Unimplemented");
+					} case SyntaxTreeConstants.N_InfixLHS: {
+						Assert.fail("Unimplemented");
+					} case SyntaxTreeConstants.N_PostfixLHS: {
+						Assert.fail("Unimplemented");
+					} default: {
+						throw new ParseException(String.format("Invalid operator definition LHS kind %d, image %s", heirs[0].getKind(), heirs[0].image), 0);
+					}
+				}
 				Assert.assertEquals(TLAplusParserConstants.DEF, heirs[1].getKind());
 				operatorDefinition.addChild(translate(heirs[1]));
 				// heirs[2] is of indeterminate expression type
 				operatorDefinition.addField("definition", translate(heirs[2]));
 				return operatorDefinition;
-			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _)
+			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
 				AstNode recursiveDeclaration = AstNodeKind.RECURSIVE_DECLARATION.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.RECURSIVE, heirs[0].getKind());
 				Assert.assertEquals(SyntaxTreeConstants.N_IdentDecl, heirs[1].getKind());
+				recursiveDeclaration.addChild(translate(heirs[1]));
+				// TODO: test comma-separated recursive declarations
 				return recursiveDeclaration;
+			} case SyntaxTreeConstants.N_IdentDecl: {
+				Assert.assertTrue(heirs.length >= 1);
+				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
+				if (1 == heirs.length) {
+					return AstNodeKind.IDENTIFIER.asNode();
+				} else {
+					Assert.assertTrue(heirs.length >= 4);
+					AstNode opDeclaration = AstNodeKind.OPERATOR_DECLARATION.asNode();
+					opDeclaration.addField("name", AstNodeKind.IDENTIFIER.asNode());
+					Assert.assertEquals(TLAplusParserConstants.LBR, heirs[1].getKind());
+					// TODO: test multiple placeholders
+					opDeclaration.addChildren(commaSeparated(chop(heirs, 2)));
+					Assert.assertEquals(TLAplusParserConstants.RBR, heirs[heirs.length-1].getKind());
+					return opDeclaration;
+				}
+			} case TLAplusParserConstants.US: {
+				return AstNodeKind.PLACEHOLDER.asNode();
 			} case TLAplusParserConstants.DEF: { // ==
 				Assert.assertEquals(0, heirs.length);
 				return AstNodeKind.DEF_EQ.asNode();
-			} case SyntaxTreeConstants.N_IdentLHS: { // New identifier being defined
-				Assert.assertEquals(1, heirs.length);
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
-				return AstNodeKind.IDENTIFIER.asNode();
 			} case SyntaxTreeConstants.N_ConjList: { // Multi-line aligned conjunction list
 				AstNode conjList = AstNodeKind.CONJ_LIST.asNode();
 				for (SyntaxTreeNode heir : heirs) {
@@ -900,8 +997,24 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.NUMBER_LITERAL, heirs[0].getKind());
 				return AstNodeKind.NAT_NUMBER.asNode();
 			} case SyntaxTreeConstants.N_String: { // ex. "foobar"
+				AstNode string = AstNodeKind.STRING.asNode();
 				Assert.assertEquals(0, heirs.length);
-				return AstNodeKind.STRING.asNode();
+				System.out.println(node.image);
+				int[] codepoints = node.image.toString().codePoints().toArray();
+				// The AST DSL records escaped characters in strings
+				for (int i = 0; i < codepoints.length; i++) {
+					int c = codepoints[i];
+					if (0 == i || codepoints.length - 1 == i) {
+						// SANY includes the start & end quotes in the string
+						continue;
+					}
+
+					if (c == '\\' || c == '\'' || c == '\"' || c == '\n' || c == '\r' || c == '\t') {
+						string.addChild(AstNodeKind.ESCAPE_CHAR.asNode());
+					}
+				}
+
+				return string;
 			} case SyntaxTreeConstants.N_Tuple: { // ex. <<1, 2, 3>>
 				AstNode tuple = AstNodeKind.TUPLE_LITERAL.asNode();
 				Assert.assertTrue(heirs.length >= 2);
@@ -921,9 +1034,15 @@ public class AstDsl {
 				boolean allowStutter = heirs[0].isKind(TLAplusParserConstants.LSB);
 				AstNode actionExpr = allowStutter ? AstNodeKind.STEP_EXPR_OR_STUTTER.asNode() : AstNodeKind.STEP_EXPR_NO_STUTTER.asNode();
 				Assert.assertEquals(allowStutter ? TLAplusParserConstants.LSB : TLAplusParserConstants.LAB, heirs[0].getKind());
+				if (!allowStutter) {
+					actionExpr.addChild(AstNodeKind.LANGLE_BRACKET.asNode());
+				}
 				// heirs[1] is of indeterminate expression type
 				actionExpr.addChild(translate(heirs[1]));
 				Assert.assertEquals(allowStutter ? TLAplusParserConstants.ARSB : TLAplusParserConstants.ARAB, heirs[2].getKind());
+				if (!allowStutter) {
+					actionExpr.addChild(AstNodeKind.RANGLE_BRACKET_SUB.asNode());
+				}
 				// heirs[3] is of indeterminate subscript expression type
 				actionExpr.addChild(translate(heirs[3]));
 				return actionExpr;
@@ -1000,9 +1119,12 @@ public class AstDsl {
 	 * @return True if match was successful.
 	 */
 	public static boolean matchesExpectedAst(AstNode expected, TLAplusParser sanyActual) throws ParseException {
+		System.out.println("expected:");
 		System.out.println(expected.toString());
+		System.out.println("actual:");
 		AstNode actual = translate(sanyActual.ParseTree);
 		System.out.println(actual.toString());
+		expected.testEquality(actual);
 		return true;
 	}
 }

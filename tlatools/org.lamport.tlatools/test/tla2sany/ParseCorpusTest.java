@@ -92,7 +92,9 @@ public class ParseCorpusTest {
 	@Test
 	public void test() throws ParseException {
 		for (CorpusTestFile corpusTestFile : this.corpus) {
+			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
+				System.out.println(corpusTest.name);
 				String testSummary = String.format("\n%s\n%s\n%s", corpusTestFile.path, corpusTest.name, corpusTest.tlaplusInput);
 				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
 				TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
