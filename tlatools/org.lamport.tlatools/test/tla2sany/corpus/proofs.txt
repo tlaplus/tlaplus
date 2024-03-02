@@ -1,9 +1,37 @@
 ===============================|||
-Obvious Proof
+Theorem Without Proof
 ===============================|||
 
 ---- MODULE Test ----
 THEOREM TRUE
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (theorem (boolean))
+(double_line)))
+
+===============================|||
+Named Theorem Without Proof
+===============================|||
+
+---- MODULE Test ----
+PROPOSITION x == TRUE
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (theorem (identifier) (def_eq) (boolean))
+(double_line)))
+
+===============================|||
+Obvious Proof
+===============================|||
+
+---- MODULE Test ----
+LEMMA TRUE
 OBVIOUS
 ====
 
@@ -14,18 +42,33 @@ OBVIOUS
 (double_line)))
 
 ===============================|||
+Named Obvious Proof
+===============================|||
+
+---- MODULE Test ----
+COROLLARY def == TRUE
+PROOF OBVIOUS
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (theorem (identifier) (def_eq) (boolean) (terminal_proof))
+(double_line)))
+
+===============================|||
 Omitted Proof
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+THEOREM x == TRUE
 PROOF OMITTED
 ====
 
 -------------------------------|||
 
 (source_file (module (header_line) (identifier) (header_line)
-  (theorem (boolean) (terminal_proof))
+  (theorem (identifier) (def_eq) (boolean) (terminal_proof))
 (double_line)))
 
 ===============================|||
@@ -33,7 +76,7 @@ Proof by Definition
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+PROPOSITION TRUE
 PROOF BY DEF >
 ====
 
@@ -52,7 +95,7 @@ Proof by Multiple Definitions
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+LEMMA TRUE
 PROOF BY ONLY
   P,
   MODULE Naturals,
@@ -91,7 +134,7 @@ Proof by QED
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+COROLLARY TRUE
 PROOF <1>a QED
 ====
 
@@ -153,7 +196,7 @@ Stepped Proof by Definition
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM P => Q
+PROPOSITION P => Q
 PROOF
   <1> P
   <1> Q
@@ -180,7 +223,7 @@ Proof with Star Steps
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+LEMMA TRUE
 <*> 1
 <0> 2
 <*> 3
@@ -209,7 +252,7 @@ Proof with Plus Step
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+COROLLARY TRUE
 <+> 1
 <0> 2
 <*> 3
@@ -273,7 +316,7 @@ Nested Proof Off QED
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+PROPOSITION TRUE
 PROOF
 <*> 1
   PROOF
@@ -313,7 +356,7 @@ Proof with Nested Terminal Proof
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+LEMMA TRUE
 PROOF
 <*> 1
   <+> 2
@@ -359,7 +402,7 @@ Implicit Nested Proof Levels
 ===============================|||
 
 ---- MODULE Test ----
-THEOREM TRUE
+COROLLARY TRUE
 <*> 1
   <+> 2
     <+> 3
@@ -470,3 +513,4 @@ THEOREM TRUE
     ))))
   ))
 (double_line)))
+

@@ -718,18 +718,10 @@ public class AstDsl {
 		return parseAst(new ParserState(input, false));
 	}
 	
-	private static void printSanyParseTree(TLAplusParser sanyTree) {
+	public static void printSanyParseTree(TLAplusParser sanyTree) {
 		PrintWriter out = new PrintWriter(System.out);
 		SyntaxTreePrinter.print(sanyTree, out);
 		out.flush();
-	}
-	
-	private static AstNode optional(SyntaxTreeNode node) throws ParseException {
-		if (null != node && null != node.zero() && 0 != node.zero().length) {
-			return translate(node);
-		} else {
-			return null;
-		}
 	}
 	
 	private static List<AstNode> repeat(SyntaxTreeNode node) throws ParseException {
@@ -739,6 +731,73 @@ public class AstDsl {
 		}
 		
 		return children;
+	}
+	
+	private static int parseUseBodyDefs(SyntaxTreeNode[] heirs, int offset, AstNode useBodyExpr) throws ParseException {
+		AstNode moduleRef = null;
+		for (; offset < heirs.length && !heirs[offset].isKind(TLAplusParserConstants.DF); offset++) {
+			switch (heirs[offset].getKind()) {
+				case TLAplusParserConstants.COMMA: {
+					break;
+				}
+				case TLAplusParserConstants.MODULE: {
+					moduleRef = AstNodeKind.MODULE_REF.asNode();
+					break;
+				} case TLAplusParserConstants.IDENTIFIER: {
+					if (null == moduleRef) {
+						useBodyExpr.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+					} else {
+						moduleRef.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+						useBodyExpr.addChild(moduleRef);
+						moduleRef = null;
+					}
+						break;
+				}
+				default: {
+					useBodyExpr.addChild(translate(heirs[offset]));
+					break;
+				}
+			}
+		}
+		return offset;
+	}
+	
+	/**
+	 * Unfortunately SANY does not do much structured parsing of proof
+	 * structures (which makes sense since TLAPM has its own parser) so we
+	 * have to parse the flat sequence of tokens ourselves.
+	 * 
+	 * @param heirs The heirs of the terminal proof node.
+	 * @param offset Offset into the heirs after which BY ONLY occurs.
+	 * @return A use body AST node.
+	 * @throws ParseException
+	 */
+	private static AstNode parseUseBody(SyntaxTreeNode[] heirs, int offset) throws ParseException {
+		AstNode useBody = AstNodeKind.USE_BODY.asNode();
+		if (heirs[offset].isKind(TLAplusParserConstants.ONLY)) {
+			offset++;
+		}
+		if (!heirs[offset].isKind(TLAplusParserConstants.DF)) {
+			AstNode useBodyExpr = AstNodeKind.USE_BODY_EXPR.asNode();
+			useBody.addChild(useBodyExpr);
+			offset = parseUseBodyDefs(heirs, offset, useBodyExpr);
+		}
+		if (offset < heirs.length) { 
+			Assert.assertEquals(TLAplusParserConstants.DF, heirs[offset].getKind());
+			offset++;
+			AstNode useBodyDef = AstNodeKind.USE_BODY_DEF.asNode();
+			useBody.addChild(useBodyDef);
+			offset = parseUseBodyDefs(heirs, offset, useBodyDef);
+		}
+		return useBody;
+	}
+	
+	private static AstNode id(SyntaxTreeNode input) throws ParseException {
+		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
+		switch (input.getImage()) {
+			case "TRUE": return AstNodeKind.BOOLEAN.asNode();
+			default: return AstNodeKind.IDENTIFIER_REF.asNode();
+		}
 	}
 	
 	/**
@@ -767,6 +826,8 @@ public class AstDsl {
 			case "+": return AstNodeKind.PLUS.asNode();
 			case "-": return AstNodeKind.MINUS.asNode();
 			case "*": return AstNodeKind.MUL.asNode();
+			case "=": return AstNodeKind.EQ.asNode();
+			case ">": return AstNodeKind.GT.asNode();
 			case "=<": return AstNodeKind.LEQ.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
@@ -1013,11 +1074,25 @@ public class AstDsl {
 				Assert.assertEquals(2, heirs.length);
 				// TODO: handle ID prefix
 				Assert.assertEquals(SyntaxTreeConstants.N_IdPrefix, heirs[0].getKind());
+				switch (heirs[1].getKind()) {
+					case TLAplusParserConstants.IDENTIFIER: {
+						return translate(heirs[1]);
+					} case SyntaxTreeConstants.N_InfixOp: {
+						AstNode infixOpSymbol = AstNodeKind.INFIX_OP_SYMBOL.asNode();
+						infixOpSymbol.addChild(translate(heirs[1]));
+						return infixOpSymbol;
+					} default: {
+						Assert.fail();
+					}
+				}
+				if (!heirs[1].isKind(TLAplusParserConstants.IDENTIFIER)) {
+					return null;
+				}
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
 				return translate(heirs[1]);
 			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
 				Assert.assertEquals(0, heirs.length);
-				return AstNodeKind.IDENTIFIER_REF.asNode();
+				return id(node);
 			} case SyntaxTreeConstants.N_Number: { // 2, 3.14, etc.
 				// TODO: parse & classify number
 				Assert.assertEquals(1, heirs.length);
@@ -1035,12 +1110,10 @@ public class AstDsl {
 						// SANY includes the start & end quotes in the string
 						continue;
 					}
-
 					if (c == '\\' || c == '\'' || c == '\"' || c == '\n' || c == '\r' || c == '\t') {
 						string.addChild(AstNodeKind.ESCAPE_CHAR.asNode());
 					}
 				}
-
 				return string;
 			} case SyntaxTreeConstants.N_Tuple: { // ex. <<1, 2, 3>>
 				AstNode tuple = AstNodeKind.TUPLE_LITERAL.asNode();
@@ -1145,6 +1218,63 @@ public class AstDsl {
 			} case SyntaxTreeConstants.N_InfixOp: { // ex. +, -, /, /\
 				Assert.assertEquals(0, heirs.length);
 				return infixOpFromString(node.image.toString());
+			} case SyntaxTreeConstants.N_Theorem: { // THEOREM name == ...
+				/**
+				 * Cases:
+				 *  1. Unnamed theorem without proof
+				 *  2. Named theorem without proof
+				 *  3. Unnamed theorem with proof
+				 *  4. Named theorem with proof
+				 */
+				AstNode theorem = AstNodeKind.THEOREM.asNode();
+				Assert.assertTrue(heirs.length >= 2);
+				Assert.assertTrue(
+					heirs[0].isKind(TLAplusParserConstants.THEOREM)
+					|| heirs[0].isKind(TLAplusParserConstants.PROPOSITION)
+				);
+				boolean isNamed =
+					heirs[1].isKind(TLAplusParserConstants.IDENTIFIER)
+					&& heirs.length >= 3
+					&& heirs[2].isKind(TLAplusParserConstants.DEF);
+				boolean hasProof =
+					(isNamed && heirs.length == 5)
+					|| (!isNamed && heirs.length == 3);
+				if (isNamed) {
+					Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
+					theorem.addField("name", AstNodeKind.IDENTIFIER.asNode());
+					Assert.assertEquals(TLAplusParserConstants.DEF, heirs[2].getKind());
+					theorem.addChild(AstNodeKind.DEF_EQ.asNode());
+					// heirs[3] is of expression or assume/prove type
+					theorem.addChild(translate(heirs[3]));
+					if (hasProof) {
+						// heirs[4] is of indeterminate proof type
+						theorem.addChild(translate(heirs[4]));
+					}
+				} else {
+					// heirs[1] is of expression or assume/prove type
+					theorem.addChild(translate(heirs[1]));
+					if (hasProof) {
+						// heirs[2] is of indeterminate proof type
+						theorem.addChild(translate(heirs[2]));
+					}
+				}
+				return theorem;
+			} case SyntaxTreeConstants.N_TerminalProof: { // PROOF BY DEF >
+				AstNode proof = AstNodeKind.TERMINAL_PROOF.asNode();
+				Assert.assertTrue(heirs.length >= 1);
+				int offset = 0;
+				if (heirs[offset].isKind(TLAplusParserConstants.PROOF)) {
+					offset++;
+				}
+				if (heirs[offset].isKind(TLAplusParserConstants.BY)) {
+					offset++;
+					proof.addChild(parseUseBody(heirs, offset));
+				} else {
+					Assert.assertTrue(
+						heirs[offset].isKind(TLAplusParserConstants.OBVIOUS)
+						|| heirs[offset].isKind(TLAplusParserConstants.OMITTED));
+				}
+				return proof;
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
