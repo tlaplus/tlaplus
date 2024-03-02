@@ -94,6 +94,9 @@ public class ParseCorpusTest {
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
+				if (!corpusTest.name.equals("INSTANCE With Jlist Substitutions")) {
+					//continue;
+				}
 				System.out.println(corpusTest.name);
 				String testSummary = String.format("\n%s\n%s\n%s", corpusTestFile.path, corpusTest.name, corpusTest.tlaplusInput);
 				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
