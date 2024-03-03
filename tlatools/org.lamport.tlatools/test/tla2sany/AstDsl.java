@@ -915,6 +915,11 @@ public class AstDsl {
 					Assert.assertEquals(TLAplusParserConstants.RBR, heirs[heirs.length-1].getKind());
 				}
 				return;
+			} case SyntaxTreeConstants.N_QEDStep: {
+				if (heirs.length > 0) {
+					Assert.fail();
+				}
+				return;
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
@@ -1464,6 +1469,38 @@ public class AstDsl {
 						|| heirs[offset].isKind(TLAplusParserConstants.OMITTED));
 				}
 				return proof;
+			} case SyntaxTreeConstants.N_Proof: {
+				AstNode proof = AstNodeKind.NON_TERMINAL_PROOF.asNode();
+				Assert.assertTrue(heirs.length > 0);
+				int offset = 0;
+				if (heirs[offset].isKind(TLAplusParserConstants.PROOF)) {
+					offset++;
+				}
+				for (; offset < heirs.length; offset++) {
+					proof.addChild(translate(heirs[offset]));
+				}
+				return proof;
+			} case SyntaxTreeConstants.N_ProofStep: {
+				Assert.assertEquals(2, heirs.length);
+				// heirs[0] is some type of proof step ID
+				AstNode proofStepId = translate(heirs[0]);
+				// heirs[1] is some type of proof
+				if (heirs[1].isKind(SyntaxTreeConstants.N_QEDStep)) {
+					AstNode qedStep = AstNodeKind.QED_STEP.asNode();
+					qedStep.addChild(proofStepId);
+					flatTranslate(qedStep, heirs[1]);
+					return qedStep;
+				} else {
+					AstNode proofStep = AstNodeKind.PROOF_STEP.asNode();
+					proofStep.addChild(proofStepId);
+					proofStep.addChild(translate(heirs[1]));
+					return proofStep;
+				}
+			} case TLAplusParserConstants.ProofStepLexeme: {
+				AstNode proofStepId = AstNodeKind.PROOF_STEP_ID.asNode();
+				proofStepId.addChild(AstNodeKind.LEVEL.asNode());
+				proofStepId.addChild(AstNodeKind.NAME.asNode());
+				return proofStepId;
 			} case SyntaxTreeConstants.N_AssumeProve: {
 				return parseAssumeProve(heirs, 0);
 			} default: {
