@@ -800,6 +800,11 @@ public class AstDsl {
 		return useBody;
 	}
 	
+	private static AstNode parseAssumeProve(SyntaxTreeNode[] heirs, int offset) throws ParseException {
+		AstNode assumeProve = AstNodeKind.ASSUME_PROVE.asNode();
+		return assumeProve;
+	}
+	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
 		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
@@ -1108,22 +1113,41 @@ public class AstDsl {
 				Assert.assertEquals(2, heirs.length);
 				// TODO: handle ID prefix
 				Assert.assertEquals(SyntaxTreeConstants.N_IdPrefix, heirs[0].getKind());
+				SyntaxTreeNode[] prefix = heirs[0].getHeirs();
+				AstNode prefixedOp = null;
+				if (0 != prefix.length) {
+					prefixedOp = AstNodeKind.PREFIXED_OP.asNode();
+					prefixedOp.addField("prefix", translate(heirs[0]));
+				}
+
+				AstNode op = null;
 				switch (heirs[1].getKind()) {
 					case TLAplusParserConstants.IDENTIFIER: {
-						return translate(heirs[1]);
+						op = translate(heirs[1]);
+						break;
 					} case SyntaxTreeConstants.N_InfixOp: {
-						AstNode infixOpSymbol = AstNodeKind.INFIX_OP_SYMBOL.asNode();
-						infixOpSymbol.addChild(translate(heirs[1]));
-						return infixOpSymbol;
+						op = AstNodeKind.INFIX_OP_SYMBOL.asNode()
+								.addChild(translate(heirs[1]));
+						break;
 					} default: {
 						Assert.fail();
 					}
 				}
-				if (!heirs[1].isKind(TLAplusParserConstants.IDENTIFIER)) {
-					return null;
+				
+				return prefixedOp == null ? op : prefixedOp.addField("op", op);
+			} case SyntaxTreeConstants.N_IdPrefix: {
+				AstNode subexpr = AstNodeKind.SUBEXPR_PREFIX.asNode();
+				Assert.assertTrue(heirs.length > 0);
+				for (SyntaxTreeNode heir : heirs) {
+					subexpr.addChild(translate(heir));
 				}
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
-				return translate(heirs[1]);
+				return subexpr;
+			} case SyntaxTreeConstants.N_IdPrefixElement: {
+				Assert.assertEquals(2, heirs.length);
+				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
+				Assert.assertEquals(TLAplusParserConstants.BANG, heirs[1].getKind());
+				return AstNodeKind.SUBEXPR_COMPONENT.asNode()
+						.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
 			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
 				Assert.assertEquals(0, heirs.length);
 				return id(node);
@@ -1440,6 +1464,8 @@ public class AstDsl {
 						|| heirs[offset].isKind(TLAplusParserConstants.OMITTED));
 				}
 				return proof;
+			} case SyntaxTreeConstants.N_AssumeProve: {
+				return parseAssumeProve(heirs, 0);
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
