@@ -5,731 +5,133 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
-import tla2sany.st.TreeNode;
+import tla2sany.AstNode.Kind;
 
 import java.io.PrintWriter;
-import java.lang.Character;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Assert;
 
-public class AstDsl {	
-	/**
-	 * Enumeration of all node kinds in the AST DSL. This list was generated
-	 * by running the following short Python3 script against node-types.json
-	 * in the tree-sitter-tlaplus repository:
-	 * 
-	 * import json
-	 * f = open('src/node-types.json', 'r', encoding='utf-8')
-	 * data = json.load(f)
-	 * f.close()
-	 * names = [
-     *   f'\t\t{item["type"].upper()} ("{item["type"]}")'
-     *   for item in data
-     *   if item['named'] and not item['type'].startswith('_')
-	 * ]
-	 * print(',\n'.join(names) + ';\n')
-	 */
-	public static enum AstNodeKind {
-		ADDRESS ("address"),
-		ALL_MAP_TO ("all_map_to"),
-		ALWAYS ("always"),
-		APPROX ("approx"),
-		ASSIGN ("assign"),
-		ASSUME_PROVE ("assume_prove"),
-		ASSUMPTION ("assumption"),
-		ASYMP ("asymp"),
-		BIGCIRC ("bigcirc"),
-		BINARY_NUMBER ("binary_number"),
-		BLOCK_COMMENT ("block_comment"),
-		BLOCK_COMMENT_TEXT ("block_comment_text"),
-		BNF_RULE ("bnf_rule"),
-		BOOLEAN ("boolean"),
-		BOUND_INFIX_OP ("bound_infix_op"),
-		BOUND_NONFIX_OP ("bound_nonfix_op"),
-		BOUND_OP ("bound_op"),
-		BOUND_POSTFIX_OP ("bound_postfix_op"),
-		BOUND_PREFIX_OP ("bound_prefix_op"),
-		BOUNDED_QUANTIFICATION ("bounded_quantification"),
-		BULLET ("bullet"),
-		BULLET_CONJ ("bullet_conj"),
-		BULLET_DISJ ("bullet_disj"),
-		CAP ("cap"),
-		CASE ("case"),
-		CASE_ARM ("case_arm"),
-		CASE_ARROW ("case_arrow"),
-		CASE_BOX ("case_box"),
-		CASE_PROOF_STEP ("case_proof_step"),
-		CDOT ("cdot"),
-		CHILD_ID ("child_id"),
-		CHOOSE ("choose"),
-		CIRC ("circ"),
-		COLON ("colon"),
-		CONG ("cong"),
-		CONJ_ITEM ("conj_item"),
-		CONJ_LIST ("conj_list"),
-		CONSTANT_DECLARATION ("constant_declaration"),
-		CUP ("cup"),
-		DEF_EQ ("def_eq"),
-		DEFINITION_PROOF_STEP ("definition_proof_step"),
-		DISJ_ITEM ("disj_item"),
-		DISJ_LIST ("disj_list"),
-		DIV ("div"),
-		DOMAIN ("domain"),
-		DOTEQ ("doteq"),
-		DOTS_2 ("dots_2"),
-		DOTS_3 ("dots_3"),
-		DOUBLE_LINE ("double_line"),
-		ENABLED ("enabled"),
-		EQ ("eq"),
-		EQUIV ("equiv"),
-		ESCAPE_CHAR ("escape_char"),
-		EVENTUALLY ("eventually"),
-		EXCEPT ("except"),
-		EXCEPT_UPDATE ("except_update"),
-		EXCEPT_UPDATE_FN_APPL ("except_update_fn_appl"),
-		EXCEPT_UPDATE_RECORD_FIELD ("except_update_record_field"),
-		EXCEPT_UPDATE_SPECIFIER ("except_update_specifier"),
-		EXCL ("excl"),
-		EXISTS ("exists"),
-		EXTENDS ("extends"),
-		FAIR ("fair"),
-		FAIRNESS ("fairness"),
-		FINITE_SET_LITERAL ("finite_set_literal"),
-		FORALL ("forall"),
-		FUNCTION_DEFINITION ("function_definition"),
-		FUNCTION_EVALUATION ("function_evaluation"),
-		FUNCTION_LITERAL ("function_literal"),
-		GEQ ("geq"),
-		GETS ("gets"),
-		GG ("gg"),
-		HAVE_PROOF_STEP ("have_proof_step"),
-		HEADER_LINE ("header_line"),
-		HEX_NUMBER ("hex_number"),
-		IF_THEN_ELSE ("if_then_else"),
-		IFF ("iff"),
-		IMPLIES ("implies"),
-		IN ("in"),
-		INFIX_OP_SYMBOL ("infix_op_symbol"),
-		INNER_ASSUME_PROVE ("inner_assume_prove"),
-		INSTANCE ("instance"),
-		INT_NUMBER_SET ("int_number_set"),
-		LABEL ("label"),
-		LABEL_AS ("label_as"),
-		LAMBDA ("lambda"),
-		LAND ("land"),
-		LANGLE_BRACKET ("langle_bracket"),
-		LD_TTILE ("ld_ttile"),
-		LEADS_TO ("leads_to"),
-		LEQ ("leq"),
-		LET_IN ("let_in"),
-		LEVEL ("level"),
-		LL ("ll"),
-		LNOT ("lnot"),
-		LOCAL_DEFINITION ("local_definition"),
-		LOR ("lor"),
-		LS_TTILE ("ls_ttile"),
-		LT ("lt"),
-		MAPS_TO ("maps_to"),
-		MINUS ("minus"),
-		MODULE ("module"),
-		MODULE_DEFINITION ("module_definition"),
-		MODULE_REF ("module_ref"),
-		NAT_NUMBER ("nat_number"),
-		NAT_NUMBER_SET ("nat_number_set"),
-		NEGATIVE ("negative"),
-		NEQ ("neq"),
-		NEW ("new"),
-		NON_TERMINAL_PROOF ("non_terminal_proof"),
-		NOTIN ("notin"),
-		OCTAL_NUMBER ("octal_number"),
-		ODOT ("odot"),
-		OMINUS ("ominus"),
-		OPERATOR_ARGS ("operator_args"),
-		OPERATOR_DECLARATION ("operator_declaration"),
-		OPERATOR_DEFINITION ("operator_definition"),
-		OPLUS ("oplus"),
-		OSLASH ("oslash"),
-		OTHER_ARM ("other_arm"),
-		OTIMES ("otimes"),
-		PARENTHESES ("parentheses"),
-		PCAL_ALGORITHM ("pcal_algorithm"),
-		PCAL_ALGORITHM_BODY ("pcal_algorithm_body"),
-		PCAL_ALGORITHM_START ("pcal_algorithm_start"),
-		PCAL_ASSERT ("pcal_assert"),
-		PCAL_ASSIGN ("pcal_assign"),
-		PCAL_AWAIT ("pcal_await"),
-		PCAL_DEFINITIONS ("pcal_definitions"),
-		PCAL_EITHER ("pcal_either"),
-		PCAL_GOTO ("pcal_goto"),
-		PCAL_IF ("pcal_if"),
-		PCAL_LHS ("pcal_lhs"),
-		PCAL_MACRO ("pcal_macro"),
-		PCAL_MACRO_CALL ("pcal_macro_call"),
-		PCAL_MACRO_DECL ("pcal_macro_decl"),
-		PCAL_PRINT ("pcal_print"),
-		PCAL_PROC_CALL ("pcal_proc_call"),
-		PCAL_PROC_DECL ("pcal_proc_decl"),
-		PCAL_PROC_VAR_DECL ("pcal_proc_var_decl"),
-		PCAL_PROC_VAR_DECLS ("pcal_proc_var_decls"),
-		PCAL_PROCEDURE ("pcal_procedure"),
-		PCAL_PROCESS ("pcal_process"),
-		PCAL_RETURN ("pcal_return"),
-		PCAL_SKIP ("pcal_skip"),
-		PCAL_VAR_DECL ("pcal_var_decl"),
-		PCAL_VAR_DECLS ("pcal_var_decls"),
-		PCAL_WHILE ("pcal_while"),
-		PCAL_WITH ("pcal_with"),
-		PICK_PROOF_STEP ("pick_proof_step"),
-		PLUS ("plus"),
-		PLUS_ARROW ("plus_arrow"),
-		POSTFIX_OP_SYMBOL ("postfix_op_symbol"),
-		POWERSET ("powerset"),
-		PREC ("prec"),
-		PRECEQ ("preceq"),
-		PREFIX_OP_SYMBOL ("prefix_op_symbol"),
-		PREFIXED_OP ("prefixed_op"),
-		PREV_FUNC_VAL ("prev_func_val"),
-		PROOF_STEP ("proof_step"),
-		PROOF_STEP_ID ("proof_step_id"),
-		PROOF_STEP_REF ("proof_step_ref"),
-		PROPTO ("propto"),
-		QED_STEP ("qed_step"),
-		QQ ("qq"),
-		QUANTIFIER_BOUND ("quantifier_bound"),
-		RANGLE_BRACKET ("rangle_bracket"),
-		RANGLE_BRACKET_SUB ("rangle_bracket_sub"),
-		RD_TTILE ("rd_ttile"),
-		REAL_NUMBER_SET ("real_number_set"),
-		RECORD_LITERAL ("record_literal"),
-		RECORD_VALUE ("record_value"),
-		RECURSIVE_DECLARATION ("recursive_declaration"),
-		RS_TTILE ("rs_ttile"),
-		SET_FILTER ("set_filter"),
-		SET_IN ("set_in"),
-		SET_MAP ("set_map"),
-		SET_OF_FUNCTIONS ("set_of_functions"),
-		SET_OF_RECORDS ("set_of_records"),
-		SIM ("sim"),
-		SIMEQ ("simeq"),
-		SINGLE_LINE ("single_line"),
-		SOURCE_FILE ("source_file"),
-		SQCAP ("sqcap"),
-		SQCUP ("sqcup"),
-		SQSUBSET ("sqsubset"),
-		SQSUBSETEQ ("sqsubseteq"),
-		SQSUPSET ("sqsupset"),
-		SQSUPSETEQ ("sqsupseteq"),
-		STAR ("star"),
-		STEP_EXPR_NO_STUTTER ("step_expr_no_stutter"),
-		STEP_EXPR_OR_STUTTER ("step_expr_or_stutter"),
-		STRING ("string"),
-		SUBEXPR_COMPONENT ("subexpr_component"),
-		SUBEXPR_PREFIX ("subexpr_prefix"),
-		SUBEXPR_TREE_NAV ("subexpr_tree_nav"),
-		SUBEXPRESSION ("subexpression"),
-		SUBSET ("subset"),
-		SUBSETEQ ("subseteq"),
-		SUBSTITUTION ("substitution"),
-		SUCC ("succ"),
-		SUCCEQ ("succeq"),
-		SUFFICES_PROOF_STEP ("suffices_proof_step"),
-		SUP_PLUS ("sup_plus"),
-		SUPSET ("supset"),
-		SUPSETEQ ("supseteq"),
-		TAKE_PROOF_STEP ("take_proof_step"),
-		TEMPORAL_EXISTS ("temporal_exists"),
-		TEMPORAL_FORALL ("temporal_forall"),
-		TERMINAL_PROOF ("terminal_proof"),
-		THEOREM ("theorem"),
-		TIMES ("times"),
-		TUPLE_LITERAL ("tuple_literal"),
-		TUPLE_OF_IDENTIFIERS ("tuple_of_identifiers"),
-		UNBOUNDED_QUANTIFICATION ("unbounded_quantification"),
-		UNCHANGED ("unchanged"),
-		UNION ("union"),
-		UPLUS ("uplus"),
-		USE_BODY ("use_body"),
-		USE_BODY_DEF ("use_body_def"),
-		USE_BODY_EXPR ("use_body_expr"),
-		USE_OR_HIDE ("use_or_hide"),
-		VARIABLE_DECLARATION ("variable_declaration"),
-		VERTVERT ("vertvert"),
-		WITNESS_PROOF_STEP ("witness_proof_step"),
-		WR ("wr"),
-		AMP ("amp"),
-		AMPAMP ("ampamp"),
-		ASTERISK ("asterisk"),
-		BOOLEAN_SET ("boolean_set"),
-		COMMENT ("comment"),
-		COMPOSE ("compose"),
-		DOL ("dol"),
-		DOLDOL ("doldol"),
-		EXTRAMODULAR_TEXT ("extramodular_text"),
-		FORMAT ("format"),
-		GT ("gt"),
-		HASHHASH ("hashhash"),
-		IDENTIFIER ("identifier"),
-		IDENTIFIER_REF ("identifier_ref"),
-		MAP_FROM ("map_from"),
-		MAP_TO ("map_to"),
-		MINUSMINUS ("minusminus"),
-		MOD ("mod"),
-		MODMOD ("modmod"),
-		MUL ("mul"),
-		MULMUL ("mulmul"),
-		NAME ("name"),
-		PCAL_END_EITHER ("pcal_end_either"),
-		PCAL_END_IF ("pcal_end_if"),
-		PCAL_END_WHILE ("pcal_end_while"),
-		PCAL_END_WITH ("pcal_end_with"),
-		PLACEHOLDER ("placeholder"),
-		PLUSPLUS ("plusplus"),
-		POW ("pow"),
-		POWPOW ("powpow"),
-		PRIME ("prime"),
-		REAL_NUMBER ("real_number"),
-		SETMINUS ("setminus"),
-		SLASH ("slash"),
-		SLASHSLASH ("slashslash"),
-		STRING_SET ("string_set"),
-		SUP_HASH ("sup_hash"),
-		VALUE ("value"),
-		VERT ("vert");
+/**
+ * Handles the translation of raw SANY output to the test file AST DSL.
+ */
+public class SanyTranslator {	
 
-		/**
-		 * The node kind name as found in the unparsed AST.
-		 */
-		public final String name;
+	private static class SanyReparser {
+
+		private SyntaxTreeNode[] nodes;
+
+		private int current;
+
+		public SanyReparser(SyntaxTreeNode[] nodes, int start) {
+			this.nodes = nodes;
+			this.current = start;
+		}
 		
-		/**
-		 * A static map from node kind name to enum to avoid linear lookups.
-		 */
-		private static final Map<String, AstNodeKind> nameMap = new HashMap<String, AstNodeKind>();
+		public SanyReparser lookahead() {
+			return new SanyReparser(this.nodes, this.current);
+		}
 		
-		/**
-		 * Tracks node kinds that go unused; useful for identifying gaps in testing.
-		 */
-		private static final Set<AstNodeKind> unused = new HashSet<AstNodeKind>();
+		public void merge(SanyReparser lookahead) {
+			this.current = lookahead.current;
+		}
 		
-		/**
-		 * Initialize the static maps on class load.
-		 */
-		static {
-			for (AstNodeKind k : AstNodeKind.values()) {
-				AstNodeKind.nameMap.put(k.name, k);
+		public boolean isAtEnd() {
+			return this.current == this.nodes.length;
+		}
+
+		private int previous() {
+			return this.nodes[this.current - 1].getKind();
+		}
+		
+		private int advance() {
+			if (!this.isAtEnd()) {
+				this.current++;
 			}
-			
-			AstNodeKind.unused.addAll(AstNodeKind.nameMap.values());
+			return this.previous();
 		}
 		
-		/**
-		 * Private constructor for the enum so it can have a string field.
-		 * 
-		 * @param name The node kind name as found in the unparsed AST.
-		 */
-		private AstNodeKind(String name) {
-			this.name = name;
+		public SyntaxTreeNode peekNode() {
+			return this.nodes[this.current];
 		}
 		
-		/**
-		 * Get list of unused AST node kinds; useful for identifying gaps in testing.
-		 * 
-		 * @return The list of AST node kinds that were never constructed during parsing.
-		 */
-		public static List<AstNodeKind> getUnused() {
-			return new ArrayList<AstNodeKind>(AstNodeKind.unused);
+		public int peek() {
+			return this.peekNode().getKind();
+		}
+
+		public boolean check(int kind) {
+			return !this.isAtEnd() && this.peek() == kind;
 		}
 		
-		/**
-		 * Gets the AST node kind enum from the unparsed AST string.
-		 * 
-		 * @param text The node kind name from the unparsed AST string.
-		 * @return An enum corresponding to the given node kind name.
-		 * @throws ParseException If no such node kind name is found.
-		 */
-		public static AstNodeKind fromString(String text) throws ParseException {
-			if (AstNodeKind.nameMap.containsKey(text)) {
-				AstNodeKind kind = AstNodeKind.nameMap.get(text);
-				AstNodeKind.unused.remove(kind);
-				return kind;
-			} else {
-				throw new ParseException(String.format("Could not find node %s", text), 0);
+		public boolean match(int... kinds) {
+			for (int kind : kinds) {
+				if (check(kind)) {
+					advance();
+					return true;
+				}
 			}
+		
+			return false;
 		}
 		
-		/**
-		 * Quickly creates an AST node of this kind.
-		 * 
-		 * @return An AST node of this kind.
-		 */
-		public AstNode asNode() {
-			return new AstNode(this);
+		public int consume(int kind, String errorMessage) throws ParseException {
+			if (check(kind)) return advance();
+			throw new ParseException(errorMessage, this.current);
 		}
 	}
 	
-	/**
-	 * An abstract syntax tree (AST) node defining a parse tree.
-	 */
-	public static class AstNode {
-		/**
-		 * The kind of the AST node.
-		 */
-		public final AstNodeKind kind;
-		
-		/**
-		 * List of both named & unnamed children, in order of appearance.
-		 */
-		public final List<AstNode> children;
-		
-		/**
-		 * List of named children in order of appearance.
-		 */
-		public final Map<String, AstNode> fields;
-		
-		/**
-		 * Index to quickly check whether a child is named or not, and get its
-		 * field name if so.
-		 */
-		private final Map<AstNode, String> fieldNames;
-
-		/**
-		 * Constructs an AST node.
-		 * 
-		 * @param kind The kind of the AST node.
-		 * @param children The children of the AST node.
-		 * @param fields The named field children of the AST node.
-		 */
-		public AstNode(AstNodeKind kind, List<AstNode> children, Map<String, AstNode> fields) {
-			this.kind = kind;
-			this.children = children;
-			this.fields = fields;
-			HashMap<AstNode, String> fieldNames = new HashMap<AstNode, String>();
-			for (Map.Entry<String, AstNode> entry : this.fields.entrySet()) {
-				fieldNames.put(entry.getValue(), entry.getKey());
-			}
-			this.fieldNames = fieldNames;
-		}
-		
-		/**
-		 * Constructs an AST node with no fields.
-		 * 
-		 * @param kind The kind of the AST node.
-		 * @param children The children of the AST node.
-		 */
-		public AstNode(AstNodeKind kind, List<AstNode> children) {
-			this(kind, children, new HashMap<String, AstNode>());
-		}
-		
-		/**
-		 * Constructs an AST node with no children or fields.
-		 * 
-		 * @param kind The kind of the AST node.
-		 */
-		public AstNode(AstNodeKind kind) {
-			this(kind, new ArrayList<AstNode>());
-		}
-		
-		/**
-		 * Adds a child to this AST node.
-		 * 
-		 * @param child The child to add.
-		 * @return This AST node for function chaining purposes.
-		 */
-		public AstNode addChild(AstNode child) {
-			this.children.add(child);
-			return this;
-		}
-		
-		/**
-		 * Adds multiple children to this AST node.
-		 * 
-		 * @param children The children to add.
-		 * @return This AST node for function chaining purposes.
-		 */
-		public AstNode addChildren(List<AstNode> children) {
-			this.children.addAll(children);
-			return this;
-		}
-		
-		/**
-		 * Adds a field to this AST node.
-		 * 
-		 * @param name The name of the field to add.
-		 * @param child The child to add for that field name.
-		 * @return This AST node for function chaining purposes.
-		 */
-		public AstNode addField(String name, AstNode child) {
-			this.children.add(child);
-			this.fields.put(name, child);
-			this.fieldNames.put(child, name);
-			return this;
-		}
-		
-		/**
-		 * Builds a string representation of the subtree using a StringBuilder.
-		 * 
-		 * @param sb The StringBuilder onto which to append output.
-		 */
-		private void toString(StringBuilder sb) {
-			sb.append('(');
-			sb.append(this.kind.name);
-			if (!this.children.isEmpty()) {
-				sb.append(' ');
-			}
-			for (int i = 0; i < this.children.size(); i++) {
-				AstNode child = this.children.get(i);
-				if (this.fieldNames.containsKey(child)) {
-					sb.append(this.fieldNames.get(child));
-					sb.append(": ");
-					child.toString(sb);
-				} else {
-					child.toString(sb);
-				}
-				if (i < this.children.size() - 1) {
-					sb.append(' ');
-				}
-			}
-			sb.append(')');
-		}
-		
-		/**
-		 * Dumps the AST node subtree to a string. Useful for debugging. The
-		 * inverse of the parse function.
-		 * 
-		 * @return String representation of this AST subtree.
-		 */
-		public String toString() {
-			StringBuilder sb = new StringBuilder();
-			this.toString(sb);
-			return sb.toString();
-		}
-		
-		/**
-		 * Test the subtree of the given AST node for equality with this one.
-		 * 
-		 * @param other The AST node to test for equality.
-		 */
-		public void testEquality(AstNode other) {
-			Assert.assertEquals(this.kind, other.kind);
-			Assert.assertEquals(this.children.size(), other.children.size());
-			for (int i = 0; i < this.children.size(); i++) {
-				AstNode thisChild = this.children.get(i);
-				AstNode otherChild = other.children.get(i);
-				if (this.fieldNames.containsKey(thisChild)) {
-					Assert.assertEquals(this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
-				}
-				thisChild.testEquality(otherChild);
-			}
-		}
+	private static List<AstNode> parseCommaSeparatedIds(SanyReparser parser) throws ParseException {
+		List<AstNode> ids = new ArrayList<AstNode>();
+		do {
+			parser.consume(TLAplusParserConstants.IDENTIFIER, "Expected identifier");
+			ids.add(Kind.IDENTIFIER.asNode());
+		} while (parser.match(TLAplusParserConstants.COMMA));
+		return ids;
 	}
 	
-	/**
-	 * Mutable class tracking parser state to avoid string copies.
-	 */
-	private static class ParserState {
-		/**
-		 * The parser's current index in the string.
-		 */
-		public int i;
-		
-		/**
-		 * The unparsed input string.
-		 */
-		public final String input;
-		
-		/**
-		 * Whether to log each character consumed.
-		 */
-		private final boolean log;
-		
-		/**
-		 * Initializes the parser state with the input string.
-		 * 
-		 * @param input The string to parse.
-		 * @param log Whether to log each consumed char.
-		 */
-		public ParserState(String input, boolean log) {
-			this.i = 0;
-			this.input = input;
-			this.log = log;
-		}
-		
-		/**
-		 * Whether the input has been fully consumed.
-		 * 
-		 * @return True if there is no input remaining.
-		 */
-		public boolean isEof() {
-			return i >= input.length();
-		}
-
-		/**
-		 * Consumes input until encountering a non-whitespace char.
-		 */
-		public void consumeWhitespace() {
-			while (!this.isEof() && Character.isWhitespace(input.charAt(i))) {
-				this.consume();
-			}
-		}
-		
-		/**
-		 * Whether the current char is the given char.
-		 * 
-		 * @param c The char to check.
-		 * @return True if not EOF and char matches.
-		 */
-		public boolean matches(char c) {
-			return !this.isEof() && input.charAt(i) == c;
-		}
-		
-		/**
-		 * Consumes the current char without any checks. Possibly logs this act.
-		 * 
-		 * @return The consumed char.
-		 */
-		private char consume() {
-			char c = input.charAt(i);
-			if (this.log) {
-				System.out.println(c);
-			}
-			i++;
-			return c;
-		}
-		
-		/**
-		 * Consume the current char if it is as expected.
-		 * 
-		 * @param c The expected char.
-		 * @return Whether the current char was consumed.
-		 */
-		public boolean consumeIf(char c) {
-			if (this.matches(c)) {
-				this.consume();
-				return true;
-			} else {
-				return false;
-			}
-		}
-		
-		/**
-		 * Whether the current char is an identifier char.
-		 * 
-		 * @return True if it is an identifier char.
-		 */
-		public boolean isIdentifierChar() {
-			return !this.isEof() && (Character.isLetter(input.charAt(i)) || input.charAt(i) == '_');
-		}
-		
-		/**
-		 * Consumes the upcoming identifier then returns it as a string.
-		 * 
-		 * @return The consumed identifier.
-		 */
-		public String consumeIdentifier() {
-			StringBuilder sb = new StringBuilder();
-			while (this.isIdentifierChar()) {
-				sb.append(this.consume());
-			}
-			
-			return sb.toString();
-		}
-		
-		/**
-		 * Constructs an appropriate parse exception for the current position.
-		 * 
-		 * @param expected The char or element that was expected instead.
-		 * @return A relatively informative parse exception to throw.
-		 */
-		public ParseException error(String expected) {
-			if (this.isEof()) {
-				return new ParseException(String.format("Unexpected EOF; expected %s: %s", expected, input), i);
-			} else {
-				return new ParseException(String.format("Unexpected char %c; expected %s at index %d: %s", input.charAt(i), expected, i, input), i);
-			}
-		}
+	private static AstNode parseTupleOfIdentifiers(SanyReparser parser) throws ParseException {
+		AstNode tuple = Kind.TUPLE_OF_IDENTIFIERS.asNode();
+		parser.consume(TLAplusParserConstants.LAB, "Expected <<");
+		tuple.addChild(Kind.LANGLE_BRACKET.asNode());
+		tuple.addChildren(parseCommaSeparatedIds(parser));
+		parser.consume(TLAplusParserConstants.RAB, "Expected >>");
+		tuple.addChild(Kind.RANGLE_BRACKET.asNode());
+		return tuple;
 	}
 	
-	/**
-	 * Performs the actual parsing of the AST DSL by mutating a parser state
-	 * in place. Thankfully S-expressions are easy to parse in a single
-	 * recursive function.
-	 * 
-	 * @param s Parser state holding the input string and current index.
-	 * @return Root node of the AST subtree at this point in the input.
-	 * @throws ParseException If invalid S-expression syntax is encountered.
-	 */
-	private static AstNode parseAst(ParserState s) throws ParseException {
-		s.consumeWhitespace();
-		// Looking for ex. (source_file ...)
-		if (s.consumeIf('(')) {
-			s.consumeWhitespace();
-			if (!s.isIdentifierChar()) {
-				throw s.error("Identifier Char");
-			}
-			AstNodeKind kind = AstNodeKind.fromString(s.consumeIdentifier());
-			List<AstNode> children = new ArrayList<AstNode>();
-			Map<String, AstNode> fields = new HashMap<String, AstNode>();
-			s.consumeWhitespace();
-			while (!s.isEof() && !s.matches(')')) {
-				if (s.matches('(')) {
-					// Found unnamed child ex. (source_file (module ... ))
-					children.add(parseAst(s));
-				} else if (s.isIdentifierChar()) {
-					// Found named field child ex. (bound_op name: (...) ...)
-					String fieldName = s.consumeIdentifier();
-					s.consumeWhitespace();
-					if (s.consumeIf(':')) {
-						s.consumeWhitespace();
-						if (s.matches('(')) {
-							// Recurse to get actual named child
-							AstNode namedChild = parseAst(s);
-							fields.put(fieldName, namedChild);
-							children.add(namedChild);
-						} else {
-							throw s.error("(");
-						}
-					} else {
-						throw s.error(":");
-					}
-				} else {
-					throw s.error("(");
-				}
-				s.consumeWhitespace();
-			}
-			
-			if (!s.consumeIf(')')) {
-				throw s.error(")");
-			}
-			
-			return new AstNode(kind, children, fields);
+	private static AstNode parseQuantifierBound(SanyReparser parser) throws ParseException {
+		AstNode bound = Kind.QUANTIFIER_BOUND.asNode();
+		if (parser.check(TLAplusParserConstants.LAB)) {
+			bound.addChild(parseTupleOfIdentifiers(parser));
+		} else if (parser.check(TLAplusParserConstants.IDENTIFIER)) {
+			bound.addChildren(parseCommaSeparatedIds(parser));
 		} else {
-			throw s.error("(");
+			throw new ParseException(String.format("Failed to parse quantifier bound %d", parser.peek()), parser.current);
 		}
+		parser.consume(SyntaxTreeConstants.T_IN, "Expected \\in");
+		bound.addChild(Kind.SET_IN.asNode());
+		bound.addField("set", translate(parser.peekNode()));
+		return bound;
 	}
-	
-	/**
-	 * Parse the given S-expression string into an abstract syntax tree.
-	 * 
-	 * @param input The S-expression in string form.
-	 * @return Root node of the AST.
-	 * @throws ParseException If invalid S-expression syntax is encountered.
-	 */
-	public static AstNode parseAst(String input) throws ParseException {
-		return parseAst(new ParserState(input, false));
-	}
-	
-	public static void printSanyParseTree(TLAplusParser sanyTree) {
-		PrintWriter out = new PrintWriter(System.out);
-		SyntaxTreePrinter.print(sanyTree, out);
-		out.flush();
+
+	private static List<AstNode> parseBoundOrIdentifierList(SanyReparser parser) throws ParseException {
+		List<AstNode> children = new ArrayList<AstNode>();
+		// Try to parse comma-separated list of quantifier bounds
+		SanyReparser lookahead = parser.lookahead();
+		try {
+			do {
+				children.add(parseQuantifierBound(lookahead));
+			} while (lookahead.match(TLAplusParserConstants.COMMA));
+			parser.merge(lookahead);
+			return children;
+		} catch (ParseException e) {
+			// It must be a list of identifiers instead
+			children.addAll(parseCommaSeparatedIds(parser));
+			return children;
+		}
 	}
 	
 	private static List<AstNode> repeat(SyntaxTreeNode node) throws ParseException {
@@ -749,13 +151,13 @@ public class AstDsl {
 					break;
 				}
 				case TLAplusParserConstants.MODULE: {
-					moduleRef = AstNodeKind.MODULE_REF.asNode();
+					moduleRef = Kind.MODULE_REF.asNode();
 					break;
 				} case TLAplusParserConstants.IDENTIFIER: {
 					if (null == moduleRef) {
-						useBodyExpr.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+						useBodyExpr.addChild(Kind.IDENTIFIER_REF.asNode());
 					} else {
-						moduleRef.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+						moduleRef.addChild(Kind.IDENTIFIER_REF.asNode());
 						useBodyExpr.addChild(moduleRef);
 						moduleRef = null;
 					}
@@ -781,19 +183,19 @@ public class AstDsl {
 	 * @throws ParseException
 	 */
 	private static AstNode parseUseBody(SyntaxTreeNode[] heirs, int offset) throws ParseException {
-		AstNode useBody = AstNodeKind.USE_BODY.asNode();
+		AstNode useBody = Kind.USE_BODY.asNode();
 		if (heirs[offset].isKind(TLAplusParserConstants.ONLY)) {
 			offset++;
 		}
 		if (!heirs[offset].isKind(TLAplusParserConstants.DF)) {
-			AstNode useBodyExpr = AstNodeKind.USE_BODY_EXPR.asNode();
+			AstNode useBodyExpr = Kind.USE_BODY_EXPR.asNode();
 			useBody.addChild(useBodyExpr);
 			offset = parseUseBodyDefs(heirs, offset, useBodyExpr);
 		}
 		if (offset < heirs.length) { 
 			Assert.assertEquals(TLAplusParserConstants.DF, heirs[offset].getKind());
 			offset++;
-			AstNode useBodyDef = AstNodeKind.USE_BODY_DEF.asNode();
+			AstNode useBodyDef = Kind.USE_BODY_DEF.asNode();
 			useBody.addChild(useBodyDef);
 			offset = parseUseBodyDefs(heirs, offset, useBodyDef);
 		}
@@ -801,15 +203,25 @@ public class AstDsl {
 	}
 	
 	private static AstNode parseAssumeProve(SyntaxTreeNode[] heirs, int offset) throws ParseException {
-		AstNode assumeProve = AstNodeKind.ASSUME_PROVE.asNode();
+		AstNode assumeProve = Kind.ASSUME_PROVE.asNode();
 		return assumeProve;
+	}
+	
+	private static AstNode parseProofStepId(SyntaxTreeNode node) {
+		Assert.assertTrue(
+			node.isKind(TLAplusParserConstants.ProofStepLexeme)
+			|| node.isKind(TLAplusParserConstants.ProofStepDotLexeme));
+		AstNode proofStepId = Kind.PROOF_STEP_ID.asNode();
+		proofStepId.addChild(Kind.LEVEL.asNode());
+		proofStepId.addChild(Kind.NAME.asNode());
+		return proofStepId;
 	}
 	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
 		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
-			case "TRUE": return AstNodeKind.BOOLEAN.asNode();
-			default: return AstNodeKind.IDENTIFIER_REF.asNode();
+			case "TRUE": return Kind.BOOLEAN.asNode();
+			default: return Kind.IDENTIFIER_REF.asNode();
 		}
 	}
 	
@@ -822,7 +234,7 @@ public class AstDsl {
 	 */
 	private static AstNode prefixOpFromString(String op) throws ParseException {
 		switch (op) {
-			case "SUBSET": return AstNodeKind.POWERSET.asNode();
+			case "SUBSET": return Kind.POWERSET.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -836,15 +248,15 @@ public class AstDsl {
 	 */
 	private static AstNode infixOpFromString(String op) throws ParseException {
 		switch (op) {
-			case "\\/": return AstNodeKind.LOR.asNode();
-			case "+": return AstNodeKind.PLUS.asNode();
-			case "-": return AstNodeKind.MINUS.asNode();
-			case "*": return AstNodeKind.MUL.asNode();
-			case "/": return AstNodeKind.SLASH.asNode();
-			case "=": return AstNodeKind.EQ.asNode();
-			case ">": return AstNodeKind.GT.asNode();
-			case "=<": return AstNodeKind.LEQ.asNode();
-			case "\\in": return AstNodeKind.IN.asNode();
+			case "\\/": return Kind.LOR.asNode();
+			case "+": return Kind.PLUS.asNode();
+			case "-": return Kind.MINUS.asNode();
+			case "*": return Kind.MUL.asNode();
+			case "/": return Kind.SLASH.asNode();
+			case "=": return Kind.EQ.asNode();
+			case ">": return Kind.GT.asNode();
+			case "=<": return Kind.LEQ.asNode();
+			case "\\in": return Kind.IN.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -908,7 +320,7 @@ public class AstDsl {
 			case SyntaxTreeConstants.N_IdentLHS: { // f ==, f(a, b) ==, etc.
 				Assert.assertTrue(heirs.length >= 1);
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
-				parent.addField("name", AstNodeKind.IDENTIFIER.asNode());
+				parent.addField("name", Kind.IDENTIFIER.asNode());
 				if (heirs.length > 1) {
 					Assert.assertEquals(TLAplusParserConstants.LBR, heirs[1].getKind());
 					parent.addChildren(commaSeparated(chop(heirs, 2)));
@@ -916,9 +328,8 @@ public class AstDsl {
 				}
 				return;
 			} case SyntaxTreeConstants.N_QEDStep: {
-				if (heirs.length > 0) {
-					Assert.fail();
-				}
+				Assert.assertEquals(1, heirs.length);
+				Assert.assertEquals(TLAplusParserConstants.QED, heirs[0].getKind());
 				return;
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
@@ -953,7 +364,7 @@ public class AstDsl {
 		SyntaxTreeNode[] heirs = node.getHeirs();
 		switch (node.getKind()) {
 			case SyntaxTreeConstants.N_Module: { // ---- MODULE Test ---- ... ====
-				AstNode module = AstNodeKind.MODULE.asNode();
+				AstNode module = Kind.MODULE.asNode();
 				Assert.assertEquals(4, heirs.length);
 				Assert.assertEquals(SyntaxTreeConstants.N_BeginModule, heirs[0].getKind());
 				SyntaxTreeNode header = heirs[0];
@@ -961,11 +372,11 @@ public class AstDsl {
 				Assert.assertEquals(3, headerHeirs.length);
 				int kind = headerHeirs[0].getKind();
 				Assert.assertTrue(kind == TLAplusParserConstants._BM0 || kind == TLAplusParserConstants._BM1);
-				module.addChild(AstNodeKind.HEADER_LINE.asNode());
+				module.addChild(Kind.HEADER_LINE.asNode());
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, headerHeirs[1].getKind());
-				module.addField("name", AstNodeKind.IDENTIFIER.asNode());
+				module.addField("name", Kind.IDENTIFIER.asNode());
 				Assert.assertEquals(TLAplusParserConstants.SEPARATOR, headerHeirs[2].getKind());
-				module.addChild(AstNodeKind.HEADER_LINE.asNode());
+				module.addChild(Kind.HEADER_LINE.asNode());
 				Assert.assertEquals(SyntaxTreeConstants.N_Extends, heirs[1].getKind());
 				module.addChildren(repeat(heirs[1]));
 				Assert.assertEquals(SyntaxTreeConstants.N_Body, heirs[2].getKind());
@@ -976,16 +387,16 @@ public class AstDsl {
 			} case SyntaxTreeConstants.N_EndModule: { // ====
 				Assert.assertEquals(1, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.END_MODULE, heirs[0].getKind());
-				return AstNodeKind.DOUBLE_LINE.asNode();
+				return Kind.DOUBLE_LINE.asNode();
 			} case TLAplusParserConstants.SEPARATOR: { // ----
-				return AstNodeKind.SINGLE_LINE.asNode();
+				return Kind.SINGLE_LINE.asNode();
 			} case SyntaxTreeConstants.N_VariableDeclaration: { // VARIABLES x, y, z
-				AstNode variables = AstNodeKind.VARIABLE_DECLARATION.asNode();
+				AstNode variables = Kind.VARIABLE_DECLARATION.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.VARIABLE, heirs[0].getKind());
 				for (int i = 1; i < heirs.length; i += 2) {
 					Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[i].getKind());
-					variables.addChild(AstNodeKind.IDENTIFIER.asNode());
+					variables.addChild(Kind.IDENTIFIER.asNode());
 					if (i + 1 < heirs.length) {
 						Assert.assertEquals(TLAplusParserConstants.COMMA, heirs[i+1].getKind());
 					}
@@ -997,45 +408,45 @@ public class AstDsl {
 					Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[0].getKind());
 					return translate(heirs[0]);
 				} else {
-					AstNode localDefn = AstNodeKind.LOCAL_DEFINITION.asNode();
+					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
 					Assert.assertEquals(TLAplusParserConstants.LOCAL, heirs[0].getKind());
 					Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[1].getKind());
 					localDefn.addChild(translate(heirs[1]));
 					return localDefn;
 				}
 			} case SyntaxTreeConstants.N_NonLocalInstance: { // INSTANCE M WITH a <- b, c <- d
-				AstNode instance = AstNodeKind.INSTANCE.asNode();
+				AstNode instance = Kind.INSTANCE.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.INSTANCE, heirs[0].getKind());
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
-				instance.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+				instance.addChild(Kind.IDENTIFIER_REF.asNode());
 				if (heirs.length > 2) {
 					Assert.assertEquals(TLAplusParserConstants.WITH, heirs[2].getKind());
 					instance.addChildren(commaSeparated(Arrays.copyOfRange(heirs, 3, heirs.length)));
 				}
 				return instance;
 			} case SyntaxTreeConstants.N_ModuleDefinition: {
-				AstNode moduleDefinition = AstNodeKind.MODULE_DEFINITION.asNode();
+				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
 				Assert.assertEquals(3, heirs.length);
 				Assert.assertEquals(SyntaxTreeConstants.N_IdentLHS, heirs[0].getKind());
 				flatTranslate(moduleDefinition, heirs[0]);
 				Assert.assertEquals(TLAplusParserConstants.DEF, heirs[1].getKind());
-				moduleDefinition.addChild(AstNodeKind.DEF_EQ.asNode());
+				moduleDefinition.addChild(Kind.DEF_EQ.asNode());
 				Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[2].getKind());
 				moduleDefinition.addChild(translate(heirs[2]));
 				return moduleDefinition;
 			} case SyntaxTreeConstants.N_Substitution: {
-				AstNode substitution = AstNodeKind.SUBSTITUTION.asNode();
+				AstNode substitution = Kind.SUBSTITUTION.asNode();
 				Assert.assertEquals(3, heirs.length);
 				// heirs[0] is some identifier or prefix/infix/postfix op
 				substitution.addChild(translate(heirs[0]));
 				Assert.assertEquals(TLAplusParserConstants.SUBSTITUTE, heirs[1].getKind());
-				substitution.addChild(AstNodeKind.GETS.asNode());
+				substitution.addChild(Kind.GETS.asNode());
 				// heirs[2] is some operator or expression
 				substitution.addChild(translate(heirs[2]));
 				return substitution;
 			} case SyntaxTreeConstants.N_OperatorDefinition: { // ex. op(a, b) == expr
-				AstNode operatorDefinition = AstNodeKind.OPERATOR_DEFINITION.asNode();
+				AstNode operatorDefinition = Kind.OPERATOR_DEFINITION.asNode();
 				Assert.assertEquals(3, heirs.length);
 				switch (heirs[0].getKind()) {
 					case SyntaxTreeConstants.N_IdentLHS: {
@@ -1060,11 +471,11 @@ public class AstDsl {
 				Assert.assertTrue(heirs.length >= 1);
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
 				if (1 == heirs.length) {
-					return AstNodeKind.IDENTIFIER.asNode();
+					return Kind.IDENTIFIER.asNode();
 				} else {
 					Assert.assertTrue(heirs.length >= 4);
-					AstNode opDeclaration = AstNodeKind.OPERATOR_DECLARATION.asNode();
-					opDeclaration.addField("name", AstNodeKind.IDENTIFIER.asNode());
+					AstNode opDeclaration = Kind.OPERATOR_DECLARATION.asNode();
+					opDeclaration.addField("name", Kind.IDENTIFIER.asNode());
 					Assert.assertEquals(TLAplusParserConstants.LBR, heirs[1].getKind());
 					// TODO: test multiple placeholders
 					opDeclaration.addChildren(commaSeparated(chop(heirs, 2)));
@@ -1072,7 +483,7 @@ public class AstDsl {
 					return opDeclaration;
 				}
 			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
-				AstNode recursiveDeclaration = AstNodeKind.RECURSIVE_DECLARATION.asNode();
+				AstNode recursiveDeclaration = Kind.RECURSIVE_DECLARATION.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.RECURSIVE, heirs[0].getKind());
 				Assert.assertEquals(SyntaxTreeConstants.N_IdentDecl, heirs[1].getKind());
@@ -1080,37 +491,37 @@ public class AstDsl {
 				// TODO: test comma-separated recursive declarations
 				return recursiveDeclaration;
 			} case TLAplusParserConstants.US: {
-				return AstNodeKind.PLACEHOLDER.asNode();
+				return Kind.PLACEHOLDER.asNode();
 			} case TLAplusParserConstants.DEF: { // ==
 				Assert.assertEquals(0, heirs.length);
-				return AstNodeKind.DEF_EQ.asNode();
+				return Kind.DEF_EQ.asNode();
 			} case SyntaxTreeConstants.N_ConjList: { // Multi-line aligned conjunction list
-				AstNode conjList = AstNodeKind.CONJ_LIST.asNode();
+				AstNode conjList = Kind.CONJ_LIST.asNode();
 				for (SyntaxTreeNode heir : heirs) {
 					Assert.assertEquals(SyntaxTreeConstants.N_ConjItem, heir.getKind());
 					conjList.addChild(translate(heir));
 				}
 				return conjList;
 			} case SyntaxTreeConstants.N_ConjItem: { // /\ expr
-				AstNode conjItem = AstNodeKind.CONJ_ITEM.asNode();
+				AstNode conjItem = Kind.CONJ_ITEM.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.AND, heirs[0].getKind());
-				conjItem.addChild(AstNodeKind.BULLET_CONJ.asNode());
+				conjItem.addChild(Kind.BULLET_CONJ.asNode());
 				// heirs[1] is of indeterminate expression type
 				conjItem.addChild(translate(heirs[1]));
 				return conjItem;
 			} case SyntaxTreeConstants.N_DisjList: { // Multi-line aligned disjunction list
-				AstNode disjList = AstNodeKind.DISJ_LIST.asNode();
+				AstNode disjList = Kind.DISJ_LIST.asNode();
 				for (SyntaxTreeNode heir : heirs) {
 					Assert.assertEquals(SyntaxTreeConstants.N_DisjItem, heir.getKind());
 					disjList.addChild(translate(heir));
 				}
 				return disjList;
 			} case SyntaxTreeConstants.N_DisjItem: { // \/ expr
-				AstNode disjItem = AstNodeKind.DISJ_ITEM.asNode();
+				AstNode disjItem = Kind.DISJ_ITEM.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.OR, heirs[0].getKind());
-				disjItem.addChild(AstNodeKind.BULLET_DISJ.asNode());
+				disjItem.addChild(Kind.BULLET_DISJ.asNode());
 				// heirs[1] is of indeterminate expression type
 				disjItem.addChild(translate(heirs[1]));
 				return disjItem;
@@ -1121,7 +532,7 @@ public class AstDsl {
 				SyntaxTreeNode[] prefix = heirs[0].getHeirs();
 				AstNode prefixedOp = null;
 				if (0 != prefix.length) {
-					prefixedOp = AstNodeKind.PREFIXED_OP.asNode();
+					prefixedOp = Kind.PREFIXED_OP.asNode();
 					prefixedOp.addField("prefix", translate(heirs[0]));
 				}
 
@@ -1131,7 +542,7 @@ public class AstDsl {
 						op = translate(heirs[1]);
 						break;
 					} case SyntaxTreeConstants.N_InfixOp: {
-						op = AstNodeKind.INFIX_OP_SYMBOL.asNode()
+						op = Kind.INFIX_OP_SYMBOL.asNode()
 								.addChild(translate(heirs[1]));
 						break;
 					} default: {
@@ -1141,7 +552,7 @@ public class AstDsl {
 				
 				return prefixedOp == null ? op : prefixedOp.addField("op", op);
 			} case SyntaxTreeConstants.N_IdPrefix: {
-				AstNode subexpr = AstNodeKind.SUBEXPR_PREFIX.asNode();
+				AstNode subexpr = Kind.SUBEXPR_PREFIX.asNode();
 				Assert.assertTrue(heirs.length > 0);
 				for (SyntaxTreeNode heir : heirs) {
 					subexpr.addChild(translate(heir));
@@ -1151,8 +562,8 @@ public class AstDsl {
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
 				Assert.assertEquals(TLAplusParserConstants.BANG, heirs[1].getKind());
-				return AstNodeKind.SUBEXPR_COMPONENT.asNode()
-						.addChild(AstNodeKind.IDENTIFIER_REF.asNode());
+				return Kind.SUBEXPR_COMPONENT.asNode()
+						.addChild(Kind.IDENTIFIER_REF.asNode());
 			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
 				Assert.assertEquals(0, heirs.length);
 				return id(node);
@@ -1161,19 +572,19 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.NUMBER_LITERAL, heirs[0].getKind());
 				String image = heirs[0].image.toString();
 				if (image.matches("\\d+")) {
-					return AstNodeKind.NAT_NUMBER.asNode();
+					return Kind.NAT_NUMBER.asNode();
 				} else if (image.matches("\\\\[bB][0|1]+")) {
-					return AstNodeKind.BINARY_NUMBER.asNode()
-							.addChild(AstNodeKind.FORMAT.asNode())
-							.addChild(AstNodeKind.VALUE.asNode());
+					return Kind.BINARY_NUMBER.asNode()
+							.addChild(Kind.FORMAT.asNode())
+							.addChild(Kind.VALUE.asNode());
 				} else if (image.matches("\\\\[oO][0-7]+")) {
-					return AstNodeKind.OCTAL_NUMBER.asNode()
-							.addChild(AstNodeKind.FORMAT.asNode())
-							.addChild(AstNodeKind.VALUE.asNode());
+					return Kind.OCTAL_NUMBER.asNode()
+							.addChild(Kind.FORMAT.asNode())
+							.addChild(Kind.VALUE.asNode());
 				} else if (image.matches("\\\\[hH][0-9a-fA-F]+")) {
-					return AstNodeKind.HEX_NUMBER.asNode()
-							.addChild(AstNodeKind.FORMAT.asNode())
-							.addChild(AstNodeKind.VALUE.asNode());
+					return Kind.HEX_NUMBER.asNode()
+							.addChild(Kind.FORMAT.asNode())
+							.addChild(Kind.VALUE.asNode());
 				} else {
 					throw new ParseException(String.format("Invalid number literal format %s", image), 0);
 				}
@@ -1182,9 +593,9 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.NUMBER_LITERAL, heirs[0].getKind());
 				Assert.assertEquals(TLAplusParserConstants.DOT, heirs[1].getKind());
 				Assert.assertEquals(TLAplusParserConstants.NUMBER_LITERAL, heirs[2].getKind());
-				return AstNodeKind.REAL_NUMBER.asNode();
+				return Kind.REAL_NUMBER.asNode();
 			} case SyntaxTreeConstants.N_String: { // ex. "foobar"
-				AstNode string = AstNodeKind.STRING.asNode();
+				AstNode string = Kind.STRING.asNode();
 				Assert.assertEquals(0, heirs.length);
 				System.out.println(node.image);
 				int[] codepoints = node.image.toString().codePoints().toArray();
@@ -1196,12 +607,12 @@ public class AstDsl {
 						continue;
 					}
 					if (c == '\\' || c == '\'' || c == '\"' || c == '\n' || c == '\r' || c == '\t') {
-						string.addChild(AstNodeKind.ESCAPE_CHAR.asNode());
+						string.addChild(Kind.ESCAPE_CHAR.asNode());
 					}
 				}
 				return string;
 			} case SyntaxTreeConstants.N_Tuple: { // ex. <<1, 2, 3>>
-				AstNode tuple = AstNodeKind.TUPLE_LITERAL.asNode();
+				AstNode tuple = Kind.TUPLE_LITERAL.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.LAB, heirs[0].getKind());
 				tuple.addChild(translate(heirs[0]));
@@ -1211,47 +622,48 @@ public class AstDsl {
 				return tuple;
 			} case TLAplusParserConstants.LAB: { // <<
 				Assert.assertEquals(0, heirs.length);
-				return AstNodeKind.LANGLE_BRACKET.asNode();
+				return Kind.LANGLE_BRACKET.asNode();
 			} case TLAplusParserConstants.RAB: { // >>
 				Assert.assertEquals(0, heirs.length);
-				return AstNodeKind.RANGLE_BRACKET.asNode();
+				return Kind.RANGLE_BRACKET.asNode();
 			} case SyntaxTreeConstants.N_SetEnumerate: { // {1, 3, 5}
-				AstNode setLiteral = AstNodeKind.FINITE_SET_LITERAL.asNode();
+				AstNode setLiteral = Kind.FINITE_SET_LITERAL.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.LBC, heirs[0].getKind());
 				setLiteral.addChildren(commaSeparated(chop(heirs)));
 				Assert.assertEquals(TLAplusParserConstants.RBC, heirs[heirs.length-1].getKind());
 				return setLiteral;
 			} case SyntaxTreeConstants.N_SubsetOf: { // {x \in S : P(x)}
-				AstNode setFilter = AstNodeKind.SET_FILTER.asNode();
+				AstNode setFilter = Kind.SET_FILTER.asNode();
 				Assert.assertEquals(7, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.LBC, heirs[0].getKind());
-				AstNode quantifierBound = AstNodeKind.QUANTIFIER_BOUND.asNode();
-				setFilter.addField("generator", quantifierBound);
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
-				quantifierBound.addChild(AstNodeKind.IDENTIFIER.asNode());
-				Assert.assertEquals(SyntaxTreeConstants.T_IN, heirs[2].getKind());
-				quantifierBound.addChild(AstNodeKind.SET_IN.asNode());
-				quantifierBound.addField("set", translate(heirs[3]));
-				Assert.assertEquals(TLAplusParserConstants.COLON, heirs[4].getKind());
+				AstNode quantifierBound = Kind.QUANTIFIER_BOUND.asNode();
+				SanyReparser parser = new SanyReparser(heirs, 1);
+				setFilter.addField("generator", parseQuantifierBound(parser));
+				int offset = parser.current;
+				Assert.assertEquals(TLAplusParserConstants.COLON, heirs[offset].getKind());
+				offset++;
 				// heirs[5] is of indeterminate expression type
-				setFilter.addField("filter", translate(heirs[5]));
-				Assert.assertEquals(TLAplusParserConstants.RBC, heirs[heirs.length-1].getKind());
+				setFilter.addField("filter", translate(heirs[offset]));
+				offset++;
+				Assert.assertEquals(TLAplusParserConstants.RBC, heirs[offset].getKind());
+				offset++;
+				Assert.assertEquals(offset, heirs.length);
 				return setFilter;
-			} case SyntaxTreeConstants.N_SetOfFcns: {
-				AstNode setOfFunctions = AstNodeKind.SET_OF_FUNCTIONS.asNode();
+			} case SyntaxTreeConstants.N_SetOfFcns: { // [S -> P]
+				AstNode setOfFunctions = Kind.SET_OF_FUNCTIONS.asNode();
 				Assert.assertEquals(5, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.LSB, heirs[0].getKind());
 				// heirs[1] is of indeterminate expression type
 				setOfFunctions.addChild(translate(heirs[1]));
 				Assert.assertEquals(TLAplusParserConstants.ARROW, heirs[2].getKind());
-				setOfFunctions.addChild(AstNodeKind.MAPS_TO.asNode());
+				setOfFunctions.addChild(Kind.MAPS_TO.asNode());
 				// heirs[3] is of indeterminate expression type
 				setOfFunctions.addChild(translate(heirs[3]));
 				Assert.assertEquals(TLAplusParserConstants.RSB, heirs[4].getKind());
 				return setOfFunctions;
 			} case SyntaxTreeConstants.N_IfThenElse: { // IF x THEN y ELSE z
-				AstNode ite = AstNodeKind.IF_THEN_ELSE.asNode();
+				AstNode ite = Kind.IF_THEN_ELSE.asNode();
 				Assert.assertEquals(6, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.IF, heirs[0].getKind());
 				// heirs[1] is of indeterminate expression type
@@ -1264,7 +676,7 @@ public class AstDsl {
 				ite.addField("else", translate(heirs[5]));
 				return ite;
 			} case SyntaxTreeConstants.N_Case: { // CASE A -> B [] C -> D [] OTHER -> E
-				AstNode cases = AstNodeKind.CASE.asNode();
+				AstNode cases = Kind.CASE.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.CASE, heirs[0].getKind());
 				Assert.assertEquals(SyntaxTreeConstants.N_CaseArm, heirs[1].getKind());
@@ -1272,7 +684,7 @@ public class AstDsl {
 				int offset = 2;
 				while (offset < heirs.length) {
 					Assert.assertEquals(TLAplusParserConstants.CASESEP, heirs[offset].getKind());
-					cases.addChild(AstNodeKind.CASE_BOX.asNode());
+					cases.addChild(Kind.CASE_BOX.asNode());
 					offset++;
 					if (offset == heirs.length - 1) {
 						Assert.assertTrue(heirs[offset].isKind(SyntaxTreeConstants.N_CaseArm) || heirs[offset].isKind(SyntaxTreeConstants.N_OtherArm));
@@ -1283,43 +695,43 @@ public class AstDsl {
 					offset++;
 				}
 				return cases;
-			} case SyntaxTreeConstants.N_CaseArm: {
-				AstNode caseArm = AstNodeKind.CASE_ARM.asNode();
+			} case SyntaxTreeConstants.N_CaseArm: { // P -> Q
+				AstNode caseArm = Kind.CASE_ARM.asNode();
 				Assert.assertEquals(3, heirs.length);
 				// heirs[0] is of indeterminate expression type
 				caseArm.addChild(translate(heirs[0]));
 				Assert.assertEquals(TLAplusParserConstants.ARROW, heirs[1].getKind());
-				caseArm.addChild(AstNodeKind.CASE_ARROW.asNode());
+				caseArm.addChild(Kind.CASE_ARROW.asNode());
 				// heirs[2] is of indeterminate expression type
 				caseArm.addChild(translate(heirs[2]));
 				return caseArm;
-			} case SyntaxTreeConstants.N_OtherArm: {
-				AstNode otherArm = AstNodeKind.OTHER_ARM.asNode();
+			} case SyntaxTreeConstants.N_OtherArm: { // OTHER -> expr
+				AstNode otherArm = Kind.OTHER_ARM.asNode();
 				Assert.assertEquals(3, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.OTHER, heirs[0].getKind());
 				Assert.assertEquals(TLAplusParserConstants.ARROW, heirs[1].getKind());
-				otherArm.addChild(AstNodeKind.CASE_ARROW.asNode());
+				otherArm.addChild(Kind.CASE_ARROW.asNode());
 				// heirs[2] is of indeterminate expression type
 				otherArm.addChild(translate(heirs[2]));
 				return otherArm;
 			} case SyntaxTreeConstants.N_ActionExpr: { // [expr]_subexpr or <<expr>>_subexpr
 				boolean allowStutter = heirs[0].isKind(TLAplusParserConstants.LSB);
-				AstNode actionExpr = allowStutter ? AstNodeKind.STEP_EXPR_OR_STUTTER.asNode() : AstNodeKind.STEP_EXPR_NO_STUTTER.asNode();
+				AstNode actionExpr = allowStutter ? Kind.STEP_EXPR_OR_STUTTER.asNode() : Kind.STEP_EXPR_NO_STUTTER.asNode();
 				Assert.assertEquals(allowStutter ? TLAplusParserConstants.LSB : TLAplusParserConstants.LAB, heirs[0].getKind());
 				if (!allowStutter) {
-					actionExpr.addChild(AstNodeKind.LANGLE_BRACKET.asNode());
+					actionExpr.addChild(Kind.LANGLE_BRACKET.asNode());
 				}
 				// heirs[1] is of indeterminate expression type
 				actionExpr.addChild(translate(heirs[1]));
 				Assert.assertEquals(allowStutter ? TLAplusParserConstants.ARSB : TLAplusParserConstants.ARAB, heirs[2].getKind());
 				if (!allowStutter) {
-					actionExpr.addChild(AstNodeKind.RANGLE_BRACKET_SUB.asNode());
+					actionExpr.addChild(Kind.RANGLE_BRACKET_SUB.asNode());
 				}
 				// heirs[3] is of indeterminate subscript expression type
 				actionExpr.addChild(translate(heirs[3]));
 				return actionExpr;
-			} case SyntaxTreeConstants.N_FairnessExpr: {
-				AstNode fairness = AstNodeKind.FAIRNESS.asNode();
+			} case SyntaxTreeConstants.N_FairnessExpr: { // WF_x(action)
+				AstNode fairness = Kind.FAIRNESS.asNode();
 				Assert.assertEquals(5, heirs.length);
 				Assert.assertTrue(heirs[0].isKind(TLAplusParserConstants.WF) || heirs[0].isKind(TLAplusParserConstants.SF));
 				// heirs[1] is of indeterminate subscript expression type
@@ -1329,8 +741,8 @@ public class AstDsl {
 				fairness.addChild(translate(heirs[3]));
 				Assert.assertEquals(TLAplusParserConstants.RBR, heirs[4].getKind());
 				return fairness;
-			} case SyntaxTreeConstants.N_LetIn: {
-				AstNode letIn = AstNodeKind.LET_IN.asNode();
+			} case SyntaxTreeConstants.N_LetIn: { // LET f == x IN expr
+				AstNode letIn = Kind.LET_IN.asNode();
 				Assert.assertEquals(4, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.LET, heirs[0].getKind());
 				Assert.assertEquals(SyntaxTreeConstants.N_LetDefinitions, heirs[1].getKind());
@@ -1340,7 +752,7 @@ public class AstDsl {
 				letIn.addField("expression", translate(heirs[3]));
 				return letIn;
 			} case SyntaxTreeConstants.N_ParenExpr: {
-				AstNode paren = AstNodeKind.PARENTHESES.asNode();
+				AstNode paren = Kind.PARENTHESES.asNode();
 				Assert.assertEquals(3, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.LBR, heirs[0].getKind());
 				// heirs[1] is of indeterminate expression type
@@ -1348,7 +760,7 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.RBR, heirs[2].getKind());
 				return paren;
 			} case SyntaxTreeConstants.N_OpApplication: { // ex. f(a, b, c)
-				AstNode boundOp = AstNodeKind.BOUND_OP.asNode();
+				AstNode boundOp = Kind.BOUND_OP.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(SyntaxTreeConstants.N_GeneralId, heirs[0].getKind());
 				boundOp.addField("name", translate(heirs[0]));
@@ -1361,7 +773,7 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.RBR, parameterHeirs[parameterHeirs.length-1].getKind());
 				return boundOp;
 			} case SyntaxTreeConstants.N_FcnAppl: {
-				AstNode functionEvaluation = AstNodeKind.FUNCTION_EVALUATION.asNode();
+				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
 				Assert.assertTrue(heirs.length >= 4);
 				// heirs[0] is of indeterminate expression type
 				functionEvaluation.addChild(translate(heirs[0]));
@@ -1370,7 +782,7 @@ public class AstDsl {
 				Assert.assertEquals(TLAplusParserConstants.RSB, heirs[heirs.length-1].getKind());
 				return functionEvaluation;
 			} case SyntaxTreeConstants.N_PrefixExpr: { // ex. SUBSET P
-				AstNode boundPrefixOp = AstNodeKind.BOUND_PREFIX_OP.asNode();
+				AstNode boundPrefixOp = Kind.BOUND_PREFIX_OP.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(SyntaxTreeConstants.N_GenPrefixOp, heirs[0].getKind());
 				boundPrefixOp.addField("symbol", translate(heirs[0]));
@@ -1378,7 +790,7 @@ public class AstDsl {
 				boundPrefixOp.addField("rhs", translate(heirs[1]));
 				return boundPrefixOp;
 			} case SyntaxTreeConstants.N_InfixExpr: { // ex. a + b
-				AstNode boundInfixOp = AstNodeKind.BOUND_INFIX_OP.asNode();
+				AstNode boundInfixOp = Kind.BOUND_INFIX_OP.asNode();
 				Assert.assertEquals(3, heirs.length);
 				// heirs[0] is of indeterminate expression type
 				boundInfixOp.addField("lhs", translate(heirs[0]));
@@ -1406,7 +818,7 @@ public class AstDsl {
 				Assert.assertEquals(0, heirs.length);
 				return infixOpFromString(node.image.toString());
 			} case SyntaxTreeConstants.N_Assumption: {
-				AstNode assumption = AstNodeKind.ASSUMPTION.asNode();
+				AstNode assumption = Kind.ASSUMPTION.asNode();
 				Assert.assertEquals(2, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.ASSUME, heirs[0].getKind());
 				// heirs[1] is of indeterminate expression type
@@ -1420,7 +832,7 @@ public class AstDsl {
 				 *  3. Unnamed theorem with proof
 				 *  4. Named theorem with proof
 				 */
-				AstNode theorem = AstNodeKind.THEOREM.asNode();
+				AstNode theorem = Kind.THEOREM.asNode();
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertTrue(
 					heirs[0].isKind(TLAplusParserConstants.THEOREM)
@@ -1435,9 +847,9 @@ public class AstDsl {
 					|| (!isNamed && heirs.length == 3);
 				if (isNamed) {
 					Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
-					theorem.addField("name", AstNodeKind.IDENTIFIER.asNode());
+					theorem.addField("name", Kind.IDENTIFIER.asNode());
 					Assert.assertEquals(TLAplusParserConstants.DEF, heirs[2].getKind());
-					theorem.addChild(AstNodeKind.DEF_EQ.asNode());
+					theorem.addChild(Kind.DEF_EQ.asNode());
 					// heirs[3] is of expression or assume/prove type
 					theorem.addChild(translate(heirs[3]));
 					if (hasProof) {
@@ -1454,7 +866,7 @@ public class AstDsl {
 				}
 				return theorem;
 			} case SyntaxTreeConstants.N_TerminalProof: { // PROOF BY DEF >
-				AstNode proof = AstNodeKind.TERMINAL_PROOF.asNode();
+				AstNode proof = Kind.TERMINAL_PROOF.asNode();
 				Assert.assertTrue(heirs.length >= 1);
 				int offset = 0;
 				if (heirs[offset].isKind(TLAplusParserConstants.PROOF)) {
@@ -1470,7 +882,7 @@ public class AstDsl {
 				}
 				return proof;
 			} case SyntaxTreeConstants.N_Proof: {
-				AstNode proof = AstNodeKind.NON_TERMINAL_PROOF.asNode();
+				AstNode proof = Kind.NON_TERMINAL_PROOF.asNode();
 				Assert.assertTrue(heirs.length > 0);
 				int offset = 0;
 				if (heirs[offset].isKind(TLAplusParserConstants.PROOF)) {
@@ -1483,24 +895,50 @@ public class AstDsl {
 			} case SyntaxTreeConstants.N_ProofStep: {
 				Assert.assertEquals(2, heirs.length);
 				// heirs[0] is some type of proof step ID
-				AstNode proofStepId = translate(heirs[0]);
+				AstNode proofStepId = parseProofStepId(heirs[0]);
 				// heirs[1] is some type of proof
 				if (heirs[1].isKind(SyntaxTreeConstants.N_QEDStep)) {
-					AstNode qedStep = AstNodeKind.QED_STEP.asNode();
+					AstNode qedStep = Kind.QED_STEP.asNode();
 					qedStep.addChild(proofStepId);
 					flatTranslate(qedStep, heirs[1]);
 					return qedStep;
 				} else {
-					AstNode proofStep = AstNodeKind.PROOF_STEP.asNode();
+					AstNode proofStep = Kind.PROOF_STEP.asNode();
 					proofStep.addChild(proofStepId);
 					proofStep.addChild(translate(heirs[1]));
 					return proofStep;
 				}
-			} case TLAplusParserConstants.ProofStepLexeme: {
-				AstNode proofStepId = AstNodeKind.PROOF_STEP_ID.asNode();
-				proofStepId.addChild(AstNodeKind.LEVEL.asNode());
-				proofStepId.addChild(AstNodeKind.NAME.asNode());
-				return proofStepId;
+			} case SyntaxTreeConstants.N_DefStep: { // DEFINE op == ...
+				AstNode proof = Kind.DEFINITION_PROOF_STEP.asNode();
+				Assert.assertTrue(heirs.length > 0);
+				int offset = 0;
+				if (heirs[offset].isKind(TLAplusParserConstants.DEFINE)) {
+					offset++;
+				}
+				for (; offset < heirs.length; offset++) {
+					proof.addChild(translate(heirs[offset]));
+				}
+				return proof;
+			} case SyntaxTreeConstants.N_HaveStep: { // HAVE x > y
+				AstNode proof = Kind.HAVE_PROOF_STEP.asNode();
+				Assert.assertEquals(2, heirs.length);
+				Assert.assertEquals(TLAplusParserConstants.HAVE, heirs[0].getKind());
+				// heirs[1] is of indeterminate expression type
+				proof.addChild(translate(heirs[1]));
+				return proof;
+			} case SyntaxTreeConstants.N_WitnessStep: { // WITNESS x > y, y > z, ...
+				AstNode proof = Kind.WITNESS_PROOF_STEP.asNode();
+				Assert.assertTrue(heirs.length >= 2);
+				Assert.assertEquals(TLAplusParserConstants.WITNESS, heirs[0].getKind());
+				proof.addChildren(commaSeparated(Arrays.copyOfRange(heirs, 1, heirs.length)));
+				return proof;
+			} case SyntaxTreeConstants.N_TakeStep: {
+				AstNode proof = Kind.TAKE_PROOF_STEP.asNode();
+				Assert.assertTrue(heirs.length >= 2);
+				Assert.assertEquals(TLAplusParserConstants.TAKE, heirs[0].getKind());
+				SanyReparser parser = new SanyReparser(heirs, 1);
+				proof.addChildren(parseBoundOrIdentifierList(parser));
+				return proof;
 			} case SyntaxTreeConstants.N_AssumeProve: {
 				return parseAssumeProve(heirs, 0);
 			} default: {
@@ -1509,26 +947,15 @@ public class AstDsl {
 		}
 	}
 	
-	public static AstNode sanyTreeToDslTree(TLAplusParser sany) throws ParseException {
-		AstNode sourceFile = AstNodeKind.SOURCE_FILE.asNode();
+	public static AstNode toAst(TLAplusParser sany) throws ParseException {
+		AstNode sourceFile = Kind.SOURCE_FILE.asNode();
 		sourceFile.addChild(translate(sany.ParseTree));
 		return sourceFile;
 	}
-	
-	/**
-	 * Whether the expected AST matches the actual AST from SANY.
-	 * 
-	 * @param expected The expected AST.
-	 * @param actual The actual AST generated by SANY.
-	 * @return True if match was successful.
-	 */
-	public static boolean matchesExpectedAst(AstNode expected, TLAplusParser sanyActual) throws ParseException {
-		System.out.println("expected:");
-		System.out.println(expected.toString());
-		System.out.println("actual:");
-		AstNode actual = sanyTreeToDslTree(sanyActual);
-		System.out.println(actual.toString());
-		expected.testEquality(actual);
-		return true;
+
+	public static void printSanyParseTree(TLAplusParser sanyTree) {
+		PrintWriter out = new PrintWriter(System.out);
+		SyntaxTreePrinter.print(sanyTree, out);
+		out.flush();
 	}
 }
