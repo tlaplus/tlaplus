@@ -136,12 +136,9 @@ op ==
 (double_line)))
 
 =============|||
-Jlists Containing Colon-Prefixed Infix Operators
+Jlists Containing Colon-Prefixed Infix Operators (GH87)
 =============|||
 
-This tests that the external scanner doesn't see the : character and
-immediately treat it as a right-delimiter; it checks to see whether
-the : character is the prefix of some infix operator.
 ---- MODULE Test ----
 conj ==
   /\ lbl :: A
@@ -156,7 +153,7 @@ disj ==
     
 -------------|||
 
-(source_file (extramodular_text) (module (header_line) (identifier) (header_line)
+(source_file (module (header_line) (identifier) (header_line)
   (operator_definition (identifier) (def_eq)
     (conj_list
       (conj_item (bullet_conj) (label (identifier) (label_as) (identifier_ref)))
@@ -172,6 +169,4 @@ disj ==
     )
   )
 (double_line)))
-
-
 

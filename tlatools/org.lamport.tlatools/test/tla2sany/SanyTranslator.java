@@ -406,6 +406,8 @@ public class SanyTranslator {
 			case "\\intersect": return Kind.CAP.asNode();
 			case "=>": return Kind.IMPLIES.asNode();
 			case "\\o": return Kind.CIRC.asNode();
+			case ":=": return Kind.ASSIGN.asNode();
+			case "::=": return Kind.BNF_RULE.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -1163,6 +1165,14 @@ public class SanyTranslator {
 				}
 				Assert.assertTrue(parser.isAtEnd());
 				return proof;
+			} case SyntaxTreeConstants.N_Label: {
+				AstNode label = Kind.LABEL.asNode();
+				label.addField("name", translate(parser.consume("general ID", SyntaxTreeConstants.N_GeneralId)));
+				parser.consume("label as", TLAplusParserConstants.COLONCOLON);
+				label.addChild(Kind.LABEL_AS.asNode());
+				label.addField("expression", parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
+				return label;
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
