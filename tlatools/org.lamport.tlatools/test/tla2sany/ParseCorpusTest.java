@@ -42,7 +42,9 @@ public class ParseCorpusTest {
 				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
 				TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
 				Assert.assertTrue(testSummary, parser.parse());
+				System.out.println(corpusTest.expectedAst);
 				AstNode actual = SanyTranslator.toAst(parser);
+				System.out.println(actual);
 				corpusTest.expectedAst.testEquality(actual);
 			}
 		}

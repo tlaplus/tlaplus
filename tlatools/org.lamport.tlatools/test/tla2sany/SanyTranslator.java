@@ -20,33 +20,82 @@ import org.junit.Assert;
  */
 public class SanyTranslator {	
 
+	/**
+	 * Sometimes SANY provides very little structure in its parse output,
+	 * basically just a flat list of tokens. This is most common when dealing
+	 * with constructs that SANY doesn't care much about, like proof-related
+	 * rules. Thus we have to re-parse this output to find its structure.
+	 * That is what this class helps with. It follows the parser pattern
+	 * outlined in https://craftinginterpreters.com/parsing-expressions.html
+	 */
 	private static class SanyReparser {
 
+		/**
+		 * A list of parse nodes emitted by SANY.
+		 */
 		private SyntaxTreeNode[] nodes;
 
+		/**
+		 * The current node in the list we are looking at.
+		 */
 		private int current;
 
+		/**
+		 * Constructs a new SANY reparser instance.
+		 * 
+		 * @param nodes The list of nodes to look at.
+		 * @param start Which node to start at.
+		 */
 		public SanyReparser(SyntaxTreeNode[] nodes, int start) {
 			this.nodes = nodes;
 			this.current = start;
 		}
 		
+		/**
+		 * Clones this parser for the purpose of speculatively looking ahead
+		 * to try and parse something that is possibly not what is thought.
+		 * 
+		 * @return A shallow clone of this parser.
+		 */
 		public SanyReparser lookahead() {
 			return new SanyReparser(this.nodes, this.current);
 		}
 		
+		/**
+		 * If the lookahead resulted in a successful parse, merge the
+		 * lookahead parser state into this one. It should be discarded
+		 * otherwise.
+		 * 
+		 * @param lookahead The lookahead parser state.
+		 */
 		public void merge(SanyReparser lookahead) {
 			this.current = lookahead.current;
 		}
 		
+		/**
+		 * Whether we are at the end of the list of nodes.
+		 * 
+		 * @return True if there are no more nodes to look at.
+		 */
 		public boolean isAtEnd() {
 			return this.current == this.nodes.length;
 		}
 
+		/**
+		 * Gets the kind of the node previously looked at.
+		 * 
+		 * @return The kind of the node previously looked at.
+		 */
 		private int previous() {
 			return this.nodes[this.current - 1].getKind();
 		}
 		
+		/**
+		 * If not at the end of the list, advance then return the last node
+		 * kind.
+		 * 
+		 * @return The kind of the node which was advanced past.
+		 */
 		private int advance() {
 			if (!this.isAtEnd()) {
 				this.current++;
@@ -54,18 +103,40 @@ public class SanyTranslator {
 			return this.previous();
 		}
 		
+		/**
+		 * Peek at the node currently being looked at.
+		 * 
+		 * @return The node currently being looked at.
+		 */
 		public SyntaxTreeNode peekNode() {
 			return this.nodes[this.current];
 		}
 		
+		/**
+		 * Peek at the kind of the node currently being looked at.
+		 * @return
+		 */
 		public int peek() {
 			return this.peekNode().getKind();
 		}
 
+		/**
+		 * Check whether current node is of the given kind.
+		 * 
+		 * @param kind The kind to check.
+		 * @return True if the current node is of the given kind.
+		 */
 		public boolean check(int kind) {
 			return !this.isAtEnd() && this.peek() == kind;
 		}
 		
+		/**
+		 * If current node is one of the given kinds, advance past it then
+		 * return true.
+		 * 
+		 * @param kinds The list of kinds to check against.
+		 * @return True if current node is one of the given kinds.
+		 */
 		public boolean match(int... kinds) {
 			for (int kind : kinds) {
 				if (check(kind)) {
@@ -77,12 +148,29 @@ public class SanyTranslator {
 			return false;
 		}
 		
+		/**
+		 * Consume the given node kind, or throw exception if current node is
+		 * not of that kind.
+		 * 
+		 * @param kind The kind of node to expect.
+		 * @param errorMessage Exception message to throw if node is different.
+		 * @return The kind of node consumed.
+		 * @throws ParseException If node kind is not what was given.
+		 */
 		public int consume(int kind, String errorMessage) throws ParseException {
 			if (check(kind)) return advance();
 			throw new ParseException(errorMessage, this.current);
 		}
 	}
 	
+	/**
+	 * Parse a comma-separated list of identifiers.
+	 * Ex. x, y, z
+	 * 
+	 * @param parser The SANY reparser state.
+	 * @return A list of identifiers.
+	 * @throws ParseException If input is not a valid sequence of comma-separated identifiers.
+	 */
 	private static List<AstNode> parseCommaSeparatedIds(SanyReparser parser) throws ParseException {
 		List<AstNode> ids = new ArrayList<AstNode>();
 		do {
@@ -92,6 +180,14 @@ public class SanyTranslator {
 		return ids;
 	}
 	
+	/**
+	 * Parse a tuple of identifiers.
+	 * Ex. <<x, y, z>>
+	 * 
+	 * @param parser The SANY reparser state.
+	 * @return An AST node for the tuple of identifiers.
+	 * @throws ParseException If input is not a valid tuple of identifiers.
+	 */
 	private static AstNode parseTupleOfIdentifiers(SanyReparser parser) throws ParseException {
 		AstNode tuple = Kind.TUPLE_OF_IDENTIFIERS.asNode();
 		parser.consume(TLAplusParserConstants.LAB, "Expected <<");
@@ -102,6 +198,14 @@ public class SanyTranslator {
 		return tuple;
 	}
 	
+	/**
+	 * Parses a quantifier bound.
+	 * Ex. <<x, y, z>> \in Nat \X Nat \X Nat
+	 * 
+	 * @param parser The SANY reparser state.
+	 * @return An AST node for the quantifier bound.
+	 * @throws ParseException If input is not a valid quantifier bound.
+	 */
 	private static AstNode parseQuantifierBound(SanyReparser parser) throws ParseException {
 		AstNode bound = Kind.QUANTIFIER_BOUND.asNode();
 		if (parser.check(TLAplusParserConstants.LAB)) {
@@ -117,9 +221,17 @@ public class SanyTranslator {
 		return bound;
 	}
 
-	private static List<AstNode> parseBoundOrIdentifierList(SanyReparser parser) throws ParseException {
+	/**
+	 * Parses a list of either quantifier bounds or simple comma-separated
+	 * identifiers. This is used in both TAKE and PICK proof steps.
+	 *  
+	 * @param parser The SANY reparser state.
+	 * @return 
+	 * @throws ParseException
+	 */
+	private static List<AstNode> parseBoundListOrIdentifierList(SanyReparser parser) throws ParseException {
 		List<AstNode> children = new ArrayList<AstNode>();
-		// Try to parse comma-separated list of quantifier bounds
+		// Lookahead to try parsing comma-separated list of quantifier bounds
 		SanyReparser lookahead = parser.lookahead();
 		try {
 			do {
@@ -637,7 +749,6 @@ public class SanyTranslator {
 				AstNode setFilter = Kind.SET_FILTER.asNode();
 				Assert.assertEquals(7, heirs.length);
 				Assert.assertEquals(TLAplusParserConstants.LBC, heirs[0].getKind());
-				AstNode quantifierBound = Kind.QUANTIFIER_BOUND.asNode();
 				SanyReparser parser = new SanyReparser(heirs, 1);
 				setFilter.addField("generator", parseQuantifierBound(parser));
 				int offset = parser.current;
@@ -937,7 +1048,7 @@ public class SanyTranslator {
 				Assert.assertTrue(heirs.length >= 2);
 				Assert.assertEquals(TLAplusParserConstants.TAKE, heirs[0].getKind());
 				SanyReparser parser = new SanyReparser(heirs, 1);
-				proof.addChildren(parseBoundOrIdentifierList(parser));
+				proof.addChildren(parseBoundListOrIdentifierList(parser));
 				return proof;
 			} case SyntaxTreeConstants.N_AssumeProve: {
 				return parseAssumeProve(heirs, 0);
@@ -947,6 +1058,14 @@ public class SanyTranslator {
 		}
 	}
 	
+	/**
+	 * Converts the SANY parse tree to a normalized form comparable to the
+	 * AST DSL.
+	 * 
+	 * @param sany The SANY parser, having completed parsing a TLA+ file.
+	 * @return The root node of the translated AST.
+	 * @throws ParseException If unable to convert the SANY parse tree.
+	 */
 	public static AstNode toAst(TLAplusParser sany) throws ParseException {
 		AstNode sourceFile = Kind.SOURCE_FILE.asNode();
 		sourceFile.addChild(translate(sany.ParseTree));

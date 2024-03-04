@@ -20,7 +20,7 @@ import java.util.regex.*;
 public class CorpusTestParser {
 
 	/**
-	 * Mutable class tracking parser state to avoid string copies.
+	 * Mutable class tracking AST DSL parser state to avoid string copies.
 	 */
 	private static class ParserState {
 		/**
