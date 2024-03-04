@@ -155,27 +155,31 @@ public class SanyTranslator {
 		 * not of that kind.
 		 * 
 		 * @param kind The kind of node to expect.
-		 * @param errorMessage Exception message to throw if node is different.
+		 * @param expected The expected node; provided for error messages.
 		 * @return The kind of node consumed.
 		 * @throws ParseException If node kind is not what was given.
 		 */
-		public SyntaxTreeNode consume(String errorMessage, int... kinds) throws ParseException {
+		public SyntaxTreeNode consume(String expected, int... kinds) throws ParseException {
 			for (int kind : kinds) {
 				if (check(kind)) return advance();
 			}
-			throw new ParseException(errorMessage, this.current);
+			if (this.isAtEnd()) {
+				throw new ParseException(String.format("EOF; expected %s", expected), this.current);
+			} else {
+				throw new ParseException(String.format("Expected %s; actual %d", expected, this.peek().getKind()), this.current);
+			}
 		}
 
 		/**
 		 * Translates then consumes the current node, 
 		 * 
-		 * @param errorMessage Exception method to throw if no node exists.
+		 * @param expected The expected node; provided for error messages.
 		 * @return The kind of node consumed.
 		 * @throws ParseException If node kind is not what was given.
 		 */
-		public AstNode translate(String errorMessage) throws ParseException {
+		public AstNode translate(String expected) throws ParseException {
 			if (this.isAtEnd()) {
-				throw new ParseException(errorMessage, this.current);
+				throw new ParseException(String.format("EOF; expected %s", expected), this.current);
 			} else {
 				return SanyTranslator.translate(this.advance());
 			}
@@ -357,19 +361,6 @@ public class SanyTranslator {
 		return useBody;
 	}
 	
-	private static AstNode parseProofStepId(SyntaxTreeNode node) {
-		AstNode proofStepId = Kind.PROOF_STEP_ID.asNode();
-		proofStepId.addChild(Kind.LEVEL.asNode());
-		if (node.isKind(TLAplusParserConstants.ProofStepLexeme) || node.isKind(TLAplusParserConstants.ProofStepDotLexeme)) {
-			proofStepId.addChild(Kind.NAME.asNode());
-		} else if (node.isKind(TLAplusParserConstants.BareLevelLexeme)) {
-			// No name to add
-		} else {
-			Assert.fail(String.format("Unknown proof step ID type %d", node.getKind()));
-		}
-		return proofStepId;
-	}
-	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
 		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
@@ -401,6 +392,7 @@ public class SanyTranslator {
 	 */
 	private static AstNode infixOpFromString(String op) throws ParseException {
 		switch (op) {
+			case "/\\": return Kind.LAND.asNode();
 			case "\\/": return Kind.LOR.asNode();
 			case "+": return Kind.PLUS.asNode();
 			case "-": return Kind.MINUS.asNode();
@@ -410,7 +402,10 @@ public class SanyTranslator {
 			case ">": return Kind.GT.asNode();
 			case "=<": return Kind.LEQ.asNode();
 			case "\\in": return Kind.IN.asNode();
+			case "\\union": return Kind.CUP.asNode();
+			case "\\intersect": return Kind.CAP.asNode();
 			case "=>": return Kind.IMPLIES.asNode();
+			case "\\o": return Kind.CIRC.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -470,21 +465,29 @@ public class SanyTranslator {
 	 */
 	private static void flatTranslate(AstNode parent, SyntaxTreeNode node) throws ParseException {
 		SyntaxTreeNode[] heirs = node.getHeirs();
+		SanyReparser parser = new SanyReparser(heirs);
 		switch (node.getKind()) {
 			case SyntaxTreeConstants.N_IdentLHS: { // f ==, f(a, b) ==, etc.
-				Assert.assertTrue(heirs.length >= 1);
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[0].getKind());
+				parser.consume("Expected identifier", TLAplusParserConstants.IDENTIFIER);
 				parent.addField("name", Kind.IDENTIFIER.asNode());
-				if (heirs.length > 1) {
-					Assert.assertEquals(TLAplusParserConstants.LBR, heirs[1].getKind());
-					parent.addChildren(commaSeparated(chop(heirs, 2)));
-					Assert.assertEquals(TLAplusParserConstants.RBR, heirs[heirs.length-1].getKind());
+				if (parser.match(TLAplusParserConstants.LBR)) {
+					do {
+						// TODO: handle & test for operator declarations ex. _ + _
+						parent.addChild(translate(parser.consume("parameter", SyntaxTreeConstants.N_IdentDecl)));
+					} while (parser.match(TLAplusParserConstants.COMMA));
+					parser.consume("Expected )", TLAplusParserConstants.RBR);
 				}
-				return;
+				break;
+			} case SyntaxTreeConstants.N_OpArgs: { // (p1, p2, ..., pn)
+				parser.consume("Expected (", TLAplusParserConstants.LBR);
+				parent.addChildren(parseCommaSeparatedNodes(parser));
+				parser.consume("Expected )", TLAplusParserConstants.RBR);
+				break;
 			} default: {
 				throw new ParseException(String.format("Unhandled conversion from kind %d image %s", node.getKind(), node.getImage()), 0);
 			}
 		}
+		Assert.assertTrue(parser.isAtEnd());
 	}
 	
 	/**
@@ -693,11 +696,13 @@ public class SanyTranslator {
 						op = translate(heirs[1]);
 						break;
 					} case SyntaxTreeConstants.N_InfixOp: {
-						op = Kind.INFIX_OP_SYMBOL.asNode()
-								.addChild(translate(heirs[1]));
+						op = Kind.INFIX_OP_SYMBOL.asNode().addChild(translate(heirs[1]));
+						break;
+					} case SyntaxTreeConstants.N_NonExpPrefixOp: {
+						op = Kind.PREFIX_OP_SYMBOL.asNode().addChild(Kind.NEGATIVE.asNode());
 						break;
 					} default: {
-						Assert.fail();
+						Assert.fail(heirs[1].getImage());
 					}
 				}
 				
@@ -902,19 +907,24 @@ public class SanyTranslator {
 				paren.addChild(translate(heirs[1]));
 				Assert.assertEquals(TLAplusParserConstants.RBR, heirs[2].getKind());
 				return paren;
-			} case SyntaxTreeConstants.N_OpApplication: { // ex. f(a, b, c)
-				AstNode boundOp = Kind.BOUND_OP.asNode();
-				Assert.assertEquals(2, heirs.length);
-				Assert.assertEquals(SyntaxTreeConstants.N_GeneralId, heirs[0].getKind());
-				boundOp.addField("name", translate(heirs[0]));
-				Assert.assertEquals(SyntaxTreeConstants.N_OpArgs, heirs[1].getKind());
-				SyntaxTreeNode parameters = heirs[1];
-				SyntaxTreeNode[] parameterHeirs = parameters.getHeirs();
-				Assert.assertTrue(parameterHeirs.length >= 3);
-				Assert.assertEquals(TLAplusParserConstants.LBR, parameterHeirs[0].getKind());
-				boundOp.addChildren(commaSeparated(chop(parameterHeirs)));
-				Assert.assertEquals(TLAplusParserConstants.RBR, parameterHeirs[parameterHeirs.length-1].getKind());
-				return boundOp;
+			} case SyntaxTreeConstants.N_OpApplication: { // f(a, b, c) or nonfix op
+				AstNode nameOrSymbol = translate(parser.consume("Expected general ID", SyntaxTreeConstants.N_GeneralId));
+				AstNode op = null;
+				switch (nameOrSymbol.kind) {
+					case IDENTIFIER_REF: {
+						op = Kind.BOUND_OP.asNode();
+						op.addField("name", nameOrSymbol);
+						break;
+					} case PREFIX_OP_SYMBOL: case INFIX_OP_SYMBOL: case POSTFIX_OP_SYMBOL: {
+						op = Kind.BOUND_NONFIX_OP.asNode();
+						op.addField("symbol", nameOrSymbol);
+						break;
+					} default: {
+						Assert.fail(String.format("Unhandled op case %S", nameOrSymbol.kind));
+					}
+				}
+				flatTranslate(op, parser.consume("Expected op args", SyntaxTreeConstants.N_OpArgs));
+				return op;
 			} case SyntaxTreeConstants.N_FcnAppl: {
 				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
 				Assert.assertTrue(heirs.length >= 4);
@@ -926,11 +936,25 @@ public class SanyTranslator {
 				return functionEvaluation;
 			} case SyntaxTreeConstants.N_PrefixExpr: { // ex. SUBSET P
 				AstNode boundPrefixOp = Kind.BOUND_PREFIX_OP.asNode();
-				Assert.assertEquals(2, heirs.length);
-				Assert.assertEquals(SyntaxTreeConstants.N_GenPrefixOp, heirs[0].getKind());
-				boundPrefixOp.addField("symbol", translate(heirs[0]));
-				// heirs[1] is of indeterminate expression type
-				boundPrefixOp.addField("rhs", translate(heirs[1]));
+				// Hilariously, the negative "-" prefix operator here appears as an infix operator
+				if (parser.match(SyntaxTreeConstants.N_GenInfixOp)) {
+					AstNode symbol = translate(parser.previous());
+					// We have to rewrite the minus symbol to be a negative symbol
+					if (Kind.PREFIXED_OP == symbol.kind) {
+						symbol = Kind.PREFIXED_OP.asNode()
+								.addField("prefix", symbol.fields.get("prefix"))
+								.addField("op", Kind.NEGATIVE.asNode());
+					} else if (Kind.MINUS == symbol.kind) {
+						symbol = Kind.NEGATIVE.asNode();
+					} else {
+						Assert.fail(symbol.kind.name);
+					}
+					boundPrefixOp.addField("symbol", symbol);
+				} else {
+					boundPrefixOp.addField("symbol", translate(parser.consume("prefix op", SyntaxTreeConstants.N_GenPrefixOp)));
+				}
+				boundPrefixOp.addField("rhs", parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
 				return boundPrefixOp;
 			} case SyntaxTreeConstants.N_InfixExpr: { // ex. a + b
 				AstNode boundInfixOp = Kind.BOUND_INFIX_OP.asNode();

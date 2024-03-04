@@ -34,7 +34,7 @@ public class ParseCorpusTest {
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				if (!corpusTest.name.equals("INSTANCE With Jlist Substitutions")) {
+				if (!corpusTest.name.equals("Minus and Negative")) {
 					//continue;
 				}
 				System.out.println(corpusTest.name);
