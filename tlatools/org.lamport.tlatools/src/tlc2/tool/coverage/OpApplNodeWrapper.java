@@ -185,7 +185,7 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 		
 		// TODO Not all places in Tool lookup the correct CM yet. This should only be an
 		// engineering effort though.
-		if (seen.add(eon.myUID)) {
+		if (TLCGlobals.warn && seen.add(eon.myUID)) {
 			//...only report it once to not spam the Toolbox console.
 			MP.printMessage(EC.TLC_COVERAGE_MISMATCH, new String[] { eon.toString(), this.toString() });
 		}
