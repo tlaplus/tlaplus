@@ -1,0 +1,28 @@
+=============|||
+Basic Label
+=============|||
+
+---- MODULE Test ----
+op == lbl :: x
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (label (identifier) (label_as) (identifier_ref)))
+(double_line)))
+
+=============|||
+Label With Parameters
+=============|||
+
+---- MODULE Test ----
+op == lbl(a, b) :: x
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (label (identifier) (identifier_ref) (identifier_ref) (label_as) (identifier_ref)))
+(double_line)))
+
