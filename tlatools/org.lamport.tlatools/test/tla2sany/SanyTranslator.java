@@ -93,7 +93,7 @@ public class SanyTranslator {
 		}
 
 		/**
-		 * Gets the kind of the node previously looked at.
+		 * Gets the node previously looked at.
 		 * 
 		 * @return The kind of the node previously looked at.
 		 */
@@ -102,8 +102,7 @@ public class SanyTranslator {
 		}
 		
 		/**
-		 * If not at the end of the list, advance then return the last node
-		 * kind.
+		 * If not at the end of the list, advance then return the last node.
 		 * 
 		 * @return The kind of the node which was advanced past.
 		 */
@@ -115,7 +114,7 @@ public class SanyTranslator {
 		}
 		
 		/**
-		 * Peek at the node currently being looked at.
+		 * Peek at the node currently being looked at without consuming it.
 		 * 
 		 * @return The node currently being looked at.
 		 */
@@ -147,7 +146,6 @@ public class SanyTranslator {
 					return true;
 				}
 			}
-		
 			return false;
 		}
 
@@ -156,8 +154,7 @@ public class SanyTranslator {
 		 * not of that kind.
 		 * 
 		 * @param kind The kind of node to expect.
-		 * @param expected The expected node; provided for error messages.
-		 * @return The kind of node consumed.
+		 * @return The consumed node.
 		 * @throws ParseException If node kind is not what was given.
 		 */
 		public SyntaxTreeNode consume(int... kinds) throws ParseException {
@@ -176,8 +173,8 @@ public class SanyTranslator {
 		 * Translates then consumes the current node, 
 		 * 
 		 * @param expected The expected node; provided for error messages.
-		 * @return The kind of node consumed.
-		 * @throws ParseException If node kind is not what was given.
+		 * @return The translated consumed node.
+		 * @throws ParseException If no more nodes exist to be consumed.
 		 */
 		public AstNode translate(String expected) throws ParseException {
 			if (this.isAtEnd()) {
@@ -187,13 +184,15 @@ public class SanyTranslator {
 			}
 		}
 		
+		/**
+		 * Translates then consumes the current node, if it's of given kind.
+		 * 
+		 * @param expected The expected node; provided for error messages.
+		 * @return The translated consumed node.
+		 * @throws ParseException If node kind is not what was given.
+		 */
 		public AstNode translate(int... expected) throws ParseException {
 			return SanyTranslator.translate(this.consume(expected));
-		}
-		
-		public SanyReparser recurseOn(int... expected) throws ParseException {
-			SyntaxTreeNode node = this.consume(expected);
-			return new SanyReparser(node.getHeirs());
 		}
 	}
 	

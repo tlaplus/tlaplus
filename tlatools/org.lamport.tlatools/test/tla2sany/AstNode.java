@@ -469,7 +469,7 @@ public class AstNode {
 	
 	/**
 	 * Recursively rewrites the kinds of all nodes in the subtree of kind
-	 * from to kind to.
+	 * "from" into kind "to".
 	 * 
 	 * @param from The kind to match on.
 	 * @param to The kind to rewrite to.

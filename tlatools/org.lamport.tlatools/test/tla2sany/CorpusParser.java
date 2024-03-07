@@ -5,19 +5,16 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.regex.*;
 
 /**
  * Handles reading and parsing the corpus test files.
  */
-public class CorpusTestParser {
+public class CorpusParser {
 	
 	/**
 	 * Holds info about tokens in the AST DSL.
@@ -180,23 +177,6 @@ public class CorpusTestParser {
 		}
 		
 		/**
-		 * If the current token matches one of the given kinds, advance past
-		 * it and return true. Otherwise, do nothing and return false.
-		 * 
-		 * @param kinds The possible kinds to match the current token against.
-		 * @return Whether the current token matched one of the given kinds.
-		 */
-		public boolean match(Token.Kind... kinds) {
-			for (Token.Kind kind : kinds) {
-				if (check(kind)) {
-					advance();
-					return true;
-				}
-			}
-			return false;
-		}
-		
-		/**
 		 * Consume the current token; if current token is not of the given
 		 * kind, throw a parse exception. Also throw an exception if no
 		 * further tokens remain.
@@ -224,7 +204,7 @@ public class CorpusTestParser {
 		parser.consume(Token.Kind.LPAREN);
 		Token nodeKind = parser.consume(Token.Kind.IDENTIFIER);
 		AstNode node = AstNode.Kind.fromString(nodeKind.lexeme).asNode();
-		while (!parser.isAtEnd() && !parser.match(Token.Kind.RPAREN)) {
+		while (!parser.isAtEnd() && !parser.check(Token.Kind.RPAREN)) {
 			if (parser.check(Token.Kind.LPAREN)) {
 				node.addChild(parseAst(parser));
 			} else {
@@ -233,6 +213,7 @@ public class CorpusTestParser {
 				node.addField(fieldName, parseAst(parser));
 			}
 		}
+		parser.consume(Token.Kind.RPAREN);
 		return node;
 	}
 
@@ -349,12 +330,13 @@ public class CorpusTestParser {
 	/**
 	 * Gets all .txt files in the corpus tests directory then parses their contents.
 	 * 
+	 * @param toolsRoot Root of the TLA+ tools directory.
 	 * @return A list of all corpus tests.
 	 * @throws IOException If a file could not be found or opened or read.
 	 * @throws ParseException If a file contains invalid test syntax.
 	 */
-	public static List<CorpusTestFile> getAndParseCorpusTestFiles() throws IOException, ParseException {
-		Path corpusDir = Paths.get("test/tla2sany/corpus");
+	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path toolsRoot) throws IOException, ParseException {
+		Path corpusDir = toolsRoot.resolve("test/tla2sany/corpus");
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.txt");
 		ArrayList<CorpusTestFile> corpus = new ArrayList<CorpusTestFile>();
 		for (Path path : Files.walk(corpusDir).filter(matcher::matches).collect(Collectors.toList())) {
