@@ -1,3 +1,44 @@
+======================|||
+Set Literal
+======================|||
+
+---- MODULE Test ----
+op == {1,2,3,4,5}
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (finite_set_literal
+      (nat_number)
+      (nat_number)
+      (nat_number)
+      (nat_number)
+      (nat_number)
+    )
+  )
+(double_line)))
+
+======================|||
+Set Map
+======================|||
+
+---- MODULE Test ----
+op == {f(x) : x \in Nat}
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    (set_map
+      map: (bound_op name: (identifier_ref) parameter: (identifier_ref))
+      generator: (quantifier_bound (identifier) (set_in) set: (nat_number_set))
+    )
+  )
+(double_line)))
+
 =====================|||
 Set filter precedence
 =====================|||
@@ -53,3 +94,4 @@ op == {
     )
   )
 (double_line)))
+

@@ -337,6 +337,7 @@ public class SanyTranslator {
 		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
 			case "TRUE": return Kind.BOOLEAN.asNode();
+			case "Nat": return Kind.NAT_NUMBER_SET.asNode();
 			default: return Kind.IDENTIFIER_REF.asNode();
 		}
 	}
@@ -452,7 +453,8 @@ public class SanyTranslator {
 				parent.addField("name", Kind.IDENTIFIER.asNode());
 				if (parser.match(TLAplusParserConstants.LBR)) {
 					do {
-						parent.addChild(
+						parent.addField(
+							"parameter",
 							parser.translate(
 								SyntaxTreeConstants.N_IdentDecl,
 								SyntaxTreeConstants.N_PrefixDecl,
@@ -464,7 +466,9 @@ public class SanyTranslator {
 				break;
 			} case SyntaxTreeConstants.N_OpArgs: { // (p1, p2, ..., pn)
 				parser.consume(TLAplusParserConstants.LBR);
-				parent.addChildren(parseCommaSeparatedNodes(parser, "expression"));
+				do {
+					parent.addField("parameter", parser.translate("expression"));
+				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RBR);
 				break;
 			} case SyntaxTreeConstants.N_ProofStep: { // <1>c QED
@@ -782,6 +786,21 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.RBC);
 				Assert.assertTrue(parser.isAtEnd());
 				return setFilter;
+			} case SyntaxTreeConstants.N_SetOfAll: {
+				AstNode setMap = Kind.SET_MAP.asNode();
+				parser.consume(TLAplusParserConstants.LBC);
+				setMap.addField("map", parser.translate("expression"));
+				parser.consume(TLAplusParserConstants.COLON);
+				do {
+					setMap.addField("generator", parser.translate(SyntaxTreeConstants.N_QuantBound));
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				parser.consume(TLAplusParserConstants.RBC);
+				Assert.assertTrue(parser.isAtEnd());
+				return setMap;
+			} case SyntaxTreeConstants.N_QuantBound: {
+				AstNode quantBound = parseQuantifierBound(parser);
+				Assert.assertTrue(parser.isAtEnd());
+				return quantBound;
 			} case SyntaxTreeConstants.N_SetOfFcns: { // [S -> P]
 				AstNode setOfFunctions = Kind.SET_OF_FUNCTIONS.asNode();
 				parser.consume(TLAplusParserConstants.LSB);
