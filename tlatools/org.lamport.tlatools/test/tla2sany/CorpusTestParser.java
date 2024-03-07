@@ -18,130 +18,196 @@ import java.util.regex.*;
  * Handles reading and parsing the corpus test files.
  */
 public class CorpusTestParser {
+	
+	/**
+	 * Holds info about tokens in the AST DSL.
+	 */
+	private static class Token {
+
+		/**
+		 * The possible kinds of tokens in the AST DSL.
+		 */
+		private static enum Kind {
+			IDENTIFIER,
+			LPAREN,
+			RPAREN,
+			COLON
+		}
+		
+		/**
+		 * The actual string classified as the given token kind.
+		 */
+		public final String lexeme;
+		
+		/**
+		 * The token kind associated with the given lexeme.
+		 */
+		public final Kind kind; 
+		
+		/**
+		 * Constructs a new instance of the token class.
+		 * 
+		 * @param lexeme The lexeme underlying this token.
+		 * @param kind The kind of the lexeme.
+		 */
+		public Token(String lexeme, Kind kind) {
+			this.lexeme = lexeme;
+			this.kind = kind;
+		}
+	}
 
 	/**
-	 * Mutable class tracking AST DSL parser state to avoid string copies.
+	 * Breaks the input into discrete tokens.
+	 * 
+	 * @param input The string input to tokenize.
+	 * @return A list of tokens.
+	 * @throws ParseException If an unrecognized character is encountered.
+	 */
+	private static List<Token> tokenize(String input) throws ParseException {
+		List<Token> tokens = new ArrayList<Token>();
+		int[] codepoints = input.codePoints().toArray();
+		StringBuilder sb = null;
+		for (int i = 0; i < codepoints.length; i++) {
+			int codepoint = codepoints[i];
+			if (Character.isLetter(codepoint) || '_' == codepoint) {
+				if (null == sb) {
+					sb = new StringBuilder();
+				}
+				sb.appendCodePoint(codepoint);
+			} else {
+				if (null != sb) {
+					tokens.add(new Token(sb.toString(), Token.Kind.IDENTIFIER));
+					sb = null;
+				}
+				if (Character.isWhitespace(codepoint)) {
+					continue;
+				} else if (':' == codepoint) {
+					tokens.add(new Token(Character.toString(codepoint), Token.Kind.COLON));
+				} else if ('(' == codepoint) {
+					tokens.add(new Token(Character.toString(codepoint), Token.Kind.LPAREN));
+				} else if (')' == codepoint) {
+					tokens.add(new Token(Character.toString(codepoint), Token.Kind.RPAREN));
+				} else {
+					throw new ParseException(String.format("Unhandled char %s", Character.toString(codepoint)), i);
+				}
+			}
+		}
+		return tokens;
+	}
+
+	/**
+	 * AST DSL parser helper class. Follows the parser pattern outlined in
+	 * https://craftinginterpreters.com/parsing-expressions.html
 	 */
 	private static class ParserState {
 		/**
-		 * The parser's current index in the string.
+		 * The parser's current index in the token array.
 		 */
-		public int i;
+		public int current;
 		
 		/**
-		 * The unparsed input string.
+		 * The unparsed input string tokens.
 		 */
-		public final String input;
+		public final List<Token> tokens;
 		
 		/**
-		 * Whether to log each character consumed.
+		 * Whether to log each token consumed.
 		 */
 		private final boolean log;
 		
 		/**
 		 * Initializes the parser state with the input string.
 		 * 
-		 * @param input The string to parse.
+		 * @param token The tokens to parse.
 		 * @param log Whether to log each consumed char.
 		 */
-		public ParserState(String input, boolean log) {
-			this.i = 0;
-			this.input = input;
+		public ParserState(List<Token> tokens, boolean log) {
+			this.current = 0;
+			this.tokens = tokens;
 			this.log = log;
 		}
 		
 		/**
-		 * Whether the input has been fully consumed.
+		 * Whether parse is at the end of the token array.
 		 * 
-		 * @return True if there is no input remaining.
+		 * @return True if at end.
 		 */
-		public boolean isEof() {
-			return i >= input.length();
+		public boolean isAtEnd() {
+			return current == tokens.size();
 		}
-
+		
 		/**
-		 * Consumes input until encountering a non-whitespace char.
+		 * Peeks the current token without consuming it.
+		 * 
+		 * @return The current token.
 		 */
-		public void consumeWhitespace() {
-			while (!this.isEof() && Character.isWhitespace(input.charAt(i))) {
-				this.consume();
+		public Token peek() {
+			return tokens.get(current);
+		}
+		
+		/**
+		 * Gets the token last consumed.
+		 * 
+		 * @return The token last consumed.
+		 */
+		public Token previous() {
+			return tokens.get(current - 1);
+		}
+		
+		/**
+		 * Checks whether the current token is of the given kind.
+		 * 
+		 * @param kind The kind to check the current token against.
+		 * @return True if current token is of the given kind.
+		 */
+		public boolean check(Token.Kind kind) {
+			if (isAtEnd()) return false;
+			return peek().kind == kind;
+		}
+		
+		/**
+		 * Advances the parser and returns the token advanced past. Prints
+		 * out the token to standard output if logging is flagged true.
+		 * 
+		 * @return The token advanced past.
+		 */
+		public Token advance() {
+			if (!isAtEnd()) current++;
+			if (log) {
+				System.out.println(previous().lexeme);
 			}
+			return previous();
 		}
 		
 		/**
-		 * Whether the current char is the given char.
+		 * If the current token matches one of the given kinds, advance past
+		 * it and return true. Otherwise, do nothing and return false.
 		 * 
-		 * @param c The char to check.
-		 * @return True if not EOF and char matches.
+		 * @param kinds The possible kinds to match the current token against.
+		 * @return Whether the current token matched one of the given kinds.
 		 */
-		public boolean matches(char c) {
-			return !this.isEof() && input.charAt(i) == c;
-		}
-		
-		/**
-		 * Consumes the current char without any checks. Possibly logs this act.
-		 * 
-		 * @return The consumed char.
-		 */
-		private char consume() {
-			char c = input.charAt(i);
-			if (this.log) {
-				System.out.println(c);
+		public boolean match(Token.Kind... kinds) {
+			for (Token.Kind kind : kinds) {
+				if (check(kind)) {
+					advance();
+					return true;
+				}
 			}
-			i++;
-			return c;
+			return false;
 		}
 		
 		/**
-		 * Consume the current char if it is as expected.
+		 * Consume the current token; if current token is not of the given
+		 * kind, throw a parse exception. Also throw an exception if no
+		 * further tokens remain.
 		 * 
-		 * @param c The expected char.
-		 * @return Whether the current char was consumed.
+		 * @param kind The token kind to match the current token against.
+		 * @return The consumed token.
+		 * @throws ParseException If current token is not of the given kind.
 		 */
-		public boolean consumeIf(char c) {
-			if (this.matches(c)) {
-				this.consume();
-				return true;
-			} else {
-				return false;
-			}
-		}
-		
-		/**
-		 * Whether the current char is an identifier char.
-		 * 
-		 * @return True if it is an identifier char.
-		 */
-		public boolean isIdentifierChar() {
-			return !this.isEof() && (Character.isLetter(input.charAt(i)) || input.charAt(i) == '_');
-		}
-		
-		/**
-		 * Consumes the upcoming identifier then returns it as a string.
-		 * 
-		 * @return The consumed identifier.
-		 */
-		public String consumeIdentifier() {
-			StringBuilder sb = new StringBuilder();
-			while (this.isIdentifierChar()) {
-				sb.append(this.consume());
-			}
-			
-			return sb.toString();
-		}
-		
-		/**
-		 * Constructs an appropriate parse exception for the current position.
-		 * 
-		 * @param expected The char or element that was expected instead.
-		 * @return A relatively informative parse exception to throw.
-		 */
-		public ParseException error(String expected) {
-			if (this.isEof()) {
-				return new ParseException(String.format("Unexpected EOF; expected %s: %s", expected, input), i);
-			} else {
-				return new ParseException(String.format("Unexpected char %c; expected %s at index %d: %s", input.charAt(i), expected, i, input), i);
-			}
+		public Token consume(Token.Kind kind) throws ParseException {
+			if (check(kind)) return advance();
+			throw new ParseException(String.format("Expected %s", kind), current);
 		}
 	}
 	
@@ -150,59 +216,26 @@ public class CorpusTestParser {
 	 * in place. Thankfully S-expressions are easy to parse in a single
 	 * recursive function.
 	 * 
-	 * @param s Parser state holding the input string and current index.
+	 * @param s Parser state holding the input tokens and current index.
 	 * @return Root node of the AST subtree at this point in the input.
 	 * @throws ParseException If invalid S-expression syntax is encountered.
 	 */
-	private static AstNode parseAst(ParserState s) throws ParseException {
-		s.consumeWhitespace();
-		// Looking for ex. (source_file ...)
-		if (s.consumeIf('(')) {
-			s.consumeWhitespace();
-			if (!s.isIdentifierChar()) {
-				throw s.error("Identifier Char");
+	private static AstNode parseAst(ParserState parser) throws ParseException {
+		parser.consume(Token.Kind.LPAREN);
+		Token nodeKind = parser.consume(Token.Kind.IDENTIFIER);
+		AstNode node = AstNode.Kind.fromString(nodeKind.lexeme).asNode();
+		while (!parser.isAtEnd() && !parser.match(Token.Kind.RPAREN)) {
+			if (parser.check(Token.Kind.LPAREN)) {
+				node.addChild(parseAst(parser));
+			} else {
+				String fieldName = parser.consume(Token.Kind.IDENTIFIER).lexeme;
+				parser.consume(Token.Kind.COLON);
+				node.addField(fieldName, parseAst(parser));
 			}
-			AstNode.Kind kind = AstNode.Kind.fromString(s.consumeIdentifier());
-			List<AstNode> children = new ArrayList<AstNode>();
-			Map<String, AstNode> fields = new HashMap<String, AstNode>();
-			s.consumeWhitespace();
-			while (!s.isEof() && !s.matches(')')) {
-				if (s.matches('(')) {
-					// Found unnamed child ex. (source_file (module ... ))
-					children.add(parseAst(s));
-				} else if (s.isIdentifierChar()) {
-					// Found named field child ex. (bound_op name: (...) ...)
-					String fieldName = s.consumeIdentifier();
-					s.consumeWhitespace();
-					if (s.consumeIf(':')) {
-						s.consumeWhitespace();
-						if (s.matches('(')) {
-							// Recurse to get actual named child
-							AstNode namedChild = parseAst(s);
-							fields.put(fieldName, namedChild);
-							children.add(namedChild);
-						} else {
-							throw s.error("(");
-						}
-					} else {
-						throw s.error(":");
-					}
-				} else {
-					throw s.error("(");
-				}
-				s.consumeWhitespace();
-			}
-			
-			if (!s.consumeIf(')')) {
-				throw s.error(")");
-			}
-			
-			return new AstNode(kind, children, fields);
-		} else {
-			throw s.error("(");
 		}
+		return node;
 	}
-	
+
 	/**
 	 * Parse the given S-expression string into an abstract syntax tree.
 	 * 
@@ -211,7 +244,12 @@ public class CorpusTestParser {
 	 * @throws ParseException If invalid S-expression syntax is encountered.
 	 */
 	private static AstNode parseAst(String input) throws ParseException {
-		return parseAst(new ParserState(input, false));
+		ParserState parser = new ParserState(tokenize(input), false);
+		AstNode parseTree = parseAst(parser);
+		if (!parser.isAtEnd()) {
+			throw new ParseException("Unparsed tokens remain", parser.current);
+		}
+		return parseTree;
 	}
 	
 	/**

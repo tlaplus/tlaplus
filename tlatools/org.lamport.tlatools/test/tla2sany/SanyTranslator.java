@@ -951,16 +951,7 @@ public class SanyTranslator {
 				// Hilariously, the negative "-" prefix operator here appears as an infix operator
 				if (parser.match(SyntaxTreeConstants.N_GenInfixOp)) {
 					AstNode symbol = translate(parser.previous());
-					// We have to rewrite the minus symbol to be a negative symbol
-					if (Kind.PREFIXED_OP == symbol.kind) {
-						symbol = Kind.PREFIXED_OP.asNode()
-								.addField("prefix", symbol.fields.get("prefix"))
-								.addField("op", Kind.NEGATIVE.asNode());
-					} else if (Kind.MINUS == symbol.kind) {
-						symbol = Kind.NEGATIVE.asNode();
-					} else {
-						Assert.fail(symbol.kind.name);
-					}
+					symbol.alias(Kind.MINUS, Kind.NEGATIVE);
 					boundPrefixOp.addField("symbol", symbol);
 				} else {
 					boundPrefixOp.addField("symbol", parser.translate(SyntaxTreeConstants.N_GenPrefixOp));

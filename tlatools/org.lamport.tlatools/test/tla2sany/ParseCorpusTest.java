@@ -34,6 +34,7 @@ public class ParseCorpusTest {
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
+				// keeping this here because it is useful to debug why a specific test fails
 				if (!corpusTest.name.equals("Higher-Order Operator Parameters")) {
 					//continue;
 				}

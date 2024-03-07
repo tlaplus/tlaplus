@@ -372,7 +372,7 @@ public class AstNode {
 	/**
 	 * The kind of the AST node.
 	 */
-	public final Kind kind;
+	public Kind kind;
 	
 	/**
 	 * List of both named & unnamed children, in order of appearance.
@@ -382,7 +382,7 @@ public class AstNode {
 	/**
 	 * List of named children in order of appearance.
 	 */
-	public final Map<String, AstNode> fields;
+	public final Map<String, List<AstNode>> fields;
 	
 	/**
 	 * Index to quickly check whether a child is named or not, and get its
@@ -397,13 +397,15 @@ public class AstNode {
 	 * @param children The children of the AST node.
 	 * @param fields The named field children of the AST node.
 	 */
-	public AstNode(Kind kind, List<AstNode> children, Map<String, AstNode> fields) {
+	public AstNode(Kind kind, List<AstNode> children, Map<String, List<AstNode>> fields) {
 		this.kind = kind;
 		this.children = children;
 		this.fields = fields;
 		HashMap<AstNode, String> fieldNames = new HashMap<AstNode, String>();
-		for (Map.Entry<String, AstNode> entry : this.fields.entrySet()) {
-			fieldNames.put(entry.getValue(), entry.getKey());
+		for (Map.Entry<String, List<AstNode>> entry : this.fields.entrySet()) {
+			for (AstNode value : entry.getValue()) {
+				fieldNames.put(value, entry.getKey());
+			}
 		}
 		this.fieldNames = fieldNames;
 	}
@@ -415,7 +417,7 @@ public class AstNode {
 	 * @param children The children of the AST node.
 	 */
 	public AstNode(Kind kind, List<AstNode> children) {
-		this(kind, children, new HashMap<String, AstNode>());
+		this(kind, children, new HashMap<String, List<AstNode>>());
 	}
 	
 	/**
@@ -458,9 +460,27 @@ public class AstNode {
 	 */
 	public AstNode addField(String name, AstNode child) {
 		this.children.add(child);
-		this.fields.put(name, child);
+		if (this.fields.containsKey(name)) {
+			this.fields.get(name).add(child);
+		}
 		this.fieldNames.put(child, name);
 		return this;
+	}
+	
+	/**
+	 * Recursively rewrites the kinds of all nodes in the subtree of kind
+	 * from to kind to.
+	 * 
+	 * @param from The kind to match on.
+	 * @param to The kind to rewrite to.
+	 */
+	public void alias(final Kind from, final Kind to) {
+		if (from == this.kind) {
+			this.kind = to;
+		}
+		for (AstNode child : this.children) {
+			child.alias(from, to);
+		}
 	}
 	
 	/**
