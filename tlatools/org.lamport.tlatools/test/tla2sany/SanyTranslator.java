@@ -253,8 +253,10 @@ public class SanyTranslator {
 			bound.addChild(parseTupleOfIdentifiers(parser));
 		} else if (parser.check(TLAplusParserConstants.IDENTIFIER)) {
 			bound.addChildren(parseCommaSeparatedIds(parser));
+		} else if (parser.match(SyntaxTreeConstants.N_IdentifierTuple)) {
+			bound.addChild(translate(parser.previous()));
 		} else {
-			throw new ParseException(String.format("Failed to parse quantifier bound %d", parser.peek()), parser.current);
+			throw new ParseException(String.format("Failed to parse quantifier bound %d", parser.peek().getKind()), parser.current);
 		}
 		parser.consume(SyntaxTreeConstants.T_IN);
 		bound.addChild(Kind.SET_IN.asNode());
@@ -333,15 +335,6 @@ public class SanyTranslator {
 		return useBody;
 	}
 	
-	private static AstNode id(SyntaxTreeNode input) throws ParseException {
-		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
-		switch (input.getImage()) {
-			case "TRUE": return Kind.BOOLEAN.asNode();
-			case "Nat": return Kind.NAT_NUMBER_SET.asNode();
-			default: return Kind.IDENTIFIER_REF.asNode();
-		}
-	}
-	
 	private static AstNode parseIdOrOpRef(SanyReparser parser) throws ParseException {
 		SyntaxTreeNode opNode = parser.consume(
 				TLAplusParserConstants.IDENTIFIER,
@@ -357,6 +350,17 @@ public class SanyTranslator {
 				: kind == SyntaxTreeConstants.N_PostfixOp
 				? Kind.POSTFIX_OP_SYMBOL.asNode().addChild(op)
 				: op;
+	}
+	
+	private static AstNode id(SyntaxTreeNode input) throws ParseException {
+		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
+		switch (input.getImage()) {
+			case "TRUE": return Kind.BOOLEAN.asNode();
+			case "Nat": return Kind.NAT_NUMBER_SET.asNode();
+			case "Int": return Kind.INT_NUMBER_SET.asNode();
+			case "Real": return Kind.REAL_NUMBER_SET.asNode();
+			default: return Kind.IDENTIFIER_REF.asNode();
+		}
 	}
 	
 	/**
@@ -801,6 +805,10 @@ public class SanyTranslator {
 				AstNode quantBound = parseQuantifierBound(parser);
 				Assert.assertTrue(parser.isAtEnd());
 				return quantBound;
+			} case SyntaxTreeConstants.N_IdentifierTuple: {
+				AstNode tuple = parseTupleOfIdentifiers(parser);
+				Assert.assertTrue(parser.isAtEnd());
+				return tuple;
 			} case SyntaxTreeConstants.N_SetOfFcns: { // [S -> P]
 				AstNode setOfFunctions = Kind.SET_OF_FUNCTIONS.asNode();
 				parser.consume(TLAplusParserConstants.LSB);
@@ -923,6 +931,22 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.RBR);
 				Assert.assertTrue(parser.isAtEnd());
 				return paren;
+			} case SyntaxTreeConstants.N_Times: { // S \X P
+				List<AstNode> exprs = new ArrayList<AstNode>();
+				do {
+					exprs.add(parser.translate("expression"));
+				} while (parser.match(SyntaxTreeConstants.N_GenInfixOp));
+				// Convert flat list to left-associative tree
+				AstNode lhs = exprs.get(0);
+				for (int i = 1; i < exprs.size(); i++) {
+					AstNode op = Kind.BOUND_INFIX_OP.asNode();
+					op.addField("lhs", lhs);
+					op.addField("symbol", Kind.TIMES.asNode());
+					op.addField("rhs", exprs.get(i));
+					lhs = op;
+				}
+				Assert.assertTrue(parser.isAtEnd());
+				return lhs;
 			} case SyntaxTreeConstants.N_OpApplication: { // f(a, b, c) or nonfix op
 				AstNode nameOrSymbol = parser.translate(SyntaxTreeConstants.N_GeneralId);
 				AstNode op = null;

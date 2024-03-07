@@ -3,7 +3,7 @@ Set Literal
 ======================|||
 
 ---- MODULE Test ----
-op == {1,2,3,4,5}
+op == {1, 2, 3, 4, 5}
 ====
 
 ----------------------|||
@@ -32,9 +32,80 @@ op == {f(x) : x \in Nat}
 
 (source_file (module (header_line) name: (identifier) (header_line)
   (operator_definition name: (identifier) (def_eq)
-    (set_map
+    definition: (set_map
       map: (bound_op name: (identifier_ref) parameter: (identifier_ref))
       generator: (quantifier_bound (identifier) (set_in) set: (nat_number_set))
+    )
+  )
+(double_line)))
+
+======================|||
+Set Map with Multiple Generators
+======================|||
+
+---- MODULE Test ----
+op == {f(x, y, z) : x \in Int, y, z \in Real}
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (set_map
+      map: (bound_op name: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref))
+      generator: (quantifier_bound (identifier) (set_in) set: (int_number_set))
+      generator: (quantifier_bound (identifier) (identifier) (set_in) set: (real_number_set))
+    )
+  )
+(double_line)))
+
+
+======================|||
+Set Filter
+======================|||
+
+---- MODULE Test ----
+op == {x \in Nat : P(x)}
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (set_filter
+      generator: (quantifier_bound (identifier) (set_in) set: (nat_number_set))
+      filter: (bound_op name: (identifier_ref) parameter: (identifier_ref))
+    )
+  )
+(double_line)))
+
+======================|||
+Set Filter with Tuple
+======================|||
+
+---- MODULE Test ----
+op == {<<x, y, z>> \in Nat \X Int \X Real : P(x, y, z)}
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (set_filter
+      generator: (quantifier_bound
+        (tuple_of_identifiers (langle_bracket) (identifier) (identifier) (identifier) (rangle_bracket))
+        (set_in)
+        set: (bound_infix_op
+          lhs: (bound_infix_op
+            lhs: (nat_number_set)
+            symbol: (times)
+            rhs: (int_number_set)
+          )
+          symbol: (times)
+          rhs: (real_number_set)
+        )
+      )
+      filter: (bound_op name: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref))
     )
   )
 (double_line)))
