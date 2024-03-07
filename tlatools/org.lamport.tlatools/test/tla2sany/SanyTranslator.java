@@ -395,49 +395,6 @@ public class SanyTranslator {
 	}
 	
 	/**
-	 * Chops the beginning & ending elements off of the given array, starting
-	 * from the given index.
-	 * 
-	 * @param input The array to chop.
-	 * @param startIndex Index from which to start chopping.
-	 * @return Array with first and last elements removed.
-	 */
-	private static SyntaxTreeNode[] chop(SyntaxTreeNode[] input, int startIndex) {
-		return Arrays.copyOfRange(input, startIndex, input.length - 1);
-	}
-	
-	/**
-	 * Chops the beginning & ending elements off of the given array. Useful
-	 * when dealing with an array like ["(", <thing you care about>, ")"].
-	 * Often used with a call to commaSeparated.
-	 * 
-	 * @param input The array to chop.
-	 * @return Array with first and last elements removed.
-	 */
-	private static SyntaxTreeNode[] chop(SyntaxTreeNode[] input) {
-		return chop(input, 1);
-	}
-	
-	/**
-	 * Translates a variable-length comma-separated list of children into
-	 * a list of AST nodes.
-	 * 
-	 * @param heirs The comma-separated heirs to process.
-	 * @return Corresponding list of AST nodes.
-	 * @throws ParseException If unable to parse one of the nodes.
-	 */
-	private static List<AstNode> commaSeparated(SyntaxTreeNode[] heirs) throws ParseException {
-		List<AstNode> children = new ArrayList<AstNode>();
-		for (int i = 0; i < heirs.length; i += 2) {
-			children.add(translate(heirs[i]));
-			if (i < heirs.length - 1) {
-				Assert.assertEquals(TLAplusParserConstants.COMMA, heirs[i+1].getKind());
-			}
-		}
-		return children;
-	}
-	
-	/**
 	 * Similar to the translate method, but for node types where SANY has an
 	 * extra intermediate node that the AST DSL flattens out. Instead of a
 	 * new node being created and returned, nodes are added to the provided
@@ -553,7 +510,7 @@ public class SanyTranslator {
 			} case TLAplusParserConstants.SEPARATOR: { // ----
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.SINGLE_LINE.asNode();
-			} case SyntaxTreeConstants.N_ParamDeclaration: {
+			} case SyntaxTreeConstants.N_ParamDeclaration: { // CONSTANTS x, f(_, _)
 				AstNode constants = Kind.CONSTANT_DECLARATION.asNode();
 				parser.consume(SyntaxTreeConstants.N_ConsDecl);
 				do {
@@ -593,14 +550,14 @@ public class SanyTranslator {
 				}
 				Assert.assertTrue(parser.isAtEnd());
 				return instance;
-			} case SyntaxTreeConstants.N_ModuleDefinition: {
+			} case SyntaxTreeConstants.N_ModuleDefinition: { // M == INSTANCE O WITH x <- y
 				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
 				flatTranslate(moduleDefinition, parser.consume(SyntaxTreeConstants.N_IdentLHS));
 				moduleDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				moduleDefinition.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
 				Assert.assertTrue(parser.isAtEnd());
 				return moduleDefinition;
-			} case SyntaxTreeConstants.N_Substitution: {
+			} case SyntaxTreeConstants.N_Substitution: { // x <- y
 				AstNode substitution = Kind.SUBSTITUTION.asNode();
 				// TODO: test operator substitution
 				substitution.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
@@ -608,10 +565,10 @@ public class SanyTranslator {
 				substitution.addChild(parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return substitution;
-			} case TLAplusParserConstants.SUBSTITUTE: {
+			} case TLAplusParserConstants.SUBSTITUTE: { // <-
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.GETS.asNode();
-			} case SyntaxTreeConstants.N_OperatorDefinition: { // ex. op(a, b) == expr
+			} case SyntaxTreeConstants.N_OperatorDefinition: { // op(a, b) == expr
 				AstNode operatorDefinition = Kind.OPERATOR_DEFINITION.asNode();
 				Assert.assertEquals(3, heirs.length);
 				switch (heirs[0].getKind()) {
@@ -790,7 +747,6 @@ public class SanyTranslator {
 				return Kind.REAL_NUMBER.asNode();
 			} case SyntaxTreeConstants.N_String: { // ex. "foobar"
 				AstNode string = Kind.STRING.asNode();
-				System.out.println(node.image);
 				int[] codepoints = node.image.toString().codePoints().toArray();
 				// The AST DSL records escaped characters in strings
 				for (int i = 0; i < codepoints.length; i++) {
@@ -851,6 +807,42 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.RSB);
 				Assert.assertTrue(parser.isAtEnd());
 				return setOfFunctions;
+			} case SyntaxTreeConstants.N_Except: { // [f EXCEPT ![x] = y]
+				AstNode except = Kind.EXCEPT.asNode();
+				parser.consume(TLAplusParserConstants.LSB);
+				except.addField("expr_to_update", parser.translate("expression"));
+				parser.consume(TLAplusParserConstants.EXCEPT);
+				do {
+					except.addChild(parser.translate(SyntaxTreeConstants.N_ExceptSpec));
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				parser.consume(TLAplusParserConstants.RSB);
+				Assert.assertTrue(parser.isAtEnd());
+				return except;
+			} case SyntaxTreeConstants.N_ExceptSpec: { // ![x] = y
+				AstNode update = Kind.EXCEPT_UPDATE.asNode();
+				parser.consume(TLAplusParserConstants.BANG);
+				AstNode updateSpec = Kind.EXCEPT_UPDATE_SPECIFIER.asNode();
+				do {
+					updateSpec.addChild(parser.translate(SyntaxTreeConstants.N_ExceptComponent));
+				} while (!parser.match(SyntaxTreeConstants.T_EQUAL));
+				update.addField("update_specifier", updateSpec);
+				update.addField("new_val", parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
+				return update;
+			} case SyntaxTreeConstants.N_ExceptComponent: { // [x]
+				if (parser.match(TLAplusParserConstants.LSB)) {
+					AstNode update = Kind.EXCEPT_UPDATE_FN_APPL.asNode();
+					update.addChildren(parseCommaSeparatedNodes(parser, "expression"));
+					parser.consume(TLAplusParserConstants.RSB);
+					Assert.assertTrue(parser.isAtEnd());
+					return update;
+				} else {
+					AstNode update = Kind.EXCEPT_UPDATE_RECORD_FIELD.asNode();
+					parser.consume(TLAplusParserConstants.DOT);
+					update.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
+					Assert.assertTrue(parser.isAtEnd());
+					return update;
+				}
 			} case SyntaxTreeConstants.N_IfThenElse: { // IF x THEN y ELSE z
 				AstNode ite = Kind.IF_THEN_ELSE.asNode();
 				parser.consume(TLAplusParserConstants.IF);
