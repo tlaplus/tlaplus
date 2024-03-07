@@ -1,4 +1,6 @@
 // Copyright (c) 2012 Markus Alexander Kuppe. All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
+
 package tlc2.tool.fp;
 
 import java.io.File;
@@ -921,7 +923,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 
 		@Override
-		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final RandomAccessFile outRAF, final Iterator ignored) throws IOException {
+		protected void mergeNewEntries(final BufferedRandomAccessFile[] inRAFs, final BufferedRandomAccessFile outRAF, final Iterator ignored) throws IOException {
 			final long now = System.currentTimeMillis();
 			assert offsets.stream().mapToLong(new ToLongFunction<Result>() {
 				public long applyAsLong(Result result) {
@@ -1003,6 +1005,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 				tmpRAFs[i].close();
 			}
 
+			// We wrote some data to the underlying file through different file descriptors (the tmpRAF objects).  To
+			// read that data back, we need to ensure that outRAF is not holding on to any cached bytes.
+			outRAF.invalidateBufferedData();
+
 			assert checkRAFs(inRAFs);
 			assert checkTable(a) : "Missed element during eviction.";
 			
@@ -1074,7 +1080,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		 * @see tlc2.tool.fp.MSBDiskFPSet#mergeNewEntries(java.io.RandomAccessFile, java.io.RandomAccessFile)
 		 */
 		@Override
-		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException {
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, BufferedRandomAccessFile outRAF) throws IOException {
 			final long buffLen = tblCnt.sum();
 			final Iterator itr = new Iterator(array, buffLen, indexer);
 
@@ -1091,7 +1097,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			fileCnt += buffLen;
 		}
 
-		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF, Iterator itr)
+		protected void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, BufferedRandomAccessFile outRAF, Iterator itr)
 				throws IOException {
 			inRAFs[0].seek(0);
 			mergeNewEntries(inRAFs[0], outRAF, itr, inRAFs[0].length() / FPSet.LongSize);
