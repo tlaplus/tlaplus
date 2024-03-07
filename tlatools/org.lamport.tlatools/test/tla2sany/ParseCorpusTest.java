@@ -52,6 +52,5 @@ public class ParseCorpusTest {
 				corpusTest.expectedAst.testEquality(actual);
 			}
 		}
-		System.out.flush();
 	}
 }
