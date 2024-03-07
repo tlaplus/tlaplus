@@ -451,7 +451,29 @@ public class SanyTranslator {
 		SyntaxTreeNode[] heirs = node.getHeirs();
 		SanyReparser parser = new SanyReparser(heirs);
 		switch (node.getKind()) {
-			case SyntaxTreeConstants.N_IdentLHS: { // f ==, f(a, b) ==, f(g(_, _)), etc.
+			case SyntaxTreeConstants.N_BeginModule: {
+				parser.consume(TLAplusParserConstants._BM0, TLAplusParserConstants._BM1);
+				parent.addChild(Kind.HEADER_LINE.asNode());
+				parser.consume(TLAplusParserConstants.IDENTIFIER);
+				parent.addField("name", Kind.IDENTIFIER.asNode());
+				parser.consume(TLAplusParserConstants.SEPARATOR);
+				parent.addChild(Kind.HEADER_LINE.asNode());
+				break;
+			} case SyntaxTreeConstants.N_Extends: {
+				if (parser.match(TLAplusParserConstants.EXTENDS)) {
+					AstNode extensions = Kind.EXTENDS.asNode();
+					do {
+						extensions.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
+					} while (parser.match(TLAplusParserConstants.COMMA));
+					parent.addChild(extensions);
+				}
+				break;
+			} case SyntaxTreeConstants.N_Body: {
+				while (!parser.isAtEnd()) {
+					parent.addChild(parser.translate("unit"));
+				}
+				break;
+			} case SyntaxTreeConstants.N_IdentLHS: { // f ==, f(a, b) ==, f(g(_, _)), etc.
 				parser.consume(TLAplusParserConstants.IDENTIFIER);
 				parent.addField("name", Kind.IDENTIFIER.asNode());
 				if (parser.match(TLAplusParserConstants.LBR)) {
@@ -519,74 +541,64 @@ public class SanyTranslator {
 			case SyntaxTreeConstants.N_Module: { // ---- MODULE Test ---- ... ====
 				AstNode module = Kind.MODULE.asNode();
 				Assert.assertEquals(4, heirs.length);
-				Assert.assertEquals(SyntaxTreeConstants.N_BeginModule, heirs[0].getKind());
-				SyntaxTreeNode header = heirs[0];
-				SyntaxTreeNode[] headerHeirs = header.getHeirs();
-				Assert.assertEquals(3, headerHeirs.length);
-				int kind = headerHeirs[0].getKind();
-				Assert.assertTrue(kind == TLAplusParserConstants._BM0 || kind == TLAplusParserConstants._BM1);
-				module.addChild(Kind.HEADER_LINE.asNode());
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, headerHeirs[1].getKind());
-				module.addField("name", Kind.IDENTIFIER.asNode());
-				Assert.assertEquals(TLAplusParserConstants.SEPARATOR, headerHeirs[2].getKind());
-				module.addChild(Kind.HEADER_LINE.asNode());
-				Assert.assertEquals(SyntaxTreeConstants.N_Extends, heirs[1].getKind());
-				module.addChildren(repeat(heirs[1]));
-				Assert.assertEquals(SyntaxTreeConstants.N_Body, heirs[2].getKind());
-				module.addChildren(repeat(heirs[2]));
-				Assert.assertEquals(SyntaxTreeConstants.N_EndModule, heirs[3].getKind());
-				module.addChild(translate(heirs[3]));
+				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_BeginModule));
+				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_Extends));
+				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_Body));
+				module.addChild(parser.translate(SyntaxTreeConstants.N_EndModule));
 				return module;
 			} case SyntaxTreeConstants.N_EndModule: { // ====
-				Assert.assertEquals(1, heirs.length);
-				Assert.assertEquals(TLAplusParserConstants.END_MODULE, heirs[0].getKind());
+				parser.consume(TLAplusParserConstants.END_MODULE);
+				Assert.assertTrue(parser.isAtEnd());
 				return Kind.DOUBLE_LINE.asNode();
 			} case TLAplusParserConstants.SEPARATOR: { // ----
+				Assert.assertTrue(parser.isAtEnd());
 				return Kind.SINGLE_LINE.asNode();
+			} case SyntaxTreeConstants.N_ParamDeclaration: {
+				AstNode constants = Kind.CONSTANT_DECLARATION.asNode();
+				parser.consume(SyntaxTreeConstants.N_ConsDecl);
+				do {
+					constants.addChild(parser.translate(
+						SyntaxTreeConstants.N_IdentDecl,
+						SyntaxTreeConstants.N_PrefixDecl,
+						SyntaxTreeConstants.N_InfixDecl,
+						SyntaxTreeConstants.N_PostfixDecl));
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				Assert.assertTrue(parser.isAtEnd());
+				return constants;
 			} case SyntaxTreeConstants.N_VariableDeclaration: { // VARIABLES x, y, z
 				AstNode variables = Kind.VARIABLE_DECLARATION.asNode();
-				Assert.assertTrue(heirs.length >= 2);
-				Assert.assertEquals(TLAplusParserConstants.VARIABLE, heirs[0].getKind());
-				for (int i = 1; i < heirs.length; i += 2) {
-					Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[i].getKind());
-					variables.addChild(Kind.IDENTIFIER.asNode());
-					if (i + 1 < heirs.length) {
-						Assert.assertEquals(TLAplusParserConstants.COMMA, heirs[i+1].getKind());
-					}
-				}
+				parser.consume(TLAplusParserConstants.VARIABLE);
+				variables.addChildren(parseCommaSeparatedIds(parser));
+				Assert.assertTrue(parser.isAtEnd());
 				return variables;
 			} case SyntaxTreeConstants.N_Instance: { // INSTANCE M, LOCAL INSTANCE N, etc.
-				Assert.assertTrue(heirs.length == 1 || heirs.length == 2);
-				if (1 == heirs.length) {
-					Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[0].getKind());
-					return translate(heirs[0]);
-				} else {
+				if (parser.match(TLAplusParserConstants.LOCAL)) {
 					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
-					Assert.assertEquals(TLAplusParserConstants.LOCAL, heirs[0].getKind());
-					Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[1].getKind());
-					localDefn.addChild(translate(heirs[1]));
+					localDefn.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
+					Assert.assertTrue(parser.isAtEnd());
 					return localDefn;
+				} else {
+					AstNode instance = parser.translate(SyntaxTreeConstants.N_NonLocalInstance);
+					Assert.assertTrue(parser.isAtEnd());
+					return instance;
 				}
 			} case SyntaxTreeConstants.N_NonLocalInstance: { // INSTANCE M WITH a <- b, c <- d
 				AstNode instance = Kind.INSTANCE.asNode();
-				Assert.assertTrue(heirs.length >= 2);
-				Assert.assertEquals(TLAplusParserConstants.INSTANCE, heirs[0].getKind());
-				Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, heirs[1].getKind());
-				instance.addChild(Kind.IDENTIFIER_REF.asNode());
-				if (heirs.length > 2) {
-					Assert.assertEquals(TLAplusParserConstants.WITH, heirs[2].getKind());
-					instance.addChildren(commaSeparated(Arrays.copyOfRange(heirs, 3, heirs.length)));
+				parser.consume(TLAplusParserConstants.INSTANCE);
+				instance.addChild(parser.translate(TLAplusParserConstants.IDENTIFIER));
+				if (parser.match(TLAplusParserConstants.WITH)) {
+					do {
+						instance.addChild(parser.translate(SyntaxTreeConstants.N_Substitution));
+					} while (parser.match(TLAplusParserConstants.COMMA));
 				}
+				Assert.assertTrue(parser.isAtEnd());
 				return instance;
 			} case SyntaxTreeConstants.N_ModuleDefinition: {
 				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
-				Assert.assertEquals(3, heirs.length);
-				Assert.assertEquals(SyntaxTreeConstants.N_IdentLHS, heirs[0].getKind());
-				flatTranslate(moduleDefinition, heirs[0]);
-				Assert.assertEquals(TLAplusParserConstants.DEF, heirs[1].getKind());
-				moduleDefinition.addChild(Kind.DEF_EQ.asNode());
-				Assert.assertEquals(SyntaxTreeConstants.N_NonLocalInstance, heirs[2].getKind());
-				moduleDefinition.addChild(translate(heirs[2]));
+				flatTranslate(moduleDefinition, parser.consume(SyntaxTreeConstants.N_IdentLHS));
+				moduleDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
+				moduleDefinition.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
+				Assert.assertTrue(parser.isAtEnd());
 				return moduleDefinition;
 			} case SyntaxTreeConstants.N_Substitution: {
 				AstNode substitution = Kind.SUBSTITUTION.asNode();
