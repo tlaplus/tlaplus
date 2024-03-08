@@ -101,6 +101,7 @@ public class TLCGetSet implements ValueConstants {
 	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
 	public static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
 	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
+	private static final UniqueString SPEC_VARS = UniqueString.of("variables");
 
 	// TLCGet(..)
 	// BFS & Simulation mode
@@ -303,7 +304,7 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
-			final UniqueString[] n = new UniqueString[6];
+			final UniqueString[] n = new UniqueString[7];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -337,6 +338,10 @@ public class TLCGetSet implements ValueConstants {
 			v[5] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedTemporals()).stream()
 					.map(a -> new RecordValue(a)).collect(Collectors.toList())), false);
 			
+			n[6] = SPEC_VARS;
+			v[6] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getSpecProcessor().getVariablesNodes()).stream()
+					.map(odn -> new RecordValue(odn)).collect(Collectors.toList())), false);
+
 			return new RecordValue(n, v, false);
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
