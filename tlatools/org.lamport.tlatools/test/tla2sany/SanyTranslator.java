@@ -858,6 +858,7 @@ public class SanyTranslator {
 				parser.flatTranslate(choose, SyntaxTreeNode.N_MaybeBound);
 				parser.consume(TLAplusParserConstants.COLON);
 				choose.addField("expression", parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
 				return choose;
 			} case TLAplusParserConstants.EXISTS: { // \E
 				Assert.assertTrue(parser.isAtEnd());
@@ -890,6 +891,20 @@ public class SanyTranslator {
 				AstNode tuple = parseTupleOfIdentifiers(parser);
 				Assert.assertTrue(parser.isAtEnd());
 				return tuple;
+			} case SyntaxTreeConstants.N_FcnConst: { // [n \in Nat |-> 2*n]
+				AstNode function = Kind.FUNCTION_LITERAL.asNode();
+				parser.consume(TLAplusParserConstants.LSB);
+				do {
+					function.addChild(parser.translate(SyntaxTreeConstants.N_QuantBound));
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				function.addChild(parser.translate(TLAplusParserConstants.MAPTO));
+				function.addChild(parser.translate("expression"));
+				parser.consume(TLAplusParserConstants.RSB);
+				Assert.assertTrue(parser.isAtEnd());
+				return function;
+			} case TLAplusParserConstants.MAPTO: {
+				Assert.assertTrue(parser.isAtEnd());
+				return Kind.ALL_MAP_TO.asNode();
 			} case SyntaxTreeConstants.N_SetOfFcns: { // [S -> P]
 				AstNode setOfFunctions = Kind.SET_OF_FUNCTIONS.asNode();
 				parser.consume(TLAplusParserConstants.LSB);
