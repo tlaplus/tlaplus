@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -29,8 +30,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class BufferedRandomAccessFileTest {
@@ -131,6 +136,38 @@ public class BufferedRandomAccessFileTest {
 			fail(e.getMessage());
 		} finally {
 			raf.close();
+		}
+	}
+
+	@Test
+	public void testInvalidateBufferedData() throws IOException {
+		final File tmpFile = File.createTempFile("BufferedRandomAccessFileTest_testReadSeekNoLength", ".bin");
+		tmpFile.deleteOnExit();
+
+		try (BufferedRandomAccessFile raf = new BufferedRandomAccessFile(tmpFile, "rw")) {
+			raf.write(new byte[]{ 1, 2, 3 });
+			raf.flush();
+
+			// these writes bypass raf's buffer
+			try (BufferedRandomAccessFile other = new BufferedRandomAccessFile(tmpFile, "rw")) {
+				other.write(new byte[] { 10, 20, 30 });
+			}
+
+			raf.seek(0);
+
+			// data is buffered, so we don't see the new writes
+			Assert.assertEquals(1, raf.read());
+			Assert.assertEquals(2, raf.read());
+
+			// invalidate the buffer --> now we see the new writes
+			raf.invalidateBufferedData();
+			Assert.assertEquals(30, raf.read());
+
+			// indeed, we can see *all* of them
+			raf.seek(0);
+			Assert.assertEquals(10, raf.read());
+			Assert.assertEquals(20, raf.read());
+			Assert.assertEquals(30, raf.read());
 		}
 	}
 }

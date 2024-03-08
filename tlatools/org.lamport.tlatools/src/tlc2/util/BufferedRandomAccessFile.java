@@ -162,8 +162,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     public void invalidateBufferedData() throws IOException {
         flush();
 
-        // This assignment invalidates any buffered data: lo==hi means there are 0 buffered bytes.
-        this.hi = this.lo;
+        // To preserve this class's invariants, we can't just clear the buffer; we also need to refill the
+        // buffer from disk.
+        if (this.diskPos != this.lo) {
+            super.seek(this.lo);
+            this.diskPos = this.lo;
+        }
+        this.hi = this.lo + fillBuffer();
     }
     
     /* overrides RandomAccessFile.close() */
