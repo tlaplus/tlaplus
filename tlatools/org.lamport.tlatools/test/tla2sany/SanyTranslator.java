@@ -363,17 +363,11 @@ public class SanyTranslator {
 		SyntaxTreeNode opNode = parser.consume(
 				TLAplusParserConstants.IDENTIFIER,
 				SyntaxTreeConstants.N_NonExpPrefixOp,
+				SyntaxTreeConstants.N_PrefixOp,
 				SyntaxTreeConstants.N_InfixOp,
 				SyntaxTreeConstants.N_PostfixOp);
 		int kind = opNode.getKind();
-		AstNode op = translate(opNode);
-		return	kind == SyntaxTreeConstants.N_NonExpPrefixOp
-				? Kind.PREFIX_OP_SYMBOL.asNode().addChild(op)
-				: kind == SyntaxTreeConstants.N_InfixOp
-				? Kind.INFIX_OP_SYMBOL.asNode().addChild(op)
-				: kind == SyntaxTreeConstants.N_PostfixOp
-				? Kind.POSTFIX_OP_SYMBOL.asNode().addChild(op)
-				: op;
+		return translate(opNode);
 	}
 	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
@@ -400,8 +394,17 @@ public class SanyTranslator {
 	 */
 	private static AstNode prefixOpFromString(String op) throws ParseException {
 		switch (op) {
+			case "\\lnot": return Kind.LNOT.asNode();
+			case "\\neg": return Kind.LNOT.asNode();
+			case "~": return Kind.LNOT.asNode();
+			case "UNION": return Kind.UNION.asNode();
 			case "SUBSET": return Kind.POWERSET.asNode();
+			case "DOMAIN": return Kind.DOMAIN.asNode();
 			case "-.": return Kind.NEGATIVE.asNode();
+			case "ENABLED": return Kind.ENABLED.asNode();
+			case "UNCHANGED": return Kind.UNCHANGED.asNode();
+			case "[]": return Kind.ALWAYS.asNode();
+			case "<>": return Kind.EVENTUALLY.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -663,27 +666,21 @@ public class SanyTranslator {
 				return op;
 			} case SyntaxTreeConstants.N_PrefixDecl: { // -. _
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
-				AstNode symbol = Kind.PREFIX_OP_SYMBOL.asNode();
-				symbol.addField("symbol", parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp));
-				op.addChild(symbol);
+				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp));
 				op.addChild(parser.translate(TLAplusParserConstants.US));
 				Assert.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_InfixDecl: { // _ + _, _ - _
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
 				op.addChild(parser.translate(TLAplusParserConstants.US));
-				AstNode symbol = Kind.INFIX_OP_SYMBOL.asNode();
-				symbol.addField("symbol", parser.translate(SyntaxTreeConstants.N_InfixOp));
-				op.addChild(symbol);
+				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_InfixOp));
 				op.addChild(parser.translate(TLAplusParserConstants.US));
 				Assert.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_PostfixDecl: { // _ ', _ ^+
 				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
 				op.addChild(parser.translate(TLAplusParserConstants.US));
-				AstNode symbol = Kind.POSTFIX_OP_SYMBOL.asNode();
-				symbol.addField("symbol", parser.translate(SyntaxTreeConstants.N_PostfixOp));
-				op.addChild(symbol);
+				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_PostfixOp));
 				Assert.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
@@ -1152,31 +1149,41 @@ public class SanyTranslator {
 			} case SyntaxTreeConstants.N_GenPrefixOp: { // ex. SUBSET
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
 				Assert.assertEquals(0, prefix.getHeirs().length);
-				AstNode op = parser.translate(SyntaxTreeConstants.N_PrefixOp);
+				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_PrefixOp);
 				Assert.assertTrue(parser.isAtEnd());
-				return op;
+				return prefixOpFromString(op.getImage());
 			} case SyntaxTreeConstants.N_GenInfixOp: { // ex. foo!bar!baz!+
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
 				Assert.assertEquals(0, prefix.getHeirs().length);
 				// Sometimes \in appears as N_InfixOp, and sometimes it appears as T_IN
-				AstNode op = parser.translate(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
+				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
 				Assert.assertTrue(parser.isAtEnd());
-				return op;
+				return infixOpFromString(op.getImage());
 			} case SyntaxTreeConstants.T_IN: { // \in as an infix operator
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.IN.asNode();
-			} case SyntaxTreeConstants.N_PrefixOp: { // ex. SUBSET
+			} case SyntaxTreeConstants.N_GenNonExpPrefixOp: { // A!B!-.
+				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				AstNode op = parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp);
 				Assert.assertTrue(parser.isAtEnd());
-				return prefixOpFromString(node.image.toString());
+				return op;
 			} case SyntaxTreeConstants.N_NonExpPrefixOp: { // ex. -.
+				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());
-				return prefixOpFromString(node.image.toString());
+				return op.addChild(prefixOpFromString(node.image.toString()));
+			} case SyntaxTreeConstants.N_PrefixOp: { // ex. ~, SUBSET, -
+				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
+				Assert.assertTrue(parser.isAtEnd());
+				return op.addChild(prefixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.N_InfixOp: { // ex. +, -, /, /\
+				AstNode op = Kind.INFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());
-				return infixOpFromString(node.image.toString());
+				return op.addChild(infixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.N_PostfixOp: { // ex. ^+, '
+				AstNode op = Kind.POSTFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());
-				return postfixOpFromString(node.image.toString());
+				return op.addChild(postfixOpFromString(node.image.toString()));
 			} case SyntaxTreeConstants.N_Assumption: {
 				AstNode assumption = Kind.ASSUMPTION.asNode();
 				parser.consume(TLAplusParserConstants.ASSUME);

@@ -1,17 +1,76 @@
 =============|||
-SUBSET Prefix Operator
+Prefix Operator Application
 =============|||
 
 ---- MODULE Test ----
-op == SUBSET x
+op == {
+  ~x,
+  \lnot x,
+  \neg x,
+  UNION x,
+  SUBSET x,
+  DOMAIN x,
+  -x,
+  ENABLED x,
+  UNCHANGED x,
+  []x,
+  <>x
+}
 ====
 
 -------------|||
 
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq)
-    (bound_prefix_op
-      (powerset) (identifier_ref)
-    )
-  )
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition: (finite_set_literal
+    (bound_prefix_op symbol: (lnot) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (lnot) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (lnot) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (union) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (powerset) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (domain) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (negative) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (enabled) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (unchanged) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (always) rhs: (identifier_ref))
+    (bound_prefix_op symbol: (eventually) rhs: (identifier_ref))
+  ))
 (double_line)))
+
+=============|||
+Prefix Operators as Parameters
+=============|||
+
+---- MODULE Test ----
+op == f(
+  ~,
+  \lnot,
+  \neg,
+  UNION,
+  SUBSET,
+  DOMAIN,
+  -.,
+  ENABLED,
+  UNCHANGED,
+  [],
+  <>
+)
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition: (bound_op name: (identifier_ref)
+    parameter: (prefix_op_symbol (lnot))
+    parameter: (prefix_op_symbol (lnot))
+    parameter: (prefix_op_symbol (lnot))
+    parameter: (prefix_op_symbol (union))
+    parameter: (prefix_op_symbol (powerset))
+    parameter: (prefix_op_symbol (domain))
+    parameter: (prefix_op_symbol (negative))
+    parameter: (prefix_op_symbol (enabled))
+    parameter: (prefix_op_symbol (unchanged))
+    parameter: (prefix_op_symbol (always))
+    parameter: (prefix_op_symbol (eventually))
+  ))
+(double_line)))
+

@@ -55,6 +55,8 @@ public class ParseCorpusTest {
 			}
 		}
 		System.out.println(String.format("Total corpus test count: %d", testCount));
+		List<AstNode.Kind> unused = AstNode.Kind.getUnused();
+		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
 		System.out.println(AstNode.Kind.getUnused());
 	}
 }
