@@ -237,4 +237,10 @@ public class IntValue extends Value {
     }
   }
 
+	public static Value narrowToIntValue(final long value) {
+	    if ((int)value != value) {
+	    	return ValNegOne;
+	    }
+	    return gen((int) value);
+	}
 }
