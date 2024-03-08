@@ -438,6 +438,14 @@ public class CostModelCreator extends ExplorerVisitor {
     	// producing bogus results (see CostModelCreator.preVisit(ExploreNode) above).
     	final Action[] actions = tool.getActions();
         final Set<CostModel> reported = new HashSet<>();
+		// Let A be a sub-action with non-zero arity, i.e. a sub-action that has one or
+		// more parameters ("context"). TLC creates an action instance for each
+		// parameter in the set defining the set, if the set of parameter is
+		// constant-level. In other words, TLC may generate multiple Actions with the
+		// same location. Thus, sorting Action instances based on location
+		// non-deterministically eliminates the parameter dimension.  For coverage
+        // reporting, this is acceptable assuming that coverage data is uniform.
+        // However, this assumption doesn't hold if the model uses symmetry reduction.
         final Set<Action> sortedActions = new TreeSet<>(new Comparator<Action>() {
 			@Override
 			public int compare(Action o1, Action o2) {
