@@ -121,7 +121,7 @@ public class ModelCheckerMXWrapper extends TLCStandardMBean implements TLCStatis
 	public String getCurrentState() {
 		final TLCState state = modelChecker.theStateQueue.sPeek();
 		if (state != null) {
-			return state.toString();
+			return state.evalStateLevelAlias().toString();
 		}
 		return "N/A";
 	}
