@@ -240,14 +240,14 @@ public class SanyTranslator {
 	}
 	
 	/**
-	 * Parses a quantifier bound.
+	 * Parses an unstructured quantifier bound, presented as a flat token list.
 	 * Ex. <<x, y, z>> \in Nat \X Nat \X Nat
 	 * 
 	 * @param parser The SANY reparser state.
 	 * @return An AST node for the quantifier bound.
 	 * @throws ParseException If input is not a valid quantifier bound.
 	 */
-	private static AstNode parseQuantifierBound(SanyReparser parser) throws ParseException {
+	private static AstNode parseUnstructuredQuantifierBound(SanyReparser parser) throws ParseException {
 		AstNode bound = Kind.QUANTIFIER_BOUND.asNode();
 		if (parser.check(TLAplusParserConstants.LAB)) {
 			bound.addChild(parseTupleOfIdentifiers(parser));
@@ -261,7 +261,7 @@ public class SanyTranslator {
 		bound.addField("set", parser.translate("expression"));
 		return bound;
 	}
-
+	
 	/**
 	 * Parses a list of either quantifier bounds or simple comma-separated
 	 * identifiers. This is used in both TAKE and PICK proof steps.
@@ -276,7 +276,7 @@ public class SanyTranslator {
 		SanyReparser lookahead = parser.lookahead();
 		try {
 			do {
-				children.add(parseQuantifierBound(lookahead));
+				children.add(parseUnstructuredQuantifierBound(lookahead));
 			} while (lookahead.match(TLAplusParserConstants.COMMA));
 			parser.merge(lookahead);
 			return children;
@@ -360,6 +360,7 @@ public class SanyTranslator {
 			case "Nat": return Kind.NAT_NUMBER_SET.asNode();
 			case "Int": return Kind.INT_NUMBER_SET.asNode();
 			case "Real": return Kind.REAL_NUMBER_SET.asNode();
+			case "@": return Kind.PREV_FUNC_VAL.asNode();
 			default: return Kind.IDENTIFIER_REF.asNode();
 		}
 	}
@@ -821,14 +822,43 @@ public class SanyTranslator {
 				parser.consume(TLAplusParserConstants.COLON);
 				quant.addField("expression", parser.translate("expression"));
 				return quant;
+			} case SyntaxTreeConstants.N_UnboundQuant: { // \AA x, y : P(x, y)
+				AstNode quant = Kind.UNBOUNDED_QUANTIFICATION.asNode();
+				quant.addField("quantifier", parser.translate(
+						TLAplusParserConstants.EXISTS,
+						TLAplusParserConstants.FORALL,
+						TLAplusParserConstants.T_FORALL,
+						TLAplusParserConstants.T_EXISTS));
+				do {
+					parser.consume(TLAplusParserConstants.IDENTIFIER);
+					quant.addField("identifier", Kind.IDENTIFIER.asNode());
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				parser.consume(TLAplusParserConstants.COLON);
+				quant.addField("expression", parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
+				return quant;
 			} case TLAplusParserConstants.EXISTS: { // \E
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.EXISTS.asNode();
 			} case TLAplusParserConstants.FORALL: { // \A
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.FORALL.asNode();
+			} case TLAplusParserConstants.T_FORALL: { // \AA
+				Assert.assertTrue(parser.isAtEnd());
+				return Kind.TEMPORAL_FORALL.asNode();
+			} case TLAplusParserConstants.T_EXISTS: { // \EE
+				Assert.assertTrue(parser.isAtEnd());
+				return Kind.TEMPORAL_EXISTS.asNode();
 			} case SyntaxTreeConstants.N_QuantBound: { // x, y \in Nat
-				AstNode quantBound = parseQuantifierBound(parser);
+				AstNode quantBound = Kind.QUANTIFIER_BOUND.asNode();
+				if (parser.check(TLAplusParserConstants.IDENTIFIER)) {
+					quantBound.addChildren(parseCommaSeparatedIds(parser));
+				} else {
+					quantBound.addChild(parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
+				}
+				parser.consume(SyntaxTreeConstants.T_IN);
+				quantBound.addChild(Kind.SET_IN.asNode());
+				quantBound.addField("set", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return quantBound;
 			} case SyntaxTreeConstants.N_IdentifierTuple: { // <<a, b, c>>

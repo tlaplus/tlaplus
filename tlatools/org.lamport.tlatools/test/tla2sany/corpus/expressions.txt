@@ -14,3 +14,104 @@ op == ((((x))))
   )
 (double_line)))
 
+==============================|||
+Bounded Quantification
+==============================|||
+
+---- MODULE Test ----
+op == \A x, y \in Nat, z \in Int, <<a, b, c>> \in Real : FALSE
+op == \E <<x, y>> \in Nat, a, b \in Int : TRUE
+====
+
+------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (bounded_quantification
+      quantifier: (forall)
+      bound: (quantifier_bound
+        (identifier) (identifier)
+        (set_in)
+        set: (nat_number_set)
+      )
+      bound: (quantifier_bound
+        (identifier)
+        (set_in)
+        set: (int_number_set)
+      )
+      bound: (quantifier_bound
+        (tuple_of_identifiers (langle_bracket) (identifier) (identifier) (identifier) (rangle_bracket))
+        (set_in)
+        set: (real_number_set)
+      )
+      expression: (boolean)
+    )
+  )
+  (operator_definition name: (identifier) (def_eq)
+    definition: (bounded_quantification
+      quantifier: (exists)
+      bound: (quantifier_bound
+        (tuple_of_identifiers (langle_bracket) (identifier) (identifier) (rangle_bracket))
+        (set_in)
+        set: (nat_number_set)
+      )
+      bound: (quantifier_bound
+        (identifier) (identifier)
+        (set_in)
+        set: (int_number_set)
+      )
+      expression: (boolean)
+    )
+  )
+(double_line)))
+
+==============================|||
+Unbounded Quantification
+==============================|||
+
+---- MODULE Test ----
+op == \A x : TRUE
+op == \E x, y : FALSE
+op == \AA x, y, z : TRUE
+op == \EE x, y, z, w : FALSE
+====
+
+------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (unbounded_quantification
+      quantifier: (forall)
+      identifier: (identifier)
+      expression: (boolean)
+    )
+  )
+  (operator_definition name: (identifier) (def_eq)
+    definition: (unbounded_quantification
+      quantifier: (exists)
+      identifier: (identifier)
+      identifier: (identifier)
+      expression: (boolean)
+    )
+  )
+  (operator_definition name: (identifier) (def_eq)
+    definition: (unbounded_quantification
+      quantifier: (temporal_forall)
+      identifier: (identifier)
+      identifier: (identifier)
+      identifier: (identifier)
+      expression: (boolean)
+    )
+  )
+  (operator_definition name: (identifier) (def_eq)
+    definition: (unbounded_quantification
+      quantifier: (temporal_exists)
+      identifier: (identifier)
+      identifier: (identifier)
+      identifier: (identifier)
+      identifier: (identifier)
+      expression: (boolean)
+    )
+  )
+(double_line)))
+
