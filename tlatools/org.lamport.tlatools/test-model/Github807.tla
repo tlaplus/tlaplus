@@ -1,5 +1,5 @@
 ---------------------------- MODULE Github807 ---------------------------
-EXTENDS Naturals, TLCExt
+EXTENDS Naturals, TLCExt, TLC
 VARIABLE x
 
 Init == x = 0
@@ -38,6 +38,45 @@ PostCondition ==
                                           module |-> "Github807" ] ],
                                   <<3, [x |-> 2]>> >> },
                          state |-> {<<1, [x |-> 0]>>, <<2, [x |-> 1]>>, <<3, [x |-> 2]>>} ]
+       /\ TLCGet("spec") =
+				       [ impliedinits |-> {},
+				  invariants |->
+				      { [ name |-> "IsNotTwo",
+				          location |->
+				              [ beginLine |-> 15,
+				                beginColumn |-> 13,
+				                endLine |-> 15,
+				                endColumn |-> 17,
+				                module |-> "Github807" ],
+				          coverage |-> [count |-> 3] ] },
+				  impliedtemporals |-> {},
+				  temporals |-> {},
+				  actions |->
+				      { [ name |-> "Add",
+				          location |->
+				              [ beginLine |-> 13,
+				                beginColumn |-> 8,
+				                endLine |-> 13,
+				                endColumn |-> 15,
+				                module |-> "Github807" ],
+				          coverage |-> [generated |-> 6, distinct |-> 2] ] },
+				  inits |->
+				      { [ name |-> "Init",
+				          location |->
+				              [ beginLine |-> 5,
+				                beginColumn |-> 9,
+				                endLine |-> 5,
+				                endColumn |-> 13,
+				                module |-> "Github807" ],
+				          coverage |-> [generated |-> 3, distinct |-> 3] ] },
+				  variables |->
+				      { [ name |-> "x",
+				          location |->
+				              [ beginLine |-> 3,
+				                beginColumn |-> 10,
+				                endLine |-> 3,
+				                endColumn |-> 10,
+				                module |-> "Github807" ] ] } ]
 ==============================================================================
 ---------------------------- CONFIG Github807 ----------------------------
 SPECIFICATION Spec

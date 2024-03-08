@@ -148,6 +148,28 @@ public class RecordValue extends Value implements FunctionValue {
 		this.isNorm = false;
   }
 
+  public RecordValue(final Action action, final UniqueString u, final Value v) {
+		final Map<UniqueString, Value> parameters = action.getParameters();
+		this.names = new UniqueString[parameters.isEmpty() ? 3 : 4];
+		this.values = new Value[this.names.length];
+
+		this.names[0] = NAME;
+		this.values[0] = new StringValue(action.getName());
+
+		this.names[1] = LOC;
+		this.values[1] = new RecordValue(action.getDefinition());
+
+		this.names[2] = u;
+		this.values[2] = v;
+
+		if (!parameters.isEmpty()) {
+			this.names[3] = CTXT;
+			this.values[3] = new RecordValue(parameters);
+		}
+		
+		this.isNorm = false;
+  }
+
   public RecordValue(final TLCStateInfo info) {
 	  this(info.state);
   }
