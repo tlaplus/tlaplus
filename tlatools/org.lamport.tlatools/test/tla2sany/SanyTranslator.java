@@ -194,6 +194,10 @@ public class SanyTranslator {
 		public AstNode translate(int... expected) throws ParseException {
 			return SanyTranslator.translate(this.consume(expected));
 		}
+		
+		public void flatTranslate(AstNode parent, int... expected) throws ParseException {
+			SanyTranslator.flatTranslate(parent, this.consume(expected));
+		}
 	}
 	
 	/**
@@ -429,8 +433,7 @@ public class SanyTranslator {
 	 * @throws ParseException If a translation is not yet defined for the node.
 	 */
 	private static void flatTranslate(AstNode parent, SyntaxTreeNode node) throws ParseException {
-		SyntaxTreeNode[] heirs = node.getHeirs();
-		SanyReparser parser = new SanyReparser(heirs);
+		SanyReparser parser = new SanyReparser(node.getHeirs());
 		switch (node.getKind()) {
 			case SyntaxTreeConstants.N_BeginModule: {
 				parser.consume(TLAplusParserConstants._BM0, TLAplusParserConstants._BM1);
@@ -476,6 +479,13 @@ public class SanyTranslator {
 					parent.addField("parameter", parser.translate("expression"));
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RBR);
+				break;
+			} case SyntaxTreeConstants.N_MaybeBound: { // \in Nat or nothing
+				if (!parser.isAtEnd()) {
+					parser.consume(SyntaxTreeConstants.T_IN);
+					parent.addChild(Kind.SET_IN.asNode());
+					parent.addField("set", parser.translate("expression"));
+				}
 				break;
 			} case SyntaxTreeConstants.N_ProofStep: { // <1>c QED
 				AstNode qedStep = Kind.QED_STEP.asNode();
@@ -523,9 +533,9 @@ public class SanyTranslator {
 		switch (node.getKind()) {
 			case SyntaxTreeConstants.N_Module: { // ---- MODULE Test ---- ... ====
 				AstNode module = Kind.MODULE.asNode();
-				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_BeginModule));
-				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_Extends));
-				flatTranslate(module, parser.consume(SyntaxTreeConstants.N_Body));
+				parser.flatTranslate(module, SyntaxTreeConstants.N_BeginModule);
+				parser.flatTranslate(module, SyntaxTreeConstants.N_Extends);
+				parser.flatTranslate(module, SyntaxTreeConstants.N_Body);
 				module.addChild(parser.translate(SyntaxTreeConstants.N_EndModule));
 				return module;
 			} case SyntaxTreeConstants.N_EndModule: { // ====
@@ -577,7 +587,7 @@ public class SanyTranslator {
 				return instance;
 			} case SyntaxTreeConstants.N_ModuleDefinition: { // M == INSTANCE O WITH x <- y
 				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
-				flatTranslate(moduleDefinition, parser.consume(SyntaxTreeConstants.N_IdentLHS));
+				parser.flatTranslate(moduleDefinition, SyntaxTreeConstants.N_IdentLHS);
 				moduleDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				moduleDefinition.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
 				Assert.assertTrue(parser.isAtEnd());
@@ -594,11 +604,11 @@ public class SanyTranslator {
 				return Kind.GETS.asNode();
 			} case SyntaxTreeConstants.N_OperatorDefinition: { // op(a, b) == expr
 				AstNode operatorDefinition = Kind.OPERATOR_DEFINITION.asNode();
-				flatTranslate(operatorDefinition, parser.consume(
+				parser.flatTranslate(operatorDefinition,
 						SyntaxTreeConstants.N_IdentLHS,
 						SyntaxTreeConstants.N_PrefixLHS,
 						SyntaxTreeConstants.N_InfixLHS,
-						SyntaxTreeConstants.N_PostfixLHS));
+						SyntaxTreeConstants.N_PostfixLHS);
 				operatorDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				operatorDefinition.addField("definition", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
@@ -789,9 +799,9 @@ public class SanyTranslator {
 				// Set filters are restrictive and only allow one element from generator
 				AstNode bound = Kind.QUANTIFIER_BOUND.asNode();
 				if (parser.match(TLAplusParserConstants.IDENTIFIER)) {
-					bound.addChild(Kind.IDENTIFIER.asNode());
+					bound.addField("intro", Kind.IDENTIFIER.asNode());
 				} else {
-					bound.addChild(parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
+					bound.addField("intro", parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
 				}
 				parser.consume(SyntaxTreeConstants.T_IN);
 				bound.addChild(Kind.SET_IN.asNode());
@@ -831,12 +841,24 @@ public class SanyTranslator {
 						TLAplusParserConstants.T_EXISTS));
 				do {
 					parser.consume(TLAplusParserConstants.IDENTIFIER);
-					quant.addField("identifier", Kind.IDENTIFIER.asNode());
+					quant.addField("intro", Kind.IDENTIFIER.asNode());
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.COLON);
 				quant.addField("expression", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return quant;
+			} case SyntaxTreeConstants.N_UnboundOrBoundChoose: { // CHOOSE x \in Nat : x > 0
+				AstNode choose = Kind.CHOOSE.asNode();
+				parser.consume(TLAplusParserConstants.CHOOSE);
+				if (parser.match(TLAplusParserConstants.IDENTIFIER)) {
+					choose.addField("intro", Kind.IDENTIFIER.asNode());
+				} else {
+					choose.addField("intro", parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
+				}
+				parser.flatTranslate(choose, SyntaxTreeNode.N_MaybeBound);
+				parser.consume(TLAplusParserConstants.COLON);
+				choose.addField("expression", parser.translate("expression"));
+				return choose;
 			} case TLAplusParserConstants.EXISTS: { // \E
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.EXISTS.asNode();
@@ -852,9 +874,12 @@ public class SanyTranslator {
 			} case SyntaxTreeConstants.N_QuantBound: { // x, y \in Nat
 				AstNode quantBound = Kind.QUANTIFIER_BOUND.asNode();
 				if (parser.check(TLAplusParserConstants.IDENTIFIER)) {
-					quantBound.addChildren(parseCommaSeparatedIds(parser));
+					do {
+						parser.consume(TLAplusParserConstants.IDENTIFIER);
+						quantBound.addField("intro", Kind.IDENTIFIER.asNode());
+					} while (parser.match(TLAplusParserConstants.COMMA));
 				} else {
-					quantBound.addChild(parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
+					quantBound.addField("intro", parser.translate(SyntaxTreeConstants.N_IdentifierTuple));
 				}
 				parser.consume(SyntaxTreeConstants.T_IN);
 				quantBound.addChild(Kind.SET_IN.asNode());
@@ -1019,7 +1044,7 @@ public class SanyTranslator {
 						Assert.fail(String.format("Unhandled op case %S", nameOrSymbol.kind));
 					}
 				}
-				flatTranslate(op, parser.consume(SyntaxTreeConstants.N_OpArgs));
+				parser.flatTranslate(op, SyntaxTreeConstants.N_OpArgs);
 				Assert.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_FcnAppl: { // f[x,y,z]
@@ -1207,7 +1232,7 @@ public class SanyTranslator {
 				if (labelName.isKind(SyntaxTreeConstants.N_OpApplication)) {
 					SanyReparser nameParser = new SanyReparser(labelName.getHeirs());
 					nameParser.consume(SyntaxTreeConstants.N_GeneralId);
-					flatTranslate(label, nameParser.consume(SyntaxTreeConstants.N_OpArgs));
+					nameParser.flatTranslate(label, SyntaxTreeConstants.N_OpArgs);
 				}
 				label.addChild(parser.translate(TLAplusParserConstants.COLONCOLON));
 				label.addField("expression", parser.translate("expression"));

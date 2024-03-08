@@ -65,7 +65,7 @@ op == {f(x) : x \in Nat}
   (operator_definition name: (identifier) (def_eq)
     definition: (set_map
       map: (bound_op name: (identifier_ref) parameter: (identifier_ref))
-      generator: (quantifier_bound (identifier) (set_in) set: (nat_number_set))
+      generator: (quantifier_bound intro: (identifier) (set_in) set: (nat_number_set))
     )
   )
 (double_line)))
@@ -84,8 +84,8 @@ op == {f(x, y, z) : x \in Int, y, z \in Real}
   (operator_definition name: (identifier) (def_eq)
     definition: (set_map
       map: (bound_op name: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref))
-      generator: (quantifier_bound (identifier) (set_in) set: (int_number_set))
-      generator: (quantifier_bound (identifier) (identifier) (set_in) set: (real_number_set))
+      generator: (quantifier_bound intro: (identifier) (set_in) set: (int_number_set))
+      generator: (quantifier_bound intro: (identifier) intro: (identifier) (set_in) set: (real_number_set))
     )
   )
 (double_line)))
@@ -104,7 +104,7 @@ op == {x \in Nat : P(x)}
 (source_file (module (header_line) name: (identifier) (header_line)
   (operator_definition name: (identifier) (def_eq)
     definition: (set_filter
-      generator: (quantifier_bound (identifier) (set_in) set: (nat_number_set))
+      generator: (quantifier_bound intro: (identifier) (set_in) set: (nat_number_set))
       filter: (bound_op name: (identifier_ref) parameter: (identifier_ref))
     )
   )
@@ -124,7 +124,7 @@ op == {<<x, y, z>> \in Nat \X Int \X Real : P(x, y, z)}
   (operator_definition name: (identifier) (def_eq)
     definition: (set_filter
       generator: (quantifier_bound
-        (tuple_of_identifiers (langle_bracket) (identifier) (identifier) (identifier) (rangle_bracket))
+        intro: (tuple_of_identifiers (langle_bracket) (identifier) (identifier) (identifier) (rangle_bracket))
         (set_in)
         set: (bound_infix_op
           lhs: (bound_infix_op
@@ -151,14 +151,14 @@ op == {x \in S : x \in T}
 
 ---------------------|||
 
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq)
-    (set_filter
-      (quantifier_bound
-        (identifier) (set_in) (identifier_ref)
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (set_filter
+      generator: (quantifier_bound
+        intro: (identifier) (set_in) set: (identifier_ref)
       )
-      (bound_infix_op
-        (identifier_ref) (in) (identifier_ref)
+      filter: (bound_infix_op
+        lhs: (identifier_ref) symbol: (in) rhs: (identifier_ref)
       )
     )
   )
