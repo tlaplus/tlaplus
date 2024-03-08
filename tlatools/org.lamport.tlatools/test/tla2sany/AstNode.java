@@ -222,6 +222,7 @@ public class AstNode {
 		SQSUPSET ("sqsupset"),
 		SQSUPSETEQ ("sqsupseteq"),
 		STAR ("star"),
+		STATEMENT_LEVEL ("statement_level"),
 		STEP_EXPR_NO_STUTTER ("step_expr_no_stutter"),
 		STEP_EXPR_OR_STUTTER ("step_expr_or_stutter"),
 		STRING ("string"),

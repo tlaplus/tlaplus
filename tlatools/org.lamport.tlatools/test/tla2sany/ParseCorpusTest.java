@@ -55,5 +55,6 @@ public class ParseCorpusTest {
 			}
 		}
 		System.out.println(String.format("Total corpus test count: %d", testCount));
+		System.out.println(AstNode.Kind.getUnused());
 	}
 }
