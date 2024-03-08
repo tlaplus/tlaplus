@@ -1,0 +1,16 @@
+==============================|||
+Nested Parentheses
+==============================|||
+
+---- MODULE Test ----
+op == ((((x))))
+====
+
+------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (parentheses (parentheses (parentheses (parentheses (identifier_ref)))))
+  )
+(double_line)))
+

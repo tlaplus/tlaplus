@@ -3,13 +3,15 @@ Basic Label
 =============|||
 
 ---- MODULE Test ----
-op == lbl :: x
+op(x) == lbl :: x
 ====
 
 -------------|||
 
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq) (label (identifier) (label_as) (identifier_ref)))
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) parameter: (identifier) (def_eq)
+    definition: (label name: (identifier) (label_as) expression: (identifier_ref))
+  )
 (double_line)))
 
 =============|||
@@ -17,12 +19,22 @@ Label With Parameters
 =============|||
 
 ---- MODULE Test ----
-op == lbl(a, b) :: x
+op == \A a, b \in Nat : lbl(a, b) :: P(a, b)
 ====
 
 -------------|||
 
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq) (label (identifier) (identifier_ref) (identifier_ref) (label_as) (identifier_ref)))
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (bounded_quantification
+      quantifier: (forall)
+      bound: (quantifier_bound (identifier) (identifier) (set_in) set: (nat_number_set))
+      expression: (label
+        name: (identifier) parameter: (identifier_ref) parameter: (identifier_ref)
+        (label_as)
+        expression: (bound_op name: (identifier_ref) parameter: (identifier_ref) parameter: (identifier_ref))
+      )
+    )
+  )
 (double_line)))
 

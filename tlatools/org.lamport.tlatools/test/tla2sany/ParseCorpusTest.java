@@ -34,6 +34,7 @@ public class ParseCorpusTest {
 
 	@Test
 	public void test() throws ParseException {
+		int testCount = 0;
 		for (CorpusTestFile corpusTestFile : this.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
@@ -50,7 +51,9 @@ public class ParseCorpusTest {
 				AstNode actual = SanyTranslator.toAst(parser);
 				System.out.println(actual);
 				corpusTest.expectedAst.testEquality(actual);
+				testCount++;
 			}
 		}
+		System.out.println(String.format("Total corpus test count: %d", testCount));
 	}
 }
