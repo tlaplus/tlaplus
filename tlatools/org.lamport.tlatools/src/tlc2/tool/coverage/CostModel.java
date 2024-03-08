@@ -41,7 +41,12 @@ public interface CostModel {
 		public final CostModel get(final SemanticNode sn) {
 			return this;
 		}
-		
+
+		@Override
+		public final CostModel getChild() {
+			return this;
+		}
+
 		@Override
 		public final CostModel getRoot() {
 			return this;
@@ -81,6 +86,21 @@ public interface CostModel {
 		public final String toString() {
 			return "DO_NOT_RECORD";
 		}
+		
+		@Override
+		public boolean hasValues() {
+			return false;
+		}
+
+		@Override
+		public long getPrimary() {
+			return -1;
+		}
+
+		@Override
+		public long getSecondary() {
+			return -1;
+		}
 	};
 
 	CostModel incInvocations();
@@ -90,6 +110,12 @@ public interface CostModel {
 	CostModel incSecondary();
 	
 	CostModel incSecondary(final long value);
+	
+	long getPrimary();
+	
+	long getSecondary();
+
+	boolean hasValues();
 
 	CostModel report();
 
@@ -98,4 +124,6 @@ public interface CostModel {
 	CostModel getAndIncrement(final SemanticNode eon);
 	
 	CostModel getRoot();
+
+	CostModel getChild();
 }

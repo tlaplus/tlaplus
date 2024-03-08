@@ -44,17 +44,37 @@ public abstract class CostModelNode implements CostModel {
 	
 	// ---------------- Statistics ---------------- //
 
+	@Override
+	public long getPrimary() {
+		return getEvalCount();
+	}
+	
 	protected long getEvalCount() {
 		return this.stats.getCount();
 	}
 
-	protected long getSecondary() {
+	@Override
+	public long getSecondary() {
 		return this.secondary.getCount();
+	}
+
+	@Override
+	public boolean hasValues() {
+		return true;
 	}
 
 	protected abstract Location getLocation();
 
 	// -- --//
+	
+	@Override
+	public final CostModel getChild() {
+		for (CostModelNode costModelNode : children.values()) {
+			// Non-deterministically return some child.
+			return costModelNode;
+		}
+		return this;
+	}
 	
 	void addChild(final CostModelNode child) {
 		final boolean newlyInserted = this.children.put(child.getNode(), child) == null;

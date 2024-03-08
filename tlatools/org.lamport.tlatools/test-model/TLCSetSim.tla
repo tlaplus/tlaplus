@@ -5,8 +5,8 @@ ASSUME /\ TLCGet("config").depth = 4224
        /\ TLCGet("config").mode \in {"simulate", "generate"}
        /\ TLCGet("config").traces = -1
 
-ASSUME TLCGet("spec").inits = {[name |-> "Init", location |-> [beginLine |-> 13, beginColumn |-> 9, endLine |-> 16, endColumn |-> 40, module |-> "TLCSetSim"]]}
-ASSUME TLCGet("spec").actions = {[name |-> "Next", location |-> [beginLine |-> 18, beginColumn |-> 9, endLine |-> 22, endColumn |-> 35, module |-> "TLCSetSim"]]}
+ASSUME TLCGet("spec").inits = {[name |-> "Init", location |-> [beginLine |-> 13, beginColumn |-> 9, endLine |-> 16, endColumn |-> 40, module |-> "TLCSetSim"], coverage |-> [distinct |-> 0, generated |-> 0] ]}
+ASSUME TLCGet("spec").actions = {[name |-> "Next", location |-> [beginLine |-> 18, beginColumn |-> 9, endLine |-> 22, endColumn |-> 35, module |-> "TLCSetSim"], coverage |-> [distinct |-> 0, generated |-> 0] ]}
 
 VARIABLES x
 
