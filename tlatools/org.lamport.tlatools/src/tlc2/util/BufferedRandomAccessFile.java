@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:26:26 PST by lamport
 //      modified on Mon Jun 19 14:28:04 PDT 2000 by yuanyu
 package tlc2.util;
@@ -147,6 +148,27 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
       this.maxHi = BuffSz;
       this.hitEOF = false;
       this.diskPos = 0L;
+    }
+
+    /**
+     * Invalidate any buffered data so that subsequent reads will go to disk.  Clients will typically call this when
+     * they know that the on-disk contents have been altered through a different file descriptor and they need to
+     * observe those writes through this one.
+     *
+     * <p>If this object has any buffered writes, this call will flush them to disk ({@link #flush()}).
+     *
+     * @throws IOException if an I/O error occurs flushing buffered writes
+     */
+    public void invalidateBufferedData() throws IOException {
+        flush();
+
+        // To preserve this class's invariants, we can't just clear the buffer; we also need to refill the
+        // buffer from disk.
+        if (this.diskPos != this.lo) {
+            super.seek(this.lo);
+            this.diskPos = this.lo;
+        }
+        this.hi = this.lo + fillBuffer();
     }
     
     /* overrides RandomAccessFile.close() */

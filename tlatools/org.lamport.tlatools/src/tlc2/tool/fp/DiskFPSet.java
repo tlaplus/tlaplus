@@ -1,5 +1,7 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
+
 package tlc2.tool.fp;
 
 import java.io.EOFException;
@@ -1094,7 +1096,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			// create temporary file
 			File tmpFile = new File(tmpFilename);
 			tmpFile.delete();
-			RandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
+			BufferedRandomAccessFile tmpRAF = new BufferedRandomAccessFile(tmpFile, "rw");
 			tmpRAF.setLength((getTblCnt() + fileCnt) * FPSet.LongSize);
 
 			// merge
@@ -1128,7 +1130,7 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 			poolIndex = 0;
 		}
 		
-		protected abstract void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, RandomAccessFile outRAF) throws IOException;
+		protected abstract void mergeNewEntries(BufferedRandomAccessFile[] inRAFs, BufferedRandomAccessFile outRAF) throws IOException;
 		
 	}
 	
