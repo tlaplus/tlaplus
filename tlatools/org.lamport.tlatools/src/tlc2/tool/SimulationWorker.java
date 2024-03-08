@@ -320,7 +320,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			v[0] = new RecordValue(behaviorStats);
 			
 			n[1] = TLCGetSet.ID;
-			v[1] = TLCGetSet.narrowToIntValue(globalTraceCnt);
+			v[1] = IntValue.narrowToIntValue(globalTraceCnt);
 			
 			return new RecordValue(n, v, false);
 		}
@@ -414,7 +414,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 		@Override
 		public Value getDistinctStates() {
-			return TLCGetSet.narrowToIntValue(numOfDistinctStates.count());
+			return IntValue.narrowToIntValue(numOfDistinctStates.count());
 		}
 		
 		@Override
@@ -430,7 +430,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		@Override
 		public Value getNextRetries() {
-			return TLCGetSet.narrowToIntValue(numOfNextRetries);
+			return IntValue.narrowToIntValue(numOfNextRetries);
 		}
 	}
 	

@@ -843,13 +843,13 @@ public class Simulator {
 		
 		final long genTrace = numOfGenTraces.longValue();
 		n[0] = TLCGetSet.TRACES;
-		v[0] = TLCGetSet.narrowToIntValue(genTrace);
+		v[0] = IntValue.narrowToIntValue(genTrace);
 		
 		n[1] = TLCGetSet.DURATION;
-		v[1] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+		v[1] = IntValue.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
 		n[2] = TLCGetSet.GENERATED;
-		v[2] = TLCGetSet.narrowToIntValue(numOfGenStates.longValue());
+		v[2] = IntValue.narrowToIntValue(numOfGenStates.longValue());
 
 		n[3] = TLCGetSet.BEHAVIOR;
 		v[3] = getWorkerStatistics().getTraceStatistics(s);
@@ -872,11 +872,11 @@ public class Simulator {
 		final long m2AndMean = welfordM2AndMean.get();
 		final long mean = m2AndMean & 0x00000000FFFFFFFFL; // could be int.
 		n[9] = TLCGetSet.LEVEL_MEAN;
-		v[9] = TLCGetSet.narrowToIntValue(mean);
+		v[9] = IntValue.narrowToIntValue(mean);
 
 		final long m2 = m2AndMean >>> 32;
 		n[10] = TLCGetSet.LEVEL_VARIANCE;
-		v[10] = TLCGetSet.narrowToIntValue(Math.round(m2 / (genTrace + 1d)));// Var(X),  +1 to prevent div-by-zero.
+		v[10] = IntValue.narrowToIntValue(Math.round(m2 / (genTrace + 1d)));// Var(X),  +1 to prevent div-by-zero.
 
 		return new RecordValue(n, v, false);
 	}

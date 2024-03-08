@@ -65,13 +65,6 @@ import util.UniqueString;
 
 public class TLCGetSet implements ValueConstants {
 
-	public static Value narrowToIntValue(final long value) {
-        if ((int)value != value) {
-        	return IntValue.ValNegOne;
-        }
-        return IntValue.gen((int) value);
-	}
-
 	// TLCSet(..)
 	private static final UniqueString EXIT = UniqueString.uniqueStringOf("exit");
 	private static final UniqueString PAUSE = UniqueString.uniqueStringOf("pause");

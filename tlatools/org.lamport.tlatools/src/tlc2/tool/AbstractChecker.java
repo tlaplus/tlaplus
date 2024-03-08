@@ -647,22 +647,22 @@ public abstract class AbstractChecker
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.QUEUE;
-		v[0] = TLCGetSet.narrowToIntValue(getStateQueueSize());
+		v[0] = IntValue.narrowToIntValue(getStateQueueSize());
 		
 		n[1] = TLCGetSet.DISTINCT;
-		v[1] = TLCGetSet.narrowToIntValue(getDistinctStatesGenerated());
+		v[1] = IntValue.narrowToIntValue(getDistinctStatesGenerated());
 		
 		n[2] = TLCGetSet.INITIAL;
-		v[2] = TLCGetSet.narrowToIntValue(getInitialStatesGenerated());
+		v[2] = IntValue.narrowToIntValue(getInitialStatesGenerated());
 
 		n[3] = TLCGetSet.GENERATED; 
-		v[3] = TLCGetSet.narrowToIntValue(getStatesGenerated());
+		v[3] = IntValue.narrowToIntValue(getStatesGenerated());
 		
 		n[4] = TLCGetSet.DIAMETER;
-		v[4] = TLCGetSet.narrowToIntValue(getProgress());
+		v[4] = IntValue.narrowToIntValue(getProgress());
 		
 		n[5] = TLCGetSet.DURATION;
-		v[5] = TLCGetSet.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
+		v[5] = IntValue.narrowToIntValue((System.currentTimeMillis() - startTime) / 1000L);
 
 		n[6] = TLCGetSet.WORKER;
 		v[6] = IntValue.gen(Thread.currentThread() instanceof IdThread ? IdThread.GetId() : 0);
