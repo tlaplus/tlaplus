@@ -1100,7 +1100,14 @@ public class SanyTranslator {
 				Assert.assertTrue(parser.isAtEnd());
 				return lhs;
 			} case SyntaxTreeConstants.N_OpApplication: { // f(a, b, c) or nonfix op
-				AstNode nameOrSymbol = parser.translate(SyntaxTreeConstants.N_GeneralId);
+				SyntaxTreeNode id = parser.consume(SyntaxTreeConstants.N_GeneralId);
+				SanyReparser idParser = new SanyReparser(id.getHeirs());
+				SyntaxTreeNode prefix = idParser.consume(SyntaxTreeConstants.N_IdPrefix);
+				AstNode nameOrSymbol = idParser.translate(
+						TLAplusParserConstants.IDENTIFIER,
+						SyntaxTreeConstants.N_NonExpPrefixOp,
+						SyntaxTreeConstants.N_InfixOp);
+				Assert.assertTrue(idParser.isAtEnd());
 				AstNode op = null;
 				switch (nameOrSymbol.kind) {
 					case IDENTIFIER_REF: {
@@ -1117,7 +1124,14 @@ public class SanyTranslator {
 				}
 				parser.flatTranslate(op, SyntaxTreeConstants.N_OpArgs);
 				Assert.assertTrue(parser.isAtEnd());
-				return op;
+				if (prefix.getHeirs().length > 0) {
+					AstNode prefixedOp = Kind.PREFIXED_OP.asNode();
+					prefixedOp.addField("prefix", translate(prefix));
+					prefixedOp.addField("op", op);
+					return prefixedOp;
+				} else {
+					return op;
+				}
 			} case SyntaxTreeConstants.N_FcnAppl: { // f[x,y,z]
 				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
 				functionEvaluation.addChild(parser.translate("expression"));
