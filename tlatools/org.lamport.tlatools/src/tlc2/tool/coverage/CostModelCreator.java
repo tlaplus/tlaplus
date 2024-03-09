@@ -43,6 +43,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
@@ -56,6 +57,7 @@ import tlc2.tool.coverage.ActionWrapper.Relation;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
+import tlc2.util.statistics.CountDistinct;
 
 /**
  * <h1>Why a CostModel:</h1> Why a CostModelCreator to traverses the semantic
@@ -419,6 +421,10 @@ public class CostModelCreator extends ExplorerVisitor {
     			impliedActions.cm = collector.getCM(impliedActions, Relation.PROP);
     		}
         }
+        
+        for (OpDeclNode odn : tool.getSpecProcessor().getVariablesNodes()) {
+			odn.setCountDistinct(new CountDistinct.SyncedHyperLogLog(10));
+		}
 	}
 	
 	public static void report(final ITool tool, final long startTime) {
