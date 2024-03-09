@@ -14,6 +14,8 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.xml.SymbolContext;
+import tlc2.util.statistics.CountDistinct;
+import tlc2.value.IValue;
 import util.UniqueString;
 
 /**
@@ -180,5 +182,23 @@ public class OpDeclNode extends OpDefOrDeclNode {
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
     e.appendChild(appendText(doc,"kind", Integer.toString(getKind())));
     return e;
+  }
+  
+  // ------------------ //
+  
+  private CountDistinct cd;
+  
+  public OpDeclNode count(final IValue v) {
+	  cd.add(v);
+	  return this;
+  }
+  
+  public OpDeclNode setCountDistinct(final CountDistinct cd) {
+	  this.cd = cd;
+	  return this;
+  }
+  
+  public CountDistinct getCountDistinct() {
+	  return this.cd;
   }
 }

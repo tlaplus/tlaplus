@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 import tla2sany.semantic.ExprNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -474,6 +475,11 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				// nor implied actions are violated. It is thus eligible
 				// for further processing by other workers.
 				this.squeue.sEnqueue(succState);
+				if (coverage) { 
+					for (final OpDeclNode odn : TLCState.vars) {
+						odn.count(succState.lookup(odn.getName()));
+					}
+				}
 			}
 			return this;
 		} catch (Exception e) {

@@ -71,6 +71,7 @@ PostCondition ==
 				          coverage |-> [generated |-> 3, distinct |-> 3] ] },
 				  variables |->
 				      { [ name |-> "x",
+				          coverage |-> [distinct |-> 1],
 				          location |->
 				              [ beginLine |-> 3,
 				                beginColumn |-> 10,

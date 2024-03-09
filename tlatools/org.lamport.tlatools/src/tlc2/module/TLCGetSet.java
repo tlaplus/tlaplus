@@ -36,6 +36,7 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.overrides.Evaluation;
@@ -51,6 +52,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
 import tlc2.util.Vect;
+import tlc2.util.statistics.CountDistinct;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
@@ -341,7 +343,7 @@ public class TLCGetSet implements ValueConstants {
 
 			n[6] = SPEC_VARS;
 			v[6] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getSpecProcessor().getVariablesNodes()).stream()
-					.map(odn -> new RecordValue(odn)).collect(Collectors.toList())), false);
+					.map(TLCGetSet::variable2Value).collect(Collectors.toList())), false);
 
 			return new RecordValue(n, v, false);
 		} else if (LEVEL == sv.val) {
@@ -509,5 +511,15 @@ public class TLCGetSet implements ValueConstants {
 			return new RecordValue(a, COVERAGE, coverage);
 		}
 		return new RecordValue(a);
+	}
+
+	private static Value variable2Value(final OpDeclNode odn) {
+		final CountDistinct cd = odn.getCountDistinct();
+		if (cd != null) {
+			final RecordValue coverage = new RecordValue(new UniqueString[] { DISTINCT },
+					new Value[] { IntValue.narrowToIntValue(cd.count()) }, false);
+			return new RecordValue(odn, COVERAGE, coverage);
+		}
+		return new RecordValue(odn);
 	}
 }
