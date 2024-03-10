@@ -1,4 +1,98 @@
 =============|||
+Prefix Operator Definition
+=============|||
+
+---- MODULE Test ----
+
+~x == 1
+\lnot x == 2
+\neg x == 3
+UNION x == 4
+SUBSET x == 5
+DOMAIN x == 6
+-. x == 7
+ENABLED x == 8
+UNCHANGED x == 9
+[] x == 10
+<> x == 11
+
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (prefix_op_symbol (lnot)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (lnot)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (lnot)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (union)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (powerset)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (domain)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (negative)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (enabled)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (unchanged)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (always)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition name: (prefix_op_symbol (eventually)) parameter: (identifier) (def_eq) definition: (nat_number))
+(double_line)))
+
+=============|||
+Prefix Operator Declaration as Parameter
+=============|||
+
+---- MODULE Test ----
+
+op(~ _) == 1
+op(\lnot _) == 2
+op(\neg _) == 3
+op(UNION _) == 4
+op(SUBSET _) == 5
+op(DOMAIN _) == 6
+op(-. _) == 7
+op(ENABLED _) == 8
+op(UNCHANGED _) == 9
+op([] _) == 10
+op(<> _) == 11
+
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (lnot)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (lnot)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (lnot)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (union)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (powerset)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (domain)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (negative)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (enabled)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (unchanged)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (always)) (placeholder))
+  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier) parameter:
+    (operator_declaration name: (prefix_op_symbol (eventually)) (placeholder))
+  (def_eq) definition: (nat_number))
+(double_line)))
+
+=============|||
 Prefix Operator Application
 =============|||
 
@@ -37,7 +131,7 @@ op == {
 (double_line)))
 
 =============|||
-Prefix Operators as Parameters
+Prefix Operator References
 =============|||
 
 ---- MODULE Test ----

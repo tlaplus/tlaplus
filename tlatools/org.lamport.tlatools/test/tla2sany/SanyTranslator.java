@@ -360,14 +360,11 @@ public class SanyTranslator {
 	}
 	
 	private static AstNode parseIdOrOpRef(SanyReparser parser) throws ParseException {
-		SyntaxTreeNode opNode = parser.consume(
+		return parser.translate(
 				TLAplusParserConstants.IDENTIFIER,
 				SyntaxTreeConstants.N_NonExpPrefixOp,
-				SyntaxTreeConstants.N_PrefixOp,
 				SyntaxTreeConstants.N_InfixOp,
 				SyntaxTreeConstants.N_PostfixOp);
-		int kind = opNode.getKind();
-		return translate(opNode);
 	}
 	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
@@ -442,6 +439,8 @@ public class SanyTranslator {
 	private static AstNode postfixOpFromString(String op) throws ParseException {
 		switch (op) {
 			case "^+": return Kind.SUP_PLUS.asNode();
+			case "^*": return Kind.ASTERISK.asNode();
+			case "^#": return Kind.SUP_HASH.asNode();
 			case "'": return Kind.PRIME.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
@@ -497,6 +496,20 @@ public class SanyTranslator {
 					} while (parser.match(TLAplusParserConstants.COMMA));
 					parser.consume(TLAplusParserConstants.RBR);
 				}
+				break;
+			} case SyntaxTreeConstants.N_PrefixLHS: { // \lnot x == ...
+				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
+				op.addChild(prefixOpFromString(parser.advance().getImage()));
+				parent.addField("name", op);
+				parser.consume(TLAplusParserConstants.IDENTIFIER);
+				parent.addField("parameter", Kind.IDENTIFIER.asNode());
+				break;
+			} case SyntaxTreeConstants.N_PostfixLHS: { // x ^+ == ...
+				AstNode op = Kind.POSTFIX_OP_SYMBOL.asNode();
+				parser.consume(TLAplusParserConstants.IDENTIFIER);
+				parent.addField("parameter", Kind.IDENTIFIER.asNode());
+				op.addChild(postfixOpFromString(parser.advance().getImage()));
+				parent.addField("name", op);
 				break;
 			} case SyntaxTreeConstants.N_OpArgs: { // (p1, p2, ..., pn)
 				parser.consume(TLAplusParserConstants.LBR);
@@ -662,25 +675,6 @@ public class SanyTranslator {
 					op.addField("parameter", parser.translate(TLAplusParserConstants.US));
 				} while (parser.match(TLAplusParserConstants.COMMA));
 				parser.consume(TLAplusParserConstants.RBR);
-				Assert.assertTrue(parser.isAtEnd());
-				return op;
-			} case SyntaxTreeConstants.N_PrefixDecl: { // -. _
-				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
-				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp));
-				op.addChild(parser.translate(TLAplusParserConstants.US));
-				Assert.assertTrue(parser.isAtEnd());
-				return op;
-			} case SyntaxTreeConstants.N_InfixDecl: { // _ + _, _ - _
-				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
-				op.addChild(parser.translate(TLAplusParserConstants.US));
-				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_InfixOp));
-				op.addChild(parser.translate(TLAplusParserConstants.US));
-				Assert.assertTrue(parser.isAtEnd());
-				return op;
-			} case SyntaxTreeConstants.N_PostfixDecl: { // _ ', _ ^+
-				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
-				op.addChild(parser.translate(TLAplusParserConstants.US));
-				op.addField("symbol", parser.translate(SyntaxTreeConstants.N_PostfixOp));
 				Assert.assertTrue(parser.isAtEnd());
 				return op;
 			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
@@ -1099,6 +1093,14 @@ public class SanyTranslator {
 				}
 				Assert.assertTrue(parser.isAtEnd());
 				return lhs;
+			} case SyntaxTreeConstants.N_FcnAppl: { // f[x,y,z]
+				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
+				functionEvaluation.addChild(parser.translate("expression"));
+				parser.consume(TLAplusParserConstants.LSB);
+				functionEvaluation.addChildren(parseCommaSeparatedNodes(parser, "expression"));
+				parser.consume(TLAplusParserConstants.RSB);
+				Assert.assertTrue(parser.isAtEnd());
+				return functionEvaluation;
 			} case SyntaxTreeConstants.N_OpApplication: { // f(a, b, c) or nonfix op
 				SyntaxTreeNode id = parser.consume(SyntaxTreeConstants.N_GeneralId);
 				SanyReparser idParser = new SanyReparser(id.getHeirs());
@@ -1106,7 +1108,8 @@ public class SanyTranslator {
 				AstNode nameOrSymbol = idParser.translate(
 						TLAplusParserConstants.IDENTIFIER,
 						SyntaxTreeConstants.N_NonExpPrefixOp,
-						SyntaxTreeConstants.N_InfixOp);
+						SyntaxTreeConstants.N_InfixOp,
+						SyntaxTreeConstants.N_PostfixOp);
 				Assert.assertTrue(idParser.isAtEnd());
 				AstNode op = null;
 				switch (nameOrSymbol.kind) {
@@ -1132,15 +1135,13 @@ public class SanyTranslator {
 				} else {
 					return op;
 				}
-			} case SyntaxTreeConstants.N_FcnAppl: { // f[x,y,z]
-				AstNode functionEvaluation = Kind.FUNCTION_EVALUATION.asNode();
-				functionEvaluation.addChild(parser.translate("expression"));
-				parser.consume(TLAplusParserConstants.LSB);
-				functionEvaluation.addChildren(parseCommaSeparatedNodes(parser, "expression"));
-				parser.consume(TLAplusParserConstants.RSB);
+			} case SyntaxTreeConstants.N_PrefixDecl: { // Prefix op declaration, ex. f(-. _) == ...
+				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
+				op.addField("name", parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp));
+				op.addChild(parser.translate(TLAplusParserConstants.US));
 				Assert.assertTrue(parser.isAtEnd());
-				return functionEvaluation;
-			} case SyntaxTreeConstants.N_PrefixExpr: { // ex. SUBSET P
+				return op;
+			} case SyntaxTreeConstants.N_PrefixExpr: { // Prefix op application, full expression ex. SUBSET x
 				AstNode boundPrefixOp = Kind.BOUND_PREFIX_OP.asNode();
 				// Hilariously, the negative "-" prefix operator here appears as an infix operator
 				if (parser.match(SyntaxTreeConstants.N_GenInfixOp)) {
@@ -1153,51 +1154,83 @@ public class SanyTranslator {
 				boundPrefixOp.addField("rhs", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return boundPrefixOp;
-			} case SyntaxTreeConstants.N_InfixExpr: { // ex. a + b
+			} case SyntaxTreeConstants.N_GenPrefixOp: { // Prefix op application, just operator ex. SUBSET
+				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
+				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_PrefixOp);
+				Assert.assertTrue(parser.isAtEnd());
+				return prefixOpFromString(op.getImage());
+			} case SyntaxTreeConstants.N_GenNonExpPrefixOp: { // Prefix op as higher-order op parameter
+				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				AstNode op = parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp);
+				Assert.assertTrue(parser.isAtEnd());
+				return op;
+			} case SyntaxTreeConstants.N_NonExpPrefixOp: { // Prefix op symbol; declaration, nonfix, or ref
+				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
+				Assert.assertTrue(parser.isAtEnd());
+				return op.addChild(prefixOpFromString(node.image.toString()));
+			} case SyntaxTreeConstants.N_InfixDecl: { // _ + _, _ - _
+				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
+				op.addChild(parser.translate(TLAplusParserConstants.US));
+				op.addField("name", parser.translate(SyntaxTreeConstants.N_InfixOp));
+				op.addChild(parser.translate(TLAplusParserConstants.US));
+				Assert.assertTrue(parser.isAtEnd());
+				return op;
+			} case SyntaxTreeConstants.N_InfixExpr: { // Infix op application, full expression ex. 1 + 2
 				AstNode boundInfixOp = Kind.BOUND_INFIX_OP.asNode();
 				boundInfixOp.addField("lhs", parser.translate("expression"));
 				boundInfixOp.addField("symbol", parser.translate(SyntaxTreeConstants.N_GenInfixOp));
 				boundInfixOp.addField("rhs", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return boundInfixOp;
-			} case SyntaxTreeConstants.N_GenPrefixOp: { // ex. SUBSET
+			} case SyntaxTreeConstants.N_GenInfixOp: { // Infix op application, just the symbol ex. +
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
-				Assert.assertEquals(0, prefix.getHeirs().length);
-				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_PrefixOp);
-				Assert.assertTrue(parser.isAtEnd());
-				return prefixOpFromString(op.getImage());
-			} case SyntaxTreeConstants.N_GenInfixOp: { // ex. foo!bar!baz!+
-				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
+				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
 				Assert.assertEquals(0, prefix.getHeirs().length);
 				// Sometimes \in appears as N_InfixOp, and sometimes it appears as T_IN
 				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
 				Assert.assertTrue(parser.isAtEnd());
 				return infixOpFromString(op.getImage());
-			} case SyntaxTreeConstants.T_IN: { // \in as an infix operator
-				Assert.assertTrue(parser.isAtEnd());
-				return Kind.IN.asNode();
-			} case SyntaxTreeConstants.N_GenNonExpPrefixOp: { // A!B!-.
-				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
-				Assert.assertEquals(0, prefix.getHeirs().length);
-				AstNode op = parser.translate(SyntaxTreeConstants.N_NonExpPrefixOp);
-				Assert.assertTrue(parser.isAtEnd());
-				return op;
-			} case SyntaxTreeConstants.N_NonExpPrefixOp: { // ex. -.
-				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
-				Assert.assertTrue(parser.isAtEnd());
-				return op.addChild(prefixOpFromString(node.image.toString()));
-			} case SyntaxTreeConstants.N_PrefixOp: { // ex. ~, SUBSET, -
-				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
-				Assert.assertTrue(parser.isAtEnd());
-				return op.addChild(prefixOpFromString(node.image.toString()));
-			} case SyntaxTreeConstants.N_InfixOp: { // ex. +, -, /, /\
+			} case SyntaxTreeConstants.N_InfixOp: { // Infix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.INFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());
 				return op.addChild(infixOpFromString(node.image.toString()));
-			} case SyntaxTreeConstants.N_PostfixOp: { // ex. ^+, '
+			} case SyntaxTreeConstants.N_PostfixDecl: { // _ ', _ ^+
+				AstNode op = Kind.OPERATOR_DECLARATION.asNode();
+				op.addChild(parser.translate(TLAplusParserConstants.US));
+				op.addField("name", parser.translate(SyntaxTreeConstants.N_PostfixOp));
+				Assert.assertTrue(parser.isAtEnd());
+				return op;
+			} case SyntaxTreeConstants.N_PostfixExpr: { // Postfix op application, full expression ex. x^+
+				AstNode boundPostfixOp = Kind.BOUND_POSTFIX_OP.asNode();
+				boundPostfixOp.addField("lhs", parser.translate("expression"));
+				// Have to flatten out the N_GenPostfixOp parse logic here to preserve
+				// that translation rule as a viable entry point for op references.
+				SyntaxTreeNode genOp = parser.consume(SyntaxTreeConstants.N_GenPostfixOp);
+				SanyReparser genOpParser = new SanyReparser(genOp.getHeirs());
+				SyntaxTreeNode prefix = genOpParser.consume(SyntaxTreeConstants.N_IdPrefix);
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				SyntaxTreeNode op = genOpParser.consume(SyntaxTreeConstants.N_PostfixOp);
+				Assert.assertTrue(genOpParser.isAtEnd());
+				Assert.assertTrue(parser.isAtEnd());
+				boundPostfixOp.addField("symbol", postfixOpFromString(op.getImage()));
+				return boundPostfixOp;
+			} case SyntaxTreeConstants.N_GenPostfixOp: { // Postfix op reference, just the symbol ex. ^+
+				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
+				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				AstNode op = parser.translate(SyntaxTreeConstants.N_PostfixOp);
+				Assert.assertTrue(parser.isAtEnd());
+				return op;
+			} case SyntaxTreeConstants.N_PostfixOp: { // Postfix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.POSTFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());
 				return op.addChild(postfixOpFromString(node.image.toString()));
+			} case SyntaxTreeConstants.T_IN: { // \in as an infix operator
+				Assert.assertTrue(parser.isAtEnd());
+				return Kind.IN.asNode();
 			} case SyntaxTreeConstants.N_Assumption: {
 				AstNode assumption = Kind.ASSUMPTION.asNode();
 				parser.consume(TLAplusParserConstants.ASSUME);
