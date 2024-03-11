@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -114,6 +115,17 @@ public interface ILiveCheck {
 	void beginChkpt() throws IOException;
 
 	void commitChkpt() throws IOException;
+
+	/**
+	 * Flush any in-memory buffered data to the disk.  This is a no-op for implementations that are entirely in-memory.
+	 *
+	 * <p>This method has essentially no visible effect, since any disk files are private to this object and flushing
+	 * writes should not affect reads from those files.  However, there are some tests that call this method to make
+	 * assertions about the data being written to disk.
+	 *
+	 * @throws IOException if an I/O error occurs
+	 */
+	void flushWritesToDiskFiles() throws IOException;
 
 	void recover() throws IOException;
 

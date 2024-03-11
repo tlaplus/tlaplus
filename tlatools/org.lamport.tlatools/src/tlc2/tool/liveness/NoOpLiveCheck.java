@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2015 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -141,6 +142,10 @@ public class NoOpLiveCheck implements ILiveCheck {
 	 * @see tlc2.tool.liveness.ILiveCheck#recover()
 	 */
 	public void recover() throws IOException {
+	}
+
+	@Override
+	public void flushWritesToDiskFiles() {
 	}
 
 	/* (non-Javadoc)

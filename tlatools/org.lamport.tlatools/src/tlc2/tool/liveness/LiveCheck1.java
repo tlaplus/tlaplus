@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:33:44 PST by lamport
 //      modified on Fri Jan  4 00:30:06 PST 2002 by yuanyu
 
@@ -989,6 +990,11 @@ public class LiveCheck1 implements ILiveCheck {
 	 * @see tlc2.tool.liveness.ILiveCheck#recover()
 	 */
 	public void recover() throws IOException {
+		// Intentional no op - LiveCheck1 has no disk files.
+	}
+
+	@Override
+	public void flushWritesToDiskFiles() {
 		// Intentional no op - LiveCheck1 has no disk files.
 	}
 
