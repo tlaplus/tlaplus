@@ -359,14 +359,6 @@ public class SanyTranslator {
 		return assumeProve;
 	}
 	
-	private static AstNode parseIdOrOpRef(SanyReparser parser) throws ParseException {
-		return parser.translate(
-				TLAplusParserConstants.IDENTIFIER,
-				SyntaxTreeConstants.N_NonExpPrefixOp,
-				SyntaxTreeConstants.N_InfixOp,
-				SyntaxTreeConstants.N_PostfixOp);
-	}
-	
 	private static AstNode id(SyntaxTreeNode input) throws ParseException {
 		Assert.assertEquals(TLAplusParserConstants.IDENTIFIER, input.getKind());
 		switch (input.getImage()) {
@@ -738,7 +730,11 @@ public class SanyTranslator {
 				return moduleDefinition;
 			} case SyntaxTreeConstants.N_Substitution: { // x <- y
 				AstNode substitution = Kind.SUBSTITUTION.asNode();
-				substitution.addChild(parseIdOrOpRef(parser));
+				substitution.addChild(parser.translate(
+						TLAplusParserConstants.IDENTIFIER,
+						SyntaxTreeConstants.N_NonExpPrefixOp,
+						SyntaxTreeConstants.N_InfixOp,
+						SyntaxTreeConstants.N_PostfixOp));
 				substitution.addChild(parser.translate(TLAplusParserConstants.SUBSTITUTE));
 				substitution.addChild(parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
@@ -777,7 +773,7 @@ public class SanyTranslator {
 				recursiveDeclaration.addChildren(parseCommaSeparatedNodes(parser, "operator declaration"));
 				Assert.assertTrue(parser.isAtEnd());
 				return recursiveDeclaration;
-			} case TLAplusParserConstants.US: {
+			} case TLAplusParserConstants.US: { // _
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.PLACEHOLDER.asNode();
 			} case TLAplusParserConstants.DEF: { // ==
@@ -796,7 +792,7 @@ public class SanyTranslator {
 				conjItem.addChild(parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return conjItem;
-			} case TLAplusParserConstants.AND: {
+			} case TLAplusParserConstants.AND: { // /\
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.BULLET_CONJ.asNode();
 			} case SyntaxTreeConstants.N_DisjList: { // Multi-line aligned disjunction list
@@ -812,34 +808,86 @@ public class SanyTranslator {
 				disjItem.addChild(parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return disjItem;
-			} case TLAplusParserConstants.OR: {
+			} case TLAplusParserConstants.OR: { // \/
 				Assert.assertTrue(parser.isAtEnd());
 				return Kind.BULLET_DISJ.asNode();
 			} case SyntaxTreeConstants.N_GeneralId: { // foo!bar!baz!x
 				SyntaxTreeNode prefix = parser.consume(SyntaxTreeConstants.N_IdPrefix);
-				AstNode op = parseIdOrOpRef(parser);
+				if (parser.match(SyntaxTreeConstants.N_StructOp)) {
+					AstNode subexpr = Kind.SUBEXPRESSION.asNode();
+					subexpr.addChild(translate(prefix));
+					subexpr.addChild(Kind.SUBEXPR_TREE_NAV.asNode().addChild(translate(parser.previous())));
+					Assert.assertTrue(parser.isAtEnd());
+					return subexpr;
+				} else if (parser.match(TLAplusParserConstants.ProofStepLexeme)) {
+					// TODO
+				} else {
+					parser.consume(
+						TLAplusParserConstants.IDENTIFIER,
+						SyntaxTreeConstants.N_NonExpPrefixOp,
+						SyntaxTreeConstants.N_InfixOp,
+						SyntaxTreeConstants.N_PostfixOp);
+				}
+				AstNode op = translate(parser.previous());
 				Assert.assertTrue(parser.isAtEnd());
 				if (0 == prefix.getHeirs().length) {
 					return op;
-				} else {
-					return Kind.PREFIXED_OP.asNode()
-							.addField("prefix", translate(prefix))
-							.addField("op", op);
 				}
-			} case SyntaxTreeConstants.N_IdPrefix: {
+				return Kind.PREFIXED_OP.asNode()
+						.addField("prefix", translate(prefix))
+						.addField("op", op);
+			} case SyntaxTreeConstants.N_IdPrefix: { // A!B!C!
 				AstNode subexpr = Kind.SUBEXPR_PREFIX.asNode();
 				do {
 					subexpr.addChild(parser.translate(SyntaxTreeConstants.N_IdPrefixElement));
 				} while (!parser.isAtEnd());
 				Assert.assertTrue(parser.isAtEnd());
 				return subexpr;
-			} case SyntaxTreeConstants.N_IdPrefixElement: {
-				AstNode subexprComponent = Kind.SUBEXPR_COMPONENT.asNode();
-				parser.consume(TLAplusParserConstants.IDENTIFIER);
-				subexprComponent.addChild(Kind.IDENTIFIER_REF.asNode());
+			} case SyntaxTreeConstants.N_IdPrefixElement: { // A!
+				AstNode component = null;
+				if (parser.match(TLAplusParserConstants.IDENTIFIER)) {
+					component = Kind.SUBEXPR_COMPONENT.asNode();
+					if (parser.match(SyntaxTreeConstants.N_OpArgs)) {
+						AstNode op = Kind.BOUND_OP.asNode();
+						op.addField("name", Kind.IDENTIFIER_REF.asNode());
+						flatTranslate(op, parser.previous());
+						component.addChild(op);
+					} else {
+						component.addChild(Kind.IDENTIFIER_REF.asNode());
+					}
+				} else if (parser.match(SyntaxTreeConstants.N_OpArgs)) {
+					component = Kind.SUBEXPR_TREE_NAV.asNode();
+					AstNode args = Kind.OPERATOR_ARGS.asNode();
+					SanyReparser argParser = new SanyReparser(parser.previous().getHeirs());
+					argParser.consume(TLAplusParserConstants.LBR);
+					do {
+						args.addChild(argParser.translate("op or expression"));
+					} while (argParser.match(TLAplusParserConstants.COMMA));
+					argParser.consume(TLAplusParserConstants.RBR);
+					Assert.assertTrue(argParser.isAtEnd());
+					component.addChild(args);
+				} else {
+					component = Kind.SUBEXPR_TREE_NAV.asNode();
+					component.addChild(parser.translate(SyntaxTreeNode.N_StructOp));
+				}
 				parser.consume(TLAplusParserConstants.BANG);
 				Assert.assertTrue(parser.isAtEnd());
-				return subexprComponent;
+				return component;
+			} case SyntaxTreeConstants.N_StructOp: { // op!<<!>>!:!@
+				if (!parser.isAtEnd()) {
+					parser.consume(SyntaxTreeConstants.N_Number);
+					Assert.assertTrue(parser.isAtEnd());
+					return Kind.CHILD_ID.asNode();
+				}
+				Assert.assertTrue(parser.isAtEnd());
+				String image = node.getImage();
+				switch (image) {
+					case "<<": return Kind.LANGLE_BRACKET.asNode();
+					case ">>": return Kind.RANGLE_BRACKET.asNode();
+					case ":": return Kind.COLON.asNode();
+					case "@": return Kind.ADDRESS.asNode();
+					default: throw new ParseException(String.format("Unknown subexpression tree nav symbol %s", image), parser.current);
+				}
 			} case TLAplusParserConstants.IDENTIFIER: { // ex. x
 				Assert.assertTrue(parser.isAtEnd());
 				return id(node);
@@ -1342,6 +1390,17 @@ public class SanyTranslator {
 				assumption.addChild(parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return assumption;
+			} case SyntaxTreeConstants.N_Lambda: {
+				AstNode lambda = Kind.LAMBDA.asNode();
+				parser.consume(TLAplusParserConstants.LAMBDA);
+				do {
+					parser.consume(TLAplusParserConstants.IDENTIFIER);
+					lambda.addChild(Kind.IDENTIFIER.asNode());
+				} while (parser.match(TLAplusParserConstants.COMMA));
+				parser.consume(TLAplusParserConstants.COLON);
+				lambda.addChild(parser.translate("expression"));
+				Assert.assertTrue(parser.isAtEnd());
+				return lambda;
 			} case SyntaxTreeConstants.N_Theorem: { // THEOREM name == ...
 				AstNode theorem = Kind.THEOREM.asNode();
 				parser.consume(TLAplusParserConstants.THEOREM, TLAplusParserConstants.PROPOSITION);

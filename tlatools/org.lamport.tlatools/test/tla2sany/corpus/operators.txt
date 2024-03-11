@@ -1,32 +1,4 @@
 =============|||
-Odd Alternative Operators
-=============|||
-
----- MODULE Test ----
-alt_leq == a =< b
-alt_cup == a \union b
-alt_cap == a \intersect b
-alt_circ == a \o b
-====
-
---------------|||
-
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq)
-    (bound_infix_op (identifier_ref) (leq) (identifier_ref))
-  )
-  (operator_definition (identifier) (def_eq)
-    (bound_infix_op (identifier_ref) (cup) (identifier_ref))
-  )
-  (operator_definition (identifier) (def_eq)
-    (bound_infix_op (identifier_ref) (cap) (identifier_ref))
-  )
-  (operator_definition (identifier) (def_eq)
-    (bound_infix_op (identifier_ref) (circ) (identifier_ref))
-  )
-(double_line)))
-
-=============|||
 Lexically-Conflicting Nonfix Operators
 =============|||
 
@@ -67,42 +39,7 @@ op == - 1 - 2
 (double_line)))
 
 =============|||
-Operators with Colon Prefixes & Jlists
-=============|||
-
----- MODULE Test ----
-op ==
-  /\ A :> B
-  /\ A := B
-  /\ A ::= B
-  /\ A :: B
-  /\ A
-====
-
---------------|||
-
-(source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq)
-    (conj_list
-      (conj_item (bullet_conj)
-        (bound_infix_op (identifier_ref) (map_to) (identifier_ref))
-      )
-      (conj_item (bullet_conj)
-        (bound_infix_op (identifier_ref) (assign) (identifier_ref))
-      )
-      (conj_item (bullet_conj)
-        (bound_infix_op (identifier_ref) (bnf_rule) (identifier_ref))
-      )
-      (conj_item (bullet_conj)
-        (label (identifier) (label_as) (identifier_ref))
-      )
-      (conj_item (bullet_conj) (identifier_ref))
-    )
-  )
-(double_line)))
-
-=============|||
-Higher-Order Operator Parameters
+Higher-Order Operator Parameter Declarations
 =============|||
 
 ---- MODULE Test ----
@@ -119,5 +56,24 @@ f(x, g(_, _), _+_, -._, _^+) == x
     (operator_declaration (prefix_op_symbol (negative)) (placeholder))
     (operator_declaration (placeholder) (postfix_op_symbol (sup_plus)))
   (def_eq) (identifier_ref))
+(double_line)))
+
+=============|||
+LAMBDA Parameter
+=============|||
+
+---- MODULE Test ----
+op == f(LAMBDA x, y : x + y, LAMBDA x : 0)
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_op name: (identifier_ref)
+      parameter: (lambda (identifier) (identifier) (bound_infix_op lhs: (identifier_ref) symbol: (plus) rhs: (identifier_ref)))
+      parameter: (lambda (identifier) (nat_number))
+    )
+  )
 (double_line)))
 

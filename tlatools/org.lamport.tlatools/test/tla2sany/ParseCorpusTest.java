@@ -39,7 +39,7 @@ public class ParseCorpusTest {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
 				// keeping this here because it is useful to debug why a specific test fails
-				if (!corpusTest.name.startsWith("Infix")) {
+				if (!corpusTest.name.equals("Subexpression Tree Navigation")) {
 					//continue;
 				}
 				System.out.println(corpusTest.name);
