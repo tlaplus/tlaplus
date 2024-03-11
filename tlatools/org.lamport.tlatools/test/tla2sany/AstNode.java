@@ -25,9 +25,15 @@ public class AstNode {
 	 * data = json.load(f)
 	 * f.close()
 	 * names = [
-			*   f'\t\t{item["type"].upper()} ("{item["type"]}")'
-			*   for item in data
-			*   if item['named'] and not item['type'].startswith('_')
+	 *   f'\t\t{item["type"].upper()} ("{item["type"]}")'
+	 *   for item in data
+	 *   if item['named']
+	 *     and not item['type'].startswith('_')
+	 *     and not item['type'].startswith('block_comment')
+	 *     and not item['type'] == 'comment'
+	 *     and not item['type'] == 'extramodular_text'
+	 *     and not item['type'].startswith('pcal')
+	 *     and not item['type'] == 'fair'
 	 * ]
 	 * print(',\n'.join(names) + ';\n')
 	 */
@@ -42,8 +48,6 @@ public class AstNode {
 		ASYMP ("asymp"),
 		BIGCIRC ("bigcirc"),
 		BINARY_NUMBER ("binary_number"),
-		BLOCK_COMMENT ("block_comment"),
-		BLOCK_COMMENT_TEXT ("block_comment_text"),
 		BNF_RULE ("bnf_rule"),
 		BOOLEAN ("boolean"),
 		BOUND_INFIX_OP ("bound_infix_op"),
@@ -84,7 +88,6 @@ public class AstNode {
 		ENABLED ("enabled"),
 		EQ ("eq"),
 		EQUIV ("equiv"),
-		ESCAPE_CHAR ("escape_char"),
 		EVENTUALLY ("eventually"),
 		EXCEPT ("except"),
 		EXCEPT_UPDATE ("except_update"),
@@ -94,7 +97,6 @@ public class AstNode {
 		EXCL ("excl"),
 		EXISTS ("exists"),
 		EXTENDS ("extends"),
-		FAIR ("fair"),
 		FAIRNESS ("fairness"),
 		FINITE_SET_LITERAL ("finite_set_literal"),
 		FORALL ("forall"),
@@ -124,7 +126,6 @@ public class AstNode {
 		LEADS_TO ("leads_to"),
 		LEQ ("leq"),
 		LET_IN ("let_in"),
-		LEVEL ("level"),
 		LL ("ll"),
 		LNOT ("lnot"),
 		LOCAL_DEFINITION ("local_definition"),
@@ -154,33 +155,6 @@ public class AstNode {
 		OTHER_ARM ("other_arm"),
 		OTIMES ("otimes"),
 		PARENTHESES ("parentheses"),
-		PCAL_ALGORITHM ("pcal_algorithm"),
-		PCAL_ALGORITHM_BODY ("pcal_algorithm_body"),
-		PCAL_ALGORITHM_START ("pcal_algorithm_start"),
-		PCAL_ASSERT ("pcal_assert"),
-		PCAL_ASSIGN ("pcal_assign"),
-		PCAL_AWAIT ("pcal_await"),
-		PCAL_DEFINITIONS ("pcal_definitions"),
-		PCAL_EITHER ("pcal_either"),
-		PCAL_GOTO ("pcal_goto"),
-		PCAL_IF ("pcal_if"),
-		PCAL_LHS ("pcal_lhs"),
-		PCAL_MACRO ("pcal_macro"),
-		PCAL_MACRO_CALL ("pcal_macro_call"),
-		PCAL_MACRO_DECL ("pcal_macro_decl"),
-		PCAL_PRINT ("pcal_print"),
-		PCAL_PROC_CALL ("pcal_proc_call"),
-		PCAL_PROC_DECL ("pcal_proc_decl"),
-		PCAL_PROC_VAR_DECL ("pcal_proc_var_decl"),
-		PCAL_PROC_VAR_DECLS ("pcal_proc_var_decls"),
-		PCAL_PROCEDURE ("pcal_procedure"),
-		PCAL_PROCESS ("pcal_process"),
-		PCAL_RETURN ("pcal_return"),
-		PCAL_SKIP ("pcal_skip"),
-		PCAL_VAR_DECL ("pcal_var_decl"),
-		PCAL_VAR_DECLS ("pcal_var_decls"),
-		PCAL_WHILE ("pcal_while"),
-		PCAL_WITH ("pcal_with"),
 		PICK_PROOF_STEP ("pick_proof_step"),
 		PLUS ("plus"),
 		PLUS_ARROW ("plus_arrow"),
@@ -263,16 +237,16 @@ public class AstNode {
 		AMPAMP ("ampamp"),
 		ASTERISK ("asterisk"),
 		BOOLEAN_SET ("boolean_set"),
-		COMMENT ("comment"),
 		COMPOSE ("compose"),
 		DOL ("dol"),
 		DOLDOL ("doldol"),
-		EXTRAMODULAR_TEXT ("extramodular_text"),
+		ESCAPE_CHAR ("escape_char"),
 		FORMAT ("format"),
 		GT ("gt"),
 		HASHHASH ("hashhash"),
 		IDENTIFIER ("identifier"),
 		IDENTIFIER_REF ("identifier_ref"),
+		LEVEL ("level"),
 		MAP_FROM ("map_from"),
 		MAP_TO ("map_to"),
 		MINUSMINUS ("minusminus"),
@@ -281,10 +255,6 @@ public class AstNode {
 		MUL ("mul"),
 		MULMUL ("mulmul"),
 		NAME ("name"),
-		PCAL_END_EITHER ("pcal_end_either"),
-		PCAL_END_IF ("pcal_end_if"),
-		PCAL_END_WHILE ("pcal_end_while"),
-		PCAL_END_WITH ("pcal_end_with"),
 		PLACEHOLDER ("placeholder"),
 		PLUSPLUS ("plusplus"),
 		POW ("pow"),

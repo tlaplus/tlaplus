@@ -415,23 +415,108 @@ public class SanyTranslator {
 	 */
 	private static AstNode infixOpFromString(String op) throws ParseException {
 		switch (op) {
-			case "/\\": return Kind.LAND.asNode();
-			case "\\/": return Kind.LOR.asNode();
-			case "+": return Kind.PLUS.asNode();
-			case "-": return Kind.MINUS.asNode();
-			case "*": return Kind.MUL.asNode();
-			case "/": return Kind.SLASH.asNode();
-			case "=": return Kind.EQ.asNode();
-			case ">": return Kind.GT.asNode();
-			case "=<": return Kind.LEQ.asNode();
-			case "\\in": return Kind.IN.asNode();
-			case "\\union": return Kind.CUP.asNode();
-			case "\\intersect": return Kind.CAP.asNode();
-			case "=>": return Kind.IMPLIES.asNode();
-			case "\\o": return Kind.CIRC.asNode();
+			case "&": return Kind.AMP.asNode();
+			case "&&": return Kind.AMPAMP.asNode();
+			case "\\approx": return Kind.APPROX.asNode();
 			case ":=": return Kind.ASSIGN.asNode();
+			case "\\asymp": return Kind.ASYMP.asNode();
+			case "\\bigcirc": return Kind.BIGCIRC.asNode();
 			case "::=": return Kind.BNF_RULE.asNode();
+			case "\\bullet": return Kind.BULLET.asNode();
+			case "\\intersect": return Kind.CAP.asNode();
+			case "\\cap": return Kind.CAP.asNode();
+			case "\\cdot": return Kind.CDOT.asNode();
+			case "\\o": return Kind.CIRC.asNode();
+			case "\\circ": return Kind.CIRC.asNode();
+			case "@@": return Kind.COMPOSE.asNode();
+			case "\\cong": return Kind.CONG.asNode();
+			case "\\union": return Kind.CUP.asNode();
+			case "\\cup": return Kind.CUP.asNode();
+			case "\\div": return Kind.DIV.asNode();
+			case "$": return Kind.DOL.asNode();
+			case "$$": return Kind.DOLDOL.asNode();
+			case "\\doteq": return Kind.DOTEQ.asNode();
+			case "..": return Kind.DOTS_2.asNode();
+			case "...": return Kind.DOTS_3.asNode();
+			case "=": return Kind.EQ.asNode();
+			case "\\equiv": return Kind.EQUIV.asNode();
+			case "!!": return Kind.EXCL.asNode();
+			case ">=": return Kind.GEQ.asNode();
+			case "\\geq": return Kind.GEQ.asNode();
+			case "\\gg": return Kind.GG.asNode();
+			case ">": return Kind.GT.asNode();
+			case "##": return Kind.HASHHASH.asNode();
+			case "<=>": return Kind.IFF.asNode();
+			case "=>": return Kind.IMPLIES.asNode();
+			case "\\in": return Kind.IN.asNode();
+			case "/\\": return Kind.LAND.asNode();
+			case "\\land": return Kind.LAND.asNode();
+			case "=|": return Kind.LD_TTILE.asNode();
+			case "~>": return Kind.LEADS_TO.asNode();
+			case "<=": return Kind.LEQ.asNode();
+			case "=<": return Kind.LEQ.asNode();
+			case "\\leq": return Kind.LEQ.asNode();
+			case "\\ll": return Kind.LL.asNode();
+			case "\\/": return Kind.LOR.asNode();
+			case "\\lor": return Kind.LOR.asNode();
+			case "-|": return Kind.LS_TTILE.asNode();
+			case "<": return Kind.LT.asNode();
+			case "<:": return Kind.MAP_FROM.asNode();
 			case ":>": return Kind.MAP_TO.asNode();
+			case "-": return Kind.MINUS.asNode();
+			case "--": return Kind.MINUSMINUS.asNode();
+			case "%": return Kind.MOD.asNode();
+			case "%%": return Kind.MODMOD.asNode();
+			case "*": return Kind.MUL.asNode();
+			case "**": return Kind.MULMUL.asNode();
+			case "/=": return Kind.NEQ.asNode();
+			case "#": return Kind.NEQ.asNode();
+			case "\\notin": return Kind.NOTIN.asNode();
+			case "(.)": return Kind.ODOT.asNode();
+			case "\\odot": return Kind.ODOT.asNode();
+			case "(-)": return Kind.OMINUS.asNode();
+			case "\\ominus": return Kind.OMINUS.asNode();
+			case "(+)": return Kind.OPLUS.asNode();
+			case "\\oplus": return Kind.OPLUS.asNode();
+			case "(/)": return Kind.OSLASH.asNode();
+			case "\\oslash": return Kind.OSLASH.asNode();
+			case "(\\X)": return Kind.OTIMES.asNode();
+			case "\\otimes": return Kind.OTIMES.asNode();
+			case "+": return Kind.PLUS.asNode();
+			case "-+->": return Kind.PLUS_ARROW.asNode();
+			case "++": return Kind.PLUSPLUS.asNode();
+			case "^": return Kind.POW.asNode();
+			case "^^": return Kind.POWPOW.asNode();
+			case "\\prec": return Kind.PREC.asNode();
+			case "\\preceq": return Kind.PRECEQ.asNode();
+			case "\\propto": return Kind.PROPTO.asNode();
+			case "??": return Kind.QQ.asNode();
+			case "|=": return Kind.RD_TTILE.asNode();
+			case "|-": return Kind.RS_TTILE.asNode();
+			case "\\": return Kind.SETMINUS.asNode();
+			case "\\sim": return Kind.SIM.asNode();
+			case "\\simeq": return Kind.SIMEQ.asNode();
+			case "/": return Kind.SLASH.asNode();
+			case "//": return Kind.SLASHSLASH.asNode();
+			case "\\sqcap": return Kind.SQCAP.asNode();
+			case "\\sqcup": return Kind.SQCUP.asNode();
+			case "\\sqsubset": return Kind.SQSUBSET.asNode();
+			case "\\sqsubseteq": return Kind.SQSUBSETEQ.asNode();
+			case "\\sqsupset": return Kind.SQSUPSET.asNode();
+			case "\\sqsupseteq": return Kind.SQSUPSETEQ.asNode();
+			case "\\star": return Kind.STAR.asNode();
+			case "\\subset": return Kind.SUBSET.asNode();
+			case "\\subseteq": return Kind.SUBSETEQ.asNode();
+			case "\\succ": return Kind.SUCC.asNode();
+			case "\\succeq": return Kind.SUCCEQ.asNode();
+			case "\\supset": return Kind.SUPSET.asNode();
+			case "\\supseteq": return Kind.SUPSETEQ.asNode();
+			case "\\X": return Kind.TIMES.asNode();
+			case "\\times": return Kind.TIMES.asNode();
+			case "\\uplus": return Kind.UPLUS.asNode();
+			case "|": return Kind.VERT.asNode();
+			case "||": return Kind.VERTVERT.asNode();
+			case "\\wr": return Kind.WR.asNode();
 			default: throw new ParseException(String.format("Operator translation not defined: %s", op), 0);
 		}
 	}
@@ -500,6 +585,15 @@ public class SanyTranslator {
 			} case SyntaxTreeConstants.N_PrefixLHS: { // \lnot x == ...
 				AstNode op = Kind.PREFIX_OP_SYMBOL.asNode();
 				op.addChild(prefixOpFromString(parser.advance().getImage()));
+				parent.addField("name", op);
+				parser.consume(TLAplusParserConstants.IDENTIFIER);
+				parent.addField("parameter", Kind.IDENTIFIER.asNode());
+				break;
+			} case SyntaxTreeConstants.N_InfixLHS: { // x \oplus y == ...
+				AstNode op = Kind.INFIX_OP_SYMBOL.asNode();
+				parser.consume(TLAplusParserConstants.IDENTIFIER);
+				parent.addField("parameter", Kind.IDENTIFIER.asNode());
+				op.addChild(infixOpFromString(parser.advance().getImage()));
 				parent.addField("name", op);
 				parser.consume(TLAplusParserConstants.IDENTIFIER);
 				parent.addField("parameter", Kind.IDENTIFIER.asNode());
@@ -1145,9 +1239,7 @@ public class SanyTranslator {
 				AstNode boundPrefixOp = Kind.BOUND_PREFIX_OP.asNode();
 				// Hilariously, the negative "-" prefix operator here appears as an infix operator
 				if (parser.match(SyntaxTreeConstants.N_GenInfixOp)) {
-					AstNode symbol = translate(parser.previous());
-					symbol.alias(Kind.MINUS, Kind.NEGATIVE);
-					boundPrefixOp.addField("symbol", symbol);
+					boundPrefixOp.addField("symbol", Kind.NEGATIVE.asNode());
 				} else {
 					boundPrefixOp.addField("symbol", parser.translate(SyntaxTreeConstants.N_GenPrefixOp));
 				}
@@ -1181,7 +1273,15 @@ public class SanyTranslator {
 			} case SyntaxTreeConstants.N_InfixExpr: { // Infix op application, full expression ex. 1 + 2
 				AstNode boundInfixOp = Kind.BOUND_INFIX_OP.asNode();
 				boundInfixOp.addField("lhs", parser.translate("expression"));
-				boundInfixOp.addField("symbol", parser.translate(SyntaxTreeConstants.N_GenInfixOp));
+				// Have to flatten out the N_GenInfixOp parse logic here to preserve
+				// that translation rule as a viable entry point for op references.
+				SyntaxTreeNode genOp = parser.consume(SyntaxTreeConstants.N_GenInfixOp);
+				SanyReparser genOpParser = new SanyReparser(genOp.getHeirs());
+				SyntaxTreeNode prefix = genOpParser.consume(SyntaxTreeConstants.N_IdPrefix);
+				Assert.assertEquals(0, prefix.getHeirs().length);
+				SyntaxTreeNode op = genOpParser.consume(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
+				Assert.assertTrue(genOpParser.isAtEnd());
+				boundInfixOp.addField("symbol", infixOpFromString(op.getImage()));
 				boundInfixOp.addField("rhs", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
 				return boundInfixOp;
@@ -1190,9 +1290,9 @@ public class SanyTranslator {
 				// ID prefix is holdover from TLA+ v1, not used in v2; superseded by nonfix ops
 				Assert.assertEquals(0, prefix.getHeirs().length);
 				// Sometimes \in appears as N_InfixOp, and sometimes it appears as T_IN
-				SyntaxTreeNode op = parser.consume(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
+				AstNode op = parser.translate(SyntaxTreeConstants.N_InfixOp, SyntaxTreeConstants.T_IN);
 				Assert.assertTrue(parser.isAtEnd());
-				return infixOpFromString(op.getImage());
+				return op;
 			} case SyntaxTreeConstants.N_InfixOp: { // Infix op symbol; declaration, nonfix, or ref
 				AstNode op = Kind.INFIX_OP_SYMBOL.asNode();
 				Assert.assertTrue(parser.isAtEnd());

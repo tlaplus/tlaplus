@@ -66,7 +66,7 @@ public class CorpusParser {
 		StringBuilder sb = null;
 		for (int i = 0; i < codepoints.length; i++) {
 			int codepoint = codepoints[i];
-			if (Character.isLetter(codepoint) || '_' == codepoint) {
+			if (Character.isLetter(codepoint) || Character.isDigit(codepoint) || '_' == codepoint) {
 				if (null == sb) {
 					sb = new StringBuilder();
 				}

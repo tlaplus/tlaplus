@@ -26,28 +26,26 @@ Postfix Operator Declaration as Parameter
 
 ---- MODULE Test ----
 
-op(_ ^+) == 1
-op(_ ^*) == 2
-op(_ ^#) == 3
-op(_ ') == 4
+op(
+  _ ^+,
+  _ ^*,
+  _ ^#,
+  _ '
+) == 4
 
 ====
 
 -------------|||
 
 (source_file (module (header_line) name: (identifier) (header_line)
-  (operator_definition name: (identifier) parameter:
-    (operator_declaration (placeholder) name: (postfix_op_symbol (sup_plus)))
-  (def_eq) definition: (nat_number))
-  (operator_definition name: (identifier) parameter:
-    (operator_declaration (placeholder) name: (postfix_op_symbol (asterisk)))
-  (def_eq) definition: (nat_number))
-  (operator_definition name: (identifier) parameter:
-    (operator_declaration (placeholder) name: (postfix_op_symbol (sup_hash)))
-  (def_eq) definition: (nat_number))
-  (operator_definition name: (identifier) parameter:
-    (operator_declaration (placeholder) name: (postfix_op_symbol (prime)))
-  (def_eq) definition: (nat_number))
+  (operator_definition name: (identifier)
+    parameter: (operator_declaration (placeholder) name: (postfix_op_symbol (sup_plus)))
+    parameter: (operator_declaration (placeholder) name: (postfix_op_symbol (asterisk)))
+    parameter: (operator_declaration (placeholder) name: (postfix_op_symbol (sup_hash)))
+    parameter: (operator_declaration (placeholder) name: (postfix_op_symbol (prime)))
+    (def_eq)
+    definition: (nat_number)
+  )
 (double_line)))
 
 =============|||
