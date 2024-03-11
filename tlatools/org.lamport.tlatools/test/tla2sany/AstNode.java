@@ -444,14 +444,16 @@ public class AstNode {
 	 * 
 	 * @param from The kind to match on.
 	 * @param to The kind to rewrite to.
+	 * @return This AST node for function chaining purposes.
 	 */
-	public void alias(final Kind from, final Kind to) {
+	public AstNode alias(final Kind from, final Kind to) {
 		if (from == this.kind) {
 			this.kind = to;
 		}
 		for (AstNode child : this.children) {
 			child.alias(from, to);
 		}
+		return this;
 	}
 	
 	/**

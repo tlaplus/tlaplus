@@ -8,7 +8,7 @@ import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
 
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -20,22 +20,43 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.List;
 
+/**
+ * Runs all corpus tests through SANY, checking its syntax parsing.
+ */
 public class ParseCorpusTest {
 	
-	private List<CorpusTestFile> corpus;
+	/**
+	 * The parsed corpus test files.
+	 */
+	private static List<CorpusTestFile> corpus;
 	
-	@Before
-	public void setup() throws IOException, ParseException, AbortException {
+	/**
+	 * Loads all corpus test files and performs static initialization of SANY.
+	 * 
+	 * @throws IOException If corpus test file cannot be found or read.
+	 * @throws ParseException If corpus test file fails to parse.
+	 * @throws AbortException If SANY static initialization fails.
+	 */
+	@BeforeClass
+	public static void setup() throws IOException, ParseException, AbortException {
 		Path toolsRoot = Paths.get(System.getProperty("basedir"));
-		this.corpus = CorpusParser.getAndParseCorpusTestFiles(toolsRoot);
+		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(toolsRoot);
 		Configuration.load(null);
 		BuiltInLevel.load();
 	}
-
+	
+	/**
+	 * Iterates through each corpus test in each corpus test file, feeds the
+	 * raw TLA+ input into SANY, translates SANY's output to the format
+	 * expected by the test, then compares this translated output to the
+	 * expected parse tree associated with that test.
+	 * 
+	 * @throws ParseException If translating SANY's output fails.
+	 */
 	@Test
-	public void test() throws ParseException {
+	public void testEntireCorpus() throws ParseException {
 		int testCount = 0;
-		for (CorpusTestFile corpusTestFile : this.corpus) {
+		for (CorpusTestFile corpusTestFile : ParseCorpusTest.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
 				// keeping this here because it is useful to debug why a specific test fails
@@ -47,16 +68,26 @@ public class ParseCorpusTest {
 				InputStream input = new ByteArrayInputStream(corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8));
 				TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
 				Assert.assertTrue(testSummary, parser.parse());
-				System.out.println(corpusTest.expectedAst);
+				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
 				AstNode actual = SanyTranslator.toAst(parser);
-				System.out.println(actual);
+				System.out.println(String.format("Actual: %s", actual));
 				corpusTest.expectedAst.testEquality(actual);
 				testCount++;
 			}
 		}
 		System.out.println(String.format("Total corpus test count: %d", testCount));
+	}
+
+	/**
+	 * After parsing all the corpus tests, ensures that every single node
+	 * kind enum has been used - this gives us good confidence that the tests
+	 * exercise nearly all valid TLA+ syntax rules.
+	 */
+	@Test
+	public void testAllNodesUsed() {
 		List<AstNode.Kind> unused = AstNode.Kind.getUnused();
 		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
 		System.out.println(AstNode.Kind.getUnused());
+		Assert.assertEquals(0, unused.size());
 	}
 }

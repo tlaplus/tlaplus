@@ -135,7 +135,7 @@ Proof by QED
 
 ---- MODULE Test ----
 COROLLARY TRUE
-PROOF <1>a QED
+PROOF <1>a QED BY <1>a, <*>a
 ====
 
 -------------------------------|||
@@ -143,7 +143,12 @@ PROOF <1>a QED
 (source_file (module (header_line) (identifier) (header_line)
   (theorem (boolean)
     (non_terminal_proof
-      (qed_step (proof_step_id (level) (name)))
+      (qed_step (proof_step_id (level) (name))
+        (terminal_proof (use_body (use_body_expr
+          (proof_step_ref (level) (name))
+          (proof_step_ref (level) (name))
+        )))
+      )
     )
   )
 (double_line)))
@@ -159,7 +164,7 @@ THEOREM TRUE
 <1>c..... HAVE 3
 <1>d..... WITNESS 2, 3
 <1>e..... TAKE a, b, c
-<1>f..... 4
+<1>f..... <1>a
 <1>g..... SUFFICES 5
 <1>h..... CASE 6
 <1>i..... PICK a, b, c : 7
@@ -179,7 +184,7 @@ THEOREM TRUE
       (proof_step (proof_step_id (level) (name)) (have_proof_step (nat_number)))
       (proof_step (proof_step_id (level) (name)) (witness_proof_step (nat_number) (nat_number)))
       (proof_step (proof_step_id (level) (name)) (take_proof_step (identifier) (identifier) (identifier)))
-      (proof_step (proof_step_id (level) (name)) (suffices_proof_step (nat_number)))
+      (proof_step (proof_step_id (level) (name)) (suffices_proof_step (proof_step_ref (level) (name))))
       (proof_step (proof_step_id (level) (name)) (suffices_proof_step (nat_number)))
       (proof_step (proof_step_id (level) (name)) (case_proof_step (nat_number)))
       (proof_step (proof_step_id (level) (name)) (pick_proof_step (identifier) (identifier) (identifier) (nat_number)))
