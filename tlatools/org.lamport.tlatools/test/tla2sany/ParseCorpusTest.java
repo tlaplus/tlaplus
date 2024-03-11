@@ -59,7 +59,11 @@ public class ParseCorpusTest {
 		for (CorpusTestFile corpusTestFile : ParseCorpusTest.corpus) {
 			System.out.println(corpusTestFile.path);
 			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				// keeping this here because it is useful to debug why a specific test fails
+				// Sometimes you just want to run a single test so you can
+				// trace it in the debugger; to do that, put its name in the
+				// if-statement then uncomment the continue statement.
+				// Keeping this here because it was very useful during
+				// development of the translate function.
 				if (!corpusTest.name.equals("Subexpression Tree Navigation")) {
 					//continue;
 				}

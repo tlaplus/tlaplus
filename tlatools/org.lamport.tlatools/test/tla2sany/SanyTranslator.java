@@ -17,7 +17,22 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 
 /**
- * Handles the translation of raw SANY output to the test file AST DSL.
+ * Handles the translation of raw SANY output to the test file AST DSL. Why
+ * do we need to translate SANY output? There are three main reasons:
+ *  1. There is a large pre-existing corpus of TLA+ syntax tests for the TLA+
+ *     tree-sitter grammar, so if we translate SANY's output to the format
+ *     expected by those tests we get a whole bunch of tests for free. Work
+ *     put into expanding the syntax test corpus then also benefits multiple
+ *     TLA+ projects. Finally, it's just easier to specify the expected parse
+ *     tree in the DSL than in SANY's existing string output format, and
+ *     making it easier to write tests ensures more tests will be written!
+ *  2. The process of translating SANY's parse tree output involves a whole
+ *     lot of assertions about its format, so the translation function is a
+ *     detailed regression test ensuring no breaking changes to SANY's output
+ *     syntax tree format occur.
+ *  3. Translating the parse tree to a common format enables conformance
+ *     tests to be written ensuring all major TLA+ parsers output the same
+ *     parse tree on the same input.
  */
 public class SanyTranslator {	
 
@@ -26,8 +41,13 @@ public class SanyTranslator {
 	 * basically just a flat list of tokens. This is most common when dealing
 	 * with constructs that SANY doesn't care much about, like proof-related
 	 * rules. Thus we have to re-parse this output to find its structure.
-	 * That is what this class helps with. It follows the parser pattern
-	 * outlined in https://craftinginterpreters.com/parsing-expressions.html
+	 * Examples of this include the use-or-hide construct, the assume-prove
+	 * construct, and in the take/pick proof steps where you can ambiguously
+	 * have either a comma-separated list of identifiers or quantifier
+	 * bounds. After parsing those with this class I actually found it so
+	 * useful and pleasant that I just used it everywhere. This class follows
+	 * the parser pattern outlined in:
+	 * https://craftinginterpreters.com/parsing-expressions.html
 	 */
 	private static class SanyReparser {
 
