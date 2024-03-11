@@ -1,5 +1,9 @@
 package tla2sany.parser;
 
+/**
+ * This used to be part of ParseException.java but was extracted to restore
+ * the ability to auto-generate the files with JavaCC.
+ */
 public class ParseExceptionExtended extends ParseException {
   /**
    *  Shorter variation of ParseException.getMessage()
