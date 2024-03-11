@@ -1,4 +1,5 @@
 // Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:33:44 PST by lamport
 //      modified on Thu Jan 10 18:41:04 PST 2002 by yuanyu
 
@@ -402,6 +403,13 @@ public class LiveCheck implements ILiveCheck {
 		for (int i = 0; i < checker.length; i++) {
 			MP.printMessage(EC.TLC_AAAAAAA);
 			checker[i].getDiskGraph().recover();
+		}
+	}
+
+	@Override
+	public void flushWritesToDiskFiles() throws IOException {
+		for (ILiveChecker c : checker) {
+			c.getDiskGraph().flushWritesToDiskFiles();
 		}
 	}
 

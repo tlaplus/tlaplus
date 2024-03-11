@@ -1,4 +1,5 @@
 // Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:33:36 PST by lamport
 //      modified on Sat Dec 29 22:15:18 PST 2001 by yuanyu
 
@@ -538,6 +539,20 @@ public abstract class AbstractDiskGraph {
 		this.makeNodePtrTbl(nodePtrRAFPos);
 		this.nodeRAF.seek(nodeRAFPos);
 		this.nodePtrRAF.seek(nodePtrRAFPos);
+	}
+
+	/**
+	 * Flush any in-memory buffered data to the disk.
+	 *
+	 * <p>This method has essentially no visible effect, since any disk files are private to this object and flushing
+	 * writes should not affect reads from those files.  However, there are some tests that call this method to make
+	 * assertions about the data being written to disk.
+	 *
+	 * @throws IOException if an I/O error occurs
+	 */
+	public void flushWritesToDiskFiles() throws IOException {
+		this.nodeRAF.flush();
+		this.nodePtrRAF.flush();
 	}
 
 	public abstract void reset() throws IOException;

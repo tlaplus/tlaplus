@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -208,6 +209,14 @@ public abstract class CommonTestCase {
 	 * @param ptrsSize
 	 */
 	protected void assertNodeAndPtrSizes(final long nodesSize, final long ptrsSize) {
+		// Make sure the liveness checker has flushed all its data to disk to ensure that
+		// the nodes_0 and ptrs_0 files really include everything written so far.
+		try {
+			TLCGlobals.mainChecker.liveCheck.flushWritesToDiskFiles();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
 		final String metadir = TLCGlobals.mainChecker.metadir;
 		assertNotNull(metadir);
 		
