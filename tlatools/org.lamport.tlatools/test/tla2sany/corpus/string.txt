@@ -1,0 +1,89 @@
+==================|||
+Basic String
+==================|||
+
+---- MODULE Test ----
+op == "Hello, world!"
+====
+
+------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (string))
+(double_line)))
+
+==================|||
+Escape Quote String
+==================|||
+
+---- MODULE Test ----
+op == "The cow goes \"moo\", the chicken goes \"cluck cluck\""
+====
+
+------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (string
+      (escape_char)
+      (escape_char)
+      (escape_char)
+      (escape_char)
+    )
+  )
+(double_line)))
+
+==================|||
+Escape Escape String
+==================|||
+
+---- MODULE Test ----
+op == <<"/\\", "\\/">>
+====
+
+------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (tuple_literal (langle_bracket)
+      (string (escape_char))
+      (string (escape_char))
+    (rangle_bracket))
+  )
+(double_line)))
+
+==================|||
+String with block comment start
+==================|||
+
+---- MODULE Test ----
+op == "(*"
+====
+
+------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (string))
+    (double_line)))
+
+==================|||
+String Set
+==================|||
+
+---- MODULE Test ----
+op == STRING
+====
+
+------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition: (string_set))
+(double_line)))
+

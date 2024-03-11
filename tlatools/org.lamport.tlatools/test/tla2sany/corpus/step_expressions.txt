@@ -1,0 +1,77 @@
+=============|||
+Step Expression Or Stuttering
+=============|||
+
+---- MODULE Test ----
+op == [A]_<<x, y, z>>
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (step_expr_or_stutter
+      (identifier_ref)
+      (tuple_literal (langle_bracket) (identifier_ref) (identifier_ref) (identifier_ref) (rangle_bracket))
+    )
+  )
+(double_line)))
+
+=============|||
+Step Expression No Stuttering
+=============|||
+
+---- MODULE Test ----
+op == <<A>>_<<x, y, z>>
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (step_expr_no_stutter
+      (langle_bracket)
+      (identifier_ref)
+      (rangle_bracket_sub)
+      (tuple_literal (langle_bracket) (identifier_ref) (identifier_ref) (identifier_ref) (rangle_bracket))
+    )
+  )
+(double_line)))
+
+=============|||
+Step Expressions with Jlist
+=============|||
+
+---- MODULE Test ----
+
+op == [
+  /\ 1
+  /\ 2
+    ]_x
+
+op == << 
+  /\ 1
+  /\ 2
+    >>_x
+
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (step_expr_or_stutter
+      (conj_list (conj_item (bullet_conj) (nat_number)) (conj_item (bullet_conj) (nat_number)))
+      (identifier_ref)
+    )
+  )
+  (operator_definition (identifier) (def_eq)
+    (step_expr_no_stutter
+      (langle_bracket)
+      (conj_list (conj_item (bullet_conj) (nat_number)) (conj_item (bullet_conj) (nat_number)))
+      (rangle_bracket_sub)
+      (identifier_ref)
+    )
+  )
+(double_line)))
+

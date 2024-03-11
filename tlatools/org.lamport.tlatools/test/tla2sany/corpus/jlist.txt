@@ -1,0 +1,172 @@
+=============|||
+Conjlist Followed by Disjunct
+=============|||
+
+---- MODULE Test ----
+op ==
+    /\ 1
+    /\ 2
+    \/ 3
+====
+    
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op
+      (conj_list
+        (conj_item (bullet_conj) (nat_number))
+        (conj_item (bullet_conj) (nat_number))
+      )
+      (lor)
+      (nat_number)
+    )
+  )
+(double_line)))
+
+=============|||
+Disjlist Followed by Conjunct
+=============|||
+
+---- MODULE Test ----
+op ==
+    \/ 1
+    \/ 2
+    /\ 3
+====
+    
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op
+      (disj_list
+        (disj_item (bullet_disj) (nat_number))
+        (disj_item (bullet_disj) (nat_number))
+      )
+      (land)
+      (nat_number)
+    )
+  )
+(double_line)))
+
+=============|||
+Two Mismatched Jlists
+=============|||
+
+---- MODULE Test ----
+opA ==
+    /\ 1
+    /\ 2
+    \/ 3
+
+opB ==
+    \/ 1
+    \/ 2
+    /\ 3
+====
+    
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op
+      (conj_list
+        (conj_item (bullet_conj) (nat_number))
+        (conj_item (bullet_conj) (nat_number))
+      )
+      (lor)
+      (nat_number)
+    )
+  )
+  (operator_definition (identifier) (def_eq)
+    (bound_infix_op
+      (disj_list
+        (disj_item (bullet_disj) (nat_number))
+        (disj_item (bullet_disj) (nat_number))
+      )
+      (land)
+      (nat_number)
+    )
+  )
+(double_line)))
+
+=============|||
+Nested Alternating Jlists
+=============|||
+
+---- MODULE Test ----
+op ==
+  /\  \/ 1
+      \/ 2
+  /\  \/ 3
+      \/  /\ 4
+          /\ 5
+  /\ 6
+====
+    
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item
+        (bullet_conj)
+        (disj_list
+          (disj_item (bullet_disj) (nat_number))
+          (disj_item (bullet_disj) (nat_number))
+        )
+      )
+      (conj_item
+        (bullet_conj)
+        (disj_list
+          (disj_item (bullet_disj) (nat_number))
+          (disj_item
+            (bullet_disj)
+            (conj_list
+              (conj_item (bullet_conj) (nat_number))
+              (conj_item (bullet_conj) (nat_number))
+            )
+          )
+        )
+      )
+      (conj_item (bullet_conj) (nat_number))
+    )
+  )
+(double_line)))
+
+=============|||
+Jlists Containing Colon-Prefixed Infix Operators (GH87)
+=============|||
+
+---- MODULE Test ----
+conj ==
+  /\ lbl :: A
+  /\ B := C
+  /\ D ::= E
+
+disj ==
+  \/ lbl :: A
+  \/ B := C
+  \/ D ::= E
+====
+    
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item (bullet_conj) (label (identifier) (label_as) (identifier_ref)))
+      (conj_item (bullet_conj) (bound_infix_op (identifier_ref) (assign) (identifier_ref)))
+      (conj_item (bullet_conj) (bound_infix_op (identifier_ref) (bnf_rule) (identifier_ref)))
+    )
+  )
+  (operator_definition (identifier) (def_eq)
+    (disj_list
+      (disj_item (bullet_disj) (label (identifier) (label_as) (identifier_ref)))
+      (disj_item (bullet_disj) (bound_infix_op (identifier_ref) (assign) (identifier_ref)))
+      (disj_item (bullet_disj) (bound_infix_op (identifier_ref) (bnf_rule) (identifier_ref)))
+    )
+  )
+(double_line)))
+

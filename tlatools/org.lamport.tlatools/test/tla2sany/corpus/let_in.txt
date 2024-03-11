@@ -1,0 +1,253 @@
+=============|||
+RECURSIVE inside LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  LET
+    RECURSIVE f(_)
+    f(n) == IF n =< 0 THEN 1 ELSE n * f(n-1)
+  IN f(5)
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (let_in
+      (recursive_declaration (operator_declaration (identifier) (placeholder)))
+      (operator_definition (identifier) (identifier) (def_eq)
+        (if_then_else
+          (bound_infix_op (identifier_ref) (leq) (nat_number))
+          (nat_number)
+          (bound_infix_op (identifier_ref) (mul)
+            (bound_op (identifier_ref)
+              (bound_infix_op (identifier_ref) (minus) (nat_number))
+            )
+          )
+        )
+      )
+      (bound_op (identifier_ref) (nat_number))
+    )
+  )
+(double_line)))
+
+=============|||
+Conjlist with LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  /\ LET x == 1 IN 2
+  /\ 3
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item
+        (bullet_conj)
+        (let_in
+          (operator_definition (identifier) (def_eq) (nat_number))
+          (nat_number)
+        )
+      )
+      (conj_item (bullet_conj) (nat_number))
+    )
+  )
+(double_line)))
+
+=============|||
+Conjlist with RECURSIVE in LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  /\ LET RECURSIVE f IN P
+  /\ Q
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item
+        (bullet_conj)
+        (let_in
+          (recursive_declaration (identifier))
+          (identifier_ref)
+        )
+      )
+      (conj_item (bullet_conj) (identifier_ref))
+    )
+  )
+(double_line)))
+
+=============|||
+Conjlist with INSTANCE in LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  /\ LET M1 == INSTANCE M2 IN P
+  /\ Q
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item
+        (bullet_conj)
+        (let_in
+          (module_definition (identifier) (def_eq) (instance (identifier_ref)))
+          (identifier_ref)
+        )
+      )
+      (conj_item (bullet_conj) (identifier_ref))
+    )
+  )
+(double_line)))
+
+=============|||
+Conjlist inside LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  LET
+    x ==
+      /\ 1
+      /\ 2
+        IN 3
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (let_in
+      (operator_definition (identifier) (def_eq)
+        (conj_list
+          (conj_item (bullet_conj) (nat_number))
+          (conj_item (bullet_conj) (nat_number))
+        )
+      )
+      (nat_number)
+    )
+  )
+(double_line)))
+
+=============|||
+Disjlist with LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  \/ LET x == 1 IN 2
+  \/ 3
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (disj_list
+      (disj_item
+        (bullet_disj)
+        (let_in
+          (operator_definition (identifier) (def_eq) (nat_number))
+          (nat_number)
+        )
+      )
+      (disj_item (bullet_disj) (nat_number))
+    )
+  )
+(double_line)))
+
+=============|||
+Disjlist with RECURSIVE in LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  \/ LET RECURSIVE f IN P
+  \/ Q
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (disj_list
+      (disj_item
+        (bullet_disj)
+        (let_in
+          (recursive_declaration (identifier))
+          (identifier_ref)
+        )
+      )
+      (disj_item (bullet_disj) (identifier_ref))
+    )
+  )
+(double_line)))
+
+=============|||
+Disjlist with INSTANCE in LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  \/ LET M1 == INSTANCE M2 IN P
+  \/ Q
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (disj_list
+      (disj_item
+        (bullet_disj)
+        (let_in
+          (module_definition (identifier) (def_eq) (instance (identifier_ref)))
+          (identifier_ref)
+        )
+      )
+      (disj_item (bullet_disj) (identifier_ref))
+    )
+  )
+(double_line)))
+
+=============|||
+Disjlist inside LET/IN
+=============|||
+
+---- MODULE Test ----
+op ==
+  LET
+    x ==
+      \/ 1
+      \/ 2
+        IN 3
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (let_in
+      (operator_definition (identifier) (def_eq)
+        (disj_list
+          (disj_item (bullet_disj) (nat_number))
+          (disj_item (bullet_disj) (nat_number))
+        )
+      )
+      (nat_number)
+    )
+  )
+(double_line)))
