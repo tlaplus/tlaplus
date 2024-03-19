@@ -149,7 +149,6 @@ public class OperatorPrecedenceTests {
 		new Operator(FixKind.PREFIX, new String[] {"UNCHANGED"}, 4, 15, false),
 		new Operator(FixKind.PREFIX, new String[] {"[]"}, 4, 15, false),
 		new Operator(FixKind.PREFIX, new String[] {"<>"}, 4, 15, false),
-		// https://github.com/tlaplus/tlaplus/issues/892
 		new Operator(FixKind.PREFIX, new String[] {"SUBSET"}, 10, 13, false),
 		new Operator(FixKind.PREFIX, new String[] {"UNION"}, 10, 13, false),
 		new Operator(FixKind.PREFIX, new String[] {"DOMAIN"}, 10, 13, false),
@@ -441,6 +440,9 @@ public class OperatorPrecedenceTests {
 	@Test
 	public void testOperatorAssociativity() {
 		for (Operator op : operators) {
+			if (FixKind.INFIX != op.Fix) {
+				continue;
+			}
 			for (String opSymbol1 : op.Symbols) {
 				for (String opSymbol2 : op.Symbols) {
 					for (String opSymbol3 : op.Symbols) {
