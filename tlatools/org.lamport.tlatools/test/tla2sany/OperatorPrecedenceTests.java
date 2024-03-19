@@ -153,8 +153,7 @@ public class OperatorPrecedenceTests {
 		new Operator(FixKind.PREFIX, new String[] {"SUBSET"}, 10, 13, false),
 		new Operator(FixKind.PREFIX, new String[] {"UNION"}, 10, 13, false),
 		new Operator(FixKind.PREFIX, new String[] {"DOMAIN"}, 10, 13, false),
-		// https://github.com/tlaplus/tlaplus/issues/893
-		//new Operator(FixKind.PREFIX, new String[] {"-"}, 12, 12, false),
+		new Operator(FixKind.PREFIX, new String[] {"-"}, 12, 12, false),
 		new Operator(FixKind.INFIX, new String[] {"=>"}, 1, 1, false),
 		new Operator(FixKind.INFIX, new String[] {"-+->"}, 2, 2, false),
 		new Operator(FixKind.INFIX, new String[] {"\\equiv", "<=>"}, 2, 2, false),
@@ -412,6 +411,11 @@ public class OperatorPrecedenceTests {
 			for (Operator op2 : operators) {
 				if (FixKind.POSTFIX == op1.Fix && FixKind.PREFIX == op2.Fix) {
 					// Can't construct a test case from this
+					continue;
+				}
+				if (FixKind.PREFIX == op2.Fix && op2.Symbols[0] == "-") {
+					// Skip this case because it's bugged; see
+					// https://github.com/tlaplus/tlaplus/issues/893
 					continue;
 				}
 				for (String op1Symbol : op1.Symbols) {
