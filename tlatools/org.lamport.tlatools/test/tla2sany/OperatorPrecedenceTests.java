@@ -445,12 +445,10 @@ public class OperatorPrecedenceTests {
 			}
 			for (String opSymbol1 : op.Symbols) {
 				for (String opSymbol2 : op.Symbols) {
-					for (String opSymbol3 : op.Symbols) {
-						String expr = String.format("A %s B %s C", opSymbol1, opSymbol2, opSymbol3);
-						String inputString = String.format(pattern, expr);
-						TLAplusParser parser = buildParser(inputString);
-						Assert.assertEquals(expr, op.Associative, parser.parse());
-					}
+					String expr = String.format("A %s B %s C", opSymbol1, opSymbol2);
+					String inputString = String.format(pattern, expr);
+					TLAplusParser parser = buildParser(inputString);
+					Assert.assertEquals(expr, op.Associative, parser.parse());
 				}
 			}
 		}
