@@ -1084,6 +1084,7 @@ public class ParseAlgorithm
        if (nextTok.equals("if"))     { return GetIf(0) ; }     ;
        if (nextTok.equals("either")) { return GetEither() ; }     ;
        if (nextTok.equals("with"))   { return GetWith(0) ; }   ;
+       if (nextTok.equals("action")) { return GetAction() ; }   ;
        if (nextTok.equals("when"))   { return GetWhen(true) ; }   ;
        if (nextTok.equals("await"))  { return GetWhen(false) ; }   ;
        if (nextTok.equals("print"))  { return GetPrintS() ; } ;
@@ -1168,6 +1169,7 @@ public class ParseAlgorithm
            || (tok.equals("or"))
            || (tok.equals("end"))
            || (tok.equals("with"))
+           || (tok.equals("action"))
            || (tok.equals("when"))
            || (tok.equals("await"))
            || (tok.equals("skip"))
@@ -1538,6 +1540,22 @@ public class ParseAlgorithm
     		   result.exp.getOrigin().getEnd())) ;
        if (result.exp.tokens.size() == 0)
          { ParsingError("Empty expression in when statement at ") ;} ;
+       GobbleThis(";") ; 
+       return result ;
+     }
+
+
+   public static AST.Action GetAction() throws ParseAlgorithmException 
+     { AST.Action result = new AST.Action() ;
+       MustGobbleThis("action") ;
+       result.col  = lastTokCol ;
+       result.line = lastTokLine ;       
+       result.exp = GetExpr() ; 
+       result.setOrigin(new Region(new PCalLocation(
+    		   result.line-1, result.col-1),
+    		   result.exp.getOrigin().getEnd())) ;
+       if (result.exp.tokens.size() == 0)
+         { ParsingError("Empty expression in action statement at ") ;} ;
        GobbleThis(";") ; 
        return result ;
      }
@@ -2538,6 +2556,8 @@ public class ParseAlgorithm
                }
              else if (! (   node.getClass().equals(AST.AssignObj.getClass())
                          || node.getClass().equals(
+                             AST.ActionObj.getClass())  
+                         || node.getClass().equals(
                                AST.WhenObj.getClass())  
                          || node.getClass().equals(
                                AST.PrintSObj.getClass())  
@@ -2972,6 +2992,24 @@ public class ParseAlgorithm
             return result;
           } ;
 
+        if (stmt.getClass().equals( AST.ActionObj.getClass()))
+          { AST.Action tstmt = (AST.Action) stmt ;
+            AST.Action result = new AST.Action() ;
+            result.col  = tstmt.col ;
+            result.line = tstmt.line ;
+            result.macroCol  = tstmt.macroCol ;
+            result.macroLine = tstmt.macroLine ;
+            result.setOrigin(tstmt.getOrigin()) ;
+            if (macroLine > 0)
+              { result.macroLine = macroLine ;
+                result.macroCol  = macroCol ;
+              } ; 
+
+            result.exp  = tstmt.exp.cloneAndNormalize() ;
+            result.exp.substituteForAll(args, params) ;
+            return result;
+          } ;
+  
         if (stmt.getClass().equals( AST.WhenObj.getClass()))
           { AST.When tstmt = (AST.When) stmt ;
             AST.When result = new AST.When() ;
