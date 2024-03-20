@@ -527,6 +527,7 @@
 					<exclude name="**/SANYTest.java" />
 					<exclude name="**/*_TTraceTest.java" />
 					<exclude name="**/CommonTestCase.java" />
+					<exclude name="**/ConfigCreatingModelCheckerTestCase.java" />
 					<exclude name="**/ModelCheckerTestCase.java" />
 					<exclude name="**/TTraceModelCheckerTestCase.java" />
 					<exclude name="**/TLCDebuggerTestCase.java" />
@@ -877,6 +878,7 @@
 						<exclude name="**/SANYTest.java" />
 						<exclude name="**/*_TTraceTest.java" />
 						<exclude name="**/CommonTestCase.java" />
+						<exclude name="**/ConfigCreatingModelCheckerTestCase.java" />
 						<exclude name="**/ModelCheckerTestCase.java" />
 						<exclude name="**/TTraceModelCheckerTestCase.java" />
 						<exclude name="**/TLCDebuggerTestCase.java" />
