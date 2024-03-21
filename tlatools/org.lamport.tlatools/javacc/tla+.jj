@@ -1159,9 +1159,9 @@ TOKEN: {
 | < ELSE: "ELSE" >
 // | < ENDPROOF: "ENDPROOF" | "EndProof" | "Endproof" >
 | < EXCEPT: "EXCEPT" >
-| < EXISTS: "\\E" | "\\exists" >
+| < EXISTS: "\\E" | "\\exists" | "∃" >
 | < EXTENDS: "EXTENDS" >
-| < FORALL: "\\A" | "\\forall" >
+| < FORALL: "\\A" | "\\forall" | "∀" >
 // | < FUNCTION: "FUNCTION" | "FCN" | "FUNCTIONS" | "FCNS" >
 | < IF: "IF" >
 // | < IN: "\\in" > will become a backslash op.
@@ -1210,10 +1210,10 @@ TOKEN: {
 | < WITH: "WITH" >
 | < COMMA: "," >
 | < COLON: ":" >
-| < COLONCOLON: "::" >
+| < COLONCOLON: "::" | "∷" >
 | < DOT: "." >
 | < US:   "_" >
-| < DEF: ("=="|"≜") >
+| < DEF: "==" | "≜" >
 // | < EQUAL: "=" >
 | < LBR: "(" >
 | < RBR: ")" >
@@ -1226,13 +1226,13 @@ TOKEN: {
 | < RWB: "|}" >  // Obsolete
 | < LBC: "{" >
 | < RBC: "}" >
-| < LAB: "<<" >
-| < ARAB: ">>_" >
-| < RAB: ">>" >
+| < LAB: "<<" | "⟨" >
+| < ARAB: ">>_" | "⟩_" >
+| < RAB: ">>" | "⟩" >
 | < BANG: "!" >
-| < ARROW: "->" >
-| < SUBSTITUTE: "<-" >
-| < MAPTO: "|->" >
+| < ARROW: "->" | "→" >
+| < SUBSTITUTE: "<-" | "←" >
+| < MAPTO: "|->" | "↦" >
 // | < ENDBY: "[.]">
 // | < PROOFCASE: "PROOFCASE">
 }
@@ -1266,29 +1266,25 @@ TOKEN: {
 
 <SPEC> TOKEN : { < // -> postfix
   op_57 : "'" > | <
-  op_68 : "^+" > | <
-  op_postfix_sup_plus_uc : "⁺" > | <
+  op_68 : "^+" | "⁺" > | <
   op_69 : "^*" > | <
   op_70 : "^#" > | < // prefix ->
   op_76 : "-." > | <
-  op_26 : "\\lnot" > | <
+  op_26 : "\\lnot" | "¬" > | <
   op_29 : "\\neg" > | <
   op_58 : "~" > | <
-  CASESEP : "[]" > | <
-  op_61 : "<>" > | <
+  CASESEP : "[]" | "□" > | <
+  op_61 : "<>" | "◇" > | <
   op_112 : "ENABLED" > | <
   op_113 : "UNCHANGED" > | <
   op_114 : "SUBSET" > | <
   op_115 : "UNION" > | <
-  op_prefix_always_uc : "□" > | <
-  op_prefix_eventually_uc : "◇" > | <
-  op_prefix_lnot_uc : "¬" > | <
   op_116 : "DOMAIN" > | < // infix ->
   op_1 : "//" > | <
-AND : "/\\" > | < //  op_2 : "/\" > | <
+  AND : "/\\" | "∧" > | < //  op_2 : "/\" > | <
   op_3 : "/=" > | <
   op_4 : "/" > | <
-OR : "\\/" > | <  //  op_5 : "\/" > | <
+  OR : "\\/" | "∨" > | <  //  op_5 : "\/" > | <
   op_6 : "\\approx" > | <
   op_7 : "\\asymp" > | <
   op_8 : "\\bigcirc" > | <
@@ -1303,7 +1299,7 @@ OR : "\\/" > | <  //  op_5 : "\/" > | <
   op_17 : "\\equiv" > | <
   op_18 : "\\geq" > | <
   op_19 : "\\gg" > | <
-  IN : "\\in" > | <
+  IN : "\\in" | "∈" > | <
   op_21 : "\\intersect" > | <
   op_22 : "\\union" > | <
   op_23 : "\\land" > | <
@@ -1551,9 +1547,6 @@ PrefixOpToken() : {
  | t = <op_113>
  | t = <op_114>
  | t = <op_115>
- | t = <op_prefix_always_uc>
- | t = <op_prefix_eventually_uc>
- | t = <op_prefix_lnot_uc>
  | t = <op_116>
  ) { return t; }
 }
@@ -1577,9 +1570,6 @@ NEPrefixOpToken() : {
  | t = <op_113>
  | t = <op_114>
  | t = <op_115>
- | t = <op_prefix_always_uc>
- | t = <op_prefix_eventually_uc>
- | t = <op_prefix_lnot_uc>
  | t = <op_116>
  ) { return t; }
 }
@@ -1763,7 +1753,6 @@ Token t;
 }{
  ( t = <op_57>
  | t = <op_68>
- | t = <op_postfix_sup_plus_uc>
  | t = <op_69>
  | t = <op_70>
  ) { return t; }
