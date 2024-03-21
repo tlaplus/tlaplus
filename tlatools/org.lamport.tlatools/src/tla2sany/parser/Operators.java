@@ -1,3 +1,5 @@
+// Copyright (c) 2003 Compaq Corporation.  All rights reserved.
+
 package tla2sany.parser;
 
 import tla2sany.configuration.ConfigConstants;
@@ -16,49 +18,49 @@ public class Operators {
    * The operator has no defined associativity. This is the case for prefix
    * and postfix operators.
    */
-  static public final int assocNone = 0;
+  public static final int assocNone = 0;
   
   /**
    * The operator is left-associative, like ((1 + 2) + 3).
    */
-  static public final int assocLeft = 1;
+  public static final int assocLeft = 1;
   
   /**
    * The operator is right-associative, like (1 + (2 + 3)).
    * Currently, no TLA+ operators are right-associative.
    */
-  static public final int assocRight = 2;
+  public static final int assocRight = 2;
 
   /**
    * The operator has no -fix information associated with it.
    * It is unknown what type of operator this could refer to.
    */
-  static public final int nofix = 0;
+  public static final int nofix = 0;
   
   /**
    * Indicates a prefix operator, like SUBSET S.
    */
-  static public final int prefix = 1;
+  public static final int prefix = 1;
   
   /**
    * Indicates a postfix operator, like x'.
    */
-  static public final int postfix = 2;
+  public static final int postfix = 2;
   
   /**
    * Indicates an infix operator, like 1 + 2.
    */
-  static public final int infix = 3;
+  public static final int infix = 3;
   
   /**
    * Indicates an n-fix operator, currently only A \X B \X C \X D.
    */
-  static public final int nfix = 4;
+  public static final int nfix = 4;
   
   /**
    * The table holding the data for all operators defined in the language.
    */
-  static private final Hashtable<UniqueString, Operator> DefinitionTable =
+  private static final Hashtable<UniqueString, Operator> DefinitionTable =
       new Hashtable<UniqueString, Operator>();
   
   /**
@@ -92,7 +94,7 @@ public class Operators {
    * @param name The operator name.
    * @return Details about the requested operator.
    */
-  static public Operator getOperator(UniqueString name) {
+  public static Operator getOperator(UniqueString name) {
     return DefinitionTable.get(name);
   }
 
@@ -104,7 +106,7 @@ public class Operators {
    * @param op The operator to convert.
    * @return The mixfix form of the given operator.
    */
-  static public Operator getMixfix(Operator op) {
+  public static Operator getMixfix(Operator op) {
      if (op.isPrefix()) return op;
      else {
        UniqueString id = op.getIdentifier().concat(".");
@@ -118,7 +120,7 @@ public class Operators {
    * @param name The name of the operator to check for existence.
    * @return Whether the operator exists.
    */
-  static public boolean existsOperator(UniqueString name) {
+  public static boolean existsOperator(UniqueString name) {
     return DefinitionTable.containsKey(name);
   }
 
@@ -133,7 +135,7 @@ public class Operators {
   * @param name Name of the synonym to resolve.                            *
   * @return Name of the synonym to resolve.                                *
   *************************************************************************/
-  static public UniqueString resolveSynonym(UniqueString name) {
+  public static UniqueString resolveSynonym(UniqueString name) {
     Operator op = DefinitionTable.get(name);
     return null == op ? name : op.getIdentifier();
   }
@@ -141,7 +143,7 @@ public class Operators {
   /**
    * Useful for debugging purposes.
    */
-  static public void printTable() {
+  public static void printTable() {
     System.out.println("printing Operators table");
     Enumeration<UniqueString> Enum = DefinitionTable.keys();
     while( Enum.hasMoreElements() ) { System.out.println("-> " + ((UniqueString)Enum.nextElement()).toString() ); }
