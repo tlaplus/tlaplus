@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import tla2sany.semantic.AbortException;
@@ -302,7 +303,7 @@ public class ParseUnit {
         try 
         {
             // create parser object
-            parseTree = new tla2sany.parser.TLAplusParser(nis);
+            parseTree = new tla2sany.parser.TLAplusParser(nis, StandardCharsets.UTF_8.name());
 
             // Here is the one true REAL call to the parseTree.parse() for a file;
             // The root node of the parse tree is left in parseTree.
