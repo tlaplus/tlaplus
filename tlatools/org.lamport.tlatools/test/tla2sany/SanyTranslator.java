@@ -1,10 +1,12 @@
 package tla2sany;
 
 import tla2sany.modanalyzer.SyntaxTreePrinter;
+import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
+import util.UniqueString;
 import tla2sany.AstNode.Kind;
 
 import java.io.PrintWriter;
@@ -400,10 +402,9 @@ public class SanyTranslator {
 	 * @throws ParseException If the string op cannot be resolved.
 	 */
 	private static AstNode prefixOpFromString(String op) throws ParseException {
-		switch (op) {
+		String canonical = Operators.resolveSynonym(UniqueString.uniqueStringOf(op)).toString();
+		switch (canonical) {
 			case "\\lnot": return Kind.LNOT.asNode();
-			case "\\neg": return Kind.LNOT.asNode();
-			case "~": return Kind.LNOT.asNode();
 			case "UNION": return Kind.UNION.asNode();
 			case "SUBSET": return Kind.POWERSET.asNode();
 			case "DOMAIN": return Kind.DOMAIN.asNode();
@@ -424,7 +425,13 @@ public class SanyTranslator {
 	 * @throws ParseException If the string op cannot be resolved.
 	 */
 	private static AstNode infixOpFromString(String op) throws ParseException {
-		switch (op) {
+		// The AST DSL differentiates between \equiv/≡ and <=>/⇔, but SANY
+		// resolves all of them to \equiv.
+		if ("<=>" == op || "⇔" == op) {
+			return Kind.IFF.asNode();
+		}
+		String canonical = Operators.resolveSynonym(UniqueString.uniqueStringOf(op)).toString();
+		switch (canonical) {
 			case "&": return Kind.AMP.asNode();
 			case "&&": return Kind.AMPAMP.asNode();
 			case "\\approx": return Kind.APPROX.asNode();
@@ -434,14 +441,11 @@ public class SanyTranslator {
 			case "::=": return Kind.BNF_RULE.asNode();
 			case "\\bullet": return Kind.BULLET.asNode();
 			case "\\intersect": return Kind.CAP.asNode();
-			case "\\cap": return Kind.CAP.asNode();
 			case "\\cdot": return Kind.CDOT.asNode();
 			case "\\o": return Kind.CIRC.asNode();
-			case "\\circ": return Kind.CIRC.asNode();
 			case "@@": return Kind.COMPOSE.asNode();
 			case "\\cong": return Kind.CONG.asNode();
 			case "\\union": return Kind.CUP.asNode();
-			case "\\cup": return Kind.CUP.asNode();
 			case "\\div": return Kind.DIV.asNode();
 			case "$": return Kind.DOL.asNode();
 			case "$$": return Kind.DOLDOL.asNode();
@@ -451,23 +455,17 @@ public class SanyTranslator {
 			case "=": return Kind.EQ.asNode();
 			case "\\equiv": return Kind.EQUIV.asNode();
 			case "!!": return Kind.EXCL.asNode();
-			case ">=": return Kind.GEQ.asNode();
 			case "\\geq": return Kind.GEQ.asNode();
 			case "\\gg": return Kind.GG.asNode();
 			case ">": return Kind.GT.asNode();
 			case "##": return Kind.HASHHASH.asNode();
-			case "<=>": return Kind.IFF.asNode();
 			case "=>": return Kind.IMPLIES.asNode();
 			case "\\in": return Kind.IN.asNode();
-			case "/\\": return Kind.LAND.asNode();
 			case "\\land": return Kind.LAND.asNode();
 			case "=|": return Kind.LD_TTILE.asNode();
 			case "~>": return Kind.LEADS_TO.asNode();
-			case "<=": return Kind.LEQ.asNode();
-			case "=<": return Kind.LEQ.asNode();
 			case "\\leq": return Kind.LEQ.asNode();
 			case "\\ll": return Kind.LL.asNode();
-			case "\\/": return Kind.LOR.asNode();
 			case "\\lor": return Kind.LOR.asNode();
 			case "-|": return Kind.LS_TTILE.asNode();
 			case "<": return Kind.LT.asNode();
@@ -482,15 +480,10 @@ public class SanyTranslator {
 			case "/=": return Kind.NEQ.asNode();
 			case "#": return Kind.NEQ.asNode();
 			case "\\notin": return Kind.NOTIN.asNode();
-			case "(.)": return Kind.ODOT.asNode();
 			case "\\odot": return Kind.ODOT.asNode();
-			case "(-)": return Kind.OMINUS.asNode();
 			case "\\ominus": return Kind.OMINUS.asNode();
-			case "(+)": return Kind.OPLUS.asNode();
 			case "\\oplus": return Kind.OPLUS.asNode();
-			case "(/)": return Kind.OSLASH.asNode();
 			case "\\oslash": return Kind.OSLASH.asNode();
-			case "(\\X)": return Kind.OTIMES.asNode();
 			case "\\otimes": return Kind.OTIMES.asNode();
 			case "+": return Kind.PLUS.asNode();
 			case "-+->": return Kind.PLUS_ARROW.asNode();
@@ -521,7 +514,6 @@ public class SanyTranslator {
 			case "\\succeq": return Kind.SUCCEQ.asNode();
 			case "\\supset": return Kind.SUPSET.asNode();
 			case "\\supseteq": return Kind.SUPSETEQ.asNode();
-			case "\\X": return Kind.TIMES.asNode();
 			case "\\times": return Kind.TIMES.asNode();
 			case "\\uplus": return Kind.UPLUS.asNode();
 			case "|": return Kind.VERT.asNode();
@@ -539,7 +531,8 @@ public class SanyTranslator {
 	 * @throws ParseException If the string op cannot be resolved.
 	 */
 	private static AstNode postfixOpFromString(String op) throws ParseException {
-		switch (op) {
+		String canonical = Operators.resolveSynonym(UniqueString.uniqueStringOf(op)).toString();
+		switch (canonical) {
 			case "^+": return Kind.SUP_PLUS.asNode();
 			case "^*": return Kind.ASTERISK.asNode();
 			case "^#": return Kind.SUP_HASH.asNode();

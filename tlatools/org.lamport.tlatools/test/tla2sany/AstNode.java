@@ -502,12 +502,12 @@ public class AstNode {
 	 */
 	public void testEquality(AstNode other) {
 		Assert.assertEquals(this.kind, other.kind);
-		Assert.assertEquals(this.children.size(), other.children.size());
+		Assert.assertEquals(this.kind.toString(), this.children.size(), other.children.size());
 		for (int i = 0; i < this.children.size(); i++) {
 			AstNode thisChild = this.children.get(i);
 			AstNode otherChild = other.children.get(i);
 			if (this.fieldNames.containsKey(thisChild)) {
-				Assert.assertEquals(this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
+				Assert.assertEquals(this.kind.toString(), this.fieldNames.get(thisChild), other.fieldNames.get(otherChild));
 			}
 			thisChild.testEquality(otherChild);
 		}
