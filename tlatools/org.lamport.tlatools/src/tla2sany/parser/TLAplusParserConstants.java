@@ -105,193 +105,189 @@ public interface TLAplusParserConstants {
   int BOR = 113;
   int op_57 = 114;
   int op_68 = 115;
-  int op_postfix_sup_plus_uc = 116;
-  int op_69 = 117;
-  int op_70 = 118;
-  int op_76 = 119;
-  int op_26 = 120;
-  int op_29 = 121;
-  int op_58 = 122;
-  int CASESEP = 123;
-  int op_61 = 124;
-  int op_112 = 125;
-  int op_113 = 126;
-  int op_114 = 127;
-  int op_115 = 128;
-  int op_prefix_always_uc = 129;
-  int op_prefix_eventually_uc = 130;
-  int op_prefix_lnot_uc = 131;
-  int op_116 = 132;
-  int op_1 = 133;
-  int AND = 134;
-  int op_3 = 135;
-  int op_4 = 136;
-  int OR = 137;
-  int op_6 = 138;
-  int op_7 = 139;
-  int op_8 = 140;
-  int op_9 = 141;
-  int op_10 = 142;
-  int op_11 = 143;
-  int op_12 = 144;
-  int op_13 = 145;
-  int op_14 = 146;
-  int op_15 = 147;
-  int op_16 = 148;
-  int op_17 = 149;
-  int op_18 = 150;
-  int op_19 = 151;
-  int IN = 152;
-  int op_21 = 153;
-  int op_22 = 154;
-  int op_23 = 155;
-  int op_24 = 156;
-  int op_25 = 157;
-  int op_27 = 158;
-  int op_30 = 159;
-  int op_31 = 160;
-  int op_32 = 161;
-  int op_33 = 162;
-  int op_34 = 163;
-  int op_35 = 164;
-  int op_36 = 165;
-  int op_37 = 166;
-  int op_38 = 167;
-  int op_39 = 168;
-  int op_40 = 169;
-  int op_41 = 170;
-  int op_42 = 171;
-  int op_43 = 172;
-  int op_44 = 173;
-  int op_45 = 174;
-  int op_46 = 175;
-  int op_47 = 176;
-  int op_48 = 177;
-  int op_49 = 178;
-  int op_50 = 179;
-  int op_51 = 180;
-  int op_52 = 181;
-  int op_53 = 182;
-  int op_54 = 183;
-  int op_55 = 184;
-  int op_56 = 185;
-  int op_59 = 186;
-  int op_62 = 187;
-  int op_63 = 188;
-  int op_64 = 189;
-  int EQUALS = 190;
-  int op_66 = 191;
-  int op_67 = 192;
-  int op_71 = 193;
-  int op_72 = 194;
-  int op_73 = 195;
-  int op_74 = 196;
-  int op_75 = 197;
-  int op_77 = 198;
-  int op_78 = 199;
-  int op_79 = 200;
-  int op_80 = 201;
-  int op_81 = 202;
-  int op_82 = 203;
-  int op_83 = 204;
-  int op_84 = 205;
-  int op_85 = 206;
-  int op_86 = 207;
-  int op_87 = 208;
-  int op_88 = 209;
-  int op_89 = 210;
-  int op_90 = 211;
-  int op_91 = 212;
-  int op_92 = 213;
-  int op_93 = 214;
-  int op_94 = 215;
-  int op_95 = 216;
-  int op_96 = 217;
-  int op_97 = 218;
-  int op_98 = 219;
-  int op_100 = 220;
-  int op_101 = 221;
-  int op_102 = 222;
-  int op_103 = 223;
-  int op_104 = 224;
-  int op_105 = 225;
-  int op_106 = 226;
-  int op_107 = 227;
-  int op_108 = 228;
-  int op_109 = 229;
-  int op_110 = 230;
-  int op_111 = 231;
-  int op_117 = 232;
-  int op_infix_approx_uc = 233;
-  int op_infix_assign_uc = 234;
-  int op_infix_asymp_uc = 235;
-  int op_infix_bigcirc_uc = 236;
-  int op_infix_bnf_rule_uc = 237;
-  int op_infix_bullet_uc = 238;
-  int op_infix_cap_uc = 239;
-  int op_infix_cdot_uc = 240;
-  int op_infix_circ_uc = 241;
-  int op_infix_cong_uc = 242;
-  int op_infix_cup_uc = 243;
-  int op_infix_div_uc = 244;
-  int op_infix_doteq_uc = 245;
-  int op_infix_dots_2_uc = 246;
-  int op_infix_dots_3_uc = 247;
-  int op_infix_equiv_uc = 248;
-  int op_infix_excl_uc = 249;
-  int op_infix_geq_uc = 250;
-  int op_infix_gg_uc = 251;
-  int op_infix_iff_uc = 252;
-  int op_infix_implies_uc = 253;
-  int op_infix_in_uc = 254;
-  int op_infix_land_uc = 255;
-  int op_infix_ld_ttile_uc = 256;
-  int op_infix_leads_to_uc = 257;
-  int op_infix_leq_uc = 258;
-  int op_infix_ll_uc = 259;
-  int op_infix_lor_uc = 260;
-  int op_infix_ls_ttile_uc = 261;
-  int op_infix_neq_uc = 262;
-  int op_infix_notin_uc = 263;
-  int op_infix_odot_uc = 264;
-  int op_infix_ominus_uc = 265;
-  int op_infix_oplus_uc = 266;
-  int op_infix_oslash_uc = 267;
-  int op_infix_otimes_uc = 268;
-  int op_infix_plus_arrow_uc = 269;
-  int op_infix_prec_uc = 270;
-  int op_infix_preceq_uc = 271;
-  int op_infix_propto_uc = 272;
-  int op_infix_qq_uc = 273;
-  int op_infix_rd_ttile_uc = 274;
-  int op_infix_rs_ttile_uc = 275;
-  int op_infix_sim_uc = 276;
-  int op_infix_simeq_uc = 277;
-  int op_infix_sqcap_uc = 278;
-  int op_infix_sqcup_uc = 279;
-  int op_infix_sqsubset_uc = 280;
-  int op_infix_sqsubseteq_uc = 281;
-  int op_infix_sqsupset_uc = 282;
-  int op_infix_sqsupseteq_uc = 283;
-  int op_infix_star_uc = 284;
-  int op_infix_subset_uc = 285;
-  int op_infix_subseteq_uc = 286;
-  int op_infix_succ_uc = 287;
-  int op_infix_succeq_uc = 288;
-  int op_infix_supset_uc = 289;
-  int op_infix_supseteq_uc = 290;
-  int op_infix_times_uc = 291;
-  int op_infix_uplus_uc = 292;
-  int op_infix_vertvert_uc = 293;
-  int op_infix_wr_uc = 294;
-  int op_118 = 295;
-  int op_119 = 296;
-  int IDENTIFIER = 297;
-  int ProofStepLexeme = 298;
-  int ProofImplicitStepLexeme = 299;
-  int ProofStepDotLexeme = 300;
-  int BareLevelLexeme = 301;
-  int UnnumberedStepLexeme = 302;
+  int op_69 = 116;
+  int op_70 = 117;
+  int op_76 = 118;
+  int op_26 = 119;
+  int op_29 = 120;
+  int op_58 = 121;
+  int CASESEP = 122;
+  int op_61 = 123;
+  int op_112 = 124;
+  int op_113 = 125;
+  int op_114 = 126;
+  int op_115 = 127;
+  int op_116 = 128;
+  int op_1 = 129;
+  int AND = 130;
+  int op_3 = 131;
+  int op_4 = 132;
+  int OR = 133;
+  int op_6 = 134;
+  int op_7 = 135;
+  int op_8 = 136;
+  int op_9 = 137;
+  int op_10 = 138;
+  int op_11 = 139;
+  int op_12 = 140;
+  int op_13 = 141;
+  int op_14 = 142;
+  int op_15 = 143;
+  int op_16 = 144;
+  int op_17 = 145;
+  int op_18 = 146;
+  int op_19 = 147;
+  int IN = 148;
+  int op_21 = 149;
+  int op_22 = 150;
+  int op_23 = 151;
+  int op_24 = 152;
+  int op_25 = 153;
+  int op_27 = 154;
+  int op_30 = 155;
+  int op_31 = 156;
+  int op_32 = 157;
+  int op_33 = 158;
+  int op_34 = 159;
+  int op_35 = 160;
+  int op_36 = 161;
+  int op_37 = 162;
+  int op_38 = 163;
+  int op_39 = 164;
+  int op_40 = 165;
+  int op_41 = 166;
+  int op_42 = 167;
+  int op_43 = 168;
+  int op_44 = 169;
+  int op_45 = 170;
+  int op_46 = 171;
+  int op_47 = 172;
+  int op_48 = 173;
+  int op_49 = 174;
+  int op_50 = 175;
+  int op_51 = 176;
+  int op_52 = 177;
+  int op_53 = 178;
+  int op_54 = 179;
+  int op_55 = 180;
+  int op_56 = 181;
+  int op_59 = 182;
+  int op_62 = 183;
+  int op_63 = 184;
+  int op_64 = 185;
+  int EQUALS = 186;
+  int op_66 = 187;
+  int op_67 = 188;
+  int op_71 = 189;
+  int op_72 = 190;
+  int op_73 = 191;
+  int op_74 = 192;
+  int op_75 = 193;
+  int op_77 = 194;
+  int op_78 = 195;
+  int op_79 = 196;
+  int op_80 = 197;
+  int op_81 = 198;
+  int op_82 = 199;
+  int op_83 = 200;
+  int op_84 = 201;
+  int op_85 = 202;
+  int op_86 = 203;
+  int op_87 = 204;
+  int op_88 = 205;
+  int op_89 = 206;
+  int op_90 = 207;
+  int op_91 = 208;
+  int op_92 = 209;
+  int op_93 = 210;
+  int op_94 = 211;
+  int op_95 = 212;
+  int op_96 = 213;
+  int op_97 = 214;
+  int op_98 = 215;
+  int op_100 = 216;
+  int op_101 = 217;
+  int op_102 = 218;
+  int op_103 = 219;
+  int op_104 = 220;
+  int op_105 = 221;
+  int op_106 = 222;
+  int op_107 = 223;
+  int op_108 = 224;
+  int op_109 = 225;
+  int op_110 = 226;
+  int op_111 = 227;
+  int op_117 = 228;
+  int op_infix_approx_uc = 229;
+  int op_infix_assign_uc = 230;
+  int op_infix_asymp_uc = 231;
+  int op_infix_bigcirc_uc = 232;
+  int op_infix_bnf_rule_uc = 233;
+  int op_infix_bullet_uc = 234;
+  int op_infix_cap_uc = 235;
+  int op_infix_cdot_uc = 236;
+  int op_infix_circ_uc = 237;
+  int op_infix_cong_uc = 238;
+  int op_infix_cup_uc = 239;
+  int op_infix_div_uc = 240;
+  int op_infix_doteq_uc = 241;
+  int op_infix_dots_2_uc = 242;
+  int op_infix_dots_3_uc = 243;
+  int op_infix_equiv_uc = 244;
+  int op_infix_excl_uc = 245;
+  int op_infix_geq_uc = 246;
+  int op_infix_gg_uc = 247;
+  int op_infix_iff_uc = 248;
+  int op_infix_implies_uc = 249;
+  int op_infix_in_uc = 250;
+  int op_infix_land_uc = 251;
+  int op_infix_ld_ttile_uc = 252;
+  int op_infix_leads_to_uc = 253;
+  int op_infix_leq_uc = 254;
+  int op_infix_ll_uc = 255;
+  int op_infix_lor_uc = 256;
+  int op_infix_ls_ttile_uc = 257;
+  int op_infix_neq_uc = 258;
+  int op_infix_notin_uc = 259;
+  int op_infix_odot_uc = 260;
+  int op_infix_ominus_uc = 261;
+  int op_infix_oplus_uc = 262;
+  int op_infix_oslash_uc = 263;
+  int op_infix_otimes_uc = 264;
+  int op_infix_plus_arrow_uc = 265;
+  int op_infix_prec_uc = 266;
+  int op_infix_preceq_uc = 267;
+  int op_infix_propto_uc = 268;
+  int op_infix_qq_uc = 269;
+  int op_infix_rd_ttile_uc = 270;
+  int op_infix_rs_ttile_uc = 271;
+  int op_infix_sim_uc = 272;
+  int op_infix_simeq_uc = 273;
+  int op_infix_sqcap_uc = 274;
+  int op_infix_sqcup_uc = 275;
+  int op_infix_sqsubset_uc = 276;
+  int op_infix_sqsubseteq_uc = 277;
+  int op_infix_sqsupset_uc = 278;
+  int op_infix_sqsupseteq_uc = 279;
+  int op_infix_star_uc = 280;
+  int op_infix_subset_uc = 281;
+  int op_infix_subseteq_uc = 282;
+  int op_infix_succ_uc = 283;
+  int op_infix_succeq_uc = 284;
+  int op_infix_supset_uc = 285;
+  int op_infix_supseteq_uc = 286;
+  int op_infix_times_uc = 287;
+  int op_infix_uplus_uc = 288;
+  int op_infix_vertvert_uc = 289;
+  int op_infix_wr_uc = 290;
+  int op_118 = 291;
+  int op_119 = 292;
+  int IDENTIFIER = 293;
+  int ProofStepLexeme = 294;
+  int ProofImplicitStepLexeme = 295;
+  int ProofStepDotLexeme = 296;
+  int BareLevelLexeme = 297;
+  int UnnumberedStepLexeme = 298;
 
   int DEFAULT = 0;
   int PRAGMA = 1;
@@ -390,7 +386,7 @@ public interface TLAplusParserConstants {
     "\"WITH\"",
     "\",\"",
     "\":\"",
-    "\"::\"",
+    "<COLONCOLON>",
     "\".\"",
     "\"_\"",
     "<DEF>",
@@ -404,41 +400,37 @@ public interface TLAplusParserConstants {
     "\"|}\"",
     "\"{\"",
     "\"}\"",
-    "\"<<\"",
-    "\">>_\"",
-    "\">>\"",
+    "<LAB>",
+    "<ARAB>",
+    "<RAB>",
     "\"!\"",
-    "\"->\"",
-    "\"<-\"",
-    "\"|->\"",
+    "<ARROW>",
+    "<SUBSTITUTE>",
+    "<MAPTO>",
     "<NUMBER_LITERAL>",
     "<STRING_LITERAL>",
     "<BAND>",
     "<BOR>",
     "\"\\\'\"",
-    "\"^+\"",
-    "\"\\u207a\"",
+    "<op_68>",
     "\"^*\"",
     "\"^#\"",
     "\"-.\"",
-    "\"\\\\lnot\"",
+    "<op_26>",
     "\"\\\\neg\"",
     "\"~\"",
-    "\"[]\"",
-    "\"<>\"",
+    "<CASESEP>",
+    "<op_61>",
     "\"ENABLED\"",
     "\"UNCHANGED\"",
     "\"SUBSET\"",
     "\"UNION\"",
-    "\"\\u25a1\"",
-    "\"\\u25c7\"",
-    "\"\\u00ac\"",
     "\"DOMAIN\"",
     "\"//\"",
-    "\"/\\\\\"",
+    "<AND>",
     "\"/=\"",
     "\"/\"",
-    "\"\\\\/\"",
+    "<OR>",
     "\"\\\\approx\"",
     "\"\\\\asymp\"",
     "\"\\\\bigcirc\"",
@@ -453,7 +445,7 @@ public interface TLAplusParserConstants {
     "\"\\\\equiv\"",
     "\"\\\\geq\"",
     "\"\\\\gg\"",
-    "\"\\\\in\"",
+    "<IN>",
     "\"\\\\intersect\"",
     "\"\\\\union\"",
     "\"\\\\land\"",
