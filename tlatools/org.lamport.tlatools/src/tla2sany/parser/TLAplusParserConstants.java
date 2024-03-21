@@ -393,7 +393,7 @@ public interface TLAplusParserConstants {
     "\"::\"",
     "\".\"",
     "\"_\"",
-    "\"==\"",
+    "<DEF>",
     "\"(\"",
     "\")\"",
     "\"-|-\"",
