@@ -85,32 +85,27 @@ public class BracketStack implements //LogCategories,
      stack.pop();
   }
 
-  boolean onReference( int o, int kind ) {
-    /***********************************************************************
-    * Returns true iff the top element se of the stack has se.Kind =       *
-    * classes[kind] and se.Offset = o.  Throws an exception if             *
-    * classes[kind] = null.                                                *
-    ***********************************************************************/
-    StackElement se = (StackElement)  stack.peek();
-// Log.log(bracketStackLog, "--- onReference, " + o + " " + classes [ kind ] + 
-//                          "  " + se.Kind + " " + se.Offset);
-     /************************************************************************
-     * A use of a class from tla2sany/error eliminated by LL on 2 Mar 2007   *
-     ************************************************************************/
-    return
-      classes[ kind ] == se.Kind && se.Offset == o;
+  /**
+   * Returns true if the given token start column and kind match the current
+   * jlist alignment and type (conjunction or disjunction).
+   * 
+   * @param column The token start column. 
+   * @param kind The token kind (conjunction or disjunction bullet).
+   * @return True if given token matches current jlist.
+   */
+  boolean onReference(int column, int kind) {
+    StackElement current = this.stack.peek();
+    return current.Offset == column && current.Kind == this.classes[kind];
   }
 
-  boolean aboveReference( int o ) {
-    StackElement se = (StackElement)  stack.peek();
-// Log.log(bracketStackLog, "--- aboveReference, " + o + " " + se.Offset);
-     /************************************************************************
-     * A use of a class from tla2sany/error eliminated by LL on 2 Mar 2007   *
-     ************************************************************************/
-    return se.Offset < o;
-    /***********************************************************************
-    * Returns true iff the Offset field of the top element on the stack    *
-    * is less than or equal to o.                                          *
-    ***********************************************************************/
+  /**
+   * Returns true if the given token start column is to the right of the
+   * current jlist alignment.
+   * 
+   * @param column The start column of some token.
+   * @return True if strictly greater than current jlist alignment.
+   */
+  boolean aboveReference(int column) {
+    return this.stack.peek().Offset < column;
   }
 }
