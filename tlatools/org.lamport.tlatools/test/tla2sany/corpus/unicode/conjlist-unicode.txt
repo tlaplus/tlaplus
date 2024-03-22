@@ -137,7 +137,7 @@ Multiline Unicode Conjlist
 
 ---- MODULE Test ----
 op ≜
-  ∧ 
+  ∧
    1
   ∧
    2
@@ -216,7 +216,7 @@ Infix Op Unicode Conjlist
 ---- MODULE Test ----
 op ≜
  ∧ 1
-  + 2 
+  + 2
  ∧ 3
 ====
 
@@ -245,7 +245,7 @@ Division Infix Op Unicode Conjlist
 ---- MODULE Test ----
 op ≜
  ∧ 1
-  / 2 
+  / 2
  ∧ 3
 ====
 
@@ -274,7 +274,7 @@ Infix Op Terminated Unicode Conjlist
 ---- MODULE Test ----
 op ≜
  ∧ 1
- + 2 
+ + 2
  ∧ 3
 ====
 
@@ -301,7 +301,7 @@ Division Infix Op Terminated Unicode Conjlist
 ---- MODULE Test ----
 op ≜
  ∧ 1
- / 2 
+ / 2
  ∧ 3
 ====
 
