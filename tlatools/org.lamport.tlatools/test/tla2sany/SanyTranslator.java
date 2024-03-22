@@ -387,8 +387,11 @@ public class SanyTranslator {
 			case "BOOLEAN": return Kind.BOOLEAN_SET.asNode();
 			case "STRING": return Kind.STRING_SET.asNode();
 			case "Nat": return Kind.NAT_NUMBER_SET.asNode();
+			case "ℕ": return Kind.NAT_NUMBER_SET.asNode();
 			case "Int": return Kind.INT_NUMBER_SET.asNode();
+			case "ℤ": return Kind.INT_NUMBER_SET.asNode();
 			case "Real": return Kind.REAL_NUMBER_SET.asNode();
+			case "ℝ": return Kind.REAL_NUMBER_SET.asNode();
 			case "@": return Kind.PREV_FUNC_VAL.asNode();
 			default: return Kind.IDENTIFIER_REF.asNode();
 		}
