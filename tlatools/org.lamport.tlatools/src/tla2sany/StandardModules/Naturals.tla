@@ -12,6 +12,7 @@
 (* is defined in the static block at the beginning of the Java class.      *)
 (***************************************************************************)
 Nat       == { }
+ℕ         == Nat
 a+b       == {a, b}
 
 a-b       == CHOOSE n : b + n = a
