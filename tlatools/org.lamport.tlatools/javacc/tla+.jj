@@ -1098,6 +1098,7 @@ TOKEN: {
 | < #CASEN : (<DIGIT>)+ <LETTER> ( <LETTER> | <DIGIT> | "_" )* >
 | < #LETTER: ["a"-"z", "A"-"Z"] >
 | < #DIGIT: ["0"-"9"] >
+| < #NUMBER_SET: ( "ℕ" | "ℤ" | "ℝ" ) > 
 // | < #CASESEP: "[]" >
 }
 
@@ -1450,7 +1451,7 @@ TOKEN: {
 // op_119 : dernier compteur : impact sur ClosedStart et autres !!!
 
 <SPEC,PRAGMA> TOKEN : /* IDENTIFIERS */ {
-  < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" >
+  < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" | <NUMBER_SET> >
 }
 
 // The following code has this bug: When parsing the expression "3 <4",
