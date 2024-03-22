@@ -101,39 +101,16 @@ public class BracketStack implements //LogCategories,
       classes[ kind ] == se.Kind && se.Offset == o;
   }
 
-  boolean belowReference( int o ) {
-    /***********************************************************************
-    * Returns true iff the Offset field of the top element on the stack    *
-    * is greater than o.                                                   *
-    *                                                                      *
-    * THIS METHOD IS APPARENTLY NOT USED.                                  *
-    ***********************************************************************/
-    StackElement se = (StackElement)  stack.peek();
-// Log.log(bracketStackLog, "--- belowReference, " + o + " " + se.Offset);
-     /************************************************************************
-     * A use of a class from tla2sany/error eliminated by LL on 2 Mar 2007   *
-     ************************************************************************/
-    return
-      se.Offset > o;
-  }
-
   boolean aboveReference( int o ) {
     StackElement se = (StackElement)  stack.peek();
 // Log.log(bracketStackLog, "--- aboveReference, " + o + " " + se.Offset);
      /************************************************************************
      * A use of a class from tla2sany/error eliminated by LL on 2 Mar 2007   *
      ************************************************************************/
-    return
+    return se.Offset < o;
     /***********************************************************************
     * Returns true iff the Offset field of the top element on the stack    *
     * is less than or equal to o.                                          *
     ***********************************************************************/
-      se.Offset-1 < o; /* careful here. o is a beginning column, while
-                          Offset is the end column of the token ...\/ ou .../\
-                          on utilise - 1 pour comparer au de'but de la partie
-                          significative du symbole.
-                          De cette manire, le comportement ne change pas si
-                          on utilise uniquement la forme non prafixe des
-                         symboles */
   }
 }
