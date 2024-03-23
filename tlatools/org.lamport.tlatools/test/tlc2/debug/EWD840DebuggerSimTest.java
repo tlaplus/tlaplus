@@ -66,7 +66,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		// Assert the constants of EWD840 and MC02.
 		final TLCStackFrame f = (TLCStackFrame) stackFrames[0];
 		final Variable[] variables = f.getVariables(f.getConstantsId());
-		assertEquals(2, variables.length);
+		assertEquals(3, variables.length);
 		assertEquals(RM, variables[0].getName());
 		Variable[] nested = f.getVariables(variables[0].getVariablesReference());
 		assertEquals(3, nested.length);
