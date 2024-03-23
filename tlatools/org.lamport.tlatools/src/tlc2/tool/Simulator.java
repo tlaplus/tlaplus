@@ -143,7 +143,7 @@ public class Simulator {
 		// UniqueString#InternTable for every lookup. See AbstractChecker too.
 		this.config = createConfig();
 		
-		if (TLCGlobals.isCoverageEnabled()) {
+		if (TLCGlobals.isCoverageEnabled() || TLCGlobals.Coverage.isEnabled()) {
         	CostModelCreator.create(this.tool);
         }
 		

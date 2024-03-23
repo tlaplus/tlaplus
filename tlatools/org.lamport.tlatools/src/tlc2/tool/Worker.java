@@ -38,7 +38,8 @@ import util.WrongInvocationException;
 
 public final class Worker extends IdThread implements IWorker, INextStateFunctor {
 
-	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
+	protected static final boolean variableCoverage = TLCGlobals.Coverage.isVariableEnabled();
 	private static final int INITIAL_CAPACITY = 16;
 	
 	/**
@@ -475,7 +476,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				// nor implied actions are violated. It is thus eligible
 				// for further processing by other workers.
 				this.squeue.sEnqueue(succState);
-				if (coverage) { 
+				if (variableCoverage) { 
 					for (final OpDeclNode odn : TLCState.vars) {
 						odn.count(succState.lookup(odn.getName()));
 					}

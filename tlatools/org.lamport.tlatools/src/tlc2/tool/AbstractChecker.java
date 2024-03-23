@@ -110,7 +110,7 @@ public abstract class AbstractChecker
         
         this.startTime = startTime;
 
-        if (TLCGlobals.isCoverageEnabled()) {
+        if (TLCGlobals.isCoverageEnabled() || TLCGlobals.Coverage.isEnabled()) {
         	CostModelCreator.create(this.tool);
         }
         

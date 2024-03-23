@@ -525,6 +525,8 @@ public abstract class Tool
 		if (acts.isEmpty()) {
 			if (coverage) {
 				cm.incInvocations();
+			}
+			if (TLCGlobals.Coverage.isActionEnabled()) {
 				cm.getRoot().incInvocations();
 			}
 			states.addElement(ps.copy().setAction(acts.getAction()));
