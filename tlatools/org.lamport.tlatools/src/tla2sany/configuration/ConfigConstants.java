@@ -201,6 +201,8 @@ public interface ConfigConstants {
     new Operator("$$",            90,  130, Operators.assocLeft, Operators.infix),
     new Operator("$",             90,  130, Operators.assocLeft, Operators.infix),
     new Operator("??",            90,  130, Operators.assocLeft, Operators.infix),
+    // Removed as requested by Leslie (16 Feb. 01)
+    //new Operator("?",             90,  130, Operators.assocLeft, Operators.infix),
     new Operator("%%",            100, 110, Operators.assocLeft, Operators.infix),
     new Operator("%",             100, 110, Operators.assocNone, Operators.infix),
     new Operator("##",            90,  130, Operators.assocLeft, Operators.infix),
@@ -243,6 +245,7 @@ public interface ConfigConstants {
     new Operator("\\gg",          50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\asymp",       50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\subset",      50,  50,  Operators.assocNone, Operators.infix),
+    // \subseteq is defined as a built-in so don't need to define it here
     new Operator("\\supset",      50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\supseteq",    50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\approx",      50,  50,  Operators.assocNone, Operators.infix),
@@ -304,6 +307,8 @@ public interface ConfigConstants {
     new String[] {"\\preceq", "⪯"},
     new String[] {"\\propto", "∝"},
     new String[] {"??", "⁇"},
+    // This synonym was disabled in the parser so disabling it here too
+    //new String[] {"%", "\mod"},
     new String[] {"|=", "⊨"},
     new String[] {"|-", "⊢"},
     new String[] {"\\sim", "∼"},
