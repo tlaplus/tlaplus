@@ -262,4 +262,30 @@ public class TLCGlobals
 			return "unknown";
 		}
 	}
+	
+	public static final class Coverage {
+		
+		private static final int coverage = Integer.getInteger(TLCGlobals.class.getName() + ".coverage", 0);
+
+		public static boolean isVariableEnabled() {
+			if (isCoverageEnabled()) {
+				return true;
+			}
+			return (coverage & 2) > 0;
+		}
+
+		public static boolean isActionEnabled() {
+			if (isCoverageEnabled()) {
+				return true;
+			}
+			return (coverage & 1) > 0;
+		}
+
+		public static boolean isEnabled() {
+			if (isCoverageEnabled()) {
+				return true;
+			}
+			return coverage > 0;
+		}
+	}
 }

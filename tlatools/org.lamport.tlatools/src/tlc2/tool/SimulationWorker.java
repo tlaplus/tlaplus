@@ -82,7 +82,7 @@ import util.UniqueString;
  */
 public class SimulationWorker extends IdThread implements INextStateFunctor {
 
-	protected static final boolean coverage = TLCGlobals.isCoverageEnabled();
+	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
 
 	// This worker's local source of randomness.
 	private final RandomGenerator localRng;
