@@ -31,7 +31,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +47,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
+import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.output.EC;
+import tlc2.overrides.Evaluation;
 import tlc2.overrides.TLAPlusOperator;
+import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
+import tlc2.tool.TLCState;
+import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
@@ -160,6 +172,61 @@ public class Json {
     }
     return BoolValue.ValTrue;
   }
+  
+	@Evaluation(definition = "Serialize", module = "IOUtils", warn = false, silent = true, priority = 25)
+	public synchronized static Value textSerialize(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
+
+		// Options
+		final Value third = tool.eval(args[2], c, s0, s1, control, cm);
+		final RecordValue opts = (RecordValue) third.toRcd();
+		if (opts == null) {
+			throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+					new String[] { "third", "ndJsonSerialize", "sequence", Values.ppr(third.toString()) });
+		}
+
+		final StringValue serializer = (StringValue) opts.apply(new StringValue("format"), EvalControl.Clear);
+		if ("NDJSON".equals(serializer.getVal().toString())) {
+
+			// Json payload
+			final Value first = tool.eval(args[0], c, s0, s1, control, cm);
+			final TupleValue payload = (TupleValue) first.toTuple();
+			if (payload == null) {
+				throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+						new String[] { "first", "Serialize", "sequence", Values.ppr(first.toString()) });
+			}
+			
+			// Filename
+			final Value second = tool.eval(args[1], c, s0, s1, control, cm);
+			if (!(second instanceof StringValue)) {
+				throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR,
+						new String[] { "second", "ndJsonSerialize", "sequence", Values.ppr(second.toString()) });
+			}
+			final StringValue filepath = (StringValue) second;
+
+			// Options
+			final TupleValue openOptionstv = (TupleValue) opts.apply(new StringValue("openOptions"), EvalControl.Clear);
+			final StringValue charset = (StringValue) opts.apply(new StringValue("charset"), EvalControl.Clear);
+			final StringValue[] openOptions = Arrays.asList(openOptionstv.getElems()).stream().map(e -> (StringValue) e)
+					.toArray(size -> new StringValue[size]);
+
+			try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(filepath.getVal().toString()),
+					Charset.forName(charset.getVal().toString()),
+					Arrays.asList(openOptions).stream().map(e -> StandardOpenOption.valueOf(e.getVal().toString()))
+							.toArray(size -> new StandardOpenOption[size]))) {
+				
+				for (int i = 0; i < payload.elems.length; i++) {
+					writer.write(getNode(payload.elems[i]).toString() + "\n");
+				}
+
+				return BoolValue.ValTrue;
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+
+		}
+		return null;
+	}
 
   /**
    * Serializes a TLA+ TupleValue or RecordValue to JSON.
