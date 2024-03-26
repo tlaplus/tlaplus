@@ -182,6 +182,10 @@ abstract class Spec
 	public final ExprNode getRLReward() {
 		return specProcessor.getRLReward();
 	}
+
+	public final ExprNode getPeriodic() {
+		return specProcessor.getPeriodic();
+	}
 	
     /* Get the initial state predicate of the specification.  */
 	public final Vect<Action> getInitStateSpec() {

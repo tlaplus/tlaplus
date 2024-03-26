@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.OpDeclNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -27,6 +28,7 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
 import util.Assert;
 import util.DebugPrinter;
@@ -676,7 +678,8 @@ public class ModelChecker extends AbstractChecker
 		// internally diffs the time expired since its last invocation which is
 		// only milliseconds here when called twice.
 		final boolean createCheckPoint = TLCGlobals.doCheckPoint();
-		if ((!this.checkLiveness || runtimeRatio > TLCGlobals.livenessRatio || !liveCheck.doLiveCheck()) && !forceLiveCheck && !createCheckPoint) {
+		final ExprNode periodic = tool.getSpecProcessor().getPeriodic();
+		if ((!this.checkLiveness || runtimeRatio > TLCGlobals.livenessRatio || !liveCheck.doLiveCheck()) && !forceLiveCheck && !createCheckPoint && periodic == null) {
 			updateRuntimeRatio(0L);
 			
 			// Do not suspend the state queue if neither check-pointing nor
@@ -702,6 +705,10 @@ public class ModelChecker extends AbstractChecker
                 updateRuntimeRatio(System.currentTimeMillis() - preLivenessChecking);
             } else if (runtimeRatio > TLCGlobals.livenessRatio) {
             	updateRuntimeRatio(0L);
+            }
+            
+            if (periodic != null && BoolValue.ValFalse.equals(tool.eval(periodic))) {
+       			return EC.TLC_ASSUMPTION_FALSE;
             }
 
             if (createCheckPoint) {
