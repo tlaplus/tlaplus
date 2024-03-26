@@ -139,6 +139,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private ExprNode[] modelConstraints; // Model constraints
     private ExprNode[] actionConstraints; // Action constraints
     private ExprNode rlReward;
+    private ExprNode periodic;
     private ExprNode[] assumptions; // Assumpt	ions
     private boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
                                            // is an AXIOM.  Added 26 May 2010 by LL
@@ -1047,6 +1048,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         processActionConstraints();
         
         processRLReward();
+        
+        processPeriodic();
     }
 
     /** 
@@ -1533,6 +1536,25 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
 	}
     
+	private void processPeriodic() {
+        String name = this.config.getPeriodic();
+        if (name.length() != 0)
+        {        	
+        	Object type = this.snapshot.get(name);
+        	if (type == null)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "periodic", name });
+        	}
+        	OpDefNode def = (OpDefNode) type;
+        	if (def.getArity() != 0)
+        	{
+        		Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "periodic", name });
+        		
+        	}
+        	periodic = def.getBody();
+        }
+	}
+  
 	private void processActionConstraints() {
 	    Vect names = this.config.getActionConstraints();
 	    this.actionConstraints = new ExprNode[names.size()];
@@ -1927,6 +1949,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 	public ExprNode getRLReward() {
 		return rlReward;
+	}
+
+	public ExprNode getPeriodic() {
+		return periodic;
 	}
 
 	public ExprNode[] getAssumptions() {
