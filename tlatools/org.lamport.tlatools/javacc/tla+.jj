@@ -41,12 +41,12 @@ config.jj.
 *                                                                          *
 *   throw new ParseException("Some helpful error message.")                *
 *                                                                          *
-* The error message should be helpful enough to indiciate the location of  *
+* The error message should be helpful enough to indicate the location of   *
 * the error with syntaxTreenodeObject.getLocation().toString() This        *
 * interrupts the parsing.  Another method that's only used in two places   *
 * is                                                                       *
 *                                                                          *
-*    PErrors.push(new ParseERror("Helpful error message"))                 *
+*    PErrors.push(new ParseError("Helpful error message"))                 *
 *                                                                          *
 * The parsing continues and the error is reported when parsing ends,       *
 * either by parsing the complete input or by an exception being thrown.    *
@@ -70,7 +70,7 @@ config.jj.
   *************************************************************************/
   
 
-// Handling of FieldName : when the token is a keywork, the type of the token is changed to IDENTIFIER, and then we proceed with regular Identifier() handling.
+// Handling of FieldName : when the token is a keyword, the type of the token is changed to IDENTIFIER, and then we proceed with regular Identifier() handling.
 
 // FairnessHook is used to capture a list of parameters of OpApl, to reattach later to a fairness node. Works only because WF_ forms are not recursive. Must be suitably reset.
 
@@ -1098,6 +1098,7 @@ TOKEN: {
 | < #CASEN : (<DIGIT>)+ <LETTER> ( <LETTER> | <DIGIT> | "_" )* >
 | < #LETTER: ["a"-"z", "A"-"Z"] >
 | < #DIGIT: ["0"-"9"] >
+| < #NUMBER_SET: ( "ℕ" | "ℤ" | "ℝ" ) > 
 // | < #CASESEP: "[]" >
 }
 
@@ -1159,9 +1160,9 @@ TOKEN: {
 | < ELSE: "ELSE" >
 // | < ENDPROOF: "ENDPROOF" | "EndProof" | "Endproof" >
 | < EXCEPT: "EXCEPT" >
-| < EXISTS: "\\E" | "\\exists" >
+| < EXISTS: "\\E" | "\\exists" | "∃" >
 | < EXTENDS: "EXTENDS" >
-| < FORALL: "\\A" | "\\forall" >
+| < FORALL: "\\A" | "\\forall" | "∀" >
 // | < FUNCTION: "FUNCTION" | "FCN" | "FUNCTIONS" | "FCNS" >
 | < IF: "IF" >
 // | < IN: "\\in" > will become a backslash op.
@@ -1210,10 +1211,10 @@ TOKEN: {
 | < WITH: "WITH" >
 | < COMMA: "," >
 | < COLON: ":" >
-| < COLONCOLON: "::" >
+| < COLONCOLON: "::" | "∷" >
 | < DOT: "." >
 | < US:   "_" >
-| < DEF: "==" >
+| < DEF: "==" | "≜" >
 // | < EQUAL: "=" >
 | < LBR: "(" >
 | < RBR: ")" >
@@ -1226,13 +1227,13 @@ TOKEN: {
 | < RWB: "|}" >  // Obsolete
 | < LBC: "{" >
 | < RBC: "}" >
-| < LAB: "<<" >
-| < ARAB: ">>_" >
-| < RAB: ">>" >
+| < LAB: "<<" | "⟨" >
+| < ARAB: ">>_" | "⟩_" >
+| < RAB: ">>" | "⟩" >
 | < BANG: "!" >
-| < ARROW: "->" >
-| < SUBSTITUTE: "<-" >
-| < MAPTO: "|->" >
+| < ARROW: "->" | "→" >
+| < SUBSTITUTE: "<-" | "←" >
+| < MAPTO: "|->" | "↦" >
 // | < ENDBY: "[.]">
 // | < PROOFCASE: "PROOFCASE">
 }
@@ -1266,25 +1267,25 @@ TOKEN: {
 
 <SPEC> TOKEN : { < // -> postfix
   op_57 : "'" > | <
-  op_68 : "^+" > | <
+  op_68 : "^+" | "⁺" > | <
   op_69 : "^*" > | <
   op_70 : "^#" > | < // prefix ->
   op_76 : "-." > | <
-  op_26 : "\\lnot" > | <
+  op_26 : "\\lnot" | "¬" > | <
   op_29 : "\\neg" > | <
   op_58 : "~" > | <
-  CASESEP : "[]" > | <
-  op_61 : "<>" > | <
+  CASESEP : "[]" | "□" > | <
+  op_61 : "<>" | "◇" > | <
   op_112 : "ENABLED" > | <
   op_113 : "UNCHANGED" > | <
   op_114 : "SUBSET" > | <
   op_115 : "UNION" > | <
   op_116 : "DOMAIN" > | < // infix ->
   op_1 : "//" > | <
-AND : "/\\" > | < //  op_2 : "/\" > | <
+  AND : "/\\" | "∧" > | < //  op_2 : "/\" > | <
   op_3 : "/=" > | <
   op_4 : "/" > | <
-OR : "\\/" > | <  //  op_5 : "\/" > | <
+  OR : "\\/" | "∨" > | <  //  op_5 : "\/" > | <
   op_6 : "\\approx" > | <
   op_7 : "\\asymp" > | <
   op_8 : "\\bigcirc" > | <
@@ -1299,7 +1300,7 @@ OR : "\\/" > | <  //  op_5 : "\/" > | <
   op_17 : "\\equiv" > | <
   op_18 : "\\geq" > | <
   op_19 : "\\gg" > | <
-  IN : "\\in" > | <
+  IN : "\\in" | "∈" > | <
   op_21 : "\\intersect" > | <
   op_22 : "\\union" > | <
   op_23 : "\\land" > | <
@@ -1382,13 +1383,75 @@ OR : "\\/" > | <  //  op_5 : "\/" > | <
   op_110 : "(/)" > | <
   op_111 : "(\\X)"> | <
   op_117 : "\\notin"> | <
+  op_infix_approx_uc : "≈" > | <
+  op_infix_assign_uc : "≔" > | <
+  op_infix_asymp_uc : "≍" > | <
+  op_infix_bigcirc_uc : "◯" > | <
+  op_infix_bnf_rule_uc : "⩴" > | <
+  op_infix_bullet_uc : "●" > | <
+  op_infix_cap_uc : "∩" > | <
+  op_infix_cdot_uc : "⋅" > | <
+  op_infix_circ_uc : "∘" > | <
+  op_infix_cong_uc : "≅" > | <
+  op_infix_cup_uc : "∪" > | <
+  op_infix_div_uc : "÷" > | <
+  op_infix_doteq_uc : "≐" > | <
+  op_infix_dots_2_uc : "‥" > | <
+  op_infix_dots_3_uc : "…" > | <
+  op_infix_equiv_uc : "≡" > | <
+  op_infix_excl_uc : "‼" > | <
+  op_infix_geq_uc : "≥" > | <
+  op_infix_gg_uc : "≫" > | <
+  op_infix_iff_uc : "⇔" > | <
+  op_infix_implies_uc : "⇒" > | <
+  op_infix_in_uc : "∈" > | <
+  op_infix_land_uc : "∧" > | <
+  op_infix_ld_ttile_uc : "⫤" > | <
+  op_infix_leads_to_uc : "↝" > | <
+  op_infix_leq_uc : "≤" > | <
+  op_infix_ll_uc : "≪" > | <
+  op_infix_lor_uc : "∨" > | <
+  op_infix_ls_ttile_uc : "⊣" > | <
+  op_infix_neq_uc : "≠" > | <
+  op_infix_notin_uc : "∉" > | <
+  op_infix_odot_uc : "⊙" > | <
+  op_infix_ominus_uc : "⊖" > | <
+  op_infix_oplus_uc : "⊕" > | <
+  op_infix_oslash_uc : "⊘" > | <
+  op_infix_otimes_uc : "⊗" > | <
+  op_infix_plus_arrow_uc : "⇸" > | <
+  op_infix_prec_uc : "≺" > | <
+  op_infix_preceq_uc : "⪯" > | <
+  op_infix_propto_uc : "∝" > | <
+  op_infix_qq_uc : "⁇" > | <
+  op_infix_rd_ttile_uc : "⊨" > | <
+  op_infix_rs_ttile_uc : "⊢" > | <
+  op_infix_sim_uc : "∼" > | <
+  op_infix_simeq_uc : "≃" > | <
+  op_infix_sqcap_uc : "⊓" > | <
+  op_infix_sqcup_uc : "⊔" > | <
+  op_infix_sqsubset_uc : "⊏" > | <
+  op_infix_sqsubseteq_uc : "⊑" > | <
+  op_infix_sqsupset_uc : "⊐" > | <
+  op_infix_sqsupseteq_uc : "⊒" > | <
+  op_infix_star_uc : "⋆" > | <
+  op_infix_subset_uc : "⊂" > | <
+  op_infix_subseteq_uc : "⊆" > | <
+  op_infix_succ_uc : "≻" > | <
+  op_infix_succeq_uc : "⪰" > | <
+  op_infix_supset_uc : "⊃" > | <
+  op_infix_supseteq_uc : "⊇" > | <
+  op_infix_times_uc : "×" > | <
+  op_infix_uplus_uc : "⊎" > | <
+  op_infix_vertvert_uc : "‖" > | <
+  op_infix_wr_uc : "≀" > | <
   op_118 : "\\times"> | <
-  op_119 : "\\X">  
+  op_119 : "\\X">
 }
 // op_119 : dernier compteur : impact sur ClosedStart et autres !!!
 
 <SPEC,PRAGMA> TOKEN : /* IDENTIFIERS */ {
-  < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" >
+  < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" | <NUMBER_SET> >
 }
 
 // The following code has this bug: When parsing the expression "3 <4",
@@ -1618,6 +1681,68 @@ InfixOpToken() : {
  | t =  <op_110>
  | t =  <op_111>
  | t = <op_117>
+ | t = <op_infix_approx_uc>
+ | t = <op_infix_assign_uc>
+ | t = <op_infix_asymp_uc>
+ | t = <op_infix_bigcirc_uc>
+ | t = <op_infix_bnf_rule_uc>
+ | t = <op_infix_bullet_uc>
+ | t = <op_infix_cap_uc>
+ | t = <op_infix_cdot_uc>
+ | t = <op_infix_circ_uc>
+ | t = <op_infix_cong_uc>
+ | t = <op_infix_cup_uc>
+ | t = <op_infix_div_uc>
+ | t = <op_infix_doteq_uc>
+ | t = <op_infix_dots_2_uc>
+ | t = <op_infix_dots_3_uc>
+ | t = <op_infix_equiv_uc>
+ | t = <op_infix_excl_uc>
+ | t = <op_infix_geq_uc>
+ | t = <op_infix_gg_uc>
+ | t = <op_infix_iff_uc>
+ | t = <op_infix_implies_uc>
+ | t = <op_infix_in_uc>
+ | t = <op_infix_land_uc>
+ | t = <op_infix_ld_ttile_uc>
+ | t = <op_infix_leads_to_uc>
+ | t = <op_infix_leq_uc>
+ | t = <op_infix_ll_uc>
+ | t = <op_infix_lor_uc>
+ | t = <op_infix_ls_ttile_uc>
+ | t = <op_infix_neq_uc>
+ | t = <op_infix_notin_uc>
+ | t = <op_infix_odot_uc>
+ | t = <op_infix_ominus_uc>
+ | t = <op_infix_oplus_uc>
+ | t = <op_infix_oslash_uc>
+ | t = <op_infix_otimes_uc>
+ | t = <op_infix_plus_arrow_uc>
+ | t = <op_infix_prec_uc>
+ | t = <op_infix_preceq_uc>
+ | t = <op_infix_propto_uc>
+ | t = <op_infix_qq_uc>
+ | t = <op_infix_rd_ttile_uc>
+ | t = <op_infix_rs_ttile_uc>
+ | t = <op_infix_sim_uc>
+ | t = <op_infix_simeq_uc>
+ | t = <op_infix_sqcap_uc>
+ | t = <op_infix_sqcup_uc>
+ | t = <op_infix_sqsubset_uc>
+ | t = <op_infix_sqsubseteq_uc>
+ | t = <op_infix_sqsupset_uc>
+ | t = <op_infix_sqsupseteq_uc>
+ | t = <op_infix_star_uc>
+ | t = <op_infix_subset_uc>
+ | t = <op_infix_subseteq_uc>
+ | t = <op_infix_succ_uc>
+ | t = <op_infix_succeq_uc>
+ | t = <op_infix_supset_uc>
+ | t = <op_infix_supseteq_uc>
+ | t = <op_infix_times_uc>
+ | t = <op_infix_uplus_uc>
+ | t = <op_infix_vertvert_uc>
+ | t = <op_infix_wr_uc>
  | t = <op_118>
  | t = <op_119>
  ) { return t; }
@@ -4368,7 +4493,7 @@ LetDefinitions() : {
 
 SyntaxTreeNode
 Junctions () : {
-  BStack.newReference(getToken(1).endColumn, getToken(1).kind);
+  BStack.newReference(getToken(1).beginColumn, getToken(1).kind);
     /***********************************************************************
     * Pushes onto BStack an element of the appropriate kind with offset    *
     * equal to the column of the last character in the /\ or \/ token.     *
@@ -4391,7 +4516,7 @@ DisjList() : {
 } {
   tn = JuncItem( N_DisjItem) {
     addHeir(tn); }
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).endColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_DisjItem) { addHeir(tn); }
   )*
 }
@@ -4402,7 +4527,7 @@ ConjList() : {
 } {
   tn = JuncItem( N_ConjItem) {
     addHeir( tn );}
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).endColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_ConjItem) { addHeir( tn ); }
   )*
 }

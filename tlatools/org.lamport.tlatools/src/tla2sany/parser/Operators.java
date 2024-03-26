@@ -149,3 +149,4 @@ public class Operators {
     while( Enum.hasMoreElements() ) { System.out.println("-> " + ((UniqueString)Enum.nextElement()).toString() ); }
   }
 }
+

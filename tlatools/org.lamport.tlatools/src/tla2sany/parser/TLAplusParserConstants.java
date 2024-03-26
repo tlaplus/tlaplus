@@ -21,211 +21,274 @@ public interface TLAplusParserConstants {
   int CASEN = 16;
   int LETTER = 17;
   int DIGIT = 18;
-  int NUMBER = 19;
-  int _BM2 = 20;
-  int _BM0 = 34;
-  int SEPARATOR = 35;
-  int END_MODULE = 36;
-  int ACTION = 37;
-  int ASSUME = 38;
-  int BOXASSUME = 39;
-  int ASSUMPTION = 40;
-  int CASE = 41;
-  int CHOOSE = 42;
-  int CONSTANT = 43;
-  int ELSE = 44;
-  int EXCEPT = 45;
-  int EXISTS = 46;
-  int EXTENDS = 47;
-  int FORALL = 48;
-  int IF = 49;
-  int INSTANCE = 50;
-  int LET = 51;
-  int LETIN = 52;
-  int LOCAL = 53;
-  int MODULE = 54;
-  int NEW = 55;
-  int OTHER = 56;
-  int PROPOSITION = 57;
-  int SF = 58;
-  int T_EXISTS = 59;
-  int T_FORALL = 60;
-  int THEN = 61;
-  int BY = 62;
-  int ONLY = 63;
-  int DEFINE = 64;
-  int DF = 65;
-  int THEOREM = 66;
-  int USE = 67;
-  int HIDE = 68;
-  int HAVE = 69;
-  int OBVIOUS = 70;
-  int OMITTED = 71;
-  int LAMBDA = 72;
-  int TAKE = 73;
-  int PROOF = 74;
-  int PROVE = 75;
-  int BOXPROVE = 76;
-  int QED = 77;
-  int RECURSIVE = 78;
-  int STATE = 79;
-  int TEMPORAL = 80;
-  int PICK = 81;
-  int WITNESS = 82;
-  int SUFFICES = 83;
-  int VARIABLE = 84;
-  int WF = 85;
-  int WITH = 86;
-  int COMMA = 87;
-  int COLON = 88;
-  int COLONCOLON = 89;
-  int DOT = 90;
-  int US = 91;
-  int DEF = 92;
-  int LBR = 93;
-  int RBR = 94;
-  int DEFBREAK = 95;
-  int LSB = 96;
-  int ARSB = 97;
-  int RSB = 98;
-  int LWB = 99;
-  int RWB = 100;
-  int LBC = 101;
-  int RBC = 102;
-  int LAB = 103;
-  int ARAB = 104;
-  int RAB = 105;
-  int BANG = 106;
-  int ARROW = 107;
-  int SUBSTITUTE = 108;
-  int MAPTO = 109;
-  int NUMBER_LITERAL = 110;
-  int STRING_LITERAL = 111;
-  int BAND = 112;
-  int BOR = 113;
-  int op_57 = 114;
-  int op_68 = 115;
-  int op_69 = 116;
-  int op_70 = 117;
-  int op_76 = 118;
-  int op_26 = 119;
-  int op_29 = 120;
-  int op_58 = 121;
-  int CASESEP = 122;
-  int op_61 = 123;
-  int op_112 = 124;
-  int op_113 = 125;
-  int op_114 = 126;
-  int op_115 = 127;
-  int op_116 = 128;
-  int op_1 = 129;
-  int AND = 130;
-  int op_3 = 131;
-  int op_4 = 132;
-  int OR = 133;
-  int op_6 = 134;
-  int op_7 = 135;
-  int op_8 = 136;
-  int op_9 = 137;
-  int op_10 = 138;
-  int op_11 = 139;
-  int op_12 = 140;
-  int op_13 = 141;
-  int op_14 = 142;
-  int op_15 = 143;
-  int op_16 = 144;
-  int op_17 = 145;
-  int op_18 = 146;
-  int op_19 = 147;
-  int IN = 148;
-  int op_21 = 149;
-  int op_22 = 150;
-  int op_23 = 151;
-  int op_24 = 152;
-  int op_25 = 153;
-  int op_27 = 154;
-  int op_30 = 155;
-  int op_31 = 156;
-  int op_32 = 157;
-  int op_33 = 158;
-  int op_34 = 159;
-  int op_35 = 160;
-  int op_36 = 161;
-  int op_37 = 162;
-  int op_38 = 163;
-  int op_39 = 164;
-  int op_40 = 165;
-  int op_41 = 166;
-  int op_42 = 167;
-  int op_43 = 168;
-  int op_44 = 169;
-  int op_45 = 170;
-  int op_46 = 171;
-  int op_47 = 172;
-  int op_48 = 173;
-  int op_49 = 174;
-  int op_50 = 175;
-  int op_51 = 176;
-  int op_52 = 177;
-  int op_53 = 178;
-  int op_54 = 179;
-  int op_55 = 180;
-  int op_56 = 181;
-  int op_59 = 182;
-  int op_62 = 183;
-  int op_63 = 184;
-  int op_64 = 185;
-  int EQUALS = 186;
-  int op_66 = 187;
-  int op_67 = 188;
-  int op_71 = 189;
-  int op_72 = 190;
-  int op_73 = 191;
-  int op_74 = 192;
-  int op_75 = 193;
-  int op_77 = 194;
-  int op_78 = 195;
-  int op_79 = 196;
-  int op_80 = 197;
-  int op_81 = 198;
-  int op_82 = 199;
-  int op_83 = 200;
-  int op_84 = 201;
-  int op_85 = 202;
-  int op_86 = 203;
-  int op_87 = 204;
-  int op_88 = 205;
-  int op_89 = 206;
-  int op_90 = 207;
-  int op_91 = 208;
-  int op_92 = 209;
-  int op_93 = 210;
-  int op_94 = 211;
-  int op_95 = 212;
-  int op_96 = 213;
-  int op_97 = 214;
-  int op_98 = 215;
-  int op_100 = 216;
-  int op_101 = 217;
-  int op_102 = 218;
-  int op_103 = 219;
-  int op_104 = 220;
-  int op_105 = 221;
-  int op_106 = 222;
-  int op_107 = 223;
-  int op_108 = 224;
-  int op_109 = 225;
-  int op_110 = 226;
-  int op_111 = 227;
-  int op_117 = 228;
-  int op_118 = 229;
-  int op_119 = 230;
-  int IDENTIFIER = 231;
-  int ProofStepLexeme = 232;
-  int ProofImplicitStepLexeme = 233;
-  int ProofStepDotLexeme = 234;
-  int BareLevelLexeme = 235;
-  int UnnumberedStepLexeme = 236;
+  int NUMBER_SET = 19;
+  int NUMBER = 20;
+  int _BM2 = 21;
+  int _BM0 = 35;
+  int SEPARATOR = 36;
+  int END_MODULE = 37;
+  int ACTION = 38;
+  int ASSUME = 39;
+  int BOXASSUME = 40;
+  int ASSUMPTION = 41;
+  int CASE = 42;
+  int CHOOSE = 43;
+  int CONSTANT = 44;
+  int ELSE = 45;
+  int EXCEPT = 46;
+  int EXISTS = 47;
+  int EXTENDS = 48;
+  int FORALL = 49;
+  int IF = 50;
+  int INSTANCE = 51;
+  int LET = 52;
+  int LETIN = 53;
+  int LOCAL = 54;
+  int MODULE = 55;
+  int NEW = 56;
+  int OTHER = 57;
+  int PROPOSITION = 58;
+  int SF = 59;
+  int T_EXISTS = 60;
+  int T_FORALL = 61;
+  int THEN = 62;
+  int BY = 63;
+  int ONLY = 64;
+  int DEFINE = 65;
+  int DF = 66;
+  int THEOREM = 67;
+  int USE = 68;
+  int HIDE = 69;
+  int HAVE = 70;
+  int OBVIOUS = 71;
+  int OMITTED = 72;
+  int LAMBDA = 73;
+  int TAKE = 74;
+  int PROOF = 75;
+  int PROVE = 76;
+  int BOXPROVE = 77;
+  int QED = 78;
+  int RECURSIVE = 79;
+  int STATE = 80;
+  int TEMPORAL = 81;
+  int PICK = 82;
+  int WITNESS = 83;
+  int SUFFICES = 84;
+  int VARIABLE = 85;
+  int WF = 86;
+  int WITH = 87;
+  int COMMA = 88;
+  int COLON = 89;
+  int COLONCOLON = 90;
+  int DOT = 91;
+  int US = 92;
+  int DEF = 93;
+  int LBR = 94;
+  int RBR = 95;
+  int DEFBREAK = 96;
+  int LSB = 97;
+  int ARSB = 98;
+  int RSB = 99;
+  int LWB = 100;
+  int RWB = 101;
+  int LBC = 102;
+  int RBC = 103;
+  int LAB = 104;
+  int ARAB = 105;
+  int RAB = 106;
+  int BANG = 107;
+  int ARROW = 108;
+  int SUBSTITUTE = 109;
+  int MAPTO = 110;
+  int NUMBER_LITERAL = 111;
+  int STRING_LITERAL = 112;
+  int BAND = 113;
+  int BOR = 114;
+  int op_57 = 115;
+  int op_68 = 116;
+  int op_69 = 117;
+  int op_70 = 118;
+  int op_76 = 119;
+  int op_26 = 120;
+  int op_29 = 121;
+  int op_58 = 122;
+  int CASESEP = 123;
+  int op_61 = 124;
+  int op_112 = 125;
+  int op_113 = 126;
+  int op_114 = 127;
+  int op_115 = 128;
+  int op_116 = 129;
+  int op_1 = 130;
+  int AND = 131;
+  int op_3 = 132;
+  int op_4 = 133;
+  int OR = 134;
+  int op_6 = 135;
+  int op_7 = 136;
+  int op_8 = 137;
+  int op_9 = 138;
+  int op_10 = 139;
+  int op_11 = 140;
+  int op_12 = 141;
+  int op_13 = 142;
+  int op_14 = 143;
+  int op_15 = 144;
+  int op_16 = 145;
+  int op_17 = 146;
+  int op_18 = 147;
+  int op_19 = 148;
+  int IN = 149;
+  int op_21 = 150;
+  int op_22 = 151;
+  int op_23 = 152;
+  int op_24 = 153;
+  int op_25 = 154;
+  int op_27 = 155;
+  int op_30 = 156;
+  int op_31 = 157;
+  int op_32 = 158;
+  int op_33 = 159;
+  int op_34 = 160;
+  int op_35 = 161;
+  int op_36 = 162;
+  int op_37 = 163;
+  int op_38 = 164;
+  int op_39 = 165;
+  int op_40 = 166;
+  int op_41 = 167;
+  int op_42 = 168;
+  int op_43 = 169;
+  int op_44 = 170;
+  int op_45 = 171;
+  int op_46 = 172;
+  int op_47 = 173;
+  int op_48 = 174;
+  int op_49 = 175;
+  int op_50 = 176;
+  int op_51 = 177;
+  int op_52 = 178;
+  int op_53 = 179;
+  int op_54 = 180;
+  int op_55 = 181;
+  int op_56 = 182;
+  int op_59 = 183;
+  int op_62 = 184;
+  int op_63 = 185;
+  int op_64 = 186;
+  int EQUALS = 187;
+  int op_66 = 188;
+  int op_67 = 189;
+  int op_71 = 190;
+  int op_72 = 191;
+  int op_73 = 192;
+  int op_74 = 193;
+  int op_75 = 194;
+  int op_77 = 195;
+  int op_78 = 196;
+  int op_79 = 197;
+  int op_80 = 198;
+  int op_81 = 199;
+  int op_82 = 200;
+  int op_83 = 201;
+  int op_84 = 202;
+  int op_85 = 203;
+  int op_86 = 204;
+  int op_87 = 205;
+  int op_88 = 206;
+  int op_89 = 207;
+  int op_90 = 208;
+  int op_91 = 209;
+  int op_92 = 210;
+  int op_93 = 211;
+  int op_94 = 212;
+  int op_95 = 213;
+  int op_96 = 214;
+  int op_97 = 215;
+  int op_98 = 216;
+  int op_100 = 217;
+  int op_101 = 218;
+  int op_102 = 219;
+  int op_103 = 220;
+  int op_104 = 221;
+  int op_105 = 222;
+  int op_106 = 223;
+  int op_107 = 224;
+  int op_108 = 225;
+  int op_109 = 226;
+  int op_110 = 227;
+  int op_111 = 228;
+  int op_117 = 229;
+  int op_infix_approx_uc = 230;
+  int op_infix_assign_uc = 231;
+  int op_infix_asymp_uc = 232;
+  int op_infix_bigcirc_uc = 233;
+  int op_infix_bnf_rule_uc = 234;
+  int op_infix_bullet_uc = 235;
+  int op_infix_cap_uc = 236;
+  int op_infix_cdot_uc = 237;
+  int op_infix_circ_uc = 238;
+  int op_infix_cong_uc = 239;
+  int op_infix_cup_uc = 240;
+  int op_infix_div_uc = 241;
+  int op_infix_doteq_uc = 242;
+  int op_infix_dots_2_uc = 243;
+  int op_infix_dots_3_uc = 244;
+  int op_infix_equiv_uc = 245;
+  int op_infix_excl_uc = 246;
+  int op_infix_geq_uc = 247;
+  int op_infix_gg_uc = 248;
+  int op_infix_iff_uc = 249;
+  int op_infix_implies_uc = 250;
+  int op_infix_in_uc = 251;
+  int op_infix_land_uc = 252;
+  int op_infix_ld_ttile_uc = 253;
+  int op_infix_leads_to_uc = 254;
+  int op_infix_leq_uc = 255;
+  int op_infix_ll_uc = 256;
+  int op_infix_lor_uc = 257;
+  int op_infix_ls_ttile_uc = 258;
+  int op_infix_neq_uc = 259;
+  int op_infix_notin_uc = 260;
+  int op_infix_odot_uc = 261;
+  int op_infix_ominus_uc = 262;
+  int op_infix_oplus_uc = 263;
+  int op_infix_oslash_uc = 264;
+  int op_infix_otimes_uc = 265;
+  int op_infix_plus_arrow_uc = 266;
+  int op_infix_prec_uc = 267;
+  int op_infix_preceq_uc = 268;
+  int op_infix_propto_uc = 269;
+  int op_infix_qq_uc = 270;
+  int op_infix_rd_ttile_uc = 271;
+  int op_infix_rs_ttile_uc = 272;
+  int op_infix_sim_uc = 273;
+  int op_infix_simeq_uc = 274;
+  int op_infix_sqcap_uc = 275;
+  int op_infix_sqcup_uc = 276;
+  int op_infix_sqsubset_uc = 277;
+  int op_infix_sqsubseteq_uc = 278;
+  int op_infix_sqsupset_uc = 279;
+  int op_infix_sqsupseteq_uc = 280;
+  int op_infix_star_uc = 281;
+  int op_infix_subset_uc = 282;
+  int op_infix_subseteq_uc = 283;
+  int op_infix_succ_uc = 284;
+  int op_infix_succeq_uc = 285;
+  int op_infix_supset_uc = 286;
+  int op_infix_supseteq_uc = 287;
+  int op_infix_times_uc = 288;
+  int op_infix_uplus_uc = 289;
+  int op_infix_vertvert_uc = 290;
+  int op_infix_wr_uc = 291;
+  int op_118 = 292;
+  int op_119 = 293;
+  int IDENTIFIER = 294;
+  int ProofStepLexeme = 295;
+  int ProofImplicitStepLexeme = 296;
+  int ProofStepDotLexeme = 297;
+  int BareLevelLexeme = 298;
+  int UnnumberedStepLexeme = 299;
 
   int DEFAULT = 0;
   int PRAGMA = 1;
@@ -254,21 +317,22 @@ public interface TLAplusParserConstants {
     "<CASEN>",
     "<LETTER>",
     "<DIGIT>",
+    "<NUMBER_SET>",
     "<NUMBER>",
     "<_BM2>",
-    "<token of kind 21>",
+    "<token of kind 22>",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",
     "\"\\r\"",
-    "<token of kind 26>",
+    "<token of kind 27>",
     "\"\\\\*\"",
-    "<token of kind 28>",
+    "<token of kind 29>",
     "\"*)\"",
     "\"*)\"",
-    "<token of kind 31>",
     "<token of kind 32>",
     "<token of kind 33>",
+    "<token of kind 34>",
     "<_BM0>",
     "<SEPARATOR>",
     "<END_MODULE>",
@@ -324,10 +388,10 @@ public interface TLAplusParserConstants {
     "\"WITH\"",
     "\",\"",
     "\":\"",
-    "\"::\"",
+    "<COLONCOLON>",
     "\".\"",
     "\"_\"",
-    "\"==\"",
+    "<DEF>",
     "\"(\"",
     "\")\"",
     "\"-|-\"",
@@ -338,37 +402,37 @@ public interface TLAplusParserConstants {
     "\"|}\"",
     "\"{\"",
     "\"}\"",
-    "\"<<\"",
-    "\">>_\"",
-    "\">>\"",
+    "<LAB>",
+    "<ARAB>",
+    "<RAB>",
     "\"!\"",
-    "\"->\"",
-    "\"<-\"",
-    "\"|->\"",
+    "<ARROW>",
+    "<SUBSTITUTE>",
+    "<MAPTO>",
     "<NUMBER_LITERAL>",
     "<STRING_LITERAL>",
     "<BAND>",
     "<BOR>",
     "\"\\\'\"",
-    "\"^+\"",
+    "<op_68>",
     "\"^*\"",
     "\"^#\"",
     "\"-.\"",
-    "\"\\\\lnot\"",
+    "<op_26>",
     "\"\\\\neg\"",
     "\"~\"",
-    "\"[]\"",
-    "\"<>\"",
+    "<CASESEP>",
+    "<op_61>",
     "\"ENABLED\"",
     "\"UNCHANGED\"",
     "\"SUBSET\"",
     "\"UNION\"",
     "\"DOMAIN\"",
     "\"//\"",
-    "\"/\\\\\"",
+    "<AND>",
     "\"/=\"",
     "\"/\"",
-    "\"\\\\/\"",
+    "<OR>",
     "\"\\\\approx\"",
     "\"\\\\asymp\"",
     "\"\\\\bigcirc\"",
@@ -383,7 +447,7 @@ public interface TLAplusParserConstants {
     "\"\\\\equiv\"",
     "\"\\\\geq\"",
     "\"\\\\gg\"",
-    "\"\\\\in\"",
+    "<IN>",
     "\"\\\\intersect\"",
     "\"\\\\union\"",
     "\"\\\\land\"",
@@ -464,6 +528,68 @@ public interface TLAplusParserConstants {
     "\"(/)\"",
     "\"(\\\\X)\"",
     "\"\\\\notin\"",
+    "\"\\u2248\"",
+    "\"\\u2254\"",
+    "\"\\u224d\"",
+    "\"\\u25ef\"",
+    "\"\\u2a74\"",
+    "\"\\u25cf\"",
+    "\"\\u2229\"",
+    "\"\\u22c5\"",
+    "\"\\u2218\"",
+    "\"\\u2245\"",
+    "\"\\u222a\"",
+    "\"\\u00f7\"",
+    "\"\\u2250\"",
+    "\"\\u2025\"",
+    "\"\\u2026\"",
+    "\"\\u2261\"",
+    "\"\\u203c\"",
+    "\"\\u2265\"",
+    "\"\\u226b\"",
+    "\"\\u21d4\"",
+    "\"\\u21d2\"",
+    "\"\\u2208\"",
+    "\"\\u2227\"",
+    "\"\\u2ae4\"",
+    "\"\\u219d\"",
+    "\"\\u2264\"",
+    "\"\\u226a\"",
+    "\"\\u2228\"",
+    "\"\\u22a3\"",
+    "\"\\u2260\"",
+    "\"\\u2209\"",
+    "\"\\u2299\"",
+    "\"\\u2296\"",
+    "\"\\u2295\"",
+    "\"\\u2298\"",
+    "\"\\u2297\"",
+    "\"\\u21f8\"",
+    "\"\\u227a\"",
+    "\"\\u2aaf\"",
+    "\"\\u221d\"",
+    "\"\\u2047\"",
+    "\"\\u22a8\"",
+    "\"\\u22a2\"",
+    "\"\\u223c\"",
+    "\"\\u2243\"",
+    "\"\\u2293\"",
+    "\"\\u2294\"",
+    "\"\\u228f\"",
+    "\"\\u2291\"",
+    "\"\\u2290\"",
+    "\"\\u2292\"",
+    "\"\\u22c6\"",
+    "\"\\u2282\"",
+    "\"\\u2286\"",
+    "\"\\u227b\"",
+    "\"\\u2ab0\"",
+    "\"\\u2283\"",
+    "\"\\u2287\"",
+    "\"\\u00d7\"",
+    "\"\\u228e\"",
+    "\"\\u2016\"",
+    "\"\\u2240\"",
     "\"\\\\times\"",
     "\"\\\\X\"",
     "<IDENTIFIER>",
