@@ -39,7 +39,14 @@ public class ParseCorpusTest {
 	 */
 	@BeforeClass
 	public static void setup() throws IOException, ParseException, AbortException {
-		Path toolsRoot = Paths.get(System.getProperty("basedir"));
+		String baseDir = System.getProperty("basedir");
+		if (null == baseDir) {
+			throw new IllegalArgumentException(
+				"Require basedir Java VM environment variable to be provided"
+				+ " and set to tlatools root."
+			);
+		}
+		Path toolsRoot = Paths.get(baseDir);
 		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(toolsRoot);
 		Configuration.load(null);
 		BuiltInLevel.load();
@@ -84,6 +91,7 @@ public class ParseCorpusTest {
 				testCount++;
 			}
 		}
+		Assert.assertTrue(testCount > 0);
 		System.out.println(String.format("Total corpus test count: %d", testCount));
 	}
 

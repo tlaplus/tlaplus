@@ -245,7 +245,6 @@ public interface ConfigConstants {
     new Operator("\\gg",          50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\asymp",       50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\subset",      50,  50,  Operators.assocNone, Operators.infix),
-    // \subseteq is defined as a built-in so don't need to define it here
     new Operator("\\supset",      50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\supseteq",    50,  50,  Operators.assocNone, Operators.infix),
     new Operator("\\approx",      50,  50,  Operators.assocNone, Operators.infix),

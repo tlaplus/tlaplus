@@ -34,7 +34,7 @@ public class BuiltInLevel implements LevelConstants {
     }
   }
     
-  private static HashMap LevelData = new HashMap();
+  private static HashMap<String, Data> LevelData = new HashMap<String, Data>();
 
   static int[] make() { return new int[0]; }
 
