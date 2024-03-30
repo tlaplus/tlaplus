@@ -41,6 +41,8 @@ public class ParseCorpusTest {
 	public static void setup() throws IOException, ParseException, AbortException {
 		String baseDir = System.getProperty("basedir");
 		if (null == baseDir) {
+			// In Eclipse, add -Dbasedir=${workspace_loc:tlatools} to the VM
+			// arguments in the JUnit run configuration.
 			throw new IllegalArgumentException(
 				"Require basedir Java VM environment variable to be provided"
 				+ " and set to tlatools root."

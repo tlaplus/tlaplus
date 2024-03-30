@@ -134,3 +134,84 @@ jobs:
           --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
 
+  examples-unicode-tests:
+    name: Unicode Examples Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      EXAMPLES_DIR: examples
+      SCRIPT_DIR: examples/.github/scripts
+      DEPS_DIR: examples/deps
+    steps:
+    - name: Clone tlaplus/tlaplus
+      uses: actions/checkout@v4
+      with:
+        # Number of commits to fetch. 0 indicates all history.
+        # jgit task nested in customBuild.xml fails without history.
+        fetch-depth: 0
+    - name: Clone tlaplus/examples
+      uses: actions/checkout@v4
+      with:
+        repository: tlaplus/examples
+        path: ${{ env.EXAMPLES_DIR }}
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: 11.0.3
+    - name: Build tla2tools.jar
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test dist
+    - name: Download dependencies
+      run: |
+        "$SCRIPT_DIR/linux-setup.sh" "$SCRIPT_DIR" "$DEPS_DIR" false
+    - name: Convert specs to unicode
+      run: |
+        python "$SCRIPT_DIR/unicode_conversion.py"  \
+          --tlauc_path "$DEPS_DIR/tlauc/tlauc"      \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
+    - name: Add unicode shims
+      run: |
+        python "$SCRIPT_DIR/unicode_number_set_shim.py" \
+          --ts_path "$DEPS_DIR/tree-sitter-tlaplus"     \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
+    - name: (Unicode) Parse all modules
+      run: |
+        # These redefine Nat, Int, or Real so cannot be shimmed
+        SKIP=(
+          "specifications/SpecifyingSystems/Standard/Naturals.tla"
+          "specifications/SpecifyingSystems/Standard/Peano.tla"
+          "specifications/SpecifyingSystems/Standard/Integers.tla"
+          "specifications/SpecifyingSystems/Standard/Reals.tla"
+          "specifications/SpecifyingSystems/Standard/ProtoReals.tla"
+          "specifications/SpecifyingSystems/RealTime/MCRealTime.tla"
+          "specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.tla"
+        )
+        python "$SCRIPT_DIR/parse_modules.py"                               \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+          --skip "${SKIP[@]}"
+    - name: (Unicode) Check small models
+      run: |
+        # These redefine Real so cannot be shimmed
+        SKIP=(
+          "specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.cfg"
+        )
+        python "$SCRIPT_DIR/check_small_models.py"                          \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+          --skip "${SKIP[@]}"
+    - name: (Unicode) Smoke-test large models
+      run: |
+        # SimKnuthYao requires certain number of states to have been generated
+        # before termination or else it fails. This makes it not amenable to
+        # smoke testing.
+        python "$SCRIPT_DIR/smoke_test_large_models.py"                     \
+          --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+          --skip "specifications/KnuthYao/SimKnuthYao.cfg"
+
