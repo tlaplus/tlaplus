@@ -1,95 +1,114 @@
-name: PullRequest builder TLA+
+name: TLA+ PR Validation
 on: [pull_request]
 
 jobs:
-  build:
+  tlatools-build-and-test:
+    name: TLA+ Tools Build & Test
     runs-on: ubuntu-latest
-    env:
-      TLAPS_VERSION: 202210041448
-      MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true
     steps:
-
-    - uses: actions/checkout@v2
+    - name: Clone tlaplus/tlaplus
+      uses: actions/checkout@v4
       with:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
-        fetch-depth: '0'
-        
+        fetch-depth: 0
     - name: Set up JDK 11
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v4
       with:
+        distribution: adopt
         java-version: 11.0.3
-
-      ##
-      ## Run TLC tests.
-      ##
-    - name: Run TLC tests
+    - name: Build & Test Tools
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true compile compile-test test dist
-
-      ##
-      ## Build TLC and Toolbox (logger reduces verbosity).
-      ##
-    - name: Build with Maven (Linux)
-      run: $MVN_COMMAND -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
-
-      ##
-      ## Trigger build of CommunityModule as integration tests.
-      ##
-    - uses: actions/checkout@v2
+    - name: Clone tlaplus/CommunityModules
+      uses: actions/checkout@v4
       with:
         repository: tlaplus/CommunityModules
         path: communitymodules/
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
-        fetch-depth: '0'
-    - name: Build CommunityModules
+        fetch-depth: 0
+    - name: Build Community Modules as Integration Test
       run: |
-          mkdir -p communitymodules/tlc
-          cp tlatools/org.lamport.tlatools/dist/tla2tools.jar communitymodules/tlc/
-          ant -f communitymodules/build.xml -Dskip.download=true   
+        mkdir -p communitymodules/tlc
+        cp tlatools/org.lamport.tlatools/dist/tla2tools.jar communitymodules/tlc/
+        ant -f communitymodules/build.xml -Dskip.download=true   
 
-      ##
-      ## Trigger run of examples as integration tests.
-      ##
-    - uses: actions/checkout@v2
+  toolbox-build-and-test:
+    name: Eclipse Toolbox Build & Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clone tlaplus/tlaplus
+      uses: actions/checkout@v4
       with:
-        repository: tlaplus/examples
-        path: examples/
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
-        fetch-depth: '0'
-    - name: Download tlaplus/examples test dependencies
+        fetch-depth: 0
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: 11.0.3
+    - name: Build & Test Eclipse Toolbox with Maven
       run: |
-        # Get TLA⁺ community modules
-        wget https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
-        # Get TLAPS
-        wget https://github.com/tlaplus/tlapm/archive/refs/tags/$TLAPS_VERSION.tar.gz
-        tar -xf $TLAPS_VERSION.tar.gz
-        rm $TLAPS_VERSION.tar.gz
-        mv tlapm-$TLAPS_VERSION tlapm
+        xvfb-run mvn                                                                                  \
+          -Dtest.skip=true                                                                            \
+          -Dmaven.test.failure.ignore=true                                                            \
+          -Dtycho.disableP2Mirrors=true                                                               \
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn  \
+          -fae -B verify --file pom.xml
+
+  examples-tests:
+    name: Examples Integration Tests
+    runs-on: ubuntu-latest
+    env:
+      EXAMPLES_DIR: examples
+      SCRIPT_DIR: examples/.github/scripts
+      DEPS_DIR: examples/deps
+    steps:
+    - name: Clone tlaplus/tlaplus
+      uses: actions/checkout@v4
+      with:
+        # Number of commits to fetch. 0 indicates all history.
+        # jgit task nested in customBuild.xml fails without history.
+        fetch-depth: 0
+    - name: Clone tlaplus/examples
+      uses: actions/checkout@v4
+      with:
+        repository: tlaplus/examples
+        path: ${{ env.EXAMPLES_DIR }}
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: 11.0.3
+    - name: Build tla2tools.jar
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test dist
+    - name: Download dependencies
+      run: |
+        "$SCRIPT_DIR/linux-setup.sh" "$SCRIPT_DIR" "$DEPS_DIR" false
     - name: Parse tlaplus/examples modules
       run: |
-        python examples/.github/scripts/parse_modules.py                    \
+        python "$SCRIPT_DIR/parse_modules.py"                               \
           --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path tlapm/library                                    \
-          --community_modules_jar_path CommunityModules-deps.jar            \
-          --manifest_path examples/manifest.json
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Model-check small tlaplus/examples models
       run: |
-        python examples/.github/scripts/check_small_models.py               \
+        python "$SCRIPT_DIR/check_small_models.py"                          \
           --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path tlapm/library                                    \
-          --community_modules_jar_path CommunityModules-deps.jar            \
-          --manifest_path examples/manifest.json
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Smoke-test large tlaplus/examples models
       run: |
         # SimKnuthYao requires certain number of states to have been generated
         # before termination or else it fails. This makes it not amenable to
         # smoke testing.
-        python examples/.github/scripts/smoke_test_large_models.py          \
+        python "$SCRIPT_DIR/smoke_test_large_models.py"                     \
           --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
-          --tlapm_lib_path tlapm/library                                    \
-          --community_modules_jar_path CommunityModules-deps.jar            \
-          --manifest_path examples/manifest.json                            \
-          --skip specifications/KnuthYao/SimKnuthYao.cfg
+          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
+          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+          --skip "specifications/KnuthYao/SimKnuthYao.cfg"
 
