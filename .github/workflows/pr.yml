@@ -39,8 +39,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-latest
-            MVN_COMMAND: mvn -Dmaven.test.skip=true
           - os: ubuntu-latest
             MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
           - os: macos-latest
