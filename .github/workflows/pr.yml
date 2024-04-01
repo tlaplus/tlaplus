@@ -39,9 +39,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: windows-latest }
-          - { os: ubuntu-latest }
-          - { os: macos-latest }
+          - os: windows-latest
+            MVN_COMMAND: mvn -Dmaven.test.skip=true
+          - os: ubuntu-latest
+            MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
+          - os: macos-latest
+            MVN_COMMAND: mvn -Dmaven.test.skip=true
       fail-fast: false
     steps:
     - name: Clone tlaplus/tlaplus
@@ -57,9 +60,7 @@ jobs:
         java-version: 11.0.3
     - name: Build & Test Eclipse Toolbox with Maven
       run: |
-        xvfb-run mvn                                                                                  \
-          -Dtest.skip=true                                                                            \
-          -Dmaven.test.failure.ignore=true                                                            \
+        ${{ matrix.MVN_COMMAND }}                                                                     \
           -Dtycho.disableP2Mirrors=true                                                               \
           -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn  \
           -fae -B verify --file pom.xml
