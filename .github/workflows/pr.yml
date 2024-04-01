@@ -35,7 +35,14 @@ jobs:
 
   toolbox-build-and-test:
     name: Eclipse Toolbox Build & Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - { os: windows-latest }
+          - { os: ubuntu-latest }
+          - { os: macos-latest }
+      fail-fast: false
     steps:
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
