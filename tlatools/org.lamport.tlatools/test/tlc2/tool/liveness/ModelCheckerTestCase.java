@@ -135,7 +135,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			final List<String> args = new ArrayList<String>(6);
 			
 			args.add("-metadir");
-			args.add(getClass().getCanonicalName());
+			args.add(TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName());
 			
 			// *Don't* check for deadlocks. All tests are interested in liveness
 			// checks which are shielded away by deadlock checking. TLC finds a
