@@ -1,3 +1,14 @@
+"""
+This script parses the Ant unit test output and identifies tests which have
+failed. It then retrieves their error messages from the surefire runner log
+directory. It also prints out the longest-running unit tests, for possible
+action by maintainers.
+
+The first argument should be a path to a file containing the captured output
+of the Ant unit tests. The second argument should be a path to the surefire
+runner log directory.
+"""
+
 from dataclasses import dataclass
 import re
 import sys

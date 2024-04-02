@@ -27,7 +27,7 @@ jobs:
       run: |
         python .github/scripts/parse-unit-test-output.py        \
           test-output.txt                                       \
-          tlatools/org.lamport.tlatools/target/surefire-report
+          tlatools/org.lamport.tlatools/target/surefire-reports
         exit $BUILD_UT_EXIT_CODE
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
