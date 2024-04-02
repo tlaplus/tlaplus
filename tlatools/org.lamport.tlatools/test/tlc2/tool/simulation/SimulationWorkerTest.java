@@ -49,11 +49,6 @@ public class SimulationWorkerTest extends CommonTestCase {
 		ToolIO.setUserDir(BASE_PATH + File.separator + "simulation" + File.separator + "BasicMultiTrace");
 	}
 	
-	@After
-	public void tearDown() throws Exception{
-        FileUtil.deleteDir(TLCGlobals.metaRoot, true);
-	}
-	
 	/**
 	 * Return a value from a TLCState as a string.
 	 */
