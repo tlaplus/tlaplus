@@ -134,6 +134,9 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// is placed in TEST_MODEL
 			final List<String> args = new ArrayList<String>(6);
 			
+			args.add("-metadir");
+			args.add(getClass().getCanonicalName());
+			
 			// *Don't* check for deadlocks. All tests are interested in liveness
 			// checks which are shielded away by deadlock checking. TLC finds a
 			// deadlock (if it exists) before it finds most liveness violations.
