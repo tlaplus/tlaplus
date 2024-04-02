@@ -55,15 +55,19 @@ with open(sys.argv[1], 'r') as f:
     ]
 
 reports = sorted(reports, key=lambda report: report.runtime, reverse=True)
+failures = [report.name for report in reports if report.failure_count > 0]
 
 print(f'Test count: {len(reports)}')
+print(f'Failure count: {len(failures)}')
+print('Longest-running tests:')
+for report in reports[slice(20)]:
+    print(f'{report.runtime:5.1f} sec | {report.name}')
 
 def node_text(node):
     text = node.text
     return text.strip() if text is not None else None
 
-print('Failures:\n')
-failures = [report.name for report in reports if report.failure_count > 0]
+print('\nFailures:\n')
 for test_name in failures:
     print(f'TEST CLASS: {test_name}')
     tree = ET.parse(f'{sys.argv[2]}/TEST-{test_name}.xml')
@@ -77,8 +81,4 @@ for test_name in failures:
     for err_output in tree.iter('system-err'):
         print(f'SYSTEM.ERR:\n{node_text(err_output)}')
     print()
-
-print('Longest-running tests:')
-for report in reports[slice(20)]:
-    print(f'{report.runtime:5.1f} sec | {report.name}')
 
