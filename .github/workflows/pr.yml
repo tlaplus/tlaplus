@@ -19,9 +19,7 @@ jobs:
         java-version: 11.0.3
     - name: Build & Test Tools
       run: |
-        ant -f tlatools/org.lamport.tlatools/customBuild.xml  \
-          compile compile-test test dist                      \
-          2>&1 | tee test-output.txt
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test test dist 2>&1 | tee test-output.txt
         echo "export BUILD_UT_EXIT_CODE=$?" >> $GITHUB_ENV
     - name: Summarize Unit Tests
       run: |
