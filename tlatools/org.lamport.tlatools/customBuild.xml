@@ -572,12 +572,40 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="1"/>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<!-- Put longer-running tests first -->
+					<include name="tlc2/tool/suite/Test27.java" />
+					<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java" />
+					<include name="tlc2/tool/liveness/CodePlexBug08EWD840FL2Test.java" />
+					<include name="tlc2/value/impl/SetOfRcrdValueTest.java" />
+					<include name="tlc2/tool/InliningTest.java" />
+					<include name="tlc2/tool/suite/Test19.java" />
+					<include name="pcal/FastMutexWithGoto2Test.java" />
+					<include name="tlc2/tool/BugzillaBug279Test.java" />
+					<include name="tlc2/tool/liveness/CodePlexBug08EWD840FL1Test.java" />
+					<include name="tlc2/value/impl/SetOfFcnsValueTest.java" />
+				</fileset>
+			</batchtest>
 			<!-- The tests below can be tricked into running in a single VM by fiddling with the classloader 
 			     to reload and thus initialize all classes for each tests. -->
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
+					<!-- Include all files under tests dir with Test in name -->
 					<include name="**/*Test*.java" />
 					
+					<!-- Skip longer-running tests, these already ran above -->
+					<exclude name="tlc2/tool/suite/Test27.java" />
+					<exclude name="tlc2/tool/fp/OffHeapDiskFPSetTest.java" />
+					<exclude name="tlc2/tool/liveness/CodePlexBug08EWD840FL2Test.java" />
+					<exclude name="tlc2/value/impl/SetOfRcrdValueTest.java" />
+					<exclude name="tlc2/tool/InliningTest.java" />
+					<exclude name="tlc2/tool/suite/Test19.java" />
+					<exclude name="pcal/FastMutexWithGoto2Test.java" />
+					<exclude name="tlc2/tool/BugzillaBug279Test.java" />
+					<exclude name="tlc2/tool/liveness/CodePlexBug08EWD840FL1Test.java" />
+					<exclude name="tlc2/value/impl/SetOfFcnsValueTest.java" />
+
 					<!-- Produce bogus crash with Quarantine runner. -->
 					<exclude name="tlc2/tool/distributed/TLCSetTest.java" />
 					<exclude name="tlc2/tool/distributed/DistributedDoInitFunctorEvalExceptionTest.java" />
@@ -652,12 +680,6 @@
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="tlc2/tool/UserModuleOverrideTest.java" />
-				</fileset>
-			</batchtest>
-			<batchtest fork="yes" todir="${test.reports}">
-				<fileset dir="${test.dir}">
-					<include name="tlc2/TLCTest.java"/>
-					<include name="tlc2/tool/fp/OffHeapDiskFPSetTest.java"/>
 				</fileset>
 			</batchtest>
 		</junit>
