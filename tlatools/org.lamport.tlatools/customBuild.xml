@@ -481,6 +481,19 @@
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/cglib-nodep-3.1.jar" />
+				<pathelement location="lib/objenesis-2.1.jar" />
+				<pathelement location="lib/easymock-3.3.1.jar" />
+				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
+				<pathelement location="lib/jline/jline-terminal-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-console-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-builtins-3.25.0.jar" />
+				<pathelement location="lib/jline/jline-reader-3.25.0.jar" />
+				<pathelement location="lib/gson/gson-2.8.6.jar" />
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
