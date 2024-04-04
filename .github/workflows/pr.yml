@@ -18,7 +18,16 @@ jobs:
         distribution: adopt
         java-version: 11.0.3
     - name: Build & Test Tools
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true compile compile-test test dist
+      run: |
+        set -o pipefail
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test test dist 2>&1 | tee test-output.txt
+        echo "export BUILD_UT_EXIT_CODE=$?" >> $GITHUB_ENV
+    - name: Summarize Unit Tests
+      run: |
+        python .github/scripts/parse-unit-test-output.py        \
+          test-output.txt                                       \
+          tlatools/org.lamport.tlatools/target/surefire-reports
+        exit $BUILD_UT_EXIT_CODE
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
       with:

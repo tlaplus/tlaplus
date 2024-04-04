@@ -45,11 +45,6 @@ public class SimulatorTest extends CommonTestCase {
 		FP64.Init();
 	}
 	
-	@After
-	public void tearDown() throws Exception{
-        FileUtil.deleteDir(TLCGlobals.metaRoot, true);
-	}
-	
 	/**
 	 * The number of threads to run the Simulator with. Can be overridden by
 	 * sub-classes that want to test with different values.
