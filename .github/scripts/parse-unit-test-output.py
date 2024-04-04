@@ -3,7 +3,9 @@ This script parses the Ant unit test output and identifies tests which have
 failed. It then retrieves their error messages from the surefire runner log
 directory. It also prints out the longest-running unit tests, for possible
 action by maintainers. Finally, it detects whether any tests ran multiple
-times by accident.
+times by accident. Since the Ant JUnit target defines tests to run using an
+overlapping collection of include/exclude statements matching sets of files,
+it is certainly possible this could happen.
 
 The first argument should be a path to a file containing the captured output
 of the Ant unit tests. The second argument should be a path to the surefire
