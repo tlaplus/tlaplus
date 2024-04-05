@@ -17,6 +17,12 @@ jobs:
       with:
         distribution: adopt
         java-version: 11.0.3
+    - name: Check tla+.jj grammar/code sync
+      run: |
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml generate
+        git status
+        diff_count=$(git status --porcelain=v1 2>/dev/null | wc -l)
+        exit $diff_count
     - name: Build & Test Tools
       run: |
         set -o pipefail
