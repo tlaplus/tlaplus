@@ -108,7 +108,7 @@
 			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
 			<arg value="javacc/tla+.jj" />
 		</java>
-		<fixcrlf srcdir="${javacc-tmpdir}" eol="crlf" includes="*.java" />
+		<fixcrlf srcdir="${javacc-tmpdir}" eol="lf" includes="*.java" />
 		<move todir="src/tla2sany/parser">
 			<fileset dir="${javacc-tmpdir}">
 				<include name="*.java" />
