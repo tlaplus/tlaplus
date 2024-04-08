@@ -4,298 +4,308 @@
   xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <artifactId>parent</artifactId>
-    <groupId>tlatoolbox</groupId>
-    <version>0.0.1-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
-  </parent>
-  <groupId>tlatoolbox</groupId>
-  <artifactId>org.lamport.tlatools</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>eclipse-plugin</packaging>
+  <!-- TODO: test-dist? -->
+  <!-- TODO: test-dist-long? -->
+  <!-- TODO: test-verify? -->
+  <!-- TODO: whitespace tests ("TLA+ Tools", ws.class.dir)? -->
+  <!-- TODO: benchmark? -->
+
+  <groupId>org.lamport.tlatools</groupId>
+  <artifactId>tlatools</artifactId>
+  <version>1.8.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <organization>
+    <name>The TLA+ Foundation</name>
+    <url>https://lamport.azurewebsites.net/tla/tla.html</url>
+  </organization>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/tlaplus/tlaplus/issues</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:https://github.com/tlaplus/tlaplus</connection>
+    <developerConnection>scm:git:https://github.com/tlaplus/tlaplus</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
   <properties>
-    <!-- tlatools is a non-standard maven project. Its heart is customBuild.xml written for ant          -->
-    <!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
-    <!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
-    <!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
-	<sonar.sources>src,src-aj</sonar.sources>
-	<sonar.tests>test,test-verify,test-long,test-concurrent</sonar.tests>
-
-	<sonar.java.binaries>class</sonar.java.binaries>
-	<sonar.java.libraries>lib/*.jar</sonar.java.libraries>
-	
-	<sonar.java.test.binaries>class,test-class</sonar.java.test.binaries>
-	<sonar.java.test.libraries>lib/*.jar</sonar.java.test.libraries>
-	 
-	<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-	<sonar.surefire.reportsPath>target/surefire-reports</sonar.surefire.reportsPath>
-	<sonar.junit.reportsPath>target/surefire-reports</sonar.junit.reportsPath>
-	<sonar.jacoco.reportPaths>target/code-coverage.exec</sonar.jacoco.reportPaths>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>11</maven.compiler.release>
   </properties>
 
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/.gitignore</exclude>
+          <exclude>**/*.java</exclude>
+          <exclude>**/*.~*</exclude>
+          <exclude>**/*##*</exclude>
+          <exclude>**/*.09-09-07</exclude>
+          <exclude>**/*.09-07-02</exclude>
+          <exclude>**/*.11-02-10</exclude>
+          <exclude>**/*.jpg</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src-aj</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+          <exclude>**/*.aj</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>test</directory>
+        <includes>
+          <include>**/*.dot</include>
+          <include>**/*.dump</include>
+        </includes>
+      </testResource>
+      <testResource>
+        <!--
+          TODO: This has to be duplicated from the regular <resources> block
+                because SimpleFilenameToStream gets confused when there are
+                multiple "tla2sany" directories on the classpath.  If we
+                improve that class then we can avoid this duplication.
+        -->
+        <directory>src</directory>
+        <excludes>
+          <exclude>**/*.java</exclude>
+          <exclude>**/*.~*</exclude>
+          <exclude>**/*##*</exclude>
+          <exclude>**/*.09-09-07</exclude>
+          <exclude>**/*.09-07-02</exclude>
+          <exclude>**/*.11-02-10</exclude>
+          <exclude>**/*.jpg</exclude>
+        </excludes>
+      </testResource>
+    </testResources>
 
-    <build>
-    <plugins>
-		<!-- Delete the ../states/ folder created by the Ant JUnit tests as part 
-			of the maven-antrun-plugin of customBuild.xml. On the CI-machine, the ../states/ 
-			folder gradually grows to eventually fill-up the entire disk. -->
+    <pluginManagement>
+      <plugins>
         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-clean-plugin</artifactId>
-            <version>3.0.0</version>
-            <configuration>
-                <filesets>
-                    <fileset>
-                        <directory>../states/</directory>
-                        <includes>
-                            <include>**/*</include>
-                        </includes>
-                        <followSymlinks>false</followSymlinks>
-                    </fileset>
-                </filesets>
-            </configuration>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.11.0</version>
         </plugin>
-        
         <plugin>
-	    <groupId>org.apache.maven.plugins</groupId>
-	    <artifactId>maven-antrun-plugin</artifactId>
-	    <version>1.8</version>
-	    <executions>
-	    	<execution>
-	    		<id>compile</id>
-	    		<phase>compile</phase>
-	    		<configuration>
-	    			<tasks>
-
-						<taskdef name="junit"
-							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
-							classpathref="maven.test.classpath" />
-
-		    			<property name="build.compiler" value="extJavac"/>
-		    			<property name="maven.test.skip" value="${maven.test.skip}"/>
-		    			<property name="maven.test.halt" value="${maven.test.halt}"/>
-	    				<ant antfile="customBuild.xml" inheritRefs="true">
-	    					<target name="default-maven" />
-	    				</ant>
-	    			</tasks>
-	    		</configuration>
-	    		<goals>
-	    			<goal>run</goal>
-	    		</goals>
-	    	</execution>
-	    	<!-- Run customBuild.xml's clean target -->
-	    	<execution>
-	    		<id>clean</id>
-	    		<phase>clean</phase>
-	    		<configuration>
-	    			<tasks>
-
-						<taskdef name="junit"
-							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
-							classpathref="maven.test.classpath" />
-
-		    			<property name="build.compiler" value="extJavac"/>
-		    			<property name="maven.test.skip" value="${maven.test.skip}"/>
-		    			<property name="maven.test.halt" value="${maven.test.halt}"/>
-	    				<ant antfile="customBuild.xml" inheritRefs="true">
-	    					<target name="clean" />
-	    				</ant>
-	    			</tasks>
-	    		</configuration>
-	    		<goals>
-	    			<goal>run</goal>
-	    		</goals>
-	    	</execution>
-	   	 </executions>
-	  	</plugin>
-			<!-- Compile java sources and exclude aspects -->
-	      <plugin>
-	        <groupId>org.eclipse.tycho</groupId>
-	        <artifactId>tycho-compiler-plugin</artifactId>
-	        <version>${tycho-version}</version>
-	        <configuration>
-				<!-- Ignore compiler errors due to forbidden sun.misc.Unsafe imports -->
-				<!-- https://bugs.eclipse.org/369187 -->
-				<compilerArgument>-err:-forbidden</compilerArgument>
-	          <excludeResources>
-	            <exludeResource>**/*.aj</exludeResource>
-	          </excludeResources>
-	        </configuration>
-	      </plugin>
-
-			<!-- Update the Manifest.mf packaged into the OSGi variant of tla2tools.jar 
-				which is embedded in the Toolbox. The standalone tla2tools.jar (see customBuild.xml) 
-				defines various properties in its manifest among which are the git revision 
-				and the implementation title. These two properties are read by TLCGlobals 
-				to determine TLCs revision. This is turn is reported as part of execution statistics.
-				To correctly report the TLC revision when it is launched from inside the Toolbox, the
-				embedded tla2tools.jar created here has to also include the two properties. -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>1.4</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
-				    <shortRevisionLength>7</shortRevisionLength>
-					<doCheck>false</doCheck>
-					<doUpdate>false</doUpdate>
-				</configuration>
-			</plugin>
-      		<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-packaging-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<archive>
-						<manifestEntries>
-							<Implementation-Title>TLA+ Tools</Implementation-Title>
-							<X-Git-ShortRevision>${buildNumber}</X-Git-ShortRevision>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<!-- Compile aspects -->
-            <plugin>
-                <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
-                <groupId>com.nickwongdev</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.12.1</version>
-                <configuration>
-                    <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <complianceLevel>1.8</complianceLevel>
-                            <source>1.8</source>
-                            <target>1.8</target>
-                        </configuration>
-                    </execution>
-               </executions>
-           </plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>3.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.1.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.4.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>aspectj-maven-plugin</artifactId>
+          <version>1.14.0</version>
+        </plugin>
       </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Add aspectj sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src-aj</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Compile aspects -->
+      <plugin>
+        <!-- https://dev-aspectj.github.io/aspectj-maven-plugin/index.html -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>aspectj-maven-plugin</artifactId>
+        <configuration>
+          <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <complianceLevel>1.8</complianceLevel>
+              <source>1.8</source>
+              <target>1.8</target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>assemble-all</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- <workingDirectory>${project.basedir}</workingDirectory> -->
+          <!-- <forkCount>4</forkCount> -->
+          <reuseForks>false</reuseForks>
+          <!--<threadCount>3</threadCount>-->
+          <!-- <useUnlimitedThreads>true</useUnlimitedThreads> -->
+          <argLine>-ea -XX:MaxDirectMemorySize=512k -XX:+UseParallelGC</argLine>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <!-- <skip>true</skip> -->
+          <!-- <skipTests>${skip.surefire.tests}</skipTests> -->
+          <!-- NOTE:  -->
+          <runOrder>alphabetical</runOrder>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${project.basedir}/test-model/UserModuleOverrideFromJar.jar</additionalClasspathElement>
+          </additionalClasspathElements>
+          <includes>
+            <include>**/*Test*.java</include>
+          </includes>
+          <excludes>
+            <!-- Known test failures -->
+            <exclude>**/pcal/StackTestTest.java</exclude>
+            <exclude>**/pcal/TestPCandStackTest.java</exclude>
+            <!-- These take too long -->
+            <exclude>**/MacroQuicksortTest.java</exclude>
+            <exclude>**/MacroRealQuicksortTest.java</exclude>
+            <exclude>**/PcalPaxosTest.java</exclude>
+            <exclude>**/DetlefsTest.java</exclude>
+            <exclude>**/StarkMutexTest.java</exclude>
+            <exclude>**/SimpleMultiProcTest.java</exclude>
+          </excludes>
+          <systemPropertyVariables>
+             <basedir>${project.basedir}/</basedir>
+             <tlc2.tool.fp.FPSet.impl>tlc2.tool.fp.OffHeapDiskFPSet</tlc2.tool.fp.FPSet.impl>
+             <util.FileUtil.milliseconds>true</util.FileUtil.milliseconds>
+             <tlc2.tool.distributed.TLCWorker.threadCount>1</tlc2.tool.distributed.TLCWorker.threadCount>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <dependencies>
-	<dependency>
-		<groupId>org.apache.ant</groupId>
-		<artifactId>ant-junit</artifactId>
-		<version>1.7.1</version>
-		<scope>compile</scope>
-	</dependency>
-  		<dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>1.9.1</version>
-        </dependency>
-        <!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
-        <!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
-        <!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
-        <!-- there exists no p2 repository that we could add to our target platform.  However, an OSGi-fied    -->
-        <!-- jline exists on Maven Central.                                                                    -->
-		<!-- https://mvnrepository.com/artifact/org.jline/jline-terminal -->
-		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-terminal</artifactId>
-		    <version>3.25.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jline/jline-console -->
-		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-console</artifactId>
-		    <version>3.25.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jline/jline-builtins -->
-		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-builtins</artifactId>
-		    <version>3.25.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.jline/jline-reader -->
-		<dependency>
-		    <groupId>org.jline</groupId>
-		    <artifactId>jline-reader</artifactId>
-		    <version>3.25.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-		<dependency>
- 		   <groupId>com.google.code.gson</groupId>
- 		   <artifactId>gson</artifactId>
-		   <version>2.8.6</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc.debug -->
-		<dependency>
-		    <groupId>org.eclipse.lsp4j</groupId>
-		    <artifactId>org.eclipse.lsp4j.debug</artifactId>
-		    <version>0.21.1</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc -->
-		<dependency>
-		    <groupId>org.eclipse.lsp4j</groupId>
-		    <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
-		    <version>0.21.1</version>
-		</dependency>
-      </dependencies>
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>mailapi</artifactId>
+      <version>1.6.3</version>
+    </dependency>
 
-      <!-- August 2014 - TL
-           added a non-default profile (must be called explicitly)
-           which creates a jar file and set XMLExporter as the main class.
-       -->
-    <profiles>
-      <profile>
-        <id>exporter</id>
-        <build>
-          <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>2.0</version>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>shade</goal>
-                </goals>
-                <configuration>
-                   <includes>
-                     <include>**/tlatools*</include>
-                   </includes>
-                  <minimizeJar>true</minimizeJar>
-                  <transformers>
-                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <manifestEntries>
-                        <Main-Class>tla2sany.xml.XMLExporter</Main-Class>
-                      </manifestEntries>
-                    </transformer>
-                  </transformers>
-                  <filters>
-                  <filter>
-                    <artifact>*:*</artifact>
-                      <excludes>
-                        <exclude>**/*Test*.*</exclude>
-                      </excludes>
-                    </filter>
-                  </filters>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-        </build>
-    </profile>
-  </profiles>
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>smtp</artifactId>
+      <version>1.6.3</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.6.1</version>
+    </dependency>
+
+    <!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
+    <!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
+    <!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
+    <!-- there exists no p2 repository that we could add to our target platform.  However, an OSGi-fied    -->
+    <!-- jline exists on Maven Central.                                                                    -->
+    <!-- https://mvnrepository.com/artifact/org.jline/jline-reader -->
+    <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-reader</artifactId>
+      <version>3.25.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jline</groupId>
+      <artifactId>jline-terminal</artifactId>
+      <version>3.25.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.eclipse.lsp4j/org.eclipse.lsp4j.jsonrpc.debug -->
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j.debug</artifactId>
+      <version>0.21.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.lsp4j</groupId>
+      <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+      <version>0.21.1</version>
+    </dependency>
+
+    <!-- Direct dependency, but also a dependency of org.eclipse.lsp4j -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+      <version>1.9.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.easymock/easymock -->
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <version>3.3.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
 </project>
