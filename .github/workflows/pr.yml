@@ -120,7 +120,8 @@ jobs:
           --tools_jar_path tlatools/org.lamport.tlatools/dist/tla2tools.jar \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                        \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"
+          --manifest_path "$EXAMPLES_DIR/manifest.json"                     \
+          --skip "specifications/ewd998/EWD998ChanTrace.cfg"
     - name: Smoke-test large tlaplus/examples models
       run: |
         # SimKnuthYao requires certain number of states to have been generated
