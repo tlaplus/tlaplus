@@ -121,6 +121,8 @@ for test_name in failures:
         print(f'TEST NAME: {test_case.attrib["name"]}')
         for failure in test_case.iter('failure'):
             print(f'FAILURE:\n{node_text(failure)}')
+        for error in test_case.iter('error'):
+            print(f'ERROR:\n{node_text(error)}')
     for output in tree.iter('system-out'):
         print(f'SYSTEM.OUT:\n{node_text(output)}')
     for err_output in tree.iter('system-err'):
