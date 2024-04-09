@@ -171,8 +171,16 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				args.add("1");
 			}
 			
+			// Some tests require a large number of threads to successfully
+			// test their desired property. They request this by overriding
+			// the getNumberOfThreads() method. This can lead to over-
+			// subscribing system cores when running tests in parallel, but
+			// is usually okay because the tests run for only a second or so.
+			// If a test runs for a longer period of time using many threads
+			// then it should be run sequentially instead of in parallel.
 			args.add("-workers");
-			args.add(Integer.toString(getNumberOfThreads()));
+			int requestedThreads = this.getNumberOfThreads();
+			args.add(Integer.toString(requestedThreads));
 			
 			// Never create checkpoints. They distort performance tests and are
 			// of no use anyway.

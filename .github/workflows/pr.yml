@@ -33,12 +33,12 @@ jobs:
         ut_exit_code=$?
         echo "Unit test exit code: $ut_exit_code"
         echo "UT_EXIT_CODE=$ut_exit_code" >> $GITHUB_ENV # Export UT result to CI env var
-    - name: Summarize Unit Tests
+    - name: Summarize unit tests
       run: |
+        echo "Unit test exit code: $UT_EXIT_CODE"
         python .github/scripts/parse-unit-test-output.py        \
           test-output.txt                                       \
           tlatools/org.lamport.tlatools/target/surefire-reports
-        echo "Unit test exit code: $UT_EXIT_CODE"
         exit $UT_EXIT_CODE
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
