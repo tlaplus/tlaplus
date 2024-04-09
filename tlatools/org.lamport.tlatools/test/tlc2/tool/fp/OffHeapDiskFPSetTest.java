@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -323,8 +324,19 @@ public class OffHeapDiskFPSetTest {
 		}
 
 		@Override
-		public int read() throws IOException {
+		public int read() {
 			return 0;
+		}
+
+		@Override
+		public int read(byte[] b) {
+			return read(b, 0, b.length);
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) {
+			Arrays.fill(b, off, off + len, (byte)0);
+			return len;
 		}
 	}
 }
