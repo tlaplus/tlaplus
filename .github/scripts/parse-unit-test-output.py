@@ -83,8 +83,16 @@ with open(sys.argv[1], 'r') as f:
     ]
 
 reports = sorted(reports, key=lambda report: report.runtime, reverse=True)
-failures = [report.name for report in reports if report.failure_count > 0]
-duplicates = [k for k, v in Counter(report.name for report in reports).items() if v > 1]
+failures = [
+    report.name
+    for report in reports
+    if report.failure_count > 0 or report.error_count > 0
+]
+duplicates = [
+    test_name
+    for test_name, run_count in Counter(report.name for report in reports).items()
+    if run_count > 1
+]
 
 print(f'Test count: {len(reports)}')
 print(f'Failure count: {len(failures)}')

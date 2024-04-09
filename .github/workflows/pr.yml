@@ -23,17 +23,23 @@ jobs:
         git status
         diff_count=$(git status --porcelain=v1 2>/dev/null | wc -l)
         exit $diff_count
-    - name: Build & Test Tools
+    - name: Build tools and unit tests
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test dist
+    - name: Run unit tests
       run: |
-        set -o pipefail
-        ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test test dist 2>&1 | tee test-output.txt
-        echo "export BUILD_UT_EXIT_CODE=$?" >> $GITHUB_ENV
+        set +e # Ensure UT failure does not immediately terminate CI
+        set -o pipefail # Ensure UT failure is propagated through tee command
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml test 2>&1 | tee test-output.txt
+        ut_exit_code=$?
+        echo "Unit test exit code: $ut_exit_code"
+        echo "UT_EXIT_CODE=$ut_exit_code" >> $GITHUB_ENV # Export UT result to CI env var
     - name: Summarize Unit Tests
       run: |
         python .github/scripts/parse-unit-test-output.py        \
           test-output.txt                                       \
           tlatools/org.lamport.tlatools/target/surefire-reports
-        exit $BUILD_UT_EXIT_CODE
+        echo "Unit test exit code: $UT_EXIT_CODE"
+        exit $UT_EXIT_CODE
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
       with:
