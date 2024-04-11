@@ -393,16 +393,14 @@
 			</patternset>
 		</unzip>
 
-
-
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}" level="9">
 			<fileset dir="${class.dir}" includes="**/*" excludes="
 					**/*.jpg,
 					README.txt,
-				    heapstats.jfc,
-				    jpf.properties,
+					heapstats.jfc,
+					jpf.properties,
 					tlc2/tool/fp/*.tla,
 					tlc2/value/*.tla,
 					pcal/*.tla,
@@ -435,7 +433,7 @@
 				<attribute name="Implementation-Version" value="${version} ${TODAY}" />
 				<attribute name="Implementation-Vendor" value="Microsoft Corp." />
 				<!-- The jar files contains many main classes (SANY, TEX, pcal, ...) --> 
-                <!-- but lets consider TLC the one users primarily use. --> 
+				<!-- but lets consider TLC the one users primarily use. --> 
 				<attribute name="Main-class" value="tlc2.TLC" />
 				<attribute name="Class-Path" value="CommunityModules-deps.jar CommunityModules.jar" />
 				<!-- Git revision -->
@@ -482,8 +480,8 @@
 		</javac>
 		<!-- Include auxilliary files when compiling classes. -->
 		<copy todir="${test.class.dir}">
-		   <fileset dir="${test.dir}" includes="**/*.dot"/>
-		   <fileset dir="${test.dir}" includes="**/*.dump"/>
+			<fileset dir="${test.dir}" includes="**/*.dot"/>
+			<fileset dir="${test.dir}" includes="**/*.dump"/>
 		</copy>		
 		<!-- copy class.dir to path with whitespace -->
 		<!-- this is required by some tests to make sense -->
@@ -494,16 +492,22 @@
 		</copy>
 	</target>
 
-	<!-- Unit tests which due to their nature cannot be run in parallel. -->
-	<target name="sequential-test" unless="test.skip">
+	<!-- Runs all unit tests -->
+	<target name="test" unless="test.skip">
 		<property runtime="runtime"/>
+		<condition property="threadLimit" value="${threads}" else="${runtime.availableProcessors}">
+			<isset property="threads"/>
+		</condition>
+		<echo>Running tests across ${threadLimit} threads</echo>
+		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
+		<!-- First run unit tests which due to their nature cannot be run in parallel. -->
 		<junit
 			printsummary="yes"
 			showoutput="no"
 			haltonfailure="${test.halt}"
 			haltonerror="${test.halt}"
-			failureproperty="sequential-test.failed"
+			failureproperty="unit-test.failed"
 			forkmode="perTest"
 			fork="yes"
 			threads="1"
@@ -535,7 +539,7 @@
 			<sysproperty key="basedir" value="${basedir}/"/>
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
-			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="${runtime.availableProcessors}"/>
+			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="${threadLimit}"/>
 			<!-- Distributed TLC tests must be run sequentially because they bind
 					 exclusively to a port on the system. -->
 			<batchtest fork="yes" todir="${test.reports}">
@@ -547,14 +551,8 @@
 				</fileset>
 			</batchtest>
 		</junit>
-		<fail message="Sequential unit test failures." if="sequential-test.failed" />
-	</target>
 
-	<!-- Executes unit tests in parallel. -->
-	<target name="test" unless="test.skip" depends="sequential-test">
-		<property runtime="runtime"/>
-		<!-- run junit tests -->
-		<mkdir dir="${test.reports}" />
+		<!-- Run rest of unit tests in parallel -->
 		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.
 		     This concept broken with Java11 for unknown reasons which is why forkmode has been
 		     changed to perTest to run each test in a separate VM.  This is slower compared to
@@ -567,7 +565,7 @@
 			failureproperty="unit-test.failed"
 			forkmode="perTest"
 			fork="yes"
-			threads="${runtime.availableProcessors}"
+			threads="${threadLimit}"
 		>
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
