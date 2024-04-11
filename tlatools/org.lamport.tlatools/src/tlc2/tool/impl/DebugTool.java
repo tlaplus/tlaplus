@@ -673,6 +673,17 @@ public class DebugTool extends Tool {
 		public SetOfStates getStates() {
 			return functor.getStates();
 		}
+
+		@Override
+		public TLCState addUnsatisfiedState(TLCState curState, Action action, TLCState succState, SemanticNode pred,
+				Context c) {
+			return this.functor.addUnsatisfiedState(curState, action, succState, pred, c);
+		}
+
+		@Override
+		public TLCState addUnsatisfiedState(TLCState state, SemanticNode pred, Context c) {
+			return this.functor.addUnsatisfiedState(state, pred, c);
+		}
 	}
 
 	@Override
