@@ -179,8 +179,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// If a test runs for a longer period of time using many threads
 			// then it should be run sequentially instead of in parallel.
 			args.add("-workers");
-			int requestedThreads = this.getNumberOfThreads();
-			args.add(Integer.toString(requestedThreads));
+			args.add(Integer.toString(this.getNumberOfThreads()));
 			
 			// Never create checkpoints. They distort performance tests and are
 			// of no use anyway.
