@@ -207,7 +207,7 @@ public class PcalTranslate {
                 TLAToken tok = ((TLAToken) line.elementAt(j));
                 tok.column = nextCol;
                 nextCol = nextCol + tok.getWidth();
-                if (tok.type == TLAToken.BUILTIN && tok.string.equals("|->")) {
+                if (tok.type == TLAToken.BUILTIN && (tok.string.equals("|->") || tok.string.equals("↦"))) {
                     tok.column = tok.column + 1;
                     if (tok.column < 16) tok.column = 16;
                     nextCol = tok.column + 5;
