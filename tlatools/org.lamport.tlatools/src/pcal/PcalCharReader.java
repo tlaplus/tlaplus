@@ -36,12 +36,12 @@ class PcalCharReader
   { /***********************************************************************
     * The variables representing the state of the object.                  *
     ***********************************************************************/
-    private Vector vec ;
+    private Vector<String> vec ;
       /*********************************************************************
       * This is the vector providing the input characters.                 *
       *********************************************************************/
 
-    private String currentLine = null ;
+    private int[] currentLine = null ;
       /*********************************************************************
       * The current line of input, or null if at the end of the input.     *
       *********************************************************************/
@@ -72,7 +72,17 @@ class PcalCharReader
       * and the next getNextChar should return a space generated from      *
       * that tab.                                                          *
       *********************************************************************/
-
+    
+    /**
+     * Converts a string into a list of codepoints.
+     * 
+     * @param input The string to convert.
+     * @return A list of the codepoints comprising the string.
+     */
+    private static int[] stringToCodepoints(String input) {
+        return input.codePoints().toArray();
+    }
+    
     /***********************************************************************
     * The methods.                                                         *
     ***********************************************************************/
@@ -92,7 +102,7 @@ class PcalCharReader
       *********************************************************************/
       { return vcolumn ; } ;
 
-    public char getNextChar()
+    public int getNextChar()
       /*********************************************************************
       * Returns the next character in the input stream and updates the     *
       * line and column numbers.  However, it replaces each '\t' (tab) in  *
@@ -131,13 +141,13 @@ class PcalCharReader
         * return '\n' after updating the line and column and reading in    *
         * the next line.                                                   *
         *********************************************************************/
-        if (currentLine.length() == column) 
+        if (currentLine.length == column) 
           { line        = line + 1 ;
             column      = 0 ;
             vcolumn     = 0 ;
             if (line >= vec.size())
                  {currentLine = null ;}
-            else {currentLine = (String) vec.elementAt(line) ;} ;
+            else {currentLine = stringToCodepoints(vec.elementAt(line)) ;} ;
             return '\n' ;
            } ;
   
@@ -146,7 +156,7 @@ class PcalCharReader
         * converting a tab to space.  Update column and vcolumn, and       *
         * return the next character.                                       *
         *******************************************************************/
-        char readChar = currentLine.charAt(column) ;
+        int readChar = currentLine[column] ;
         column = column + 1;
         vcolumn = vcolumn + 1;
         if (readChar == '\t')
@@ -178,7 +188,7 @@ class PcalCharReader
                   "move past beginning of reader");
              } ;
            line = line - 1 ;
-           currentLine = (String) vec.elementAt(line) ;
+           currentLine = stringToCodepoints(vec.elementAt(line)) ;
            column = 0 ;
            vcolumn = 0 ;
 
@@ -186,8 +196,8 @@ class PcalCharReader
            * Need to move forward from the first character of the line in  *
            * case there are tabs.                                          *
            ****************************************************************/
-           while (column < currentLine.length() - 1)
-             { char c = getNextChar() ; }
+           while (column < currentLine.length - 1)
+             { getNextChar() ; }
          }
         else
          { column = column - 1;
@@ -205,7 +215,7 @@ class PcalCharReader
       ***************************************************************/
       { 
 // System.out.println("Peek called at line = " + line + ", col = " + column);
-        char next = getNextChar() ;
+        int next = getNextChar() ;
         while (   (next == ' ')
                || (next == '\n'))
            { next = getNextChar() ;} ;
@@ -213,10 +223,10 @@ class PcalCharReader
           { return "\t" ;} ;
         backspace() ;
 // System.out.println("Peek returns `" +  currentLine.substring(column) + "' at line = " + line + ", col = " + column);
-        return currentLine.substring(column) + "\n" ;
+        return new String(currentLine, column, currentLine.length - column) + '\n' ;
       }
       
-    public PcalCharReader(Vector vector, int firstLine, int firstCol,
+    public PcalCharReader(Vector<String> vector, int firstLine, int firstCol,
                             int lastLine, int lastCol) 
       /*********************************************************************
       * The class constructor.  The only tricky part is setting vcolumn    *
@@ -246,6 +256,6 @@ class PcalCharReader
         * Set currentLine.                                                 *
         *******************************************************************/
         if (firstLine < vector.size())
-          { this.currentLine = (String) vector.elementAt(firstLine) ; } ;
+          { this.currentLine = stringToCodepoints(vector.elementAt(firstLine)) ; } ;
       } ;
   }     

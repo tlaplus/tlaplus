@@ -142,7 +142,6 @@ public final class Misc
   * breaking the string at spaces into separate lines.                     *
   *************************************************************************/
   { String restOfString = str ;
-    String nextLine = "" ;
     boolean done = false ;
     boolean cut = false ;
     while (   (!done) 
@@ -356,6 +355,35 @@ public final class Misc
     return newStr ;
    } ;
 
+    /**
+     * Determines whether the given codepoint is ASCII.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is ASCII.
+     */
+    public static boolean IsAscii(int c) {
+        // This would be the "proper" way to do it but is inefficient because
+        // it linearly searches through all defined Unicode blocks. It would
+        // be nice if the UnicodeBlock class defined a contains() method. If
+        // such an API is added in a future Java standard library version,
+        // switch to using it instead.
+        // return Character.UnicodeBlock.BASIC_LATIN == Character.UnicodeBlock.of(c);
+        return c >= 0 && c < 128;
+    }
+
+    /**
+     * Converts the given codepoint to an ASCII char. Does not check or throw
+     * exception if the given codepoint is not a valid ASCII char; will
+     * instead overflow into some random char value. Call IsAscii(c) before
+     * calling this function.
+     * 
+     * @param c The codepoint to convert.
+     * @return The codepoint as an ASCII char.
+     */
+    public static char AsAscii(int c) {
+        return (char)c;
+    }
+
     public static boolean IsLetter(char c) 
       /*********************************************************************
       * True iff c is a letter or '_'.                                     *
@@ -364,7 +392,16 @@ public final class Misc
                  || ( ('A' <= c ) && (c <= 'Z') )
                  || ( c == '_' ) ;} ;
 
-                 
+    /**
+     * IsLetter function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a letter.
+     */
+    public static boolean IsLetter(int c) {
+        return IsAscii(c) && IsLetter(AsAscii(c));
+    }
+
     public static boolean hasLetter(String str) {
        boolean notFound = true ;
        int i = 0 ;
@@ -383,6 +420,16 @@ public final class Misc
       *********************************************************************/
       { return ('0' <= c ) && (c <= '9'); } ;
 
+    /**
+     * IsDigit function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a digit.
+     */
+    public static boolean IsDigit(int c) {
+        return IsAscii(c) && IsDigit(AsAscii(c));
+    }
+
     public static boolean IsSpace(char c) 
       /*********************************************************************
       * True iff c is a space character--that is, one of the following:    *
@@ -390,6 +437,15 @@ public final class Misc
       *********************************************************************/
       { return  (c == ' ')  | (c == '\f') | (c == '\r') ; } ;
 
+    /**
+     * IsSpace function implemented for Unicode codepoints.
+     * 
+     * @param c The codepoint to check.
+     * @return Whether the given codepoint is a space.
+     */
+    public static boolean IsSpace(int c) {
+        return IsAscii(c) && IsSpace(AsAscii(c));
+    }
 
   public static boolean isBlank(String str) 
     /***********************************************************************
