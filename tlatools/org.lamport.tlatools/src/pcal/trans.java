@@ -3,11 +3,11 @@ package pcal;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -1295,8 +1295,7 @@ class trans {
     * each element of inputVec written on a new line.                      *
     ***********************************************************************/
     {
-    	// TODO use Apache Commons for this
-        try (final BufferedWriter fileW = new BufferedWriter(new FileWriter(fileName))) {
+        try (final BufferedWriter fileW = Files.newBufferedWriter(Path.of(fileName))) {
             // I have no idea what Java does if you try to write a new version
             // of a read-only file. On Windows, it's happy to write it. Who
             // the hell knows what it does on other operating systems? So, something
@@ -1327,27 +1326,19 @@ class trans {
     * element is a line of the file.                                       *
     ***********************************************************************/
     {
-        final List<String> inputVec = new ArrayList<>(100);
-    	// TODO use Apache Commons for this
-        try (final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)))) {
-            String nextLine = bufferedReader.readLine();
-            while (nextLine != null) {
-                inputVec.add(nextLine);
-                nextLine = bufferedReader.readLine();
-            }
-        } catch (FileNotFoundException e) {
+        try {
+            return Files.readAllLines(Path.of(fileName));
+        } catch (NoSuchFileException e) {
             /**************************************************************
             * Input file could not be found.                              *
             **************************************************************/
-            throw new FileToStringVectorException("Input file " + fileName + " not found.");
+            throw new FileToStringVectorException("Input file " + fileName + " not found");
         } catch (IOException e) {
             /*********************************************************
             * Error while reading input file.                        *
             *********************************************************/
             throw new FileToStringVectorException("Error reading file " + fileName + ".");
         }
-        
-        return inputVec;
     }
 
     /********************* PROCESSING THE COMMAND LINE ***********************/
@@ -1702,7 +1693,7 @@ class trans {
                     {
                         throw new NumberFormatException();
                     }
-                    int a = new Integer(args[nextArg]).intValue();
+                    int a = Integer.parseInt(args[nextArg]);
                     if (a < 60)
                     {
                         throw new NumberFormatException();
@@ -1807,12 +1798,8 @@ class trans {
         {
             // cut the extension
             PcalParams.TLAInputFile = file.getPath().substring(0, file.getPath().lastIndexOf("."));
-            if (!file.exists())
-            {
-                return CommandLineError("Input file " + file.getPath() + " does not exist.");
-            }
-        } else
-        {
+        }// else
+        //{
             // aborted version 1.31 code
             // file = new File(PcalParams.TLAInputFile + ".pcal");
             // if (file.exists())
@@ -1820,14 +1807,14 @@ class trans {
             // PcalParams.fromPcalFile = true;
             // } else
             // {
-            file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
-            if (!file.exists())
-            {
-                return CommandLineError("Input file " + PcalParams.TLAInputFile + ".pcal and " + file.getPath()
-                        + ".tla not found");
-            }
+            // file = new File(PcalParams.TLAInputFile + TLAConstants.Files.TLA_EXTENSION);
+            // if (!file.exists())
+            // {
+            //    return CommandLineError("Input file " + PcalParams.TLAInputFile + ".pcal and " + file.getPath()
+            //            + ".tla not found");
             // }
-        }
+            // }
+        //}
         // file = new File(PcalParams.TLAInputFile + (PcalParams.fromPcalFile?".pcal":TLAConstants.FILE_TLA_EXTENSION));
         // if (!file.exists())
         // {
