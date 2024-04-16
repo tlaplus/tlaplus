@@ -131,6 +131,12 @@ jobs:
         python "$SCRIPT_DIR/unicode_number_set_shim.py" \
           --ts_path "$DEPS_DIR/tree-sitter-tlaplus"     \
           --manifest_path "$EXAMPLES_DIR/manifest.json"
+    - name: Translate PlusCal
+      if: (!matrix.unicode)
+      run: |
+        python $SCRIPT_DIR/translate_pluscal.py         \
+          --tools_jar_path "$DIST_DIR/tla2tools.jar"    \
+          --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Parse tlaplus/examples modules
       run: |
         # Need to have a nonempty list to pass as a skip parameter
