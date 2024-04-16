@@ -444,7 +444,7 @@ public class Tokenize
           * line.                                                          *
           *****************************************************************/
 
-    private static char nextChar ;
+    private static int nextChar ;
           /*****************************************************************
           * nextChar is the next input character to be processed.          *
           *****************************************************************/
@@ -593,7 +593,7 @@ public class Tokenize
       * Appends nextChar to token, sets nextChar to the next character in  *
       * the input stream, and sets ncol to its column.                     *
       *********************************************************************/
-      { token = token + nextChar ;
+      { token = token + Character.toString(nextChar) ;
         skipNextChar() ;
       } ;
 
@@ -963,7 +963,7 @@ public class Tokenize
                       startNewLine() ;
                       gotoStart(); 
                     }
-                  else if (PcalBuiltInSymbols.IsBuiltInPrefix("" + nextChar))
+                  else if (PcalBuiltInSymbols.IsBuiltInPrefix(Character.toString(nextChar)))
                     { addNextChar();
                       state = BUILT_IN ;
                     }
@@ -1087,7 +1087,7 @@ public class Tokenize
                    break;
 
                 case BUILT_IN :
-                  if (PcalBuiltInSymbols.IsBuiltInPrefix(token + nextChar))
+                  if (PcalBuiltInSymbols.IsBuiltInPrefix(token + Character.toString(nextChar)))
                     { addNextChar();
                       // state = BUILT_IN;
                     }
@@ -1236,7 +1236,7 @@ public class Tokenize
                       TokenOut(Token.STRING) ;
                       gotoStart();
                     }
-                  else if (PcalBuiltInSymbols.IsStringChar(nextChar))
+                  else if (PcalBuiltInSymbols.IsStringChar(Character.toString(nextChar)))
                     { addNextChar();
                       state = STRING ;
                     }

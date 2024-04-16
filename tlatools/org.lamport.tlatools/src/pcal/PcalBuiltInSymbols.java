@@ -87,8 +87,8 @@ public final class PcalBuiltInSymbols
       { return prefixHashTable.containsKey(str) ;
       } ;
 
-    public static boolean IsStringChar(char ch)
-      { return stringCharTable.containsKey("" + ch) ;
+    public static boolean IsStringChar(String ch)
+      { return stringCharTable.containsKey(ch) ;
       } ;
 
     private static void buildStringCharTable() 
