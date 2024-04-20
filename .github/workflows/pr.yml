@@ -129,7 +129,6 @@ jobs:
       if: matrix.unicode
       run: |
         python "$SCRIPT_DIR/unicode_number_set_shim.py" \
-          --ts_path "$DEPS_DIR/tree-sitter-tlaplus"     \
           --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Translate PlusCal
       if: (!matrix.unicode)
@@ -155,6 +154,7 @@ jobs:
         fi
         python "$SCRIPT_DIR/parse_modules.py"                             \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
@@ -166,9 +166,12 @@ jobs:
         if [ ${{ matrix.unicode }} ]; then
           # This redefines Real so cannot be shimmed
           SKIP+=("specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.cfg")
+          # Apalache does not yet support Unicode
+          SKIP+=("specifications/EinsteinRiddle/Einstein.cfg")
         fi
         python "$SCRIPT_DIR/check_small_models.py"                        \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
@@ -180,6 +183,7 @@ jobs:
         # smoke testing.
         python "$SCRIPT_DIR/smoke_test_large_models.py"                   \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
+          --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
