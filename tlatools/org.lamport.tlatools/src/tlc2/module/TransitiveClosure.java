@@ -51,7 +51,7 @@ public class TransitiveClosure implements ValueConstants
             Integer num = fps.get(elem1);
             if (num == null)
             {
-                fps.put(elem1, new Integer(cnt));
+                fps.put(elem1, cnt);
                 elemList.addElement(elem1);
                 cnt++;
             } else
@@ -62,7 +62,7 @@ public class TransitiveClosure implements ValueConstants
             num = fps.get(elem2);
             if (num == null)
             {
-                fps.put(elem2, new Integer(cnt));
+                fps.put(elem2, cnt);
                 elemList.addElement(elem2);
                 cnt++;
             } else

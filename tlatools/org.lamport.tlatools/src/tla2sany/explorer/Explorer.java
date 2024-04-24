@@ -324,9 +324,9 @@ public class Explorer {
 		// "mt" command, which defaults to 2
 		if (ntokens < 2 || (icmd2 != null && icmd2.intValue() < 0)) {
 			if (firstToken.toLowerCase().startsWith("mt")) {
-				icmd2 = new Integer(2);
+				icmd2 = 2;
 			} else {
-				icmd2 = new Integer(4);
+				icmd2 = 4;
 			}
 		}
 

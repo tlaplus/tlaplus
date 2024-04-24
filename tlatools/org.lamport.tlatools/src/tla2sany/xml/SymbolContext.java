@@ -52,7 +52,7 @@ public class SymbolContext {
   }
 
   public void put(SymbolNode nd, Document doc) {
-    Integer k = new Integer(nd.myUID);
+    int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);
@@ -62,7 +62,7 @@ public class SymbolContext {
   }
 
   public void put(TheoremNode nd, Document doc) {
-    Integer k = new Integer(nd.myUID);
+    int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);
@@ -72,7 +72,7 @@ public class SymbolContext {
   }
 
   public void put(AssumeNode nd, Document doc) {
-    Integer k = new Integer(nd.myUID);
+    int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);

@@ -93,14 +93,14 @@ public class TLCApp extends DistApp {
 	 * @see tlc2.tool.distributed.DistApp#getCheckDeadlock()
 	 */
 	public final Boolean getCheckDeadlock() {
-		return new Boolean(this.checkDeadlock);
+		return this.checkDeadlock;
 	}
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.distributed.DistApp#getPreprocess()
 	 */
 	public final Boolean getPreprocess() {
-		return new Boolean(this.preprocess);
+		return this.preprocess;
 	}
 
 	/* (non-Javadoc)
