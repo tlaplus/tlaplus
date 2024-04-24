@@ -30,7 +30,6 @@ import java.util.concurrent.Future;
  * command-line.  As we do not want to expose JVM parameters to them, we keep
  * sun.misc.Unsafe for now.
  */
-import sun.misc.Unsafe; // jdk.internal.misc.Unsafe;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLCRuntime;
@@ -43,10 +42,9 @@ import util.TLCRuntime;
  * In 2012 this poses a too hard limit on the usable memory, hence we trade
  * generality for performance.
  */
-@SuppressWarnings("restriction")
 public final class LongArray {
 
-	private final Unsafe unsafe;
+	private final sun.misc.Unsafe unsafe;
 	
 	/**
 	 * The base address of this direct memory allocated with Unsafe.

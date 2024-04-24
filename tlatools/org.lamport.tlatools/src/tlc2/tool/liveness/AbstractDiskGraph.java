@@ -607,7 +607,7 @@ public abstract class AbstractDiskGraph {
 					record.read(this.nodeRAF);
 					Integer inArcCounter = nodes2count.get(record);
 					if (inArcCounter == null) {
-						inArcCounter = new Integer(0);
+						inArcCounter = 0;
 					}
 					nodes2count.put(record, inArcCounter + 1);
 				}
