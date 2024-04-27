@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11.0.3
+        java-version: 11
     - name: Check tla+.jj grammar/code sync
       run: |
         ant -f tlatools/org.lamport.tlatools/customBuild.xml generate
@@ -76,7 +76,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11.0.3
+        java-version: 11
     - name: Build & Test Eclipse Toolbox with Maven
       run: |
         ${{ matrix.MVN_COMMAND }}                                                                     \
@@ -113,7 +113,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11.0.3
+        java-version: 11
     - name: Build tla2tools.jar
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test dist
     - name: Download dependencies
