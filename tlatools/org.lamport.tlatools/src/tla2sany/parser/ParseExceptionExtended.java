@@ -9,9 +9,6 @@ public class ParseExceptionExtended extends ParseException {
    *  Shorter variation of ParseException.getMessage()
    */
   public static String getShortMessage(ParseException e) {
-    if (!e.specialConstructor) {
-      return e.getMessage();
-    }
     int maxSize = 0;
     for (int i = 0; i < e.expectedTokenSequences.length; i++) {
       if (maxSize < e.expectedTokenSequences[i].length) {

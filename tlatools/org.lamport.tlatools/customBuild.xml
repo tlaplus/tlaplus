@@ -104,7 +104,8 @@
 	<target name="generate">
 		<tempfile property="javacc-tmpdir" destdir="${java.io.tmpdir}" prefix="javacc_" />
 		<mkdir dir="${javacc-tmpdir}" />
-		<java classpath="lib/javacc-4.0.jar" classname="javacc" fork="true" failonerror="true">
+		<java classpath="lib/javacc-5.0.jar" classname="javacc" fork="true" failonerror="true">
+			<arg value="-GRAMMAR_ENCODING=UTF-8" />
 			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
 			<arg value="javacc/tla+.jj" />
 		</java>
