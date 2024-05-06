@@ -1,0 +1,76 @@
+==================|||
+PlusCal Minimal Unlabeled P
+==================|||
+
+--algorithm Test begin
+  skip;
+end algorithm
+
+-------------|||
+
+(source_file
+  (pcal_algorithm (pcal_algorithm_start) name: (identifier)
+    (pcal_algorithm_body
+      (pcal_skip)
+    )
+  )
+)
+
+==================|||
+PlusCal Minimal Unlabeled C
+==================|||
+
+--algorithm Test {
+  {
+    skip;
+  }
+}
+
+-------------|||
+
+(source_file
+  (pcal_algorithm (pcal_algorithm_start) name: (identifier)
+    (pcal_algorithm_body
+      (pcal_skip)
+    )
+  )
+)
+
+==================|||
+PlusCal Minimal Fair Labeled P
+==================|||
+
+--fair algorithm Test begin
+  lbl: skip;
+end algorithm
+
+-------------|||
+
+(source_file
+  (pcal_algorithm (pcal_algorithm_start (fair)) name: (identifier)
+    (pcal_algorithm_body
+      (pcal_skip)
+    )
+  )
+)
+
+==================|||
+PlusCal Minimal Fair Labeled C
+==================|||
+
+--fair algorithm Test {
+  {
+    lbl: skip;
+  }
+}
+
+-------------|||
+
+(source_file
+  (pcal_algorithm (pcal_algorithm_start (fair)) name: (identifier)
+    (pcal_algorithm_body
+      (pcal_skip)
+    )
+  )
+)
+

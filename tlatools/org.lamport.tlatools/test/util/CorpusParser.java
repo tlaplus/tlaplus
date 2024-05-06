@@ -1,9 +1,10 @@
-package tla2sany;
+package util;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.PathMatcher;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -330,13 +331,12 @@ public class CorpusParser {
 	/**
 	 * Gets all .txt files in the corpus tests directory then parses their contents.
 	 * 
-	 * @param toolsRoot Root of the TLA+ tools directory.
+	 * @param corpusDir Directory in which to look for test files.
 	 * @return A list of all corpus tests.
 	 * @throws IOException If a file could not be found or opened or read.
 	 * @throws ParseException If a file contains invalid test syntax.
 	 */
-	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path toolsRoot) throws IOException, ParseException {
-		Path corpusDir = toolsRoot.resolve("test/tla2sany/corpus");
+	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path corpusDir) throws IOException, ParseException {
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.txt");
 		ArrayList<CorpusTestFile> corpus = new ArrayList<CorpusTestFile>();
 		for (Path path : Files.walk(corpusDir).filter(matcher::matches).collect(Collectors.toList())) {
@@ -345,5 +345,26 @@ public class CorpusParser {
 		}
 	
 		return corpus;
+	}
+
+	/**
+	 * Gets the TLA+ tools root directory. Requires basedir property was
+	 * provided to the Java VM on test startup.
+	 * 
+	 * In Eclipse, add -Dbasedir=${workspace_loc:tlatools} to the VM
+	 * arguments in the JUnit run configuration.
+	 * 
+	 * @return A Path object pointing to the tools root directory.
+	 */
+	public static Path getToolsRoot() {
+		String baseDir = System.getProperty("basedir");
+		if (null == baseDir) {
+			throw new IllegalArgumentException(
+				"Require basedir Java VM environment variable to be provided"
+				+ " and set to tlatools root."
+			);
+		}
+		
+		return Paths.get(baseDir);
 	}
 }

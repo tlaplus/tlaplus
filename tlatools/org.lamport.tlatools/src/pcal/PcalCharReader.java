@@ -32,7 +32,7 @@
 package pcal;
 import java.util.Vector;
 
-class PcalCharReader 
+public class PcalCharReader 
   { /***********************************************************************
     * The variables representing the state of the object.                  *
     ***********************************************************************/
