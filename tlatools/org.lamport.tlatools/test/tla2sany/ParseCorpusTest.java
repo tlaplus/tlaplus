@@ -1,11 +1,14 @@
 package tla2sany;
 
-import tla2sany.CorpusParser.CorpusTestFile;
-import tla2sany.CorpusParser.CorpusTest;
+import util.AstNode;
+import util.CorpusParser;
+import util.CorpusParser.CorpusTestFile;
+import util.CorpusParser.CorpusTest;
 import tla2sany.configuration.Configuration;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
+import tlc2.tool.CommonTestCase;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -18,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -39,17 +43,11 @@ public class ParseCorpusTest {
 	 */
 	@BeforeClass
 	public static void setup() throws IOException, ParseException, AbortException {
-		String baseDir = System.getProperty("basedir");
-		if (null == baseDir) {
-			// In Eclipse, add -Dbasedir=${workspace_loc:tlatools} to the VM
-			// arguments in the JUnit run configuration.
-			throw new IllegalArgumentException(
-				"Require basedir Java VM environment variable to be provided"
-				+ " and set to tlatools root."
-			);
-		}
-		Path toolsRoot = Paths.get(baseDir);
-		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(toolsRoot);
+		// Load corpus test files.
+		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/tla2sany/corpus");
+		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(corpusDir);
+		
+		// Static initialization of SANY.
 		Configuration.load(null);
 		BuiltInLevel.load();
 	}
@@ -63,7 +61,7 @@ public class ParseCorpusTest {
 	 * @throws ParseException If translating SANY's output fails.
 	 */
 	@Test
-	public void testEntireCorpus() throws ParseException {
+	public void testEntireTlaPlusSyntaxParserCorpus() throws ParseException {
 		int testCount = 0;
 		for (CorpusTestFile corpusTestFile : ParseCorpusTest.corpus) {
 			System.out.println(corpusTestFile.path);
@@ -103,8 +101,8 @@ public class ParseCorpusTest {
 	 * exercise nearly all valid TLA+ syntax rules.
 	 */
 	@Test
-	public void testAllNodesUsed() {
-		List<AstNode.Kind> unused = AstNode.Kind.getUnused();
+	public void testAllTlaPlusNodesUsed() {
+		EnumSet<AstNode.Kind> unused = AstNode.Kind.getUnusedTlaPlusNodeKinds();
 		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
 		System.out.println(unused);
 		Assert.assertEquals(0, unused.size());
