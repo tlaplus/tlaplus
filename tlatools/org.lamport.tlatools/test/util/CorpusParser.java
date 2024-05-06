@@ -1,4 +1,4 @@
-package tla2sany;
+package util;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -330,13 +330,12 @@ public class CorpusParser {
 	/**
 	 * Gets all .txt files in the corpus tests directory then parses their contents.
 	 * 
-	 * @param toolsRoot Root of the TLA+ tools directory.
+	 * @param corpusDir Directory in which to look for test files.
 	 * @return A list of all corpus tests.
 	 * @throws IOException If a file could not be found or opened or read.
 	 * @throws ParseException If a file contains invalid test syntax.
 	 */
-	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path toolsRoot) throws IOException, ParseException {
-		Path corpusDir = toolsRoot.resolve("test/tla2sany/corpus");
+	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path corpusDir) throws IOException, ParseException {
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.txt");
 		ArrayList<CorpusTestFile> corpus = new ArrayList<CorpusTestFile>();
 		for (Path path : Files.walk(corpusDir).filter(matcher::matches).collect(Collectors.toList())) {

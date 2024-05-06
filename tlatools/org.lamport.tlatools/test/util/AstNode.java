@@ -1,12 +1,13 @@
-package tla2sany;
+package util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.text.ParseException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
@@ -32,8 +33,6 @@ public class AstNode {
 	 *     and not item['type'].startswith('block_comment')
 	 *     and not item['type'] == 'comment'
 	 *     and not item['type'] == 'extramodular_text'
-	 *     and not item['type'].startswith('pcal')
-	 *     and not item['type'] == 'fair'
 	 * ]
 	 * print(',\n'.join(names) + ';\n')
 	 */
@@ -97,6 +96,7 @@ public class AstNode {
 		EXCL ("excl"),
 		EXISTS ("exists"),
 		EXTENDS ("extends"),
+		FAIR ("fair"),
 		FAIRNESS ("fairness"),
 		FINITE_SET_LITERAL ("finite_set_literal"),
 		FORALL ("forall"),
@@ -155,6 +155,37 @@ public class AstNode {
 		OTHER_ARM ("other_arm"),
 		OTIMES ("otimes"),
 		PARENTHESES ("parentheses"),
+		PCAL_ALGORITHM ("pcal_algorithm"),
+		PCAL_ALGORITHM_BODY ("pcal_algorithm_body"),
+		PCAL_ALGORITHM_START ("pcal_algorithm_start"),
+		PCAL_ASSERT ("pcal_assert"),
+		PCAL_ASSIGN ("pcal_assign"),
+		PCAL_AWAIT ("pcal_await"),
+		PCAL_DEFINITIONS ("pcal_definitions"),
+		PCAL_EITHER ("pcal_either"),
+		PCAL_GOTO ("pcal_goto"),
+		PCAL_IF ("pcal_if"),
+		PCAL_LHS ("pcal_lhs"),
+		PCAL_MACRO ("pcal_macro"),
+		PCAL_MACRO_CALL ("pcal_macro_call"),
+		PCAL_MACRO_DECL ("pcal_macro_decl"),
+		PCAL_PRINT ("pcal_print"),
+		PCAL_PROC_CALL ("pcal_proc_call"),
+		PCAL_PROC_DECL ("pcal_proc_decl"),
+		PCAL_PROC_VAR_DECL ("pcal_proc_var_decl"),
+		PCAL_PROC_VAR_DECLS ("pcal_proc_var_decls"),
+		PCAL_PROCEDURE ("pcal_procedure"),
+		PCAL_PROCESS ("pcal_process"),
+		PCAL_RETURN ("pcal_return"),
+		PCAL_SKIP ("pcal_skip"),
+		PCAL_VAR_DECL ("pcal_var_decl"),
+		PCAL_VAR_DECLS ("pcal_var_decls"),
+		PCAL_WHILE ("pcal_while"),
+		PCAL_WITH ("pcal_with"),
+		PCAL_END_EITHER ("pcal_end_either"),
+		PCAL_END_IF ("pcal_end_if"),
+		PCAL_END_WHILE ("pcal_end_while"),
+		PCAL_END_WITH ("pcal_end_with"),
 		PICK_PROOF_STEP ("pick_proof_step"),
 		PLUS ("plus"),
 		PLUS_ARROW ("plus_arrow"),
@@ -277,23 +308,26 @@ public class AstNode {
 		/**
 		 * A static map from node kind name to enum to avoid linear lookups.
 		 */
-		private static final Map<String, Kind> nameMap = new HashMap<String, Kind>();
+		private static final Map<String, Kind> nameMap =
+			Arrays
+				.stream(Kind.values())
+				.collect(Collectors.toMap(kind -> kind.name, kind -> kind));
 		
 		/**
 		 * Tracks node kinds that go unused; useful for identifying gaps in testing.
 		 */
-		private static final Set<Kind> unused = new HashSet<Kind>();
+		private static final EnumSet<Kind> unused = EnumSet.allOf(Kind.class);
 		
 		/**
-		 * Initialize the static maps on class load.
+		 * The subset of nodes that are exclusively used by PlusCal.
 		 */
-		static {
-			for (Kind k : Kind.values()) {
-				Kind.nameMap.put(k.name, k);
-			}
-			
-			Kind.unused.addAll(Kind.nameMap.values());
-		}
+		private static final EnumSet<Kind> pcal =
+			EnumSet.copyOf(
+				Arrays
+					.stream(Kind.values())
+					.filter(kind -> kind.name.startsWith("pcal") || kind == Kind.FAIR)
+					.collect(Collectors.toList())
+			);
 		
 		/**
 		 * Private constructor for the enum so it can have a string field.
@@ -305,12 +339,27 @@ public class AstNode {
 		}
 		
 		/**
-		 * Get list of unused AST node kinds; useful for identifying gaps in testing.
+		 * Get list of unused AST node kinds specific to TLA+, not PlusCal;
+		 * useful for identifying gaps in testing.
 		 * 
-		 * @return The list of AST node kinds that were never constructed during parsing.
+		 * @return Kinds that were never constructed during parsing.
 		 */
-		public static List<Kind> getUnused() {
-			return new ArrayList<Kind>(Kind.unused);
+		public static EnumSet<Kind> getUnusedTlaPlusNodeKinds() {
+			EnumSet<Kind> unused = EnumSet.copyOf(Kind.unused);
+			unused.removeAll(Kind.pcal);
+			return unused;
+		}
+		
+		/**
+		 * Get list of unused AST node kinds specific to PlusCal; useful for
+		 * identifying gaps in testing.
+		 * 
+		 * @return Kinds that were never constructed during parsing.
+		 */
+		public static EnumSet<Kind> getUnusedPlusCalNodeKinds() {
+			EnumSet<Kind> unused = EnumSet.copyOf(Kind.unused);
+			unused.retainAll(Kind.pcal);
+			return unused;
 		}
 		
 		/**
