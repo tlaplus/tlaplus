@@ -1,5 +1,9 @@
 \* Java implementation at ../OffHeapDiskFPSet.java or https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tlc2/tool/fp/OffHeapDiskFPSet.java
 
+\* An in-memory only variant of this algorithm has been confirmed to be correct in "Refinement Proofs in Rust Using Ghost Locks" (https://arxiv.org/abs/2311.14452).  A more
+\* detailed discussion can be found in Schaer's Master thesis "Proving Refinement in a Rust Verifier"
+\* (https://ethz.ch/content/dam/ethz/special-interest/infk/chair-program-method/pm/documents/Education/Theses/Jan_Schaer_MS_Thesis.pdf).
+
 \begin{ppcal}
 -------------------------- MODULE OpenAddressing --------------------------
 EXTENDS Sequences, FiniteSets, Integers
