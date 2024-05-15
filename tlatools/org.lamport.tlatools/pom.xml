@@ -61,7 +61,7 @@
         <plugin>
 	    <groupId>org.apache.maven.plugins</groupId>
 	    <artifactId>maven-antrun-plugin</artifactId>
-	    <version>1.8</version>
+	    <version>3.1.0</version>
 	    <executions>
 	    	<execution>
 	    		<id>compile</id>
@@ -168,9 +168,9 @@
 			<!-- Compile aspects -->
             <plugin>
                 <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
-                <groupId>com.nickwongdev</groupId>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.12.1</version>
+                <version>1.15.0</version>
                 <configuration>
                     <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
                 </configuration>
@@ -180,9 +180,7 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
-                            <complianceLevel>1.8</complianceLevel>
-                            <source>1.8</source>
-                            <target>1.8</target>
+                            <complianceLevel>11</complianceLevel>
                         </configuration>
                     </execution>
                </executions>
