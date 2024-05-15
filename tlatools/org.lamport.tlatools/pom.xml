@@ -67,7 +67,7 @@
 	    		<id>compile</id>
 	    		<phase>compile</phase>
 	    		<configuration>
-	    			<tasks>
+	    			<target>
 
 						<taskdef name="junit"
 							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
@@ -79,7 +79,7 @@
 	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="default-maven" />
 	    				</ant>
-	    			</tasks>
+	    			</target>
 	    		</configuration>
 	    		<goals>
 	    			<goal>run</goal>
@@ -90,7 +90,7 @@
 	    		<id>clean</id>
 	    		<phase>clean</phase>
 	    		<configuration>
-	    			<tasks>
+	    			<target>
 
 						<taskdef name="junit"
 							classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"
@@ -102,7 +102,7 @@
 	    				<ant antfile="customBuild.xml" inheritRefs="true">
 	    					<target name="clean" />
 	    				</ant>
-	    			</tasks>
+	    			</target>
 	    		</configuration>
 	    		<goals>
 	    			<goal>run</goal>
@@ -167,7 +167,6 @@
 
 			<!-- Compile aspects -->
             <plugin>
-                <!-- https://github.com/nickwongdev/aspectj-maven-plugin -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.15.0</version>
