@@ -7,6 +7,9 @@
 	<!-- linking with system properties -->
 	<property environment="env" />
 
+	<!-- Use Java 11 for all builds -->
+	<property name="java.release" value="11" />
+
 	<!-- setup classpath -->
 	<path id="project.classpath" />
 
@@ -155,8 +158,7 @@
 			destdir="${class.dir}"
 			debug="true"
 			verbose="false"
-			source="1.8"
-			target="1.8"
+			release="${java.release}"
 			encoding="UTF-8"
 		>
 			<!-- compilerarg value="-Xlint:deprecation"/-->
@@ -463,8 +465,7 @@
 			destdir="${test.class.dir}"
 			debug="true"
 			verbose="false"
-			source="1.8"
-			target="1.8"
+			release="${java.release}"
 			encoding="UTF-8"
 		>
 			<classpath refid="project.classpath" />
@@ -1080,6 +1081,7 @@
 			destdir="${test.class.dir}"
 			debug="true"
 			verbose="false"
+			release="${java.release}"
 			encoding="UTF-8"
 		>
 			<classpath refid="project.classpath" />
@@ -1148,6 +1150,7 @@
 			destdir="${test.class.dir}"
 			debug="true"
 			verbose="false"
+			release="${java.release}"
 			encoding="UTF-8"
 		>
 			<classpath refid="project.classpath" />
@@ -1189,6 +1192,7 @@
 			includeantruntime="false"
 			srcdir="test-benchmark/"
 			destdir="target/benchmark/"
+			release="${java.release}"
 			encoding="UTF-8"
 		>
 			<classpath refid="project.classpath" />
