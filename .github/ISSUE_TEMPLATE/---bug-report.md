@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!--- 
+<!---
 Hi!
 Have you tried searching for your issue on the following forums?
 If you have any questions, please ask them there.
@@ -20,25 +20,25 @@ Thanks!
 -->
 
 ## Description
-<!--- 
-Provide a more detailed introduction to the issue itself, and why you consider it to be a bug. 
+<!---
+Provide a more detailed introduction to the issue itself, and why you consider it to be a bug.
 
 If you need to share a specification, either:
  - Paste it in your description between the <details> </details> tags if it's too long;
  - Send a link to a Gist, GitHub reposity, Pastebin, etc.;
 -->
 
-## Expected Behavior
-<!--- Tell us what should happen -->
-
-## Actual Behavior
-<!--- Tell us what happens instead -->
-
 ## Steps to Reproduce
 1.
 2.
 3.
 4.
+
+## Expected Behavior
+<!--- Tell us what should happen -->
+
+## Actual Behavior
+<!--- Tell us what happens instead -->
 
 ## Steps Taken to Fix
 <!--- When this problem came up, what did you try before reporting it? -->
