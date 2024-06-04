@@ -9,6 +9,7 @@ package tla2sany.utilities;
  * 
  * @deprecated Use {@linkplain util.Assert} instead of this class
  */
+@Deprecated
 public class Assert
 {
 
@@ -16,6 +17,7 @@ public class Assert
     /**
      * @deprecated Use {@linkplain util.Assert#check(boolean, int, String[])} instead of this method
      */
+    @Deprecated
     public final static void assertion(boolean b)
     {
         // if (!b) {
@@ -28,6 +30,7 @@ public class Assert
     /**
      * @deprecated Use {@linkplain util.Assert#fail(int, String[])} instead of this method
      */
+    @Deprecated
     public final static void fail(String msg)
     {
         // ToolIO.err.println("Error: " + msg);

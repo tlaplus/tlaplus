@@ -295,6 +295,7 @@ public class PcalTranslate {
     /**
      * @deprecated method not used
      */
+    @Deprecated
     private static AST.If IfForLabelIf (TLAExpr test,
                                         Vector unlabThen,
                                         String nextThen,

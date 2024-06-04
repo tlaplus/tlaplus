@@ -194,7 +194,7 @@ public final class ASCII_CharStream
    * @deprecated 
    * @see #getEndColumn
    */
-
+  @Deprecated
   static public final int getColumn() {
      return bufcolumn[bufpos];
   }
@@ -203,7 +203,7 @@ public final class ASCII_CharStream
    * @deprecated 
    * @see #getEndLine
    */
-
+  @Deprecated
   static public final int getLine() {
      return bufline[bufpos];
   }
