@@ -615,6 +615,7 @@ public class ParseUnit {
   * modified accordingly.                                                  *
   * @deprecated not used (no local references)
   *************************************************************************/
+  @Deprecated
   private void getInstanceInLet(TreeNode treeNode, ModuleRelatives currentRelatives) {
     TreeNode[] children = treeNode.heirs();  
 

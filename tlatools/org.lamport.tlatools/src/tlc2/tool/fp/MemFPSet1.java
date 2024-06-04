@@ -24,6 +24,7 @@ import util.FileUtil;
  * @deprecated not used currently
  * @version $Id$
  */
+@Deprecated
 public final class MemFPSet1 extends FPSet {
   private String metadir;
   private String filename;

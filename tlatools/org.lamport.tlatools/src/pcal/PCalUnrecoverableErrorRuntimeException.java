@@ -7,6 +7,7 @@ package pcal;
  * @version $Id$
  * @deprecated TODO this should be re-factored and not used further 
  */
+@Deprecated
 public class PCalUnrecoverableErrorRuntimeException extends RuntimeException
 {
 

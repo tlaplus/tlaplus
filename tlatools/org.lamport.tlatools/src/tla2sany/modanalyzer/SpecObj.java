@@ -118,6 +118,7 @@ public class SpecObj
      * @deprecated please use the {@link SpecObj#SpecObj(String, FilenameToStream)} 
      * with <code>null</code> as a second argument
      */
+    @Deprecated
     public SpecObj(String pfn)
     {
         this(pfn, null);

@@ -340,6 +340,7 @@ public class TypedSet {
      * @return true if on of the values (taking the type into account) is a digit
      * @deprecated
      */
+    @Deprecated
     public boolean hasANumberOnlyValue()
     {
         if (hasType())
