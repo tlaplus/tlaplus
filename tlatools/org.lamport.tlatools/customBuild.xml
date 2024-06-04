@@ -475,6 +475,8 @@
 			release="${java.release}"
 			encoding="UTF-8"
 		>
+			<!-- Treat all warnings as errors. -->
+			<compilerarg value="-Werror" />
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />

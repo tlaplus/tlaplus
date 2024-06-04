@@ -11,6 +11,7 @@ import java.io.File;
  * Simple printing utility
  * @deprecated is likely not used (SZ February 19, 2009)
  */
+@Deprecated
 public class CurrentDir
 {
     public static void main(String args[])
