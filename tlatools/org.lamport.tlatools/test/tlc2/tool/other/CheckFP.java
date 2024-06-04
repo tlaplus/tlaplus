@@ -16,6 +16,7 @@ import tlc2.util.BufferedRandomAccessFile;
  * This program does these sanity checkings.
  * @deprecated (SZ February 19, 2009)
  */
+@Deprecated
 public class CheckFP {
   public static void main(String args[]) {
     try {
