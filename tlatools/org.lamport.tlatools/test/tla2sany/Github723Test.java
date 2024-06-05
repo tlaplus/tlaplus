@@ -10,7 +10,7 @@ import util.ToolIO;
 
 import java.io.File;
 
-public class Github723Test extends SANYTest {
+public class Github723Test extends AbstractSANYTest {
 	@Test
 	public void test() {
 		final TestPrintStream testPrintStream = new TestPrintStream();

@@ -29,7 +29,7 @@ import org.junit.Before;
 
 import util.ToolIO;
 
-public abstract class SANYTest {
+public abstract class AbstractSANYTest {
 	
 	@Before
 	public void setup() {

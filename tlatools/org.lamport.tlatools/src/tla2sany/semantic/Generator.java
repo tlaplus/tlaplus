@@ -16,10 +16,7 @@
 
 package tla2sany.semantic;
 
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
 import java.util.stream.Stream;
 
 import tla2sany.parser.Operators;
@@ -1900,7 +1897,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		} else if (selStr.equals("N_OpArgs")) {
 			selStr = "!(...)";
 		}
-		;
 		return selStr;
 	}
 
@@ -1947,7 +1943,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		return symbolTable;
 	}
 
-	public final ModuleNode generate(TreeNode treeNode) throws AbortException {
+	public final Optional<ModuleNode> generate(TreeNode treeNode) throws AbortException {
 		/*************************************************************************
 		 * This is the method called to generate the semantic graph for a module. *
 		 *************************************************************************/
@@ -1955,12 +1951,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 //                      UniqueString.uniqueStringOf("TRUE"))) ;
 //System.out.println("$SetEnumerate = " + symbolTable.resolveSymbol(
 //                      UniqueString.uniqueStringOf("$SetEnumerate"))) ;
-
+        if (treeNode == null) {
+            return Optional.empty();
+        }
 		if (treeNode.isKind(N_Module)) {
 			this.context = symbolTable.getContext();
-			return this.generateModule(treeNode, null);
+			return Optional.of(this.generateModule(treeNode, null));
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	private final Context getContext(UniqueString us) {

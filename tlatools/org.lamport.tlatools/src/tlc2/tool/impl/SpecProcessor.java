@@ -380,7 +380,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // checked errors (init, parse, semantic).
             // Only if something unexpected happens the
             // exception is thrown
-			SANY.frontEndMain(specObj, this.rootFile, ps);
+			SANY.frontEndMain(specObj, ps);
         } catch (FrontEndException e)
         {
         	if (ps instanceof DelayedPrintStream) {

@@ -11,6 +11,8 @@ import java.io.ByteArrayOutputStream;
 
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -82,7 +84,7 @@ public class XMLExporter {
     if (args.length - lastarg != 1)
       throw new IllegalArgumentException("Only one TLA file to check allowed!");
 
-    String tla_name = args[lastarg++];
+    String tlaName = args[lastarg++];
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
@@ -90,10 +92,10 @@ public class XMLExporter {
     PrintStream out = System.out;
     System.setOut(new PrintStream(new ByteArrayOutputStream()));
 
-    SpecObj spec = new SpecObj(tla_name, fts);
+    SpecObj spec = new SpecObj(tlaName, fts);
 
     // Print documentation line on System.out
-    ToolIO.out.println("\n****** SANY2 " + SANY.version + "\n");
+    ToolIO.out.println("\n****** SANY2 " + SANY.SANY_BUILD_VERSION + "\n");
 
     // Get next file name from command line; then parse,
     // semantically analyze, and level check the spec started in
@@ -101,9 +103,9 @@ public class XMLExporter {
     // spec.
     // check if file exists
     //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
-    if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
+    if (FileUtil.fileExists(tlaName, spec.getResolver())) {
       try {
-        SANY.frontEndMain(spec, tla_name, System.err);
+        SANY.frontEndMain(spec, System.err);
         if (spec.getExternalModuleTable() == null)
           throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
         if (spec.getExternalModuleTable().getRootModule() == null)
@@ -115,7 +117,7 @@ public class XMLExporter {
         return;
       }
     } else {
-      ToolIO.out.println("Cannot find the specified file " + tla_name + ".");
+      ToolIO.out.println("Cannot find the specified file " + tlaName + ".");
       return;
     }
 

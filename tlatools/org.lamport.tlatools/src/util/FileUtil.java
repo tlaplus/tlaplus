@@ -339,6 +339,15 @@ public class FileUtil
         }
     }
 
+    // Checks if a spec file exists.
+    public static boolean fileExists(String path, FilenameToStream resolver) {
+        try(NamedInputStream stream = createNamedInputStream(path, resolver)) {
+            return stream != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public static NamedInputStream createNamedInputStream(String name, FilenameToStream resolver)
     {
         return FileUtil.createNamedInputStream(name, resolver, null);

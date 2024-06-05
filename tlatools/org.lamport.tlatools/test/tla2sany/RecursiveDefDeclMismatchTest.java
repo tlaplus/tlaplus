@@ -34,7 +34,7 @@ import tlc2.tool.CommonTestCase;
 import util.TestPrintStream;
 import util.ToolIO;
 
-public class RecursiveDefDeclMismatchTest extends SANYTest {
+public class RecursiveDefDeclMismatchTest extends AbstractSANYTest {
 
 	@Test
 	public void test() {
