@@ -143,15 +143,15 @@
 	<!-- Compiles the TLA+ tools code -->
 	<target name="compile" depends="clean, generate">
 		<echo>
-			==================================================================
-			= This code uses sun.misc.Unsafe for manual memory management in =
-			= the class src/tlc2/tool/fp/LongArray.java. This unsafe API is  =
-			= marked as internal meaning it can change without warning.      =
-			= Ordinarily this would result in a lot of compiler warnings,    =
-			= but to reduce noise these have been explicitly silenced. If    =
-			= the build fails after upgrading Java, it might be because this =
-			= API has been changed.                                          =
-			==================================================================
+==================================================================
+= This code uses sun.misc.Unsafe for manual memory management in =
+= the class src/tlc2/tool/fp/LongArray.java. This unsafe API is  =
+= marked as internal meaning it can change without warning. Java =
+= emits a lot of warnings about this and makes it essentially    =
+= impossible to silence them, so just ignore them. The unsafe    =
+= API is in the process of being standardized in newer versions  =
+= of Java and we will switch to that as soon as possible.        =
+==================================================================
 		</echo>
 		<mkdir dir="${class.dir}" />
 		<javac
@@ -163,12 +163,6 @@
 			release="${java.release}"
 			encoding="UTF-8"
 		>
-			<!--
-				Suppress sun.misc.Unsafe warnings. These warnings cannot be suppressed
-				using in-file annotations like ordinary warnings, so we must completely
-				ignore all warnings from the file here.
-			-->
-			<compilerarg line="-XDignore.symbol.file=src/tlc2/tool/fp/LongArray.java" />
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
