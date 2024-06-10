@@ -66,10 +66,6 @@
 <unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="0.0.0"/>
 <repository id="eclipse-mylyn" location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.e4.tools.spies.feature.feature.group" version="0.0.0"/>
-<repository id="eclipse-e4" location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/"/>
-</location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
 </target>
