@@ -52,11 +52,6 @@
 	        <groupId>org.eclipse.tycho</groupId>
 	        <artifactId>tycho-compiler-plugin</artifactId>
 	        <version>${tycho-version}</version>
-	        <configuration>
-	          <excludeResources>
-	            <exludeResource>**/*.aj</exludeResource>
-	          </excludeResources>
-	        </configuration>
 	      </plugin>
 		</plugins>
 	</build>
