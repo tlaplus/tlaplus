@@ -21,12 +21,6 @@
 	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
 		<classpath path="lib/jacocoant.jar"/>
 	</taskdef>
-
-	<taskdef resource="org/aspectj/tools/ant/taskdefs/aspectjTaskdefs.properties">
-		<classpath>
-			<pathelement location="lib/aspectjtools-1.9.2.jar" />
-		</classpath>
-	</taskdef>
 	
 	<condition property="test.skip">
 		<istrue value="${maven.test.skip}"/>
@@ -52,13 +46,11 @@
 		<echo message="Ant Version    : ${ant.version}" />
 		<echo message="Java Version   : ${ant.java.version}" />
 		<echo message="Skipping Tests : ${test.skip}" />
-		<echo message="With AspectJ   : ${withaj}" />
 		<echo message="Git BuildNumber: ${git.branch}_${git.tag}_${git.shortRevision}" />
 	</target>
 
 	<target name="default" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
-		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
 		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
 		<antcall target="test" inheritall="true" inheritrefs="true" />
 		<antcall target="git-revision" inheritall="true" inheritrefs="true" />
@@ -69,7 +61,6 @@
 	<!-- Similar to default except it skips test and only runs test-dist. This is called from pom.xml -->
 	<target name="default-maven" depends="info" description="Default">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
-		<antcall target="compile-aj" inheritall="true" inheritrefs="true" />
 		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
 		<!-- <antcall target="test" inheritall="true" inheritrefs="true" /> -->
 		<antcall target="git-revision" inheritall="true" inheritrefs="true" />
@@ -91,10 +82,6 @@
 	<!-- Compiles and runs *only* the long-running tests. Not the ones. -->
 	<target name="longtests" depends="info" description="Run long-running tests">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
-		<antcall target="compile-aj" inheritall="true" inheritrefs="true">
-			<!-- long tests require AspjectJ -->
-	        <param name="withaj" value="true"/>
-	    </antcall>
 		<antcall target="compile-test" inheritall="true" inheritrefs="true" />
 		<antcall target="dist" inheritall="true" inheritrefs="true" />
 		<antcall target="test-dist-long" inheritall="true" inheritrefs="true" />
@@ -151,47 +138,6 @@
 				<exclude name="**/*.09-07-02" />
 				<exclude name="**/*.11-02-10" />
 				<exclude name="**/*.jpg" />
-			</fileset>
-		</copy>
-	</target>
-
-	<!-- Compiles AspectJ auxiliary code -->
-	<target name="compile-aj" if="withaj">
-		<echo>
-			====================================================================
-			= The following warnings (Xlint:adviceDidNotMatch) can be ignored. =
-			= We are doing load time weaving that kicks in when TLC gets       = 
-			= started, not when it is compiled.                                =
-			====================================================================
-		</echo>
-		<!-- compile aspectj related class files -->
-		<iajc destdir="${class.dir}" debug="true" verbose="true" source="1.8" target="1.8">
-			<sourceroots>
-				<!-- Here we implicitly decide to use AspectJ Load-Time weaving by excludign ${src.dir} as a pathelement. Adding ${src.dir} results in aspects being woven at compile-time as part of the ant build. -->
-				<pathelement location="${src-aj.dir}"/>
-			</sourceroots>
-			<classpath refid="project.classpath" />
-			<classpath>
-				<pathelement location="lib/aspectjrt-1.9.2.jar" />
-				<pathelement location="lib/aspectjtools-1.9.2.jar" />
-				<pathelement path="${class.dir}" />
-			</classpath>
-		</iajc>
-		<!-- copy the resource files -->
-		<copy todir="${class.dir}">
-			<fileset dir="${src-aj.dir}">
-				<include name="**/*.*" />
-				<exclude name="**/*.aj" />
-				<exclude name="**/*.java" />
-				<exclude name="**/*.~*" />
-				<exclude name="**/*##*" />
-			</fileset>
-		</copy>
-		<!-- These files are requried for load time weaving and during runtime -->
-		<copy todir="${class.dir}/lib">
-			<fileset dir="lib/">
-				<include name="aspectjrt-1.9.2.jar" />
-				<include name="aspectjweaver-1.9.2.jar" />
 			</fileset>
 		</copy>
 	</target>
@@ -640,17 +586,12 @@
 		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes">
 			<!-- enable all assertions -->
 			<jvmarg value="-ea"/>
-			<jvmarg value="-javaagent:lib/aspectjweaver-1.9.2.jar" />
-			<sysproperty key="org.aspectj.weaver.showWeaveInfo" value="false"/>
-			<sysproperty key="aj.weaving.verbose" value="false"/>
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="${dist.file}" />
 				<pathelement path="${test.class.dir}" />
-				<!-- Need class.dir on path to find AspectJ related classes which don't get packaged into dist -->
-				<pathelement path="${class.dir}" />
 			</classpath>
 
 			<formatter type="xml" />

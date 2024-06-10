@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<aspectj>
-
-	<aspects>
-		<aspect name="org.lamport.tla.toolbox.test.threading.MonitorAspect"/>
-	</aspects>
-
-</aspectj>

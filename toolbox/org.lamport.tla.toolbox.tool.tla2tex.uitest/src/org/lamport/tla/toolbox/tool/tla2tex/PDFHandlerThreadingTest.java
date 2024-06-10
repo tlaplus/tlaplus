@@ -12,7 +12,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lamport.tla.toolbox.test.RCPTestSetupHelper;
-import org.lamport.tla.toolbox.test.threading.MonitorAdaptor;
 import org.lamport.tla.toolbox.ui.handler.OpenSpecHandler;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
@@ -66,24 +65,5 @@ public class PDFHandlerThreadingTest {
 		// wait for the browser to show up with the generated PDF
 		SWTBotEditor swtBotEditor = bot.editorById(OpenSpecHandler.TLA_EDITOR);
 		Assert.assertNotNull(swtBotEditor);
-		
-		assertNoBackendCodeInUIThread();
 	}
-
-	/**
-	 * Checks how many invocations of backend code have happend inside the UI thread
-	 */
-	private void assertNoBackendCodeInUIThread() {
-		
-		// Check if MonitorAspect has been enabled
-		Assert.assertTrue("Test requires active MonitorAspect aspect!", MonitorAdaptor.aspectIsActive());
-
-		Assert.assertFalse(
-				"Backend code (e.g. parsing must not be executed in UI thread) times executed: "
-						+ MonitorAdaptor.getTriggeredJoinPoints().size(),
-				MonitorAdaptor.hasTriggeredBackendCode());
-		// Resets the counting adapter for UI thread backend invocations
-		MonitorAdaptor.reset();
-	}
-
 }
