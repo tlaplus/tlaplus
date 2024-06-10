@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="tlc2/tool/WorkerMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/RMIMethodMonitorAspect.aj|tlc2/tool/distributed/TLCServerMonitorAspect.aj" kind="src" path="src-aj"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="test-long"/>
 	<classpathentry kind="src" path="test-concurrent"/>
