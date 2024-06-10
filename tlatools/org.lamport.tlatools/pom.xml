@@ -20,7 +20,7 @@
     <!-- which gets invoked from maven. Unfortunately, it means that the tasks which are executed        -->
     <!-- by ant are not visible to maven. In this case it results in sonar not finding necessary         -->
     <!-- data to include coverage information. The properties below make sure that sonar finds the data. -->
-	<sonar.sources>src,src-aj</sonar.sources>
+	<sonar.sources>src</sonar.sources>
 	<sonar.tests>test,test-verify,test-long,test-concurrent</sonar.tests>
 
 	<sonar.java.binaries>class</sonar.java.binaries>
@@ -110,7 +110,7 @@
 	    	</execution>
 	   	 </executions>
 	  	</plugin>
-			<!-- Compile java sources and exclude aspects -->
+			<!-- Compile java sources -->
 	      <plugin>
 	        <groupId>org.eclipse.tycho</groupId>
 	        <artifactId>tycho-compiler-plugin</artifactId>
@@ -119,9 +119,6 @@
 				<!-- Ignore compiler errors due to forbidden sun.misc.Unsafe imports -->
 				<!-- https://bugs.eclipse.org/369187 -->
 				<compilerArgument>-err:-forbidden</compilerArgument>
-	          <excludeResources>
-	            <exludeResource>**/*.aj</exludeResource>
-	          </excludeResources>
 	        </configuration>
 	      </plugin>
 
@@ -165,25 +162,6 @@
 				</configuration>
 			</plugin>
 
-			<!-- Compile aspects -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.15.0</version>
-                <configuration>
-                    <ajdtBuildDefFile>build.ajproperties</ajdtBuildDefFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <complianceLevel>11</complianceLevel>
-                        </configuration>
-                    </execution>
-               </executions>
-           </plugin>
       </plugins>
   </build>
 
@@ -194,11 +172,6 @@
 		<version>1.7.1</version>
 		<scope>compile</scope>
 	</dependency>
-  		<dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>1.9.1</version>
-        </dependency>
         <!-- REPL.java imports classes from org.jline.  The Toolbox (being an OSGi based Rich Client Platform) -->
         <!-- does not see the jline jars references in customBuild.xml or .classpath.  It has to find jline    -->
         <!-- elsewhere such as in the target platform (TLAToolbox.target) or on Maven Central.  For jline      -->
