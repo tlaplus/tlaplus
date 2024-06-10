@@ -289,7 +289,7 @@ public class SymmetryTableauLiveCheckTest {
 	private ILiveCheck getLiveCheckWithTwoNodeTableauSymmetry(final TLCState s, final TLCState sSymmetric, final TLCState t) throws IOException {
 		final TBGraphNode node2 = EasyMock.createMock(TBGraphNode.class);
 		// consistency
-		final Capture<TLCState> capture = Capture.newInstance();
+		final Capture<TLCState> capture = new Capture<TLCState>();
 		EasyMock.expect(node2.isConsistent(EasyMock.capture(capture), (ITool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
 			public Boolean answer() throws Throwable {
 				final TLCState value = capture.getValue();
@@ -309,7 +309,7 @@ public class SymmetryTableauLiveCheckTest {
 		
 		final TBGraphNode node1 = EasyMock.createMock(TBGraphNode.class);
 		// consistency
-		final Capture<TLCState> capture1 = Capture.newInstance();
+		final Capture<TLCState> capture1 = new Capture<TLCState>();
 		EasyMock.expect(node1.isConsistent(EasyMock.capture(capture1), (ITool) EasyMock.anyObject())).andAnswer(new IAnswer<Boolean>() {
 			public Boolean answer() throws Throwable {
 				final TLCState value = capture1.getValue();
@@ -359,7 +359,7 @@ public class SymmetryTableauLiveCheckTest {
 		
 		final ITool tool = EasyMock.createNiceMock(ITool.class);
 		EasyMock.expect(tool.hasSymmetry()).andReturn(true);
-		final Capture<TLCState> nextStates = Capture.newInstance();
+		final Capture<TLCState> nextStates = new Capture<TLCState>();
 		EasyMock.expect(tool.getNextStates((Action) EasyMock.anyObject(), EasyMock.capture(nextStates))).andAnswer(new IAnswer<StateVec>() {
 			public StateVec answer() throws Throwable {
 			    final StateVec nss = new StateVec(0);
