@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 14:01:40 PST by lamport  
 //      modified on Wed Dec  5 15:35:42 PST 2001 by yuanyu   
 
@@ -392,7 +393,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			this.enumRaf = new BufferedRandomAccessFile(filename + TLCTrace.EXT, "r");
 		}
 
-		public boolean hasMoreFP() {
+		public boolean hasMoreFP() throws IOException {
 			final long fpos = this.enumRaf.getFilePointer();
 			if (fpos < this.len) {
 				return true;

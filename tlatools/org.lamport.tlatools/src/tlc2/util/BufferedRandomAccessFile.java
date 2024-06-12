@@ -363,8 +363,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
 
     @Override
-    public long getFilePointer() {
-        // Assert.check(!this.closed);
+    public long getFilePointer() throws IOException {
         return this.curr;
     }
 
@@ -610,7 +609,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 
     public long mark() {
         final long oldMark = this.mark;
-        this.mark = getFilePointer();
+        this.mark = curr;
         return oldMark;
     }
 

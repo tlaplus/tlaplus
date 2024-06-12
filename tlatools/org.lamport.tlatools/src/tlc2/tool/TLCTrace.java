@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2024, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:30:03 PST by lamport
 //      modified on Wed Nov 14 23:26:07 PST 2001 by yuanyu
 //      modified on Wed Jun 28 12:00:16 PDT 2000 by rjoshi
@@ -504,7 +505,7 @@ public class TLCTrace {
 	}
 
 	public interface Enumerator {
-		long nextPos();
+		long nextPos() throws IOException;
 		long nextFP() throws IOException;
 		void close() throws IOException;
 		void reset(long i) throws IOException;
@@ -528,7 +529,7 @@ public class TLCTrace {
 			this.enumRaf.seek(pos);
 		}
 
-		public final long nextPos() {
+		public final long nextPos() throws IOException {
 			long fpos = this.enumRaf.getFilePointer();
 			if (fpos < this.len) {
 				return fpos;

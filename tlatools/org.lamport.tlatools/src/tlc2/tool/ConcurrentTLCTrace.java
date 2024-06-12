@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2024, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -264,7 +265,7 @@ public class ConcurrentTLCTrace extends TLCTrace {
 			private int idx = 0;
 			
 			@Override
-			public long nextPos() {
+			public long nextPos() throws IOException {
 				if (idx >= workers.length) {
 					return -1L;
 				}

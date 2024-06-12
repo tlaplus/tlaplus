@@ -356,7 +356,11 @@ public abstract class AbstractDiskGraph {
 				 * @see java.util.Iterator#hasNext()
 				 */
 				public boolean hasNext() {
-					return nodePtrRAF.getFilePointer() < length;
+					try {
+						return nodePtrRAF.getFilePointer() < length;
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
 
 				/* (non-Javadoc)
