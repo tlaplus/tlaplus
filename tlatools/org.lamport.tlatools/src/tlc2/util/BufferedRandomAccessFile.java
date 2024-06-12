@@ -208,6 +208,17 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     }
 
     /**
+     * Require that the file is open for use.
+     *
+     * @throws IOException if {@link #closed} is true
+     */
+    private void requireOpenFile() throws IOException {
+        if (this.closed) {
+            throw new IOException("File handle closed");
+        }
+    }
+
+    /**
      * Invalidate any buffered data so that subsequent reads will go to disk.  Clients will typically call this when
      * they know that the on-disk contents have been altered through a different file descriptor and they need to
      * observe those writes through this one.
@@ -251,7 +262,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
      * read-only, this method is a no-op.
      */
     public void flush() throws IOException {
-        // Assert.check(!this.closed);
+        requireOpenFile();
         this.flushBuffer();
     }
 
@@ -340,6 +351,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 
     @Override
     public void seek(long pos) throws IOException {
+        requireOpenFile();
         this.seeek(pos); // ignore boolean result
     }
 
@@ -365,12 +377,13 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 
     @Override
     public long getFilePointer() throws IOException {
+        requireOpenFile();
         return this.curr;
     }
 
     @Override
     public long length() throws IOException {
-        // Assert.check(!this.closed);
+        requireOpenFile();
         return this.length;
     }
 
@@ -386,6 +399,8 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
      */
     @Override
     public void setLength(long newLength) throws IOException {
+        requireOpenFile();
+
         // Per docs:
         //  > If the present length of the file as returned by the length method is greater than the newLength argument
         //  > then the file will be truncated. In this case, if the file offset as returned by the getFilePointer
@@ -439,6 +454,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     @Override
     public int read() throws IOException {
         // NOTE: single-byte reads are common enough to justify having an optimized procedure for them.
+        requireOpenFile();
 
         // Check for EOF
         if (this.curr >= this.length) {
@@ -461,7 +477,8 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        // Assert.check(!this.closed);
+        requireOpenFile();
+
         if (len == 0) {
             return 0;
         }
@@ -514,6 +531,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     @Override
     public void write(int b) throws IOException {
         // NOTE: single-byte writes are common enough to justify having an optimized procedure for them.
+        requireOpenFile();
 
         // Write the byte into the buffer.  Invariant V2 guarantees that this write is in-bounds.
         this.buff[(int)(this.curr - this.lo)] = (byte)b;
@@ -533,7 +551,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        // Assert.check(!this.closed);
+        requireOpenFile();
         assert super.getFilePointer() == diskPos;
         while (len > 0) {
             // NOTE: this implementation might be a little wasteful!  Because `writeAtMost` has to maintain
