@@ -38,6 +38,11 @@ is highly parallelizable, and it can make good use of arbitrarily many processor
 This parameter specifies the number of separate threads that TLC will spawn to
 perform that computation.&nbsp;  You should not set it to be greater than the number of
 separate processors (cores) on your computer; the Toolbox will warn you if you do.
+When using multiple workers on a medium-small model, the reported <i>Diameter</i> might
+differ across runs.
+This is a limitation we accept to avoid putting additional synchronization that would limit
+the scalability. For small models, use a single worker. For large models,
+the diameter will almost always appear deterministic.
 
 <h3>Fraction of physical memory allocated to TLC</h3>
 
@@ -85,17 +90,19 @@ is to find the graph of all reachable states using
 breadth-first search.&nbsp;  This has the advantage that if
 TLC finds a violation of a safety property, then it will
 produce a shortest possible behavior that exhibits the
-error.&nbsp;  You can direct TLC to use a depth-first search
-by choosing the <em>Depth-first</em> option and specifying
-the depth of its search.&nbsp;  (Limiting the depth ensures
+error.&nbsp;  You can direct TLC to use a depth-first iterative
+deeping (DFID) search by choosing the <em>Depth-first</em> option
+and specifying the depth of its search.&nbsp;  (Limiting the depth ensures
 that only a finite set of states is explored, even if
 the complete set of reachable states is infinite.)&nbsp;
-With depth-first search, TLC will usually not produce
-a shortest-length error trace.&nbsp;  When running in depth-first
+With DFID search, TLC will usually not produce
+a shortest-length error trace.&nbsp;  When running in DFID
 mode, TLC does not compute the entire state graph and does not use a state
 queue, so it does not produce any
  <i>Diameter</i> or <i>Queue size</i>
  statistics.
+Additionally, the DFID option doesn't currently support
+running with multiple workers.
 </p>
 <p>
 <b>Warning:</b> Depth-first search is an experimental TLC
