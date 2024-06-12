@@ -56,8 +56,10 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
      */
     private boolean dirty;
 
-    // SZ Feb 24, 2009: never read
-    // private boolean closed; // true iff the file is closed
+    /**
+     * True iff the file is closed.
+     */
+    private boolean closed;
 
     /** Current length of the file. */
     private long length;
@@ -172,6 +174,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
         synchronized (mu) {
             this.buff = (numAvailBuffs > 0) ? availBuffs[--numAvailBuffs] : new byte[BuffSz];
         }
+        this.closed = false;
         this.init();
     }
 
@@ -197,8 +200,6 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
      */
     private void init() throws IOException {
         this.dirty = false;
-        // SZ Feb 24, 2009: never read locally
-        // this.closed = false;
         this.lo = 0;
         this.curr = 0;
         this.diskPos = 0L;
@@ -226,20 +227,20 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
     @Override
     public void close() throws IOException {
         try {
-            // Assert.check(!this.closed);
-            this.flush();
-            // SZ Feb 24, 2009: never read locally
-            // this.closed = true;
-            synchronized (mu) {
-                // grow "availBuffs" array if necessary
-                if (numAvailBuffs >= availBuffs.length) {
-                    byte[][] newBuffs = new byte[numAvailBuffs + 10][];
-                    System.arraycopy(availBuffs, 0, newBuffs, 0, numAvailBuffs);
-                    availBuffs = newBuffs;
+            if (!this.closed) {
+                this.flush();
+                synchronized (mu) {
+                    // grow "availBuffs" array if necessary
+                    if (numAvailBuffs >= availBuffs.length) {
+                        byte[][] newBuffs = new byte[numAvailBuffs + 10][];
+                        System.arraycopy(availBuffs, 0, newBuffs, 0, numAvailBuffs);
+                        availBuffs = newBuffs;
+                    }
+                    availBuffs[numAvailBuffs++] = this.buff;
                 }
-                availBuffs[numAvailBuffs++] = this.buff;
             }
         } finally {
+            this.closed = true;
             super.close();
         }
     }

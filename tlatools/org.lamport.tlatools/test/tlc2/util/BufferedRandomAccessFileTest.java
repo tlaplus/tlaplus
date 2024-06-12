@@ -27,7 +27,6 @@
 package tlc2.util;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -210,6 +209,32 @@ public class BufferedRandomAccessFileTest {
 
 			raf.setLength(300);
 			Assert.assertEquals(100, raf.getFilePointer());
+		}
+	}
+
+	/**
+	 * All {@link java.io.Closeable} objects need to have an idempotent close method (although, confusingly, that
+	 * requirement is documented in {@link AutoCloseable}).  Early versions of {@link BufferedRandomAccessFile}
+	 * did not satisfy that property, and in particular they had a very nasty bug where duplicate close calls could
+	 * cause two separate instances to share the same internal buffer array.
+	 */
+	@Test
+	public void testIdempotentClose() throws IOException {
+		final File f1 = File.createTempFile("tmp", ".bin");
+		f1.deleteOnExit();
+
+		final File f2 = File.createTempFile("tmp", ".bin");
+		f2.deleteOnExit();
+
+		try (BufferedRandomAccessFile raf = new BufferedRandomAccessFile(f1, "rw")) {
+			raf.writeLong(100);
+			raf.close(); // file will be closed again at the end of the try-block
+		}
+
+		try (BufferedRandomAccessFile raf1 = new BufferedRandomAccessFile(f1, "rw");
+			 BufferedRandomAccessFile raf2 = new BufferedRandomAccessFile(f2, "rw")) {
+			raf2.writeLong(200);
+			Assert.assertEquals(100, raf1.readLong());
 		}
 	}
 
