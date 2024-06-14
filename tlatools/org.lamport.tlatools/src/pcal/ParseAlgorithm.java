@@ -106,6 +106,7 @@
 ***************************************************************************/
 package pcal;
 
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -842,7 +843,8 @@ public class ParseAlgorithm
        pv.col  = lastTokCol ;
        pv.line = lastTokLine ;
        if (   PeekAtAlgToken(1).equals("=")
-           || PeekAtAlgToken(1).equals("\\in"))
+           || PeekAtAlgToken(1).equals("\\in")
+           || PeekAtAlgToken(1).equals("∈"))
          { pv.isEq = GobbleEqualOrIf() ;
            pv.val = GetExpr() ; 
            endLoc = pv.val.getOrigin().getEnd() ;
@@ -1415,7 +1417,7 @@ public class ParseAlgorithm
          ******************************************************************/
        result.ass = new Vector() ;
        result.ass.addElement(GetSingleAssign()) ;
-       while (PeekAtAlgToken(1).equals("||"))
+       while (PeekAtAlgToken(1).equals("||") || PeekAtAlgToken(1).equals("‖"))
          { String throwAway = GetAlgToken() ;
            try {
            result.ass.addElement(GetSingleAssign()) ;
@@ -1440,7 +1442,7 @@ public class ParseAlgorithm
          * PeekAtAlgToken(1), so LAT[0] contains the next token.           *
          ******************************************************************/
        result.lhs = GetLhs() ;
-       GobbleThis(":=") ; 
+       GobbleThis(":=", "≔") ; 
        result.rhs = GetExpr() ;
        if (result.rhs.tokens.size() == 0)
          { ParsingError("Empty right-hand side of assignment at ") ;} ;
@@ -3416,10 +3418,10 @@ public class ParseAlgorithm
        return ;
      }
 
-   public static void GobbleThis(String str) throws ParseAlgorithmException
+   public static void GobbleThis(String str, String... alternate) throws ParseAlgorithmException
      { /********************************************************************
-       * If the next token is not str, then report an error.  Otherwise,   *
-       * just move past the token.  However, if str is a semicolon and     *
+       * If the next token is not str or in alternate, then report error.  *
+       * Else just move past the token. However, if str is a semicolon and *
        * the next token indicates that the input is missing an obviously   *
        * unnecessary semicolon, then don't report an error--for example,   *
        * if the next token is "end".  If the missing semicolon should      *
@@ -3486,7 +3488,7 @@ public class ParseAlgorithm
              };                   
          } ;
        String tok = GetAlgToken(); 
-       if (! tok.equals(str) )
+       if (! tok.equals(str) && ! Arrays.stream(alternate).anyMatch(tok::equals) )
          { ParsingError("Expected \"" + str + "\" but found \""
                             + tok + "\"") ; } ;
      }
@@ -3511,7 +3513,7 @@ public class ParseAlgorithm
      { String tok = GetAlgToken() ;
        if (tok.equals("="))
          { return true ; } ;
-       if (tok.equals("\\in"))
+       if (tok.equals("\\in") || tok.equals("∈"))
          { return false ; }
        ParsingError("Expected \"=\" or \"\\in\"  but found \""
                                  + tok + "\"") ; 

@@ -1217,6 +1217,8 @@ public class TLAExpr
                                (result, 2)).string.equals(":") 
                            || this.tokenAt(this.stepCoord
                                (result, 2)).string.equals("|->") 
+                           || this.tokenAt(this.stepCoord
+                               (result, 2)).string.equals("↦") 
                          )
                      )
                    { result = this.stepCoord(result, 3); }

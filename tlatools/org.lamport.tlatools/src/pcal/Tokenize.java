@@ -726,7 +726,9 @@ public class Tokenize
                    * Set inQuantifier if necessary.                        *
                    ********************************************************/
                    if (    (   token.equals("\\A")
-                            || token.equals("\\E"))
+                            || token.equals("∀")
+                            || token.equals("\\E")
+                            || token.equals("∃"))
                         && (parenDepth == 0))
                      { inQuantifier = true ;} ;
                    if (    inQuantifier
@@ -790,10 +792,12 @@ public class Tokenize
                 || tok.equals("do")
                 || tok.equals("then")
                 || tok.equals(":=")
+                || tok.equals("≔")
                 || tok.equals("begin")
                 || tok.equals("variable")
                 || tok.equals("variables")
                 || tok.equals("||")
+                || tok.equals("‖")
 
          // The following are added to improve error reporting
          // and to make possible the omission of some final ";"s. 
@@ -934,6 +938,13 @@ public class Tokenize
                   else if (Misc.IsLetter(nextChar))
                     { addNextChar();
                       state = ID;  
+                    }
+                  else if ('ℕ' == nextChar
+                        || 'ℤ' == nextChar
+                        || 'ℝ' == nextChar)
+                    { addNextChar();
+                      TokenOut(Token.IDENT);
+                      gotoStart();
                     }
                   else if (Misc.IsDigit(nextChar))
                     { addNextChar();

@@ -131,7 +131,6 @@ jobs:
         python "$SCRIPT_DIR/unicode_number_set_shim.py" \
           --manifest_path "$EXAMPLES_DIR/manifest.json"
     - name: Translate PlusCal
-      if: (!matrix.unicode)
       run: |
         python $SCRIPT_DIR/translate_pluscal.py         \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"    \
