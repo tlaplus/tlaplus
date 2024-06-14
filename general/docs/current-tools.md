@@ -30,6 +30,10 @@ ISpec == IM!Spec
 
 TLC cannot handle natural numbers greater than 2<sup>31</sup> - 1.
 
+When running the model checking in BFS mode with multiple workers on a medium-small model, the reported diameter might differ across runs.
+This is a limitation we accept to avoid putting additional synchronization that would limit the scalability. 
+For small models, use a single worker. For large models, the diameter will almost always appear deterministic.
+
 ### Additional Features
 
 #### Enhanced Replacement

@@ -1687,6 +1687,8 @@ public class TLC {
 					+ "duplicate operator definitions, this is likely due to the 'monolith' specification\n"
 					+ "creation. Try re-running TLC adding the 'nomonolith' option to the '-generateSpecTE'\n"
 					+ "parameter.");
+        tips.add("When using more than one worker, the reported depth might differ across runs. For small models, "
+                    + "use a single worker. For large models, the diameter will almost always appear deterministic.");
     	
     	UsageGenerator.displayUsage(ToolIO.out, "TLC", TLCGlobals.versionOfTLC,
     								"provides model checking and simulation of TLA+ specifications",
