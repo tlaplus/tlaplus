@@ -15,11 +15,11 @@ jobs:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
-    - name: Set up JDK 11
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11
+        java-version: 22
     - name: Check tla+.jj grammar/code sync
       run: |
         ant -f tlatools/org.lamport.tlatools/customBuild.xml generate
@@ -91,11 +91,11 @@ jobs:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
-    - name: Set up JDK 11
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11
+        java-version: 22
     - name: Build & Test Eclipse Toolbox with Maven
       run: |
         ${{ matrix.MVN_COMMAND }}                                                                     \
@@ -128,11 +128,11 @@ jobs:
       with:
         repository: tlaplus/examples
         path: ${{ env.EXAMPLES_DIR }}
-    - name: Set up JDK 11
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 11
+        java-version: 22
     - name: Build tla2tools.jar
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml compile compile-test dist
     - name: Download dependencies

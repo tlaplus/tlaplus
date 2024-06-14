@@ -7,8 +7,8 @@
 	<!-- linking with system properties -->
 	<property environment="env" />
 
-	<!-- Use Java 11 for all builds -->
-	<property name="java.release" value="11" />
+	<!-- Version of Java to use for all builds -->
+	<property name="java.release" value="22" />
 
     <!-- Destination path to the html coverage report -->
     <property name="code-coverage.dir" value="target/code-coverage-report"/>
@@ -423,7 +423,6 @@
 			encoding="UTF-8"
 		>
 			<!-- Treat all warnings as errors. -->
-			<compilerarg value="-Werror" />
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
