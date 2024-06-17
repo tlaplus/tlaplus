@@ -35,7 +35,7 @@ sequential_pattern = re.compile(
     + 'Failures: (?P<failure_count>\d+), '
     + 'Errors: (?P<error_count>\d+), '
     + 'Skipped: (?P<skip_count>\d+), '
-    + 'Time elapsed: (?P<runtime>\d+\.\d+) sec',
+    + 'Time elapsed: (?P<runtime>\d+(\.\d+)?) sec',
     flags=re.MULTILINE
 )
 def sequential_match_to_report(match):
@@ -55,7 +55,7 @@ parallel_pattern = re.compile(
     + 'Failures: (?P<failure_count>\d+), '
     + 'Errors: (?P<error_count>\d+), '
     + 'Skipped: (?P<skip_count>\d+), '
-    + 'Time elapsed: (?P<runtime>\d+\.\d+) sec, '
+    + 'Time elapsed: (?P<runtime>\d+(\.\d+)?) sec, '
     + 'Thread: (?P<thread_id>\d+), '
     + 'Class: (?P<test_name>[\w\.]+)'
 )
@@ -70,8 +70,15 @@ def parallel_match_to_report(match):
         match.group('test_name').strip()
     )
 
+if len(sys.argv) != 4:
+    print('Usage: <UT exit code> <UT stdout/stderr capture file> <UT surefire output directory>')
+    exit(1)
+
+ut_exit_code = int(sys.argv[1])
+expect_failure = ut_exit_code != 0
+
 reports = []
-with open(sys.argv[1], 'r') as f:
+with open(sys.argv[2], 'r') as f:
     text = f.read()
     reports += [
         parallel_match_to_report(match)
@@ -94,6 +101,9 @@ duplicates = [
     if run_count > 1
 ]
 
+if expect_failure and not any(failures):
+    print('WARNING: Unit tests exited with nonzero exit code but this script was unable to parse & detect failures in the unit test stdout/stderr capture file; search raw output for "FAILED" keyword to find the failures yourself. This is a bug with this script.\n')
+
 print(f'Test count: {len(reports)}')
 print(f'Failure count: {len(failures)}')
 print(f'Tests run multiple times: {len(duplicates)}')
@@ -115,7 +125,7 @@ if not any(failures):
 print('\nFailures:\n')
 for test_name in failures:
     print(f'TEST CLASS: {test_name}')
-    tree = ET.parse(f'{sys.argv[2]}/TEST-{test_name}.xml')
+    tree = ET.parse(f'{sys.argv[3]}/TEST-{test_name}.xml')
     tree = next(tree.iter('testsuite'))
     for test_case in tree.iter('testcase'):
         print(f'TEST NAME: {test_case.attrib["name"]}')

@@ -37,6 +37,7 @@ jobs:
       run: |
         echo "Unit test exit code: $UT_EXIT_CODE"
         python .github/scripts/parse-unit-test-output.py        \
+          $UT_EXIT_CODE                                         \
           test-output.txt                                       \
           tlatools/org.lamport.tlatools/target/surefire-reports
         exit $UT_EXIT_CODE
