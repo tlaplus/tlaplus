@@ -258,7 +258,6 @@
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
-				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -280,7 +279,7 @@
 	<target name="test" unless="test.skip">
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
-		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.  
+		<!-- forkmode used to be "perBatch" on Java 1.8 using the util.IsolatedTestCaseRunner.
 		     This concept broken with Java11 for unknown reasons which is why forkmode has been
 		     changed to perTest to run each test in a separate VM.  This is slower compared to
 		     running all tests in a single VM. -->
@@ -299,7 +298,6 @@
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
-				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
@@ -423,7 +421,6 @@
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="lib/cglib-nodep-3.1.jar" />
 				<pathelement location="lib/objenesis-2.1.jar" />
-				<pathelement location="lib/easymock-3.3.1.jar" />
 				<pathelement location="lib/javax.mail/mailapi-1.6.3.jar" />
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
@@ -464,7 +461,6 @@
 					<pathelement location="lib/hamcrest-core-1.3.jar" />
 					<pathelement location="lib/cglib-nodep-3.1.jar" />
 					<pathelement location="lib/objenesis-2.1.jar" />
-					<pathelement location="lib/easymock-3.3.1.jar" />
 					<pathelement location="${dist.file}" />
 					<pathelement path="${test.class.dir}" />
 					<pathelement path="test-model/" />
