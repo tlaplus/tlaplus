@@ -27,6 +27,11 @@ jobs:
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
     - name: Run unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true test
+    - name: Publish unit test results
+      uses: mikepenz/action-junit-report@v4
+      if: always()
+      with:
+          report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
       with:
