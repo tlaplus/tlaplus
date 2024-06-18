@@ -1564,13 +1564,18 @@ public class TLC {
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
-    	sharedArguments.add(new UsageGenerator.Argument("-dump", "file",
-    													"dump all states into the specified file; this parameter takes\n"
-    														+ "optional parameters for dot graph generation. Specifying\n"
-    														+ "'dot' allows further options, comma delimited, of zero\n"
-    														+ "or more of 'actionlabels', 'colorize', 'snapshot' to be\n"
-    														+ "specified before the '.dot'-suffixed filename", true,
-    													"dot actionlabels,colorize,snapshot"));
+        sharedArguments.add(new UsageGenerator.Argument("-dump", "format file",
+                                                        "dump all states into the specified file.\n"
+    													+ "The format parameter can be omitted, or it can be a comma-separated\n"
+    														+ "list beginning with 'dot' that may also contain one or both of\n"
+    														+ "the items 'colorize' and 'actionlabels'. If format is omitted,\n"
+    														+ "TLC writes a list of all reachable states, described by TLA+ formulas, \n"
+                                                            + "on file. Otherwise, TLC writes the state graph in dot format, \n"
+                                                            + "the input format of the GraphViz program for displaying graphs. \n"
+                                                            + "The parameter 'colorize' indicates that state transitions should be \n"
+                                                            + "colored according to the action generating the transition,  \n"
+                                                            + "and 'actionlabels' indicates that they should be labeled with \n"
+    														+ "the name of the action.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-fp", "N",
     													"use the Nth irreducible polynomial from the list stored\n"
     														+ "in the class FP64", true));
