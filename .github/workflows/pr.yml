@@ -23,6 +23,16 @@ jobs:
         git status
         diff_count=$(git status --porcelain=v1 2>/dev/null | wc -l)
         exit $diff_count
+    ##
+    ## The following process first compiles and packages (dist) the tla2tools.jar file. Next, it 
+    ## runs the test suite in parallel, aborting the run and failing the workflow upon the first
+    ## test failure (test.halt=true). Regardless of any test failures, a JUnitReport is generated.
+    ## Both the report and the test results (in XML format) are uploaded as workflow artifacts for
+    ## potential local download and further analysis. Additionally, mikepenz/action-junit-report
+    ## publishes the stack traces from the test results. If desired, the test.halt setting can be
+    ## removed to allow the test suite to run to completion.
+    ## (The same sequence of steps is executed by main.yml)
+    ## 
     - name: Build tools and unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
     - name: Run unit tests
