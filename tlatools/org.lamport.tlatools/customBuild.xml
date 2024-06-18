@@ -487,6 +487,16 @@
 		</copy>
 	</target>
 
+	<!-- Compiles a JUnitReport out of the individual TLA+ tools *test* results -->
+	<target name="test-report">
+		<junitreport todir="./target/surefire-reports/">
+			<fileset dir="./target/surefire-reports/">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="noframes" todir="./target/surefire-reports/"/>
+		</junitreport>
+	</target>
+
 	<!-- Runs all unit tests -->
 	<target name="test" unless="test.skip">
 		<property runtime="runtime"/>

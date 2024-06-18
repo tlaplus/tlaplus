@@ -27,6 +27,17 @@ jobs:
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
     - name: Run unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true test
+    - name: Generate JUnitReport
+      if: always()
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
+    - name: Upload raw unit test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+          path: |
+            tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml
+            tlatools/org.lamport.tlatools/target/surefire-reports/TESTS-TestSuites.xml
+            tlatools/org.lamport.tlatools/target/surefire-reports/junit-noframes.html
     - name: Publish unit test results
       uses: mikepenz/action-junit-report@v4
       if: always()
