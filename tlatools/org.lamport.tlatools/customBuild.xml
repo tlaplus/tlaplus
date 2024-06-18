@@ -97,6 +97,7 @@
 		<java classpath="lib/javacc-4.0.jar" classname="javacc" fork="true" failonerror="true">
 			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
 			<arg value="javacc/tla+.jj" />
+			<jvmarg value="-Dfile.encoding=UTF-8" />
 		</java>
 		<fixcrlf srcdir="${javacc-tmpdir}" eol="lf" includes="*.java" />
 		<move todir="src/tla2sany/parser">
