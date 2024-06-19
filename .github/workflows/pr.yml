@@ -44,6 +44,8 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
+          ## Name of the artifact to upload (discriminated by os to prevent name conflicts).
+          name: testresults-${{ matrix.operating-system }}
           path: |
             tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/TESTS-TestSuites.xml
