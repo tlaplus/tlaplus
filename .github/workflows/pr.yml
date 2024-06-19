@@ -36,7 +36,7 @@ jobs:
     - name: Build tools and unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
     - name: Run unit tests
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dtest.halt=true test
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info test -Dtest.halt=true
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
