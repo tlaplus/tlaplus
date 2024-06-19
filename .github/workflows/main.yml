@@ -2,11 +2,11 @@ name: CI
 
 on:
   workflow_dispatch:
-  inputs:
-    failfast:
-        description: 'Abort test suite after first test failure.'
-        default: false
-        required: false
+    inputs:
+      failfast:
+          description: 'Abort test suite after first test failure.'
+          default: false
+          required: false
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
