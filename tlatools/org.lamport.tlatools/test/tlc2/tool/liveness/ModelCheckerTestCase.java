@@ -135,7 +135,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			final List<String> args = new ArrayList<String>(6);
 			
 			args.add("-metadir");
-			args.add(TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName());
+			args.add(getMetaDir());
 			
 			// *Don't* check for deadlocks. All tests are interested in liveness
 			// checks which are shielded away by deadlock checking. TLC finds a
@@ -155,7 +155,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 				// Make sure the generated spec ends up in a designated location.
 				args.add("-generateSpecTE");
 				args.add("-teSpecOutDir");
-				args.add(TTraceModelCheckerTestCase.getPath(getClass()));
+				args.add(getTESpecOutDir());
 			}
 			
 			if (noRandomFPandSeed()) {
@@ -213,7 +213,11 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			fail(e.getMessage());
 		}
 	}
-
+	
+	protected String getMetaDir() {
+		return TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName();
+	}
+	
 	protected boolean noRandomFPandSeed() {
 		return true;
 	}
@@ -233,6 +237,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 	protected boolean noGenerateSpec() {
 		return false;
 	}	
+	
+	protected String getTESpecOutDir() {
+		return TTraceModelCheckerTestCase.getPath(getClass());
+	}
 
 	protected void beforeTearDown() {
 		// No-op

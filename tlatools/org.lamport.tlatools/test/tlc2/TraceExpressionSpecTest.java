@@ -37,20 +37,18 @@ import util.SimpleFilenameToStream;
 
 public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 
-	private static final String OUTPUT_PATH = "states"; // Rest of tests dump stuff here.
-
 	public TraceExpressionSpecTest(final String specName, final String configName, String mode, int exitStatus) {
 		this(specName, "TESpecTest", configName, mode, exitStatus);
 	}
 
 	public TraceExpressionSpecTest(final String specName, final String path, final String configName, String mode, int exitStatus) {
 		super(specName, path,
-				new String[] { "-generateSpecTE", "-noGenerateSpecTEBin", "-config", configName, "-teSpecOutDir", OUTPUT_PATH, mode },
+				new String[] { "-noGenerateSpecTEBin", "-config", configName, mode },
 				exitStatus);
 	}
 
 	protected FilenameToStream getResolver() {
-		return new SimpleFilenameToStream(OUTPUT_PATH);
+		return new SimpleFilenameToStream(getMetaDir());
 	}
 
 	@Override
@@ -68,6 +66,11 @@ public abstract class TraceExpressionSpecTest extends ModelCheckerTestCase {
 		return false;
 	}
 	
+	@Override
+	protected String getTESpecOutDir() {
+		return getMetaDir();
+	}
+
 	@Override
 	protected boolean doDumpTrace() {
 		return false;
