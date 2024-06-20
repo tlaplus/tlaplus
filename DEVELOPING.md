@@ -19,7 +19,7 @@ Make sure that you're using Java 11+. If you're using a lower version you'll see
 
 You can build TLC from a fresh clone of this repository+:
 ```bash
-$ git clone https://github.com/tlaplus.git
+$ git clone https://github.com/tlaplus/tlaplus.git
 $ cd tlaplus/tlatools/org.lamport.tlatools
 $ ant -f customBuild.xml info clean compile compile-test dist
 ```
