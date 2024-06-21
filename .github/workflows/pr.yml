@@ -4,7 +4,10 @@ on: [pull_request]
 jobs:
   tlatools-build-and-test:
     name: TLA+ Tools Build & Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include: [ubuntu-latest, windows-latest]
     steps:
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
