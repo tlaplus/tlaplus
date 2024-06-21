@@ -21,9 +21,11 @@ jobs:
         distribution: adopt
         java-version: 11
     - name: Check tla+.jj grammar/code sync
+      shell: bash
       run: |
         ant -f tlatools/org.lamport.tlatools/customBuild.xml generate
         git status
+        git add --renormalize .
         diff_count=$(git status --porcelain=v1 2>/dev/null | wc -l)
         exit $diff_count
     ##
