@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include: [ubuntu-latest, windows-latest]
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
     steps:
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
