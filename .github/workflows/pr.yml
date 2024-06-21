@@ -4,10 +4,10 @@ on: [pull_request]
 jobs:
   tlatools-build-and-test:
     name: TLA+ Tools Build & Test
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        operating-system: [ubuntu-latest, macos-latest]
     steps:
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
@@ -74,13 +74,13 @@ jobs:
 
   toolbox-build-and-test:
     name: Eclipse Toolbox Build & Test
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - operating-system: ubuntu-latest
             MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
-          - os: macos-latest
+          - operating-system: macos-latest
             MVN_COMMAND: mvn -Dmaven.test.skip=true
       fail-fast: false
     steps:
