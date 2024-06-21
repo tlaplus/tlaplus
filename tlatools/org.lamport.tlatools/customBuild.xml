@@ -10,6 +10,12 @@
 	<!-- Use Java 11 for all builds -->
 	<property name="java.release" value="11" />
 
+    <!-- Destination path to the html coverage report -->
+    <property name="code-coverage.dir" value="target/code-coverage-report"/>
+
+    <!-- Destination path to the jacoco coverage exec -->
+    <property name="code-coverage.exec" value="target/code-coverage.exec"/>
+
 	<!-- setup classpath -->
 	<path id="project.classpath" />
 
@@ -896,7 +902,7 @@
 	<target name="test-dist" unless="test.skip">
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
-		<jacoco:coverage destfile="target/code-coverage.exec" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="com.sun.*:javax.*:**/Tests.*:**/*Test*">
+		<jacoco:coverage destfile="${code-coverage.exec}" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="com.sun.*:javax.*:**/Tests.*:**/*Test*">
 			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
@@ -1023,6 +1029,25 @@
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 	</target>
+
+    <target name="code-coverage-report">
+        <mkdir dir="${code-coverage.dir}"/>
+        <jacoco:report>
+            <executiondata>
+                <file file="${code-coverage.exec}"/>
+            </executiondata>
+            <structure name="TLA+ tools">
+                <classfiles>
+                    <fileset dir="${class.dir}"/>
+                </classfiles>
+                <sourcefiles encoding="UTF-8">
+                    <fileset dir="${src.dir}"/>
+                </sourcefiles>
+            </structure>
+            <html destdir="${code-coverage.dir}"/>
+        </jacoco:report>
+        <echo message="HTML report available here: ${code-coverage.dir}/index.html"/>
+    </target>
 
 	<!-- Executes accompanying long-running unit tests on jar file -->
 	<target name="test-dist-long" unless="test.skip">
