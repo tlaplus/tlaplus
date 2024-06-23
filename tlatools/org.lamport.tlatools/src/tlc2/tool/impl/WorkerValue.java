@@ -32,6 +32,7 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.IdThread;
 import tlc2.value.IValue;
+import tlc2.value.RandomEnumerableValues;
 
 /*
 Root Cause:
@@ -121,7 +122,13 @@ public class WorkerValue {
     		final IValue[] values = new IValue[TLCGlobals.getNumWorkers()];
     		values[0] = defVal;
 
+    		final long seed = RandomEnumerableValues.getSeed();
     		for (int i = 1; i < values.length; i++) {
+    			// Resetting the random seed ensures that operators involving RandomElement or
+    			// those from the Randomization module evaluate to consistent values across all
+    			// workers. Without this, workers might assign different values to constants and
+    			// constant definitions, leading to bogus counterexamples.
+    			RandomEnumerableValues.setSeed(seed);
     			// Ideally, we could invoke IValue#deepCopy here instead of evaluating opDef again.  However,
     			// IValue#deepCopy doesn't create copies for most values.
     			values[i] = spec.eval(en, Context.Empty, TLCState.Empty, cm);
