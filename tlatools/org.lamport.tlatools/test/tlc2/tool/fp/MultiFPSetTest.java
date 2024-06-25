@@ -114,6 +114,7 @@ public class MultiFPSetTest {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);
 		final MultiFPSet mfps = new MultiFPSet(conf);
+		mfps.init(1, tmpdir, "testPutMax");
 
 		// put a random fp value into set
 		try {
@@ -132,6 +133,7 @@ public class MultiFPSetTest {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);
 		final MultiFPSet mfps = new MultiFPSet(conf);
+		mfps.init(1, tmpdir, "testPutMin");
 
 		// put a random fp value into set
 		try {
@@ -150,6 +152,7 @@ public class MultiFPSetTest {
 		FPSetConfiguration conf = new FPSetConfiguration();
 		conf.setFpBits(1);
 		final MultiFPSet mfps = new MultiFPSet(conf);
+		mfps.init(1, tmpdir, "testPutZero");
 
 		// put a random fp value into set
 		try {
