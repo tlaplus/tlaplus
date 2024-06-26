@@ -30,16 +30,20 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.tool.queue.IStateQueue;
+import tlc2.tool.queue.MemStateQueue;
+import tlc2.value.impl.IntValue;
 
-public class Github971Test extends ModelCheckerTestCase {
+public class Github971aTest extends ModelCheckerTestCase {
 
-	public Github971Test() {
-		super("Github971", EC.ExitStatus.VIOLATION_SAFETY);
+	public Github971aTest() {
+		super("Github971", new String[] { "-lncheck", "off", "-config", "Github971a.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Override
@@ -56,7 +60,7 @@ public class Github971Test extends ModelCheckerTestCase {
 	protected boolean runWithDebugger() {
 		return false;
 	}
-	
+
 	@Override
 	protected boolean doDump() {
 		return false;
@@ -67,16 +71,10 @@ public class Github971Test extends ModelCheckerTestCase {
 		return false;
 	}
 
-	@Override
-	protected int getNumberOfThreads() {
-		// Has to be >1 to reproduce the race condition.
-		return 2;
-	}
-
 	@Test
 	public void testSpec() throws IOException {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		
+
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5", "2", "0"));
 
@@ -87,10 +85,112 @@ public class Github971Test extends ModelCheckerTestCase {
 		// Assert the error trace.
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(2);
-		expectedTrace.add("x = FALSE");
-		expectedTrace.add("x = TRUE");
-		expectedTrace.add("x = FALSE");
-		expectedTrace.add("x = TRUE");
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+	}
+
+	@Override
+	protected int getNumberOfThreads() {
+		// Has to be >1 to reproduce the race condition.
+		return 2;
+	}
+
+	@Override
+	protected void beforeSetUp() {
+		try {
+			IStateQueue.Factory.sq = new IStateQueue() {
+				private final CountDownLatch signal = new CountDownLatch(3);
+				
+				private final IStateQueue inner = new MemStateQueue();
+
+				public void sEnqueue(TLCState state) {
+					inner.sEnqueue(state);
+
+					// t1 processing x=-1 enqueues x=0.
+					if (IntValue.ValOne.equals(state.lookup("x"))) {
+						try {
+							// t1 gets blocked so that t2 gets ahead.
+							signal.await();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+				public TLCState sDequeue() {
+					signal.countDown();
+					return inner.sDequeue();
+				}
+
+				public void enqueue(TLCState state) {
+					inner.enqueue(state);
+				}
+
+				public TLCState dequeue() {
+					return inner.dequeue();
+				}
+
+				public void sEnqueue(TLCState[] states) {
+					inner.sEnqueue(states);
+				}
+
+				public void sEnqueue(StateVec stateVec) {
+					inner.sEnqueue(stateVec);
+				}
+
+				public TLCState sPeek() {
+					return inner.sPeek();
+				}
+
+				public TLCState[] sDequeue(int cnt) {
+					return inner.sDequeue(cnt);
+				}
+
+				public void finishAll() {
+					inner.finishAll();
+				}
+
+				public boolean suspendAll() {
+					return inner.suspendAll();
+				}
+
+				public void resumeAll() {
+					inner.resumeAll();
+				}
+
+				public void resumeAllStuck() {
+					inner.resumeAllStuck();
+				}
+
+				public long size() {
+					return inner.size();
+				}
+
+				public void beginChkpt() throws IOException {
+					inner.beginChkpt();
+				}
+
+				public void commitChkpt() throws IOException {
+					inner.commitChkpt();
+				}
+
+				public void recover() throws IOException {
+					inner.recover();
+				}
+
+				public boolean isEmpty() {
+					return inner.isEmpty();
+				}
+
+				public void delete() throws IOException {
+					inner.delete();
+				}
+			};
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
