@@ -190,6 +190,18 @@ public class LiveCheck implements ILiveCheck {
 	
 	@Override
 	public int finalCheck(ITool tool) throws InterruptedException, IOException {
+		// A temporal property is either a liveness property or a safety property. For
+		// instance, the property <>P is a liveness property, while [](P => []Q) is a
+		// safety property (the violation of a safety property is a finite prefix of a
+		// behavior). TLC checks liveness by searching the behavior graph for accepting
+		// cycles, which amounts to a search for strongly connected components. This is
+		// what happens in check0 below. In contrast, safety properties are verified
+		// during the insertion of new nodes into the (partial) behavior graph (see
+		// addNextState methods in this class).  There is no need run check0 if the
+		// user told us that the temporal property is a safety property.
+		if ("off".equals(TLCGlobals.lnCheck)) {
+			return EC.NO_ERROR;
+		}
 		// Do *not* re-create the nodePtrTable after the check which takes a
 		// while for larger disk graphs.
 		return check0(tool, true);
