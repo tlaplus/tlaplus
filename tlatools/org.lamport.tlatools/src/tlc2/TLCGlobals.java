@@ -59,7 +59,7 @@ public class TLCGlobals
 	public static String lnCheck = "default";
 	
 	public static boolean doLiveness() {
-		return !(lnCheck.equals("final") || lnCheck.equals("seqfinal"));
+		return !(lnCheck.equals("final") || lnCheck.equals("seqfinal") || lnCheck.equals("off"));
 	}
 
 	public static boolean doSequentialLiveness() {
