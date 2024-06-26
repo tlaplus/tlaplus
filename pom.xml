@@ -135,7 +135,7 @@
 
 	<build>
 		<plugins>
-			<!-- Fail the build early and with a clear error message if the Java 11
+			<!-- Fail the build early and with a clear error message if the Java 22
 				dependency isn't satisfied. https://github.com/tlaplus/tlaplus/issues/278 -->
 		    <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -150,7 +150,7 @@
 						<configuration>
 							<rules>
 								<requireJavaVersion>
-									<version>11</version>
+									<version>22</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
@@ -294,7 +294,7 @@
 					     package that is indirectly referenced by the toolbox (indirectly via
 					     org.apache.mina.core).
 					     see http://dev.eclipse.org/mhonarc/lists/cbi-dev/msg00166.html -->
-		 			<executionEnvironment>JavaSE-11</executionEnvironment>
+		 			<executionEnvironment>JavaSE-22</executionEnvironment>
 
 					<!-- configure the p2 target environments for multi-platform build -->
 					<environments>
