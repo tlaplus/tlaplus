@@ -39,7 +39,7 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class Github971Test extends ModelCheckerTestCase {
 
 	public Github971Test() {
-		super("Github971", EC.ExitStatus.VIOLATION_SAFETY);
+		super("Github971", new String[] {"-lncheck", "off"}, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Override
