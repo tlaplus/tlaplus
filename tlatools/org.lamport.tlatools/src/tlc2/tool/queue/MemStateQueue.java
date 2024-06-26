@@ -27,7 +27,7 @@ public final class MemStateQueue extends StateQueue {
   /**
    * TESTING ONLY!
    */
-  MemStateQueue() throws IOException {
+  public MemStateQueue() throws IOException {
 	  this(Files.createTempDirectory("MemStateQueue").toFile().toString());
   }
   
