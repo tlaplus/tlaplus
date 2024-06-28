@@ -1436,6 +1436,10 @@ public class TLC {
     	this.stateWriter = sw;
     }
 
+	public IStateWriter getStateWriter() {
+		return this.stateWriter;
+	}
+
     /**
      * Print out an error message, with usage hint
      * @param msg, message to print
