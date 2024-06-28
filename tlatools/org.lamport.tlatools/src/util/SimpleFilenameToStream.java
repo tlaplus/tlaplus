@@ -70,15 +70,15 @@ public class SimpleFilenameToStream implements FilenameToStream {
 
   /**
    * Find the absolute path in the file system to the directory
-   * that is the base of the entire installation of tlaSANY; this path
+   * containing the TLA+ standard modules; this path
    * must have separators appropriate to the Unix ('/') or Windows ('\') world.
    *
-   * @return the path to the tlaSANY installation, or a "jar:" URL
+   * @return the location of the TLA+ standard modules as an absolute path or as a "jar:" URL
    */
   private String getInstallationBasePath() {
 
     // get a "file:" URL for the base directory for package tla2sany
-    final URL         url = cl.getResource("tla2sany");
+    final URL         url = cl.getResource(STANDARD_MODULES);
 
     // jar expanded to the fs (make sure to handle whitespaces correctly
     final String path = url.toString();
@@ -138,7 +138,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
     }
     if (path == null) {
       res = new String[1];
-      res[0] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;
+      res[0] = installationBasePath + FileUtil.separator;
     }
     else {
       String[] paths = path.split(FileUtil.pathSeparator);
@@ -149,7 +149,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	  res[i] = res[i] + FileUtil.separator;
 	}
       }
-      res[paths.length] = installationBasePath + FileUtil.separator + STANDARD_MODULES_FOLDER + FileUtil.separator;
+      res[paths.length] = installationBasePath + FileUtil.separator;
     }
     return res;
   }
