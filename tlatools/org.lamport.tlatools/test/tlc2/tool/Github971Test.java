@@ -59,7 +59,7 @@ public class Github971Test extends ModelCheckerTestCase {
 	
 	@Override
 	protected boolean doDump() {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -87,10 +87,10 @@ public class Github971Test extends ModelCheckerTestCase {
 		// Assert the error trace.
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(2);
-		expectedTrace.add("x = FALSE");
-		expectedTrace.add("x = TRUE");
-		expectedTrace.add("x = FALSE");
-		expectedTrace.add("x = TRUE");
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 }

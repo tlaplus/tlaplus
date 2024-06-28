@@ -42,8 +42,8 @@ import tlc2.util.LongVec;
 import tlc2.util.NoopStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
-import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
+import tlc2.value.impl.IntValue;
 import util.Assert;
 
 public class LiveCheck implements ILiveCheck {
@@ -647,7 +647,7 @@ public class LiveCheck implements ILiveCheck {
 				nextStates.resetNext();
 			}		
 			
-			if (BoolValue.ValFalse.equals(s0.lookup("x"))) {
+			if (IntValue.ValZero.equals(s0.lookup("x"))) {
 				try {
 					// t1 gets blocked so that t2 gets ahead.
 					signal.await();
