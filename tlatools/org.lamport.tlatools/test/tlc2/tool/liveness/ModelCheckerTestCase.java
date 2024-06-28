@@ -45,6 +45,7 @@ import tlc2.output.EC.ExitStatus;
 import tlc2.output.MP;
 import tlc2.tool.CommonTestCase;
 import tlc2.tool.ModelChecker;
+import tlc2.util.IStateWriter;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
@@ -204,7 +205,12 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			
 			args.add(spec);
 			tlc.handleParameters(args.toArray(new String[args.size()]));
-			
+
+			// Allow tests to replace or wrap the state writer set in tlc2.TLC. by
+			// overriding the getStateWriter method.
+			// This is a no-op by default.
+			tlc.setStateWriter(getStateWriter(tlc.getStateWriter()));
+		
 			// Run the ModelChecker
 			final int errorCode = tlc.process();
 			actualExitStatus = EC.ExitStatus.errorConstantToExitStatus(errorCode);
@@ -214,6 +220,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		}
 	}
 	
+	protected IStateWriter getStateWriter(final IStateWriter sw) {
+		return sw;
+	}
+
 	protected String getMetaDir() {
 		return TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName();
 	}
