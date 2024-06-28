@@ -1830,28 +1830,48 @@ public class PcalTLAGen
         Vector lVarsSource = new Vector();
         Vector gVarsSource = new Vector();
 
+        /*
+         * Consistently put the "pc" variable first.
+         * In this way, tlc will shortcut evaluation on pc
+         * instead of potentially failing on a user defined variable
+         * that contains an incomparable, different type of value across steps.
+         * For example:
+         * vars == << retval, output, pc, stack, x, y, int >>
+         * the comparison would fail if output get assigned a different type:
+         * <<..., 10, ..., "step2", ...>> vs
+         * <<..., "10", ..., "step3", ...>>
+         * by putting pc first:
+         * vars == << pc, retval, output, stack, x, y, int >>
+         * The comparison becomes:
+         * <<"step2", ..., 10, ...>> vs
+         * <<"step3", ..., "10", ...>>
+         * and tlc would stop at the pc and declare the two tuples different.
+         * More info on Github: #776.
+         */
+        if (! ParseAlgorithm.omitPC) {
+            gVars.addElement("pc");
+            /**
+             * For added variables, create a VarDecl with null origin.
+             */
+            AST.VarDecl pcVarDecl = new AST.VarDecl();
+            pcVarDecl.var = "pc";
+            gVarsSource.addElement(pcVarDecl);
+            vars.addElement("pc");
+        }
+
         /*******************************************************************
         * Set gVars to the global variables, including pc and `stack' if   *
         * there are procedures, and add these variables to vars.           *
         *******************************************************************/
-        if (globals != null)
-            for (int i = 0; i < globals.size(); i++)
-            {
+        if (globals != null) {
+            for (int i = 0; i < globals.size(); i++) {
                 AST.VarDecl decl = (AST.VarDecl) globals.elementAt(i);
                 gVars.addElement(decl.var);
                 gVarsSource.addElement(decl);
                 vars.addElement(decl.var);
             }
-        if (! ParseAlgorithm.omitPC) {
-          gVars.addElement("pc");
-          /**
-           * For added variables, create a VarDecl with null origin.
-           */
-          AST.VarDecl pcVarDecl = new AST.VarDecl();
-          pcVarDecl.var = "pc";
-          gVarsSource.addElement(pcVarDecl);
-          vars.addElement("pc");
         }
+
         if (procs != null && procs.size() > 0)
         {
             gVars.addElement("stack");
