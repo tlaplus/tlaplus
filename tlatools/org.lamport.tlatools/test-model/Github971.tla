@@ -3,7 +3,7 @@ EXTENDS Integers
 VARIABLE x
 
 Init ==
-    x = 0
+    x = -1
 
 Next ==
     x' \in {0,1} 

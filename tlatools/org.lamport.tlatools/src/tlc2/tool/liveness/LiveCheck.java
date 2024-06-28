@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +42,6 @@ import tlc2.util.NoopStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.impl.CounterExample;
-import tlc2.value.impl.IntValue;
 import util.Assert;
 
 public class LiveCheck implements ILiveCheck {
@@ -608,8 +606,6 @@ public class LiveCheck implements ILiveCheck {
 				}
 			}
 		}
-		
-		private final CountDownLatch signal = new CountDownLatch(1);
 
 		/* (non-Javadoc)
 		 * @see tlc2.tool.liveness.ILiveChecker#addNextState(tlc2.tool.TLCState, long, tlc2.util.SetOfStates, tlc2.util.BitVector, boolean[])
@@ -646,15 +642,6 @@ public class LiveCheck implements ILiveCheck {
 				}
 				nextStates.resetNext();
 			}		
-			
-			if (IntValue.ValZero.equals(s0.lookup("x"))) {
-				try {
-					// t1 gets blocked so that t2 gets ahead.
-					signal.await();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
 			
 			LongVec prefix = null;
 
@@ -753,9 +740,6 @@ public class LiveCheck implements ILiveCheck {
 				// 2) Print the trace (in state space) while no longer holding the oos lock.
 				printErrorTrace(tool, prefix);
 			}
-
-			// t2 resume t1 (if it is already waiting). Otherwise, await above becomes no-op.
-			signal.countDown();
 		}
 
 		private void printErrorTrace(final ITool tool, final LongVec prefix) {
