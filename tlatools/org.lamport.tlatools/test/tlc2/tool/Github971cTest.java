@@ -40,10 +40,10 @@ import tlc2.tool.queue.IStateQueue;
 import tlc2.tool.queue.MemStateQueue;
 import tlc2.value.impl.IntValue;
 
-public class Github971Test extends ModelCheckerTestCase {
+public class Github971cTest extends ModelCheckerTestCase {
 
-	public Github971Test() {
-		super("Github971", new String[] { "-lncheck", "off" }, EC.ExitStatus.VIOLATION_SAFETY);
+	public Github971cTest() {
+		super("Github971", new String[] { "-lncheck", "off", "-config", "Github971c.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class Github971Test extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "7", "3", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "13", "4", "0"));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
@@ -84,11 +84,11 @@ public class Github971Test extends ModelCheckerTestCase {
 
 		// Assert the error trace.
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(2);
+		final List<String> expectedTrace = new ArrayList<String>(3);
 		expectedTrace.add("x = -1");
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = 0");
-		expectedTrace.add("x = 1");
+		expectedTrace.add("x = 0"); // Could also be x = 1
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 
@@ -102,16 +102,13 @@ public class Github971Test extends ModelCheckerTestCase {
 	protected void beforeSetUp() {
 		try {
 			IStateQueue.Factory.sq = new IStateQueue() {
-				private final CountDownLatch signal = new CountDownLatch(4); // sDequeue x=-1, sDequeue x=0, t await,
-																				// sEnqueue x = 1, sDequeue x = 1 (,
-																				// sDequeue null)
+				private final CountDownLatch signal = new CountDownLatch(4);
 
 				private final IStateQueue inner = new MemStateQueue();
 
 				public void sEnqueue(TLCState state) {
 					inner.sEnqueue(state);
 
-					// t1 processing x=-1 enqueues x=0.
 					if (IntValue.ValZero.equals(state.lookup("x"))) {
 						try {
 							// t1 gets blocked so that t2 gets ahead.
@@ -120,16 +117,11 @@ public class Github971Test extends ModelCheckerTestCase {
 							e.printStackTrace();
 						}
 					}
-					if (IntValue.ValOne.equals(state.lookup("x"))) {
-						signal.countDown();
-					}
 				}
-				///////
 
 				public TLCState sDequeue() {
-					TLCState s = inner.sDequeue();
 					signal.countDown();
-					return s;
+					return inner.sDequeue();
 				}
 
 				public void enqueue(TLCState state) {
