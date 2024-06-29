@@ -10,7 +10,7 @@ PlusCal options (version 1.5)
     }
 }
  ***************************************************************************)
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-07e0e68497291a78b07d8fb9d5597180
+\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "afe7b75d")
 VARIABLES pc, x
 
 vars == << pc, x >>
@@ -37,7 +37,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-8d9de25f8162fd0489585bc374dff964
+\* END TRANSLATION
 =============================================================================
 \* Modification History
 \* Last modified Sun Mar 20 10:13:11 PDT 2011 by lamport

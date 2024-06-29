@@ -14,7 +14,7 @@ EXTENDS Naturals, TLC
      end algorithm                  *)
 
                     
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-50f6f9a537b91874ce70a2eef129eb7f
+\* BEGIN TRANSLATION (chksum(pcal) = "3acbf16a" /\ chksum(tla) = "f1d2d847")
 VARIABLES pc, x
 
 vars == << pc, x >>
@@ -51,5 +51,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-0694bcde67f647179b7e22184415182a
+\* END TRANSLATION
 =============================================================================

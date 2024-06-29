@@ -103,7 +103,7 @@ bot == CHOOSE v: v \notin Data
 
 Proc == 1..N
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-6c62906a7a71f4a60f9b9f0eecf7e59e
+\* BEGIN TRANSLATION (chksum(pcal) = "e77f8a29" /\ chksum(tla) = "778d0f52")
 \* Label clock of process Clock at line 77 col 12 changed to clock_
 VARIABLES pc, clock, input, round, buffer, crashed, output, procs, value, 
           recd
@@ -240,7 +240,7 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-166884a9c4ec2ab81b93439149dfdc07
+\* END TRANSLATION
 
 C1 == \A p1, p2 \in (1..N) \ crashed:
   (pc[p1] = "Done" /\ pc[p2] = "Done") => (output[p1] = output[p2])

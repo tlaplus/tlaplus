@@ -41,7 +41,7 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                       
 
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-15a96a62d4bb94349f0b7e97b7877563
+\* BEGIN TRANSLATION (chksum(pcal) = "400e3286" /\ chksum(tla) = "ff294014")
 VARIABLES pc, u_ini, v_ini, u, v
 
 vars == << pc, u_ini, v_ini, u, v >>
@@ -83,7 +83,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-42ac9bbadc686601495c6cb5a86d3d55
+\* END TRANSLATION
 
 
 Invariant == 
