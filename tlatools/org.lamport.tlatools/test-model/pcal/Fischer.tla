@@ -55,9 +55,9 @@ end algorithm
 ***********************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-fcd66548d87762ce6cd61f8b60ad89ec
-VARIABLES x, timer, pc, firstTime
+VARIABLES pc, x, timer, firstTime
 
-vars == << x, timer, pc, firstTime >>
+vars == << pc, x, timer, firstTime >>
 
 ProcSet == (1..N) \cup {0}
 

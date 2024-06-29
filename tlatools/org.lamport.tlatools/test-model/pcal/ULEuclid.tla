@@ -42,9 +42,9 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-15a96a62d4bb94349f0b7e97b7877563
-VARIABLES u_ini, v_ini, u, v, pc
+VARIABLES pc, u_ini, v_ini, u, v
 
-vars == << u_ini, v_ini, u, v, pc >>
+vars == << pc, u_ini, v_ini, u, v >>
 
 Init == (* Global variables *)
         /\ u_ini \in 1 .. MaxNum

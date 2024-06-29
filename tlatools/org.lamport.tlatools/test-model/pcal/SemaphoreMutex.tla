@@ -30,9 +30,9 @@ end algorithm
 ***********************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-44c6b54854f894e836bedeb86826fe34
-VARIABLES sem, pc
+VARIABLES pc, sem
 
-vars == << sem, pc >>
+vars == << pc, sem >>
 
 ProcSet == (1..N)
 

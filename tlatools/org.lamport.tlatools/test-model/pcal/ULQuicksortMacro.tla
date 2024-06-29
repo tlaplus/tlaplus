@@ -44,9 +44,9 @@ PermsOf(Arr) ==
 *)
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-749f221938b5b2dde2ae6c5d6a23511d
-VARIABLES A, returnVal, pc, stack, qlo, qhi, pivot
+VARIABLES pc, A, returnVal, stack, qlo, qhi, pivot
 
-vars == << A, returnVal, pc, stack, qlo, qhi, pivot >>
+vars == << pc, A, returnVal, stack, qlo, qhi, pivot >>
 
 Init == (* Global variables *)
         /\ A \in [1..ArrayLen -> 1..ArrayLen]

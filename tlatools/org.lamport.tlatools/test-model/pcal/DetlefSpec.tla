@@ -30,9 +30,9 @@ L2:   rV := null
 *)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-1ffa57620b1dc5120c521caddbcfa0df
-VARIABLES queue, pc, rV
+VARIABLES pc, queue, rV
 
-vars == << queue, pc, rV >>
+vars == << pc, queue, rV >>
 
 ProcSet == (Procs)
 

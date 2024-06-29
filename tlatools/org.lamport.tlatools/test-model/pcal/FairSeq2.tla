@@ -11,9 +11,9 @@ PlusCal options (version 1.5)
 }
  ***************************************************************************)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-07e0e68497291a78b07d8fb9d5597180
-VARIABLES x, pc
+VARIABLES pc, x
 
-vars == << x, pc >>
+vars == << pc, x >>
 
 Init == (* Global variables *)
         /\ x = 0

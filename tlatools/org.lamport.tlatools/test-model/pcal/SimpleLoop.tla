@@ -13,9 +13,9 @@ EXTENDS Naturals, TLC
 *)
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-33bbd786fd9a21815a80c1c8d918b5c0
-VARIABLES x, pc
+VARIABLES pc, x
 
-vars == << x, pc >>
+vars == << pc, x >>
 
 Init == (* Global variables *)
         /\ x = 0

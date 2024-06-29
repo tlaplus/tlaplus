@@ -33,9 +33,9 @@ Factorial Algorithm with 2 procedures
 ***************************************************************************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-7a6949afa2a72d41ea8a9ba97e423c98
-VARIABLES result, pc, stack, arg1, u, arg2, u2
+VARIABLES pc, result, stack, arg1, u, arg2, u2
 
-vars == << result, pc, stack, arg1, u, arg2, u2 >>
+vars == << pc, result, stack, arg1, u, arg2, u2 >>
 
 Init == (* Global variables *)
         /\ result = 1

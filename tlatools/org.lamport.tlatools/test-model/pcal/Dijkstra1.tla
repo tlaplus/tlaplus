@@ -27,9 +27,9 @@ CONSTANT K, N
 ASSUME (K > N) /\ (N > 0) 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-64143a14f748e286ec27eafe96303703
-VARIABLES M, pc
+VARIABLES pc, M
 
-vars == << M, pc >>
+vars == << pc, M >>
 
 ProcSet == {0} \cup (1..(N-1))
 

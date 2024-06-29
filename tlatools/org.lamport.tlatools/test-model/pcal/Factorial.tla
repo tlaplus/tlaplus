@@ -22,9 +22,9 @@ EXTENDS Naturals, Sequences, TLC
 ***************************************************************************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-8354903ee5c9ddae0b8bb4f55d782009
-VARIABLES result, pc, stack, arg1, u
+VARIABLES pc, result, stack, arg1, u
 
-vars == << result, pc, stack, arg1, u >>
+vars == << pc, result, stack, arg1, u >>
 
 Init == (* Global variables *)
         /\ result = 1

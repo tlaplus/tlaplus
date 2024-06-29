@@ -52,9 +52,9 @@ Max(S) == CHOOSE i \in S : \A j \in S : i \geq j
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-1f05a46c32a9d2bb1934b39aad724eed
 CONSTANT defaultInitValue
-VARIABLES A, Uns, new, pc, stack, parg
+VARIABLES pc, A, Uns, new, stack, parg
 
-vars == << A, Uns, new, pc, stack, parg >>
+vars == << pc, A, Uns, new, stack, parg >>
 
 Init == (* Global variables *)
         /\ A \in UNION {[1..N -> 1..N] : N \in 0..MaxLen}

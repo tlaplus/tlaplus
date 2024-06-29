@@ -30,9 +30,9 @@ EXTENDS Sequences, Naturals, TLC
 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-648cb8f5989caacb85bf4050478c7a20
-VARIABLES x, y, pc, stack
+VARIABLES pc, x, y, stack
 
-vars == << x, y, pc, stack >>
+vars == << pc, x, y, stack >>
 
 Init == (* Global variables *)
         /\ x = 0

@@ -105,10 +105,10 @@ Proc == 1..N
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-6c62906a7a71f4a60f9b9f0eecf7e59e
 \* Label clock of process Clock at line 77 col 12 changed to clock_
-VARIABLES clock, input, round, buffer, crashed, pc, output, procs, value, 
+VARIABLES pc, clock, input, round, buffer, crashed, output, procs, value, 
           recd
 
-vars == << clock, input, round, buffer, crashed, pc, output, procs, value, 
+vars == << pc, clock, input, round, buffer, crashed, output, procs, value, 
            recd >>
 
 ProcSet == (1..N) \cup {N + 1} \cup {N + 2}

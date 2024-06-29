@@ -24,9 +24,9 @@ EXTENDS Sequences, Naturals, TLC
 *)
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-deb6c76a28ce9358817b0dff2194ebab
-VARIABLES sum, pc, stack
+VARIABLES pc, sum, stack
 
-vars == << sum, pc, stack >>
+vars == << pc, sum, stack >>
 
 ProcSet == {1} \cup (2..4)
 

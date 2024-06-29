@@ -78,9 +78,9 @@ end algorithm
 ***********************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-cc9279d759058abea504462b4ff084d7
-VARIABLES x, y, b, pc, j, failed, j2, failed2
+VARIABLES pc, x, y, b, j, failed, j2, failed2
 
-vars == << x, y, b, pc, j, failed, j2, failed2 >>
+vars == << pc, x, y, b, j, failed, j2, failed2 >>
 
 ProcSet == (1..M) \cup ((M+1)..N)
 

@@ -37,9 +37,9 @@ Here is the algorithm in +Cal (using the C syntax):
 (* This fairness assumption is discussed below.                            *)
 (***************************************************************************)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-9255d446219a56b97b6d3847e8a2c94c
-VARIABLES flag, turn, pc
+VARIABLES pc, flag, turn
 
-vars == << flag, turn, pc >>
+vars == << pc, flag, turn >>
 
 ProcSet == ({0,1})
 

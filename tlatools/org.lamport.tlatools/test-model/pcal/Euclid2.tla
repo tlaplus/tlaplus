@@ -23,9 +23,9 @@ GCD(x, y) == CHOOSE i \in (1..x) \cap (1..y) :
                         => i \geq j
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-e89e843c1bd319cda8806c448153d025
-VARIABLES u, v, v_ini, pc
+VARIABLES pc, u, v, v_ini
 
-vars == << u, v, v_ini, pc >>
+vars == << pc, u, v, v_ini >>
 
 Init == (* Global variables *)
         /\ u = 24
