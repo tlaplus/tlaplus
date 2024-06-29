@@ -44,7 +44,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-0bb63b56a09bbe2e9360c99d30162534
+\* BEGIN TRANSLATION (chksum(pcal) = "6934d70d" /\ chksum(tla) = "c3b2ff6d")
 CONSTANT defaultInitValue
 VARIABLES pc, x, y, b, j, failed
 
@@ -156,7 +156,7 @@ Next == (\E self \in 1..N: Proc(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : WF_vars(Proc(self))
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-7588f44b8dba7eba3195a1299d84da82
+\* END TRANSLATION
 
 inCS(i) ==  (pc[i] = "cs") /\ (~failed[i])
 

@@ -47,7 +47,7 @@ PermsOf(Arr) ==
   end algorithm
 *)
                     
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-9360dabbf03d04fb938a53e6f43a0dc3
+\* BEGIN TRANSLATION (chksum(pcal) = "8e049229" /\ chksum(tla) = "37350b35")
 CONSTANT defaultInitValue
 VARIABLES pc, Ainit, A, returnVal, stack, lo, hi, qlo, qhi, pivot
 
@@ -162,7 +162,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-c890d98935ff53e5f234680508ac16aa
+\* END TRANSLATION
 =============================================================================
 Checked without termination on svc-lamport-2 with 2 workers:
   arrayLen = 4 in 15 sec, 32280 states, depth 22

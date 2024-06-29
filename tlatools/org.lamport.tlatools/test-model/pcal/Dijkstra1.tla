@@ -26,7 +26,7 @@ CONSTANT K, N
 
 ASSUME (K > N) /\ (N > 0) 
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-64143a14f748e286ec27eafe96303703
+\* BEGIN TRANSLATION (chksum(pcal) = "745d7796" /\ chksum(tla) = "72549c2c")
 VARIABLES pc, M
 
 vars == << pc, M >>
@@ -67,7 +67,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(P0)
         /\ \A self \in 1..(N-1) : WF_vars(Pi(self))
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-80735c28b54285a89ec67fce31b85c9d
+\* END TRANSLATION
 
 HasToken(self) == \/ (self = 0) /\ (M[0] = M[N - 1])
                   \/ (self > 0) /\ (M[self] # M[self - 1])

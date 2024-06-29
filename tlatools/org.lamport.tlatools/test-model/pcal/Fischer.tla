@@ -54,7 +54,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-fcd66548d87762ce6cd61f8b60ad89ec
+\* BEGIN TRANSLATION (chksum(pcal) = "36cd5b05" /\ chksum(tla) = "6f1c46e")
 VARIABLES pc, x, timer, firstTime
 
 vars == << pc, x, timer, firstTime >>
@@ -127,7 +127,7 @@ Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : WF_vars(Proc(self))
         /\ WF_vars(Tick)
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-d8d38bac35efc64e68e3d99ac06a0837
+\* END TRANSLATION
 
 inCS(i) ==  pc[i] = "cs"
 

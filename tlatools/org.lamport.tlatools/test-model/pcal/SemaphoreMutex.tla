@@ -29,7 +29,7 @@ end algorithm
 
 ***********************)
 
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-44c6b54854f894e836bedeb86826fe34
+\* BEGIN TRANSLATION (chksum(pcal) = "a301f784" /\ chksum(tla) = "b8c844fe")
 VARIABLES pc, sem
 
 vars == << pc, sem >>
@@ -65,7 +65,7 @@ Next == (\E self \in 1..N: Proc(self))
 Spec == /\ Init /\ [][Next]_vars
         /\ \A self \in 1..N : SF_vars(Proc(self))
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-30232ad9c07579ad742b84411a6a279a
+\* END TRANSLATION
 
 inCS(i) ==  (pc[i] = "cs") 
 

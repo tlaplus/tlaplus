@@ -14,7 +14,7 @@ EXTENDS Naturals, Sequences, TLC
   
 *)
                     
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-9c797e1d4e2fc4c259c478fdea1bd5fa
+\* BEGIN TRANSLATION (chksum(pcal) = "4bb9a304" /\ chksum(tla) = "1a7f1749")
 CONSTANT defaultInitValue
 VARIABLES pc, n
 
@@ -55,5 +55,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-70c2856f6a2b2707884c9cedc014d866
+\* END TRANSLATION
 =============================================================================

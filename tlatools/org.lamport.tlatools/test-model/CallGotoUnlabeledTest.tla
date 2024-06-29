@@ -22,7 +22,7 @@ C:
   goto A;
 
 end algorithm *)
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-4786c31224fe8555dc7ad50128a92fc6
+\* BEGIN TRANSLATION (chksum(pcal) = "1fe457ba" /\ chksum(tla) = "a7227a89")
 VARIABLES pc, x, stack
 
 vars == << pc, x, stack >>
@@ -66,6 +66,6 @@ Spec == Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-8ca0b91b1573d7c7ae4c4135afa5f61b
+\* END TRANSLATION
 
 ====

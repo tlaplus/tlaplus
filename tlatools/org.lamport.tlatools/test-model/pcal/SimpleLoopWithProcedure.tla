@@ -20,7 +20,7 @@ EXTENDS Naturals, Sequences, TLC
 *)
 
                     
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-925d38ef233a8a8c33b34bb25ba0c30d
+\* BEGIN TRANSLATION (chksum(pcal) = "2f5b32ad" /\ chksum(tla) = "7cd1d431")
 VARIABLES pc, x, y, n, i, stack, incr, z
 
 vars == << pc, x, y, n, i, stack, incr, z >>
@@ -77,5 +77,5 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-1145b37773754e0c960b38596f8082a0
+\* END TRANSLATION
 =============================================================================

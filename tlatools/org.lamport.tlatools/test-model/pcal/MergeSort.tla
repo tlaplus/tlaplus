@@ -80,7 +80,7 @@ Copied from page 166 of the 2nd edition of Robert Sedgewick's "Algorithms".
   end algorithm
 *)
                     
-\* BEGIN TRANSLATION - the hash of the PCal code: PCal-3f24d15c1de7a8bf341d55378b5a76c0
+\* BEGIN TRANSLATION (chksum(pcal) = "e813428c" /\ chksum(tla) = "e32bbbe5")
 CONSTANT defaultInitValue
 VARIABLES pc, a, b, stack, l, r, i, j, k, m
 
@@ -240,7 +240,7 @@ Spec == /\ Init /\ [][Next]_vars
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION - the hash of the generated TLA code (remove to silence divergence warnings): TLA-ff6c7e89b9c9baac60a504f5cbacb5a2
+\* END TRANSLATION
 
 Invariant == 
    (pc = "Done") => \A x, y \in DOMAIN a :
