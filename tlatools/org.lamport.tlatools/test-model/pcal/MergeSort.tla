@@ -82,9 +82,9 @@ Copied from page 166 of the 2nd edition of Robert Sedgewick's "Algorithms".
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-3f24d15c1de7a8bf341d55378b5a76c0
 CONSTANT defaultInitValue
-VARIABLES a, b, pc, stack, l, r, i, j, k, m
+VARIABLES pc, a, b, stack, l, r, i, j, k, m
 
-vars == << a, b, pc, stack, l, r, i, j, k, m >>
+vars == << pc, a, b, stack, l, r, i, j, k, m >>
 
 Init == (* Global variables *)
         /\ a \in UNION {[1..N -> 1..N] : N \in 0..ArrayLen}

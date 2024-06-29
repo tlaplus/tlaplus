@@ -17,9 +17,9 @@ l:  x := IF /\ \A i \in {1} : 1 + 1 = 2
   end algorithm
 *)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-df86b294351f95a8207d12196b3732f0
-VARIABLES x, pc
+VARIABLES pc, x
 
-vars == << x, pc >>
+vars == << pc, x >>
 
 Init == (* Global variables *)
         /\ x = 0

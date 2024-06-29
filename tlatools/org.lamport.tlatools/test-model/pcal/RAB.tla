@@ -146,9 +146,9 @@ end algorithm
 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-36470f24ec099c641e8894d14dc1be7a
-VARIABLES flags, calc, pc, temp, myattr
+VARIABLES pc, flags, calc, temp, myattr
 
-vars == << flags, calc, pc, temp, myattr >>
+vars == << pc, flags, calc, temp, myattr >>
 
 ProcSet == (Pid)
 

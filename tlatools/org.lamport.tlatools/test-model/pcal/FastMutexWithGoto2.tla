@@ -43,9 +43,9 @@ end algorithm
 ***********************)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-d10cf42a8598db9135c9a3e8255fdc3c
-VARIABLES x, y, b, pc, S
+VARIABLES pc, x, y, b, S
 
-vars == << x, y, b, pc, S >>
+vars == << pc, x, y, b, S >>
 
 ProcSet == (1..N)
 

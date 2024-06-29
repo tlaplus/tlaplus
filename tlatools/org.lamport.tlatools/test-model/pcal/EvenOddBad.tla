@@ -26,9 +26,9 @@ end algorithm
 *)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-4f4604590279cc4b2920a972bf28fdd0
-VARIABLES result, pc, stack, xEven, xOdd
+VARIABLES pc, result, stack, xEven, xOdd
 
-vars == << result, pc, stack, xEven, xOdd >>
+vars == << pc, result, stack, xEven, xOdd >>
 
 Init == (* Global variables *)
         /\ result \in { TRUE, FALSE }

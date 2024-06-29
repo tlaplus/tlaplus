@@ -46,9 +46,9 @@ end algorithm
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-0bb63b56a09bbe2e9360c99d30162534
 CONSTANT defaultInitValue
-VARIABLES x, y, b, pc, j, failed
+VARIABLES pc, x, y, b, j, failed
 
-vars == << x, y, b, pc, j, failed >>
+vars == << pc, x, y, b, j, failed >>
 
 ProcSet == (1..N)
 

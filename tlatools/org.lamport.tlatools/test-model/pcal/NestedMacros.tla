@@ -28,9 +28,9 @@ EXTENDS Naturals, TLC
  ***************************************************************************)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-45eef21f51ec0ad28fe46e4b9a7b10ce
 CONSTANT defaultInitValue
-VARIABLES x, y, pc, z
+VARIABLES pc, x, y, z
 
-vars == << x, y, pc, z >>
+vars == << pc, x, y, z >>
 
 ProcSet == ({1,2})
 

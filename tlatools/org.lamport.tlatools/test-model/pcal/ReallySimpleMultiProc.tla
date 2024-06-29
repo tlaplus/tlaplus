@@ -26,9 +26,9 @@ EXTENDS Naturals, TLC
 *)
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-489e6572dfcfeaa9e2ac64d8c5013ef0
-VARIABLES x, sum, done, pc, y, z
+VARIABLES pc, x, sum, done, y, z
 
-vars == << x, sum, done, pc, y, z >>
+vars == << pc, x, sum, done, y, z >>
 
 ProcSet == {41} \cup ({42, 43})
 

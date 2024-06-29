@@ -34,9 +34,9 @@ N == 2^exp-1
 --------------------------------------------------------------------
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-f8296f0cc6166098bc809c33e090e03e
-VARIABLES arrived, proceed, pc, b, p
+VARIABLES pc, arrived, proceed, b, p
 
-vars == << arrived, proceed, pc, b, p >>
+vars == << pc, arrived, proceed, b, p >>
 
 ProcSet == (1..N)
 

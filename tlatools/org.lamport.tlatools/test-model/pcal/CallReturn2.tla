@@ -51,9 +51,9 @@ EXTENDS Naturals, Sequences, TLC
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-84a5cdf59d68214ad905732a585890ae
 \* Procedure variable x of procedure P at line 13 col 16 changed to x_
 CONSTANT defaultInitValue
-VARIABLES depth, pc, stack, a, x_, y, aa, xx, yy, r, x, s
+VARIABLES pc, depth, stack, a, x_, y, aa, xx, yy, r, x, s
 
-vars == << depth, pc, stack, a, x_, y, aa, xx, yy, r, x, s >>
+vars == << pc, depth, stack, a, x_, y, aa, xx, yy, r, x, s >>
 
 Init == (* Global variables *)
         /\ depth = 3

@@ -69,9 +69,9 @@ end algorithm
 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-28938b6571490e0f82ac59c63d6f47e4
-VARIABLES sb, availablebuffers, publishedbuffers, pc, buf, op
+VARIABLES pc, sb, availablebuffers, publishedbuffers, buf, op
 
-vars == << sb, availablebuffers, publishedbuffers, pc, buf, op >>
+vars == << pc, sb, availablebuffers, publishedbuffers, buf, op >>
 
 ProcSet == (Pid)
 

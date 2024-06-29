@@ -17,9 +17,9 @@ EXTENDS Naturals, Sequences, TLC
 *)
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-d275a21163e8b7088902b968d404026a
-VARIABLES x, y, z, pc
+VARIABLES pc, x, y, z
 
-vars == << x, y, z, pc >>
+vars == << pc, x, y, z >>
 
 Init == (* Global variables *)
         /\ x = 0

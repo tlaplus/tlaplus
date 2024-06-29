@@ -19,9 +19,9 @@ EXTENDS Naturals, Sequences, TLC
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-be6b6d1cc0a0bacc6a419e686126c4c9
 \* Label a at line 10 col 16 changed to a_
 CONSTANT defaultInitValue
-VARIABLES x, y, z, pc, stack, a
+VARIABLES pc, x, y, z, stack, a
 
-vars == << x, y, z, pc, stack, a >>
+vars == << pc, x, y, z, stack, a >>
 
 Init == (* Global variables *)
         /\ x = 0

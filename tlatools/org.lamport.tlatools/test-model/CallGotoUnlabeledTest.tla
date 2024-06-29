@@ -23,9 +23,9 @@ C:
 
 end algorithm *)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-4786c31224fe8555dc7ad50128a92fc6
-VARIABLES x, pc, stack
+VARIABLES pc, x, stack
 
-vars == << x, pc, stack >>
+vars == << pc, x, stack >>
 
 Init == (* Global variables *)
         /\ x = 0

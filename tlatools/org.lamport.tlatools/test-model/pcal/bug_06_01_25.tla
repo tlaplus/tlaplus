@@ -83,7 +83,7 @@ ASSUME \forall i \in {} : i \geq 1
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-9ef67f07b10dbbf43fc7d4cb2d8d7b02
 \* Label P1 of procedure P at line 22 col 17 changed to P1_
 CONSTANT defaultInitValue
-VARIABLES x, y, z, pc, stack
+VARIABLES pc, x, y, z, stack
 
 (* define statement *)
 foo == /\ \A i \in {1} : i > 0
@@ -92,7 +92,7 @@ foo == /\ \A i \in {1} : i > 0
 
 VARIABLES a, w
 
-vars == << x, y, z, pc, stack, a, w >>
+vars == << pc, x, y, z, stack, a, w >>
 
 ProcSet == ({qq \in {1,2} : /\ \A i \in {1} : i > 0
                             /\ \A j \in {1} : j > 0

@@ -19,7 +19,7 @@ EXTENDS Naturals, Sequences, TLC
                     
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-6a1ac8b08c9ed86b40d0f6e5ef5cbdb0
 CONSTANT defaultInitValue
-VARIABLES n, pc, stack
+VARIABLES pc, n, stack
 
 (* define statement *)
 nplus1 == n + 1
@@ -27,7 +27,7 @@ nplus2 == nplus1 + 1
 
 VARIABLES a, b
 
-vars == << n, pc, stack, a, b >>
+vars == << pc, n, stack, a, b >>
 
 Init == (* Global variables *)
         /\ n = 0

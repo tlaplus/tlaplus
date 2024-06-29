@@ -41,9 +41,9 @@ l01 : while (TRUE)
 } }
 ********)
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-d34a24305f241c923d0f8daa00682e02
-VARIABLES sem, pc
+VARIABLES pc, sem
 
-vars == << sem, pc >>
+vars == << pc, sem >>
 
 ProcSet == (1..(N-1)) \cup {0}
 

@@ -32,9 +32,9 @@ CONSTANT N
 
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-a4673a20b45b60ed7b169b671068cf77
-VARIABLES result, pc, stack, xEven, xOdd
+VARIABLES pc, result, stack, xEven, xOdd
 
-vars == << result, pc, stack, xEven, xOdd >>
+vars == << pc, result, stack, xEven, xOdd >>
 
 Init == (* Global variables *)
         /\ result = FALSE

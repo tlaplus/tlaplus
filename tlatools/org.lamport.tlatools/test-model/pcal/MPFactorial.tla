@@ -30,9 +30,9 @@ EXTENDS Naturals, Sequences, TLC
 
 \* BEGIN TRANSLATION - the hash of the PCal code: PCal-1dbfa1687c2aacb174fffdcfcb1e6b08
 CONSTANT defaultInitValue
-VARIABLES result, pc, stack, arg1, u
+VARIABLES pc, result, stack, arg1, u
 
-vars == << result, pc, stack, arg1, u >>
+vars == << pc, result, stack, arg1, u >>
 
 ProcSet == (1..2) \cup {3}
 
