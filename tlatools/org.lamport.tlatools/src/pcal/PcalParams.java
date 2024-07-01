@@ -18,13 +18,13 @@ public final class PcalParams
     /**
      * Parameters to be updated on each new release.
      */
-    public static final String modDate = "31 December 2020";
+    public static final String modDate = "01 July 2024";
 	// Can't increment 1.9 to 1.10 because VersionToNumber(str) calculates a lower
 	// numerical value for 1.10 than it does for 1.9. This breaks the FairSeq?Test
     // tests. Until we switch from 1.xx to 2.0, increment versionWeight along with
     // version.
-    public static final int versionWeight = 1902;
-    public static final String version = "1.11";
+    public static final int versionWeight = 1903;
+    public static final String version = "1.12";
     /**
      * SZ Mar 9, 2009:
      * Added re-initialization method. Since PcalParams class
