@@ -118,7 +118,7 @@ public class TLAExpr
      * a vector of vectors of TLAToken objects.  Each 
      * subvector contains the tokens in one line of the expression.
      */
-    public Vector tokens       = new Vector(4);
+    public Vector<Vector<TLAToken>> tokens       = new Vector<Vector<TLAToken>>(4);
     public TLAToken[] anchorTokens = null;
     public int[]      anchorTokCol = null;
     
