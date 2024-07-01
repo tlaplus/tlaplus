@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2023, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2024, Oracle and/or its affiliates.
 // Last modified on Sat 28 June 2008 at  0:23:49 PST by lamport
 
 package util;
@@ -68,10 +68,13 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	  libraryPaths = getLibraryPaths(getInstallationBasePath(), anLibraryPaths);
   }
 
-  // Find the absolute path in the file system to the directory
-  // that is the base of the entire installation of tlaSANY; this path
-  // must have separators appropriate to the Unix ('/') or Windows ('\') world.
-
+  /**
+   * Find the absolute path in the file system to the directory
+   * that is the base of the entire installation of tlaSANY; this path
+   * must have separators appropriate to the Unix ('/') or Windows ('\') world.
+   *
+   * @return the path to the tlaSANY installation, or a "jar:" URL
+   */
   private String getInstallationBasePath() {
 
     // get a "file:" URL for the base directory for package tla2sany
