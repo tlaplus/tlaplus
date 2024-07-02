@@ -430,7 +430,7 @@ public class Simulator {
 	}
 	
 	private final void printBehavior(final TLCState state, final StateVec stateTrace) {
-		if (this.traceDepth == Long.MAX_VALUE) {
+		if (this.traceDepth == Integer.MAX_VALUE) {
 			MP.printMessage(EC.TLC_ERROR_STATE);
 			StatePrinter.printStandaloneErrorState(state);
 		} else {
