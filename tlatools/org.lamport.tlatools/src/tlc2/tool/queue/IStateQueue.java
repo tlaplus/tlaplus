@@ -8,12 +8,21 @@ import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
 
 public interface IStateQueue {
-    
+	
+	static class Factory {
+		// TESTING ONLY!
+		public static IStateQueue sq = null;
+	}
+	
 	public static String getStateQueueName() {
 		return System.getProperty(IStateQueue.class.getName(), "DiskStateQueue");
 	}
 
 	public static IStateQueue get(final String metaDir) {
+		if (Factory.sq != null) {
+			return Factory.sq;
+		}
+		
 		if (Boolean.getBoolean(ModelChecker.class.getName() + ".BAQueue")) {
 			//legacy support for .BAQueue property.
 			return new DiskByteArrayQueue(metaDir);

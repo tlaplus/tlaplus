@@ -467,6 +467,7 @@
 		<echo>Running tests across ${threadLimit} threads</echo>
 		<!-- run junit tests -->
 		<mkdir dir="${test.reports}" />
+		
 		<!-- First run unit tests which due to their nature cannot be run in parallel. -->
 		<junit
 			printsummary="yes"

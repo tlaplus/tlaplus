@@ -16,7 +16,7 @@ import tlc2.value.ValueOutputStream;
 import util.Assert;
 import util.FileUtil;
 
-public final class MemStateQueue extends StateQueue {
+public class MemStateQueue extends StateQueue {
   private final static int InitialSize = 4096;
 
   /* Fields  */
@@ -27,7 +27,7 @@ public final class MemStateQueue extends StateQueue {
   /**
    * TESTING ONLY!
    */
-  MemStateQueue() throws IOException {
+  public MemStateQueue() throws IOException {
 	  this(Files.createTempDirectory("MemStateQueue").toFile().toString());
   }
   
