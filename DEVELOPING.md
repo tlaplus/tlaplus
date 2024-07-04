@@ -81,7 +81,7 @@ For this reason you should run Ant from within Eclipse by opening Window > Show 
 This will also add the `RunAllTLCTests` target to the external tools runner menu.
 
 If you ran Ant from your CLI for whatever reason and are encountering issues with nonexistent compilation errors in Eclipse, you can resolve them by right-clicking the project in the Workspace pane then selecting "Refresh".
-This can also be set to refresh automatically by turning on the Eclipse > Settings > General > Workspace > "Refresh using native hooks or polling" setting.
+This can also be set to refresh automatically in the Eclipse settings; open them by clicking Eclipse > Settings on macOS or Window > Preferences on Linux, then check the box at General > Workspace > "Refresh using native hooks or polling".
 
 ### Developing the Toolbox in Eclipse
 
