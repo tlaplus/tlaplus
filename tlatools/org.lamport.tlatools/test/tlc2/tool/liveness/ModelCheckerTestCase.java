@@ -189,7 +189,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 			// Always print the state graph in dot file notation.
 			if (doDump()) {
 				args.add("-dump");
-				args.add("dot");
+				args.add(getDumpArgs());
 				args.add("${metadir}" + FileUtil.separator + getClass().getCanonicalName() + ".dot");
 			}
 
@@ -214,6 +214,10 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		}
 	}
 	
+	protected String getDumpArgs() {
+		return "dot";
+	}
+
 	protected String getMetaDir() {
 		return TLCGlobals.metaRoot + FileUtil.separator + getClass().getCanonicalName();
 	}
