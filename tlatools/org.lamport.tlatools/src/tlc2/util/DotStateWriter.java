@@ -251,10 +251,16 @@ public class DotStateWriter extends StateWriter {
 			maintainRanks(state);
 		} else {
 			// Add the transition edge label.
-			if(action!=null) {
-				String transitionLabel = this.dotTransitionLabel(state, successor, action, pred);
-				this.writer.append(transitionLabel);	
-			}
+			final String labelFmtStr = " [label=\"%s%s\",color=\"%s\",fontcolor=\"%s\"]";
+			
+			// Only colorize edges if specified. Default to black otherwise.
+			final String color = colorize ? this.getActionColor(action).toString() : "black" ;
+
+			// Only add action label if specified.
+			final String actionName = actionLabels && action != null ? action.getName().toString() : "" ;
+				
+			this.writer.append(
+					String.format(labelFmtStr, actionName, pred == null ? "" : "\n" + pred.toString(), color, color));
 			
 			this.writer.append(";\n");
 			
