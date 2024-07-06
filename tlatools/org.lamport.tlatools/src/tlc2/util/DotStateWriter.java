@@ -248,6 +248,7 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
 			this.writer.append(" [style=\"dashed\",color=\"lightgray\"];\n");
+			maintainRanks(state);
 		} else {
 			// Add the transition edge label.
 			if(action!=null) {
@@ -278,10 +279,10 @@ public class DotStateWriter extends StateWriter {
 					this.writer.append("\"]");
 				}
 				this.writer.append(";\n");
+				
+				maintainRanks(state);
 			}
 		}
-		
-		maintainRanks(state);
 		
 		if (snapshot) {
 			try {
