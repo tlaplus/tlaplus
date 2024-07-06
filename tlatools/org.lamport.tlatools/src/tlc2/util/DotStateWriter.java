@@ -251,16 +251,24 @@ public class DotStateWriter extends StateWriter {
 			maintainRanks(state);
 		} else {
 			// Add the transition edge label.
-			final String labelFmtStr = " [label=\"%s%s\",color=\"%s\",fontcolor=\"%s\"]";
+			final String labelFmtStr = " [label=\"%s%s%s\",color=\"%s\",fontcolor=\"%s\"]";
 			
 			// Only colorize edges if specified. Default to black otherwise.
 			final String color = colorize ? this.getActionColor(action).toString() : "black" ;
 
 			// Only add action label if specified.
 			final String actionName = actionLabels && action != null ? action.getName().toString() : "" ;
-				
+			
+			// Show the changes variables as part of the transition if the successor has
+			// previously been added.
+			String diff = "";
+			if (TLCGlobals.printDiffsOnly && isSet(stateFlags, IStateWriter.IsSeen)
+					&& rankToNodes.values().stream().filter(s -> s.contains(sfp)).findAny().isEmpty()) {
+				diff = states2dot(state.evalStateLevelAlias(), successor.evalStateLevelAlias());
+			}
+
 			this.writer.append(
-					String.format(labelFmtStr, actionName, pred == null ? "" : "\n" + pred.toString(), color, color));
+					String.format(labelFmtStr, actionName, diff, pred == null ? "" : "\n" + pred.toString(), color, color));
 			
 			this.writer.append(";\n");
 			
