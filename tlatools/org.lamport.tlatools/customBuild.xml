@@ -901,10 +901,21 @@
 
 	<!-- Executes accompanying unit tests on jar file -->
 	<target name="test-dist" unless="test.skip">
+		<property runtime="runtime"/>
+		<condition property="threadLimit" value="${threads}" else="${runtime.availableProcessors}">
+			<isset property="threads"/>
+		</condition>
+
 		<!-- run junit tests on tlatools.jar -->
 		<mkdir dir="${test.reports}/onJar" />
 		<jacoco:coverage destfile="${code-coverage.exec}" includes="pcal.*:tla2sany.*:tla2tex.*:tlc2.*:util.*:org.lamport.*" excludes="com.sun.*:javax.*:**/Tests.*:**/*Test*">
-			<junit printsummary="yes" haltonfailure="${test.halt}" haltonerror="${test.halt}" forkmode="perTest" fork="yes">
+			<junit printsummary="yes"
+				haltonfailure="${test.halt}"
+				haltonerror="${test.halt}"
+				forkmode="perTest"
+				fork="yes"
+				threads="${threadLimit}"
+			>
 				<!-- enable all assertions -->
 				<jvmarg value="-ea"/>
 				<jvmarg value="-XX:MaxDirectMemorySize=512k"/>
