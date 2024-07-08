@@ -1046,6 +1046,7 @@
                 </sourcefiles>
             </structure>
             <html destdir="${code-coverage.dir}"/>
+            <xml destfile="${code-coverage.dir}/coverage-result.xml" />
         </jacoco:report>
         <echo message="HTML report available here: ${code-coverage.dir}/index.html"/>
     </target>

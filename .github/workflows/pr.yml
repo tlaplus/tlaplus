@@ -5,6 +5,10 @@ jobs:
   tlatools-build-and-test:
     name: TLA+ Tools Build & Test
     runs-on: ${{ matrix.operating-system }}
+    # Used by action to post code coverage to PRs
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest]
@@ -43,7 +47,9 @@ jobs:
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
-    - name: Upload raw unit test results
+    - name: Run unit tests on dist and generate coverage report
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-dist -Dtest.halt=true code-coverage-report
+    - name: Upload raw unit test results and jacoco code-coverage exec
       uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -53,12 +59,21 @@ jobs:
             tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/TESTS-TestSuites.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/junit-noframes.html
+            tlatools/org.lamport.tlatools/target/code-coverage.exec
     - name: Publish unit test results
       uses: mikepenz/action-junit-report@v4
       if: always()
       with:
           check_name: JUnit Test Report on ${{ matrix.operating-system }}
           report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'
+    - name: Publish code coverage results
+      uses: madrapps/jacoco-report@v1.6.1
+      with:
+        paths: |
+          tlatools/org.lamport.tlatools/target/code-coverage-report/coverage-result.xml,
+        token: ${{ secrets.GITHUB_TOKEN }}
+        title: Code Coverage
+        update-comment: true
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
       with:
