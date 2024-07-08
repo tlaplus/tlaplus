@@ -1039,7 +1039,13 @@
             </executiondata>
             <structure name="TLA+ tools">
                 <classfiles>
-                    <fileset dir="${class.dir}"/>
+                    <fileset dir="${class.dir}">
+                        <include name="pcal/**/*.class"/>
+                        <include name="tlc2/**/*.class"/>
+                        <include name="util/**/*.class"/>
+                        <include name="tla2*/**/*.class"/>
+                    </fileset>
+
                 </classfiles>
                 <sourcefiles encoding="UTF-8">
                     <fileset dir="${src.dir}"/>
