@@ -132,6 +132,7 @@ jobs:
             tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/TESTS-TestSuites.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/junit-noframes.html
+            tlatools/org.lamport.tlatools/target/code-coverage.exec
     - name: Publish unit test results
       uses: mikepenz/action-junit-report@v4
       if: always()
