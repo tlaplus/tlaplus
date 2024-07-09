@@ -33,6 +33,16 @@ import java.nio.file.Path;
 public class SimpleFilenameToStream implements FilenameToStream {
 
 	public static final String TLA_LIBRARY = "TLA-Library";
+	
+	/**
+	 * The environment variable that enumerates the directories, in which
+	 * the modules should be looked up (following the syntax of PATH).
+	 * The Java system variable TLA_LIBRARY is joined with TLA_PATH.
+	 * The paths defined in TLA_LIBRARY have priority over the paths defined in TLA_PATH.
+	 * 
+	 * July 2020 - Igor Konnov, issue #490.
+	 */
+	public static final String TLA_PATH = "TLA_PATH";
 
 	public static final String STANDARD_MODULES_FOLDER = "StandardModules";
 
@@ -125,8 +135,18 @@ public class SimpleFilenameToStream implements FilenameToStream {
   private String[] getLibraryPaths(final String installationBasePath, String[] libraries) {
     String[] res;
     String path = null;
-    if (libraries == null) path = System.getProperty(TLA_LIBRARY);
-    else {
+    if (libraries == null) {
+    	path = System.getProperty(TLA_LIBRARY);
+    	// July 2020 - Igor Konnov, issue #490
+    	String envTlaPath = System.getenv(TLA_PATH);
+    	if (path == null) {
+    		// TLA_LIBRARY points to nothing, use TLA_PATH
+    		path = envTlaPath; // as a result, path may be null
+    	} else if (envTlaPath != null) {
+    		// Both TLA_LIBRARY and TLA_PATH are defined, join them
+    		path += FileUtil.pathSeparator + envTlaPath;
+    	}
+    } else {
       StringBuffer buf = new StringBuffer();
       for (int i=0; i<libraries.length; i++) {
         buf.append(libraries[i]);
