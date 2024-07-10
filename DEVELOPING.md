@@ -200,3 +200,23 @@ $ brew tap homebrew/cask-versions
 $ brew install tla-plus-toolbox-nightly
 ```
 
+Code Formatting and Style
+-------------------------
+
+TLA⁺ has no strict formatting requirements; focus on substance over style.
+The source code contains a wide variety of styles, and although that can sometimes be distracting, standardizing on one is not a priority for the project.
+
+That said, it is worth following a few guiding principles:
+
+ 1. Modifications should copy the style of nearby code rather than change it.  This helps keep modifications focused so they are easy to review and [bisect](https://git-scm.com/docs/git-bisect).
+ 2. New source files should have a consistent style.
+
+For new Java code we recommend (but do not require):
+
+ - Each `public` class and method should have a javadoc description of its purpose and behavior.
+ - Use 4 spaces for indentation.  If you choose to use tabs instead, do not mix tabs and spaces.
+ - Put opening curly braces (`{`) on the same line as the corresponding declaration or statement.
+ - Include braces for single-statement bodies of statements like `if` and `while`, even though they are optional.
+ - Avoid lines longer than 120 characters.
+
+Note that all of the project's Java source files are encoded in UTF-8 and may therefore contain mathematical characters.
