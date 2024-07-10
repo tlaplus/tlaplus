@@ -20,6 +20,13 @@ AtMostOnce ==
 
 AtMostOnceC ==
     []((x=1) => []((x=0) => [](x=2)))
+
+Spec ==
+    InitA /\ [][NextAB]_x /\ WF_x(NextAB)
+
+LeadsTo ==
+    \* lasso shaped counterexample/liveness property
+    x = 0 ~> [](x = 1 => [](x = 1)) 
 ==========================
 
 fp(x =-1) =  3234510876920644087
