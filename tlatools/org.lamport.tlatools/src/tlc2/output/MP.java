@@ -497,10 +497,10 @@ public class MP
         case EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT:
 			if (parameters.length == 3) {
 				b.append(
-						"Successor state is not completely specified by action %1% of the next-state relation. The following variable%2% not assigned: %3%.\n");
+						"Successor state is not completely specified by action %1% of the next-state relation. The following variable%2% not defined: %3%.\n");
 			} else if (parameters.length == 2) {
 				b.append(
-						"Successor state is not completely specified by the next-state action. The following variable%1% not assigned: %2%.\n");
+						"Successor state is not completely specified by the next-state action. The following variable%1% not defined: %2%.\n");
 			} else {
 				b.append("Successor state is not completely specified by the next-state action.\n");
 			}
