@@ -107,22 +107,39 @@ public class Translator
 		for (int i = 0; i < messages.length; i++) {
 			int position = messages[i].indexOf(PcalDebug.UNRECOVERABLE_ERROR);
 			if (position != -1) {
-				errorMessages.add(new Error(messages[i].substring(position,
+				errorMessages.add(new Error(Error.Severity.ERROR,
+					messages[i].substring(position,
 						messages[i].length() - PcalDebug.ERROR_POSTFIX.length())));
+			} else {
+				position = messages[i].indexOf(PcalDebug.WARNING);
+				if (position != -1) {
+					errorMessages.add(new Error(Error.Severity.WARNING,
+						messages[i].substring(position + PcalDebug.WARNING.length())));
+				}
 			}
 		}
 		return errorMessages;
 	}
 	
 	public static class Error {
+		public enum Severity {
+			WARNING,
+			ERROR
+		}
 
 		private static final String LINE = "line ";
 		private static final String COLUMN = ", column ";
 		
+		private final Severity severity;
 		private final String error;
 
-		public Error(String anError) {
+		public Error(Severity severity, String anError) {
+			this.severity = severity;
 			this.error = anError;
+		}
+
+		public Severity getSeverity() {
+			return severity;
 		}
 		
 		/* (non-Javadoc)
