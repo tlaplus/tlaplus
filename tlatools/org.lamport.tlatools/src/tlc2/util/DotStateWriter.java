@@ -248,12 +248,27 @@ public class DotStateWriter extends StateWriter {
 		this.writer.append(successorsFP);
 		if (visualization == Visualization.STUTTERING) {
 			this.writer.append(" [style=\"dashed\",color=\"lightgray\"];\n");
+			maintainRanks(state);
 		} else {
 			// Add the transition edge label.
-			if(action!=null) {
-				String transitionLabel = this.dotTransitionLabel(state, successor, action, pred);
-				this.writer.append(transitionLabel);	
+			final String labelFmtStr = " [label=\"%s%s%s\",color=\"%s\",fontcolor=\"%s\"]";
+			
+			// Only colorize edges if specified. Default to black otherwise.
+			final String color = colorize ? this.getActionColor(action).toString() : "black" ;
+
+			// Only add action label if specified.
+			final String actionName = actionLabels && action != null ? action.getName().toString() : "" ;
+			
+			// Show the changes variables as part of the transition if the successor has
+			// previously been added.
+			String diff = "";
+			if (TLCGlobals.printDiffsOnly && isSet(stateFlags, IStateWriter.IsSeen)
+					&& rankToNodes.values().stream().filter(s -> s.contains(sfp)).findAny().isEmpty()) {
+				diff = states2dot(state.evalStateLevelAlias(), successor.evalStateLevelAlias());
 			}
+
+			this.writer.append(
+					String.format(labelFmtStr, actionName, diff, pred == null ? "" : "\n" + pred.toString(), color, color));
 			
 			this.writer.append(";\n");
 			
@@ -278,10 +293,10 @@ public class DotStateWriter extends StateWriter {
 					this.writer.append("\"]");
 				}
 				this.writer.append(";\n");
+				
+				maintainRanks(state);
 			}
 		}
-		
-		maintainRanks(state);
 		
 		if (snapshot) {
 			try {
