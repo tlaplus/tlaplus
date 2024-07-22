@@ -587,7 +587,15 @@ public class LiveCheck implements ILiveCheck {
 		public TableauLiveChecker(OrderOfSolution oos, int soln, IBucketStatistics statistics, ILivenessStateWriter writer)
 				throws IOException {
 			super(oos, writer);
-			this.dgraph = new TableauDiskGraph(metadir, soln, statistics);
+			// Serialize the TableauDiskGraph to GraphViz format after each modification.
+			// By passing-Dtlc2.tool.liveness.LiveCheck.debug=true to TLC, it will serialize
+			// the behavior graph into a separate dot/GraphViz file after each change. This
+			// process is highly resource-intensive and should only be enabled during development.
+			if (Boolean.getBoolean(LiveCheck.class.getName() + ".debug")) {
+				this.dgraph = new DebugTableauDiskGraph(metadir, soln, statistics, oos);
+			} else {
+				this.dgraph = new TableauDiskGraph(metadir, soln, statistics);
+			}
 		}
 
 		/* (non-Javadoc)
@@ -680,13 +688,16 @@ public class LiveCheck implements ILiveCheck {
 					final GraphNode node0 = dgraph.getNode(fp0, tidx0);
 					final int s = node0.succSize();
 					node0.setCheckState(checkStateResults);
+					// Create the cross product of s0's successor states in the state graph (SG) and
+					// tnode0's immediate successors in the tableau graph (TG). Outer for loop are the
+					// successor states and the inner loop loops over the tableau nodes. 
 					for (int sidx = 0; sidx < succCnt; sidx++) {
 						final TLCState s1 = nextStates.next();
 						final long successor = s1.fingerPrint();
 						final boolean isDone = dgraph.isDone(successor);
 						for (int k = 0; k < tnode0.nextSize(); k++) {
 							final TBGraphNode tnode1 = tnode0.nextAt(k);
-							// Check if the successor is new
+							// Check if the successor is new, i.e, if the pointer ptr equals -1.
 							final long ptr1 = dgraph.getPtr(successor, tnode1.getIndex());
 							if (consistency.get((tnode1.getIndex() * succCnt) + sidx)
 									// We cannot infer from successor t being in the fingerprint graph (FG), that it is
