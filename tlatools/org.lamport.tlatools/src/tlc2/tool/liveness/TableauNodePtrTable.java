@@ -514,7 +514,7 @@ public class TableauNodePtrTable {
   						// element
   						final long elem = getElem(node, j);
   						if (AbstractDiskGraph.isFilePointer(elem)) {
-  							if (table.isDone(fp)) {
+  							if (elem != UNDONE) {
   								buf.append("  ptr: " + elem);
   							} else {
   								buf.append("  ptr: undone");
@@ -529,7 +529,7 @@ public class TableauNodePtrTable {
   						if (predTidx != -1) {
   							buf.append(" predtidx: " + predTidx);
   						}
-  						buf.append(", isSeen: " + isSeen(node, j));
+  						buf.append(", isSeen: " + !isSeen(node, j));
   						buf.append("\n");
   					}
   				}
@@ -537,4 +537,78 @@ public class TableauNodePtrTable {
   			return buf.toString();
   		}
   	}
+
+	public String toDotViz() {
+		final StringBuffer sb = new StringBuffer();
+		sb.append("subgraph cluster_table {");
+		sb.append("graph[style=bold];");
+		sb.append("label = \"NodePtrTable\" style=\"solid\"\n");
+		sb.append("node [ labeljust=\"l\",shape=record ]\n");
+		
+		sb.append("key [label=<<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\" cellborder=\"1\">\n");
+		sb.append("<tr> "
+				+ "<td BGCOLOR=\"lightblue\">fp</td> "
+				+ "<td BGCOLOR=\"lightblue\">tid</td> "
+				+ "<td BGCOLOR=\"lightblue\">idx</td> "
+				+ "<td BGCOLOR=\"lightblue\">isDone</td> "
+				+ "<td BGCOLOR=\"lightblue\">isSeen</td> "
+				+ "<td BGCOLOR=\"lightblue\">ptr</td> "
+				+ "<td BGCOLOR=\"lightblue\">pred tid</td> "
+				+ "</tr>\n");
+		
+		for (int i = 0; i < nodes.length; i++) {
+			if (nodes[i] != null) {
+				final int[] node = nodes[i];
+				
+				final long fp = ((long) node[0] << 32) | ((long) node[1] & 0xFFFFFFFFL);
+				
+				
+				int j = 2;
+				if (j == node.length - 1) {
+					sb.append(String.format(
+							"<tr> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>\n",
+							Long.toString(fp).substring(0, 6), "NA", i, isDone(fp), "NA", "NA", "NA"));
+				}
+				for (; j < node.length - 1; j+= getElemLength()) { // don't miss the ptr at the end
+
+					// tableau index
+					final int tidx = node[j];
+
+					// element
+					final String ptr; 
+					final long elem = getElem(node, j);
+					if (AbstractDiskGraph.isFilePointer(elem)) {
+						if (elem != UNDONE) {
+							ptr = Long.toString(elem);
+						} else {
+							ptr = "undone";
+						}
+					} else if (AbstractDiskGraph.MAX_PTR == elem){
+						ptr = "Initial";
+					} else {
+						final long offset = AbstractDiskGraph.MAX_PTR + 1;
+						ptr = Long.toString(elem - offset);
+					}
+
+					
+					final int predTidx = getElemTidx(node, j);
+					final String predTid;
+					if (predTidx != -1) {
+						predTid = Integer.toString(predTidx);
+					} else {
+						predTid = "-";
+					}
+					
+					sb.append(String.format(
+							"<tr> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> <td>%s</td> </tr>\n",
+							Long.toString(fp).substring(0, 6), tidx, i, isDone(fp), !isSeen(node, j), ptr, predTid));
+				}
+			}
+		}
+		sb.append("</table>>]\n");
+
+		sb.append("}");
+		
+		return sb.toString();
+	}
 }

@@ -167,7 +167,7 @@ public abstract class AbstractDiskGraph {
 	 * @see commented tlc2.tool.liveness.DiskGraphTest#
 	 *      testAddSameGraphN	odeTwiceCorrectSuccessors
 	 */
-	public final long addNode(GraphNode node) throws IOException {
+	public long addNode(GraphNode node) throws IOException {
 		outDegreeGraphStats.addSample(node.succSize());
 		
 		long ptr = this.nodeRAF.getFilePointer();

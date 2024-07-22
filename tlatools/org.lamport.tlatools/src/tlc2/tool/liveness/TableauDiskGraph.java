@@ -89,7 +89,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see TableauDiskGraph#isDone(long)
 	 * @see TableauDiskGraph#getNodesByLoc(int)
 	 */
-	public final int setDone(final long fp) {
+	public int setDone(final long fp) {
 		return this.nodePtrTbl.setDone(fp);
 	}
 	
@@ -101,7 +101,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see TableauDiskGraph#isDone(long)
 	 * @see TableauDiskGraph#setDone(long)
 	 */
-	public final void recordNode(final long fp, final int tidx) {
+	public void recordNode(final long fp, final int tidx) {
 		this.nodePtrTbl.put(fp, tidx, TableauNodePtrTable.UNDONE);
 	}
 
@@ -286,6 +286,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 			sb.append("nodesep = 0.7\n");
 			sb.append("rankdir=LR;\n"); // Left to right rather than top to bottom
 			sb.append(toDotVizLegend(oos));
+			sb.append(nodePtrTbl.toDotViz());
 			sb.append("subgraph cluster_graph {\n"); 
 	        sb.append("color=\"white\";\n"); // no border.
 			//TODO Reading the file front to end potentially yields node duplicates in the output. Better to create a (temporary) nodeptrtable and traverse it instead.
