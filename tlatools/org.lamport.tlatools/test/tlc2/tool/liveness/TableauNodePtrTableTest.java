@@ -37,6 +37,68 @@ import org.junit.Test;
 public class TableauNodePtrTableTest {
 
 	@Test
+	public void testSetDoneBFSOrder() {
+		
+		// Test behavior of TNPT when state graph/fingerprint graph nodes are added in
+		// strict BFS order.
+		
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final int DONE = 4711; // This is a disk location (pointer) in practice.
+		final long fp = 42L; // hash(v) = fp
+		final int t = 1;
+		final int u = 2;		
+		
+		// 1) A transition from state u -> v is added into the behavior graph. As part
+		// of adding u, TLC records v with some tableau ids.
+		tbl.put(fp, t, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+		tbl.put(fp, u, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+		
+		// 2) v -> ... is added into the behavior graph.
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+		
+		// Marking the nodes done has become a no-op.
+		tbl.put(fp, u, DONE);
+		assertTrue(tbl.isDone(fp));
+		tbl.put(fp, t, DONE);
+		assertTrue(tbl.isDone(fp));
+	}
+	@Test
+	public void testSetDoneNoOrder() {
+		
+		// Test behavior of TNPT when state graph/fingerprint graph nodes are added in
+		// non-BFS order.
+		
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final int DONE = 4711; // This is a disk location (pointer) in practice.
+		final long fp = 42L; // hash(v) = fp
+		final int t = 1;
+		final int u = 2;		
+		
+		// 1) A transition from state v -> ... is added into the behavior graph. Because
+		// v has not been recorded earlier, adding it into the behavior graph is reduced
+		// to calling setDone; no GraphNodes are recorded.
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+
+		// 2) u -> v is added into the behavior graph.
+		tbl.put(fp, t, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+		tbl.put(fp, u, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+				
+		// Marking the nodes done has become a no-op.
+		tbl.put(fp, u, DONE);
+		assertFalse(tbl.isDone(fp));
+		tbl.put(fp, t, DONE);
+		assertTrue(tbl.isDone(fp));
+	}
+
+	@Test
 	public void testSetDone() {
 		final TableauNodePtrTable tbl = new TableauNodePtrTable(0); // init with 0 so that grow is tested
 		
@@ -58,6 +120,66 @@ public class TableauNodePtrTableTest {
 
 		tbl.setDone(fingerprint);
 		assertTrue(tbl.isDone(fingerprint));
+	}
+
+	@Test
+	public void testSetDone2() {
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final int DONE = 4711; // This is a disk location (pointer) in practice.
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		// Mark fp as done.
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+		
+		// Add the behavior graph node <<fp, t>> to tbl and mark it undone.
+		tbl.put(fp, t, TableauNodePtrTable.UNDONE);
+		
+		// Adding <<fp, t>> to tbl causes fp to become undone again!!!
+		assertFalse(tbl.isDone(fp));
+
+		// Add a second node <<fp, u>> to the behavior graph (same fingerprint but different
+		// tableau node).
+		tbl.put(fp, u, TableauNodePtrTable.UNDONE);
+		
+		// Nothing changes WRT fp.
+		assertFalse(tbl.isDone(fp));
+		
+		// Marking the additional node done has no effect on fp's done state.
+		tbl.put(fp, u, DONE);
+		assertFalse(tbl.isDone(fp));
+		
+		// Marking the *first* node (insertion order) in tbl done, marks fp done again. 
+		tbl.put(fp, t, DONE);
+		assertTrue(tbl.isDone(fp));
+	}
+
+	@Test
+	public void testSetDone3() {
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final int DONE = 4711; // This is a disk location (pointer) in practice.
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+		
+		// fp becomes undone again by recording a node (see dgragh.recordNode)
+		tbl.put(fp, t, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+
+		// nothing changes if we record additional nodes.
+		tbl.put(fp, u, TableauNodePtrTable.UNDONE);
+		assertFalse(tbl.isDone(fp));
+		
+		// Mark the initial node done.
+		tbl.put(fp, t, DONE);
+		assertTrue(tbl.isDone(fp));
 	}
 	
 	// Test various methods which apparently all yield pretty much the same result
