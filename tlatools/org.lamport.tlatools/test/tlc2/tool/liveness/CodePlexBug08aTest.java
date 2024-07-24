@@ -66,15 +66,24 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);
+		final List<String> expectedActions = new ArrayList<>();
+		expectedActions.add("<Init line 15, col 9 to line 15, col 35 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 1");
+		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 2");
+		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 2");
+		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 3");
+		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 3");
+		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
+		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
+		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
 		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		
 		// Assert the error trace contains a stuttering step at position 5
 		assertStuttering(9);
