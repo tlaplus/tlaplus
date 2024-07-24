@@ -65,6 +65,32 @@ package tlc2.tool.liveness;
  * <p>
  * Internally {@link TableauNodePtrTable} hashes the node's fingerprint to a
  * bucket address. In case of hash collision, open addressing is used.
+ * 
+ * 
+ * 
+ * Each int[] node has the following format:
+ *
+ *	+---------------------------------+
+ *	| 32 high-order bits of key       | \
+ *	+---------------------------------+  |  header
+ *	| 32 low-order bits of key        | /
+ *	+---------------------------------+
+ *	| 32 bit tidx (\in Nat)           | \
+ *	+---------------------------------+  |
+ *	| 32 high-order bits of aux info  |  |  repeated 0..N times
+ *	+---------------------------------+  |
+ *	| 32 low-order bits of aux info   |  |
+ *	+---------------------------------+ /
+ *	
+ *	The 64-bit auxiliary information is one of:
+ *	
+ *	    - UNDONE (a specific negative long with high-order bits equal to -2)
+ *	    - DONE (a specific negative long with high-order bits equal to -3)
+ *	    - a positive long representing an offset into the disk graph file
+ *
+ *  If setDone(fp) is called before any put for that fingerprint fp, only the
+ *  header will be created.
+ *
  */
 public class TableauNodePtrTable {
 

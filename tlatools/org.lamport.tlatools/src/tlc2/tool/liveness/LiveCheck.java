@@ -667,6 +667,9 @@ public class LiveCheck implements ILiveCheck {
 				// s0/fp0 done even though we release the oos lock, because no other
 				// worker will work on s0/fp0 ever again, which is guaranteed by safety-
 				// checking.
+				// setDone/isDone appears redundant to TLC's FPSet.  However, checking
+				// the fingerprint set (FPSet) would be racy because another BFS worker
+				// could have added the fingerprint successor (for loop below) concurrently.
 				final int loc0 = dgraph.setDone(fp0);
 				final int[] nodes = dgraph.getNodesByLoc(loc0);
 				if (nodes == null) {
