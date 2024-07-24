@@ -70,73 +70,90 @@ public class CodePlexBug08EWD840FL1Test extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(10);
+		final List<String> expectedActions = new ArrayList<String>();
+		expectedActions.add("<Init line 21, col 3 to line 24, col 21 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 0\n"
 				+ "/\\ tcolor = \"black\"");
+		expectedActions.add("<InitiateProbe line 30, col 3 to line 35, col 43 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(3) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(2) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(1) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(1) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(2) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> TRUE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<Deactivate(0) line 69, col 3 to line 71, col 38 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<Deactivate(1) line 69, col 3 to line 71, col 38 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<SendMsg(2) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<Deactivate(2) line 69, col 3 to line 71, col 38 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<Deactivate(3) line 69, col 3 to line 71, col 38 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 3\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<PassToken(3) line 47, col 3 to line 52, col 43 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"black\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 2\n"
 				+ "/\\ tcolor = \"white\"");
+		expectedActions.add("<PassToken(2) line 47, col 3 to line 52, col 43 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> FALSE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 1\n"
 				+ "/\\ tcolor = \"black\"");
+		expectedActions.add("<SendMsg(1) line 61, col 3 to line 65, col 31 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> TRUE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 1\n"
 				+ "/\\ tcolor = \"black\"");
+		expectedActions.add("<Deactivate(1) line 69, col 3 to line 71, col 38 of module EWD840>");
 		expectedTrace.add("/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
 				+ "/\\ color = (0 :> \"white\" @@ 1 :> \"black\" @@ 2 :> \"white\" @@ 3 :> \"white\")\n"
 				+ "/\\ tpos = 1\n"
 				+ "/\\ tcolor = \"black\"");
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
-		assertBackToState(1);
+		assertBackToState(1, "<PassToken(1) line 47, col 3 to line 52, col 43 of module EWD840>");
 		
 		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
 		// register.
