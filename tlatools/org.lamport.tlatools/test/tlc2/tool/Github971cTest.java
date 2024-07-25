@@ -88,7 +88,6 @@ public class Github971cTest extends ModelCheckerTestCase {
 		expectedTrace.add("x = -1");
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = 0");
-		expectedTrace.add("x = 0"); // Could also be x = 1
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 	}
 
