@@ -71,6 +71,7 @@ public class TBGraphNode {
 	}
 
 	public void setIndex(final int i) {
+		assert i >= 0;
 		this.index = i;
 	}
 

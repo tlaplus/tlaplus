@@ -136,6 +136,7 @@ public class TableauNodePtrTable {
 	 * <k, tidx>. Otherwise, return -1.
 	 */
 	public final long get(final long k, final int tidx) {
+		assert tidx >= -1;
 		if (count >= thresh) {
 			this.grow();
 		}
@@ -161,6 +162,7 @@ public class TableauNodePtrTable {
 	 * tidx>, overwrite the old value.
 	 */
 	public final void put(long k, int tidx, long elem) {
+		assert tidx >= -1;
 		if (this.count >= this.thresh) {
 			this.grow();
 		}
@@ -204,6 +206,7 @@ public class TableauNodePtrTable {
 	 * -1.
 	 */
 	public final int getLoc(long k, int tidx) {
+		assert tidx >= -1;
 		if (count >= thresh) {
 			this.grow();
 		}
@@ -370,6 +373,7 @@ public class TableauNodePtrTable {
 	}
 
 	protected int[] addElem(long key, int tidx, long elem) {
+		assert tidx >= -1;
 		int[] node = new int[3 + getElemLength() - 1];
 		node[0] = (int) (key >>> 32);
 		node[1] = (int) (key & 0xFFFFFFFFL);
@@ -380,6 +384,7 @@ public class TableauNodePtrTable {
 	}
 
 	protected int[] appendElem(int[] node, int tidx, long elem) {
+		assert tidx >= -1;
 		int len = node.length;
 		int[] newNode = new int[len + getElemLength()];
 		System.arraycopy(node, 0, newNode, 0, len);
@@ -407,6 +412,7 @@ public class TableauNodePtrTable {
 	
 
 	public final int getIdx(int[] node, int tidx) {
+		assert tidx >= -1;
 		int len = node.length;
 		for (int i = 2; i < len; i += getElemLength()) {
 			if (node[i] == tidx) {
@@ -422,6 +428,7 @@ public class TableauNodePtrTable {
 	}
 
 	public void putElem(int[] node, long elem, int tableauIdx, int loc) {
+		assert tableauIdx >= -1;
 		node[loc + 1] = (int) (elem >>> 32);
 		node[loc + 2] = (int) (elem & 0xFFFFFFFFL);
 		// ignores tableau index
