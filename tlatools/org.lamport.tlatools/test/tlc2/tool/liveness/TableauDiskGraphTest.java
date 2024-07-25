@@ -527,4 +527,58 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 		assertTrue(node.transExists(2, 2));
 		assertTrue(node.transExists(3, 3));
 	}
+
+	@Test
+	public void testWhatsDoneIsDoneRRS() throws IOException {
+		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+
+		dg.recordNode(fp, t);
+		assertFalse(dg.isDone(fp));
+
+		dg.recordNode(fp, u);
+		assertFalse(dg.isDone(fp));
+		
+		dg.setDone(fp);
+		assertTrue(dg.isDone(fp));
+	}
+
+	@Test
+	public void testWhatsDoneIsDoneRSR() throws IOException {
+		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+
+		dg.recordNode(fp, t);
+		assertFalse(dg.isDone(fp));
+		
+		dg.setDone(fp);
+		assertTrue(dg.isDone(fp));
+		
+		dg.recordNode(fp, u);
+		assertTrue(dg.isDone(fp));
+	}
+
+	@Test
+	public void testWhatsDoneIsDoneSRR() throws IOException {
+		final TableauDiskGraph dg = (TableauDiskGraph) getDiskGraph();
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		dg.setDone(fp);
+		assertTrue(dg.isDone(fp));
+
+		dg.recordNode(fp, t);
+		assertTrue(dg.isDone(fp));
+		
+		dg.recordNode(fp, u);
+		assertTrue(dg.isDone(fp));
+	}
 }

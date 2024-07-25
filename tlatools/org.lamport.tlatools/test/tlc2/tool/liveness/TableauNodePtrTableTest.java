@@ -182,6 +182,64 @@ public class TableauNodePtrTableTest {
 		assertTrue(tbl.isDone(fp));
 	}
 	
+	@Test
+	public void testIsDoneSPP() {
+		
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+		
+		tbl.put(fp, t);
+		assertTrue(tbl.isDone(fp));
+
+		tbl.put(fp, u);
+		assertTrue(tbl.isDone(fp));	
+	}
+	
+	@Test
+	public void testIsDonePPS() {
+		
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		tbl.put(fp, t);
+		assertFalse(tbl.isDone(fp));
+
+		tbl.put(fp, u);
+		assertFalse(tbl.isDone(fp));	
+		
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+	}
+
+	
+	@Test
+	public void testIsDonePSP() {
+		
+		final TableauNodePtrTable tbl = new TableauNodePtrTable(0);
+		
+		final long fp = 42L;
+		final int t = 1;
+		final int u = 2;		
+		
+		tbl.put(fp, t);
+		assertFalse(tbl.isDone(fp));
+		
+		tbl.setDone(fp);
+		assertTrue(tbl.isDone(fp));
+
+		tbl.put(fp, u);
+		assertTrue(tbl.isDone(fp));	
+	}
+
 	// Test various methods which apparently all yield pretty much the same result
 	@Test
 	public void testRedundantMethodYieldSameResult() {

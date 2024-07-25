@@ -104,7 +104,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 */
 	public void recordNode(final long fp, final int tidx) {
 		assert tidx >= 0;
-		this.nodePtrTbl.put(fp, tidx, TableauNodePtrTable.UNDONE);
+		this.nodePtrTbl.put(fp, tidx);
 	}
 
 	/**
