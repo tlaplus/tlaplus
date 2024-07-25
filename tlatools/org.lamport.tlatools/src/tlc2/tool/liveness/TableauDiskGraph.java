@@ -47,6 +47,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	}
 	
 	public final long getPtr(long fp, int tidx) {
+		assert tidx >= 0;
 		return this.nodePtrTbl.get(fp, tidx);
 	}
 	
@@ -102,6 +103,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see TableauDiskGraph#setDone(long)
 	 */
 	public void recordNode(final long fp, final int tidx) {
+		assert tidx >= 0;
 		this.nodePtrTbl.put(fp, tidx, TableauNodePtrTable.UNDONE);
 	}
 
@@ -152,6 +154,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @throws IOException
 	 */
 	public final GraphNode getNode(long fp, int tidx) throws IOException {
+		assert tidx >= 0;
 		long ptr = this.nodePtrTbl.get(fp, tidx);
 		if (ptr < 0) {
 			return new GraphNode(fp, tidx);
@@ -167,6 +170,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see tlc2.tool.liveness.AbstractDiskGraph#getLink(long, int)
 	 */
 	public long getLink(long state, int tidx) {
+		assert tidx >= 0;
 		return this.nodePtrTbl.get(state, tidx);
 	}
 
@@ -174,6 +178,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see tlc2.tool.liveness.AbstractDiskGraph#putLink(long, int, long)
 	 */
 	public long putLink(long state, int tidx, long link) {
+		assert tidx >= 0;
 		assert MAX_PTR <= link && link < MAX_LINK; 
 		int[] node = this.nodePtrTbl.getNodes(state);
 		int cloc = this.nodePtrTbl.getIdx(node, tidx);
@@ -189,6 +194,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 	 * @see tlc2.tool.liveness.AbstractDiskGraph#setMaxLink(long, int)
 	 */
 	public void setMaxLink(long state, int tidx) {
+		assert tidx >= 0;
 		this.nodePtrTbl.put(state, tidx, MAX_LINK);
 	}
 

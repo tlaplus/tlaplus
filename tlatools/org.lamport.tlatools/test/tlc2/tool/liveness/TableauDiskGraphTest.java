@@ -55,6 +55,11 @@ public class TableauDiskGraphTest extends DiskGraphTest {
 	protected AbstractDiskGraph getDiskGraph() throws IOException {
 		return new TableauDiskGraph(createTempDirectory().getAbsolutePath(), NUMBER_OF_SOLUTIONS, GRAPH_STATS);
 	}
+	
+	@Override
+	protected int getTableauIndex() {
+		return 0;
+	}
 
 	/* 
 	 * Tests that the path is correctly reconstructed when a node's predecessors

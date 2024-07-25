@@ -46,7 +46,6 @@ public class DiskGraphTest {
 
 	private static final IBucketStatistics GRAPH_STATS = new FixedSizedBucketStatistics("Test Dummy", 16);
 	private static final int NUMBER_OF_SOLUTIONS = 1;
-	private static final int NO_TABLEAU = -1;
 	private static final int NUMBER_OF_ACTIONS = 0;
 	private static final BitVector NO_ACTIONS = null;
 	
@@ -54,6 +53,10 @@ public class DiskGraphTest {
 		// Have to use dedicated folder for each test. Otherwise tests interfere
 		// with each other (e.g. test A reads the disk file of test B)
 		return new DiskGraph(createTempDirectory().getAbsolutePath(), NUMBER_OF_SOLUTIONS, GRAPH_STATS);
+	}
+	
+	protected int getTableauIndex() {
+		return -1;
 	}
 
 	protected File createTempDirectory() throws IOException {
@@ -72,7 +75,8 @@ public class DiskGraphTest {
 	@Test
 	public void testGetPathWithoutInitNoTableau() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
-		dg.addNode(new GraphNode(1L, NO_TABLEAU));
+		final int tidx = getTableauIndex();
+		dg.addNode(new GraphNode(1L, tidx));
 		dg.createCache();
 		try {
 			dg.getPath(1L, -1);
@@ -87,24 +91,25 @@ public class DiskGraphTest {
 	@Test
 	public void testGetMinimalPathWithoutTableau() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
+		final int tidx = getTableauIndex();
 
 		final long initFP = 1L;
 		final long successorFP = 2L;
 		
 		// Init node
-		dg.addInitNode(1L, NO_TABLEAU);
+		dg.addInitNode(1L, tidx);
 
 		// Successor node
-		dg.addNode(new GraphNode(successorFP, NO_TABLEAU));
+		dg.addNode(new GraphNode(successorFP, tidx));
 		
 		// Create relationship between init and successor
-		final GraphNode node = new GraphNode(initFP, NO_TABLEAU);
-		node.addTransition(successorFP, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS, NUMBER_OF_ACTIONS, 0);
+		final GraphNode node = new GraphNode(initFP, tidx);
+		node.addTransition(successorFP, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS, NUMBER_OF_ACTIONS, 0);
 		dg.addNode(node);
 
 		// Can only lookup/get a node, if there is a cache
 		dg.createCache();
-		final LongVec path = dg.getPath(successorFP, -1);
+		final LongVec path = dg.getPath(successorFP, tidx);
 		dg.destroyCache();
 
 		assertFalse("Length or path returned is too short", path.size() < 2);
@@ -133,6 +138,7 @@ public class DiskGraphTest {
 	@Test
 	public void testPathWithTwoInitNodes() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
+		final int tidx = getTableauIndex();
 
 		long noSuccessorInitState = 1L;
 
@@ -141,25 +147,25 @@ public class DiskGraphTest {
 		long finalState = 3L;
 
 		// Init
-		dg.addInitNode(noSuccessorInitState, NO_TABLEAU);
+		dg.addInitNode(noSuccessorInitState, tidx);
 		
 		/*
 		 * Intentionally *NOT* adding the init via dg.addNode(init)
 		 */
 		
 		// second init (this one gets added via addNode
-		dg.addInitNode(regularInitState, NO_TABLEAU);
-		GraphNode node = new GraphNode(regularInitState, NO_TABLEAU);
-		node.addTransition(finalState, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		dg.addInitNode(regularInitState, tidx);
+		GraphNode node = new GraphNode(regularInitState, tidx);
+		node.addTransition(finalState, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		dg.addNode(node);
 		
 		// final
-		node = new GraphNode(finalState, NO_TABLEAU);
+		node = new GraphNode(finalState, tidx);
 		dg.addNode(node);
 		
 		dg.createCache();
-		LongVec path = dg.getPath(finalState, NO_TABLEAU);
+		LongVec path = dg.getPath(finalState, tidx);
 		dg.destroyCache();
 		
 		assertEquals(2, path.size());
@@ -168,7 +174,7 @@ public class DiskGraphTest {
 
 		// Make sure it also returns a path if init is searched
 		dg.createCache();
-		path = dg.getPath(noSuccessorInitState, NO_TABLEAU);
+		path = dg.getPath(noSuccessorInitState, tidx);
 		dg.destroyCache();
 
 		assertEquals(1, path.size());
@@ -193,45 +199,46 @@ public class DiskGraphTest {
 	@Test
 	public void testLookupExistingNode() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
+		final int tidx = getTableauIndex();
 		
-		GraphNode node = dg.getNode(1L, -1);
+		GraphNode node = dg.getNode(1L, tidx);
 		assertEquals(0, node.succSize());
 		dg.addNode(node);
 		
 		// Cause the DiskGraph to be read from disk
 		dg.makeNodePtrTbl();
 		
-		node = dg.getNode(1L, -1);
+		node = dg.getNode(1L, tidx);
 		dg.addNode(node);
 		assertEquals(0, node.succSize());
 		
-		node.addTransition(2, -1, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		node.addTransition(2, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		dg.addNode(node);
 		assertEquals(1, node.succSize());
-		assertTrue(node.transExists(2, -1));
+		assertTrue(node.transExists(2, tidx));
 		
 		dg.makeNodePtrTbl();
 		
-		node = dg.getNode(1L, -1);
+		node = dg.getNode(1L, tidx);
 		assertEquals(1, node.succSize());
 
-		node.addTransition(3, -1, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		node.addTransition(3, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		dg.addNode(node);
 		assertEquals(2, node.succSize());
-		assertTrue(node.transExists(2, -1));
-		assertTrue(node.transExists(3, -1));
+		assertTrue(node.transExists(2, tidx));
+		assertTrue(node.transExists(3, tidx));
 		
 		// commit/chkpt
 		dg.beginChkpt();
 		dg.commitChkpt();
 		dg.recover();
 		
-		node = dg.getNode(1L, -1);
+		node = dg.getNode(1L, tidx);
 		assertEquals(2, node.succSize());
-		assertTrue(node.transExists(2, -1));
-		assertTrue(node.transExists(3, -1));
+		assertTrue(node.transExists(2, tidx));
+		assertTrue(node.transExists(3, tidx));
 	}
 	
 	/*
@@ -241,36 +248,37 @@ public class DiskGraphTest {
 	@Test
 	public void testAddSameGraphNodeTwiceCorrectSuccessors() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
-
+		final int tidx = getTableauIndex();
+		
 		// Add a graphnode to DiskGraph with a single transition
-		final GraphNode graphNode = dg.getNode(1, NO_TABLEAU);
-		graphNode.addTransition(2, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		final GraphNode graphNode = dg.getNode(1, tidx);
+		graphNode.addTransition(2, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		long firstPtr = dg.addNode(graphNode);
 		
 		// Update the same graph node with another transition
-		final GraphNode graphNodeSecondInstance = dg.getNode(1, NO_TABLEAU);
-		graphNodeSecondInstance.addTransition(3, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		final GraphNode graphNodeSecondInstance = dg.getNode(1, tidx);
+		graphNodeSecondInstance.addTransition(3, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		long secondPtr = dg.addNode(graphNodeSecondInstance);
 		
 		assertEquals(1, dg.size());
 		
 		assertNotSame(firstPtr, secondPtr);
-		assertEquals(secondPtr, dg.getLink(1, NO_TABLEAU));
+		assertEquals(secondPtr, dg.getLink(1, tidx));
 
-		final GraphNode node = dg.getNode(1, NO_TABLEAU);
+		final GraphNode node = dg.getNode(1, tidx);
 		assertEquals(2, node.succSize());
-		assertTrue(node.transExists(2, NO_TABLEAU));
-		assertTrue(node.transExists(3, NO_TABLEAU));
+		assertTrue(node.transExists(2, tidx));
+		assertTrue(node.transExists(3, tidx));
 		
 		dg.makeNodePtrTbl();
 		dg.createCache();
-		final long ptr = dg.getLink(1, NO_TABLEAU);
-		final GraphNode n = dg.getNode(1, NO_TABLEAU, ptr);
+		final long ptr = dg.getLink(1, tidx);
+		final GraphNode n = dg.getNode(1, tidx, ptr);
 		assertEquals(2, n.succSize());
-		assertTrue(n.transExists(2, NO_TABLEAU));
-		assertTrue(n.transExists(3, NO_TABLEAU));
+		assertTrue(n.transExists(2, tidx));
+		assertTrue(n.transExists(3, tidx));
 	}
 	
 	/*
@@ -282,14 +290,15 @@ public class DiskGraphTest {
 	@Test
 	public void testGetPathPartialGraph() throws IOException {
 		final AbstractDiskGraph dg = getDiskGraph();
+		final int tidx = getTableauIndex();
 		
 		final long initState = 2L;
 		final long danglingState = 3L;
 
 		// Init
-		dg.addInitNode(initState, NO_TABLEAU);
-		final GraphNode node = new GraphNode(initState, NO_TABLEAU);
-		node.addTransition(danglingState, NO_TABLEAU, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
+		dg.addInitNode(initState, tidx);
+		final GraphNode node = new GraphNode(initState, tidx);
+		node.addTransition(danglingState, tidx, NUMBER_OF_SOLUTIONS, NUMBER_OF_ACTIONS, NO_ACTIONS,
 				NUMBER_OF_ACTIONS, 0);
 		dg.addNode(node);
 
@@ -302,12 +311,12 @@ public class DiskGraphTest {
 		// the graph)
 		dg.createCache();
 		try {
-			dg.getPath(5L, NO_TABLEAU);
+			dg.getPath(5L, tidx);
 		} catch (ArrayIndexOutOfBoundsException e) {
 			fail(e.getMessage());
 		} catch (RuntimeException e) {
 			// Make sure it is the correct RuntimeException
-			assertEquals("Couldn't re-create liveness trace (path) starting at: 5 and tidx: -1", e.getMessage());
+			assertEquals("Couldn't re-create liveness trace (path) starting at: 5 and tidx: " + tidx, e.getMessage());
 		}
 	}
 }
