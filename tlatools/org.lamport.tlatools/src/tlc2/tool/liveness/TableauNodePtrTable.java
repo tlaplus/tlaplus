@@ -561,10 +561,12 @@ public class TableauNodePtrTable {
   						// element
   						final long elem = getElem(node, j);
   						if (AbstractDiskGraph.isFilePointer(elem)) {
-  							if (elem != UNDONE) {
-  								buf.append("  ptr: " + elem);
-  							} else {
+  							if (elem == UNDONE) {
   								buf.append("  ptr: undone");
+  							} else if (elem == DONE) {
+  								buf.append("  ptr: done");
+  							} else {
+  								buf.append("  ptr: " + elem);
   							}
   						} else if (AbstractDiskGraph.MAX_PTR == elem){
   							buf.append(" elem: Init State");
@@ -625,10 +627,12 @@ public class TableauNodePtrTable {
 					final String ptr; 
 					final long elem = getElem(node, j);
 					if (AbstractDiskGraph.isFilePointer(elem)) {
-						if (elem != UNDONE) {
-							ptr = Long.toString(elem);
-						} else {
+						if (elem == UNDONE) {
 							ptr = "undone";
+						} else if (elem == DONE) {
+							ptr = "done";
+						} else {
+							ptr = Long.toString(elem);
 						}
 					} else if (AbstractDiskGraph.MAX_PTR == elem){
 						ptr = "Initial";
