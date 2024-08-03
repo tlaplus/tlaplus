@@ -5,7 +5,7 @@ on:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
-      - v1.7.3         # Push events on master branch
+      - v1.7.4         # Push events on master branch
 
 jobs:
 
@@ -13,12 +13,19 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy: 
       matrix:
-        operating-system: [ubuntu-latest]
+        operating-system: [ubuntu-latest, macos-latest]
         include: 
+        - operating-system: macos-latest
+          MVN_COMMAND: mvn -Dmaven.test.skip=true
+          GITHUB_RELEASE_NAME: The Xenophanes release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.4-macosx.cocoa.x86_64.zip
+
         - operating-system: ubuntu-latest
           MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
-          GITHUB_RELEASE_NAME: The Ulpian release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.3-linux.gtk.x86_64.zip
+          GITHUB_RELEASE_NAME: The Xenophanes release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.4-linux.gtk.x86_64.zip
+          TOOLBOX_PRODUCT_ZIP_WIN: TLAToolbox-1.7.4-win32.win32.x86_64.zip
+
 
     steps:
 
@@ -54,34 +61,108 @@ jobs:
         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       ##
+      ## Configure SSH privkey (INRIA upload below)
+      ##
+    - name: Set up SSH private key
+      run: 'mkdir -p ~/.ssh && echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa'
+      shell: bash
+      env:
+        INRIA_SSH_PRIVKEY: ${{ secrets.INRIA_SSH_PRIVKEY }}
+
+      ##
+      ## Set up Comodo code signing cert/key and configure maven (settings.xml) to 
+      ## have CODESIGN_KEYSTOREPASS_KEY, path to ComodoCertificate.p12, and the alias
+      ## of the cert/key in ComodoCertificate.p12.
+      ##
+    - name: Set up maven credentials
+      run: 'echo "$MVN_SETTINGS_XML" > ~/.m2/settings.xml'
+      shell: bash
+      env:
+        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML }}
+    - name: Set up Comodo Codesign keystore part I
+      run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
+      shell: bash
+      env:
+        COMODO_CODESIGN_COMBINED_PEM: ${{ secrets.COMODO_CODESIGN_COMBINED_PEM }}
+    - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           openssl version
+           openssl pkcs12 -legacy -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+    - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+           openssl version
+           openssl pkcs12 -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+
+      ##
       ## Build TLC and Toolbox (logger reduces verbosity).
       ##
-    - name: Build with Ant (Linux)
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml
+    - name: Build with Maven (Linux)
+      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+
+      ##
+      ## Create signed apt repository out of Linux Toolbox zip.
+      ##
+    - name: Create apt repository
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           chmod -x toolbox/org.lamport.tla.toolbox.product.product/createAptRepo.sh
+           cp toolbox/org.lamport.tla.toolbox.product.product/target/*.deb toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           cd toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           bash -x ../../createAptRepo.sh .
+      ##
+      ## Create RPM out of Linux Toolbox zip.
+      ##
+#    - name: Create RPM (RedHat/CentOS package)
+#      if: matrix.operating-system == 'ubuntu-latest'
+#      run: |
+#           sudo apt-get install alien --no-install-recommends -y
+#           cd toolbox/org.lamport.tla.toolbox.product.product/target/
+#           fakeroot alien --to-rpm --scripts TLAToolbox-?.?.?-linux.gtk.amd64.deb
+#           cp TLA*.rpm products/
 
       ## 
       ## Upload Linux and Windows Toolbox zip and tla2tools.jar to Github release.
       ##
     - name: Upload release assets
       if: matrix.operating-system == 'ubuntu-latest'
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
-           ## Crawl release id
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
+          ## Upload assets replacing existing ones with same name if any
+          cp toolbox/org.lamport.tla.toolbox.product.product/target/TLAToolbox-1.7.4-linux.gtk.amd64.deb TLAToolbox-1.7.4.deb
+          cp toolbox/org.lamport.tla.toolbox.product.product/target/org.lamport.tla.toolbox.product.product-1.4.0-SNAPSHOT.zip p2repository.zip
+          cp toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} .
+          cp toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} .
+          cp tlatools/org.lamport.tlatools/dist/tla2tools.jar .
+          gh release upload v1.7.4 tla2tools.jar ${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} ${{matrix.TOOLBOX_PRODUCT_ZIP}} TLAToolbox-1.7.4.deb p2repository.zip --clobber
 
-           ## Delete old assets and upload replacement assets (if delete fails we still try to upload the new asset)
-           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "tla2tools.jar") | .id')
-           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
-           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=tla2tools.jar --upload-file tlatools/org.lamport.tlatools/dist/tla2tools.jar
+          ## Generate changelog
+          cd general/docs/changelogs
+          ## Append sha1 sum to changelog (last line of changelog has the table header).
+          echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}" >> ch1_7_4.md
+          echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP}}" >> ch1_7_4.md
+          echo "TBD|macOS" >> ch1_7_4.md
+          echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_4.md
+          gh release edit --verify-tag --notes-file ch1_7_4.md v1.7.4
 
-           ## Generate changelog
-           cd general/docs/changelogs
-           ## Append sha1 sum to changelog (last line of changelog has the table header).
-           echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_7_3.md
-           ## Two above as one-liner without intermediate file.
-           $(jq -n --argjson changelog "$(cat ch1_7_3.md | jq  --raw-input --slurp .)" -f gh-1_7_3.jq > gh-1_7_3.json)
-           ## Update draft release with latest changelog in case it changed.
-           ## https://developer.github.com/v3/repos/releases/#edit-a-release
-           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_7_3.json -X PATCH --header "Content-Type: application/json"
+    - name: Upload assets to INRIA
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           ## Thanks Apple for your walled garden! Delete the *unsigned* Toolbox maxOS zip created by the Linux/ubuntu job.  The macOS job below creates and rsyncs a *signed* zip file.
+           rm toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.7.4-macosx.cocoa.x86_64.zip
+           ## Upload p2 and apt repository to INRIA machine.
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:1.7.4/dist/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:1.7.4/products/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/repository/ github@upload.tlapl.us:1.7.4/repository/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.doc/html/ github@upload.tlapl.us:1.7.4/doc/
 
     ## 
     ## Update all git tags to make the download urls work, i.e.
@@ -95,3 +176,63 @@ jobs:
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
+
+      ##
+      ## Upload tla2tools.jar to Github maven packages.
+      ##
+    - name: Upload to Github maven packages
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           cd tlatools/org.lamport.tlatools/
+           ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
+           zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
+           ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
+           mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
+      ################################# macOS #################################
+
+      ##
+      ## Sign Toolbox macOS zip file.
+      ##
+    - name: Set up Apple Certs
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_CERTS" > certs.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
+    - name: Set up Apple Key (submission)
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_SUBMISSION_PRIVKEY" > submission.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_SUBMISSION_PRIVKEY: ${{ secrets.APPLE_CODESIGN_SUBMISSION_PRIVKEY }}
+    - name: Set up Apple Key (dev)
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
+    - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
+      if: matrix.operating-system == 'macos-latest'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+           ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
+           openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
+           ## Create a fresh keychain "tla" and import certs and keys into it.
+           security create-keychain -p ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           security import certs.pem -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           security import dev.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           ## Listing the keychain once is apparently required for codesign to work.
+           security list-keychains -s tla
+           ## Not sure what this is for, but hey: https://stackoverflow.com/a/40039594
+           security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           ## Unzip, sign, and zip up the TLA Toolbox.
+           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{ matrix.TOOLBOX_PRODUCT_ZIP }}
+           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
+           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
+           #xcrun altool --notarize-app --primary-bundle-id "org.lamport.tla.toolbox.product.product" --username "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" --file "${{ matrix.TOOLBOX_PRODUCT_ZIP }}"
+           xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "${{ matrix.TOOLBOX_PRODUCT_ZIP }}"
+           ## Upload signed TLAToolbox zip to Github release.
+           gh release upload v1.7.4 ${{ matrix.TOOLBOX_PRODUCT_ZIP }} --clobber
+           ## Upload p2 and apt repository to INRIA machine.
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} github@upload.tlapl.us:1.7.4/products/
