@@ -5,7 +5,7 @@ on:
   push:
     # Sequence of patterns matched against refs/heads
     branches:    
-      - v1.7.3         # Push events on master branch
+      - v1.7.4         # Push events on master branch
 
 jobs:
 
@@ -13,12 +13,17 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy: 
       matrix:
-        operating-system: [ubuntu-latest]
+        operating-system: [ubuntu-latest, macos-latest]
         include: 
+        - operating-system: macos-latest
+          MVN_COMMAND: mvn -Dmaven.test.skip=true
+          GITHUB_RELEASE_NAME: The Xenophanes release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.4-macosx.cocoa.x86_64.zip
+
         - operating-system: ubuntu-latest
           MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
-          GITHUB_RELEASE_NAME: The Ulpian release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.3-linux.gtk.x86_64.zip
+          GITHUB_RELEASE_NAME: The Xenophanes release
+          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.7.4-linux.gtk.x86_64.zip
 
     steps:
 
@@ -54,10 +59,72 @@ jobs:
         GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
 
       ##
+      ## Configure SSH privkey (INRIA upload below)
+      ##
+    - name: Set up SSH private key
+      run: 'mkdir -p ~/.ssh && echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa'
+      shell: bash
+      env:
+        INRIA_SSH_PRIVKEY: ${{ secrets.INRIA_SSH_PRIVKEY }}
+
+      ##
+      ## Set up Comodo code signing cert/key and configure maven (settings.xml) to 
+      ## have CODESIGN_KEYSTOREPASS_KEY, path to ComodoCertificate.p12, and the alias
+      ## of the cert/key in ComodoCertificate.p12.
+      ##
+    - name: Set up maven credentials
+      run: 'echo "$MVN_SETTINGS_XML" > ~/.m2/settings.xml'
+      shell: bash
+      env:
+        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML }}
+    - name: Set up Comodo Codesign keystore part I
+      run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
+      shell: bash
+      env:
+        COMODO_CODESIGN_COMBINED_PEM: ${{ secrets.COMODO_CODESIGN_COMBINED_PEM }}
+    - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           openssl version
+           openssl pkcs12 -legacy -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+    - name: Set up Comodo Codesign keystore part II
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+           openssl version
+           openssl pkcs12 -export -name ComodoCertificate -out ComodoCertificate.p12 -passout pass:${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -in ComodoCertificate.pem
+           rm ComodoCertificate.pem
+           keytool -importkeystore -srckeystore ComodoCertificate.p12 -srcstoretype pkcs12 -srcstorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}  -deststoretype pkcs12 -destkeystore ~/.m2/ComodoCertificate.jks -destkeypass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }} -deststorepass ${{ secrets.CODESIGN_KEYSTOREPASS_KEY }}
+           rm ComodoCertificate.p12
+
+      ##
       ## Build TLC and Toolbox (logger reduces verbosity).
       ##
-    - name: Build with Ant (Linux)
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml
+    - name: Build with Maven (Linux)
+      run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
+
+      ##
+      ## Create signed apt repository out of Linux Toolbox zip.
+      ##
+    - name: Create apt repository
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           chmod -x toolbox/org.lamport.tla.toolbox.product.product/createAptRepo.sh
+           cp toolbox/org.lamport.tla.toolbox.product.product/target/*.deb toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           cd toolbox/org.lamport.tla.toolbox.product.product/target/repository/
+           bash -x ../../createAptRepo.sh .
+      ##
+      ## Create RPM out of Linux Toolbox zip.
+      ##
+#    - name: Create RPM (RedHat/CentOS package)
+#      if: matrix.operating-system == 'ubuntu-latest'
+#      run: |
+#           sudo apt-get install alien --no-install-recommends -y
+#           cd toolbox/org.lamport.tla.toolbox.product.product/target/
+#           fakeroot alien --to-rpm --scripts TLAToolbox-?.?.?-linux.gtk.amd64.deb
+#           cp TLA*.rpm products/
 
       ## 
       ## Upload Linux and Windows Toolbox zip and tla2tools.jar to Github release.
