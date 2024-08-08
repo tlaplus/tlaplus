@@ -1,3 +1,5 @@
+// Copyright (c) 2024, Oracle and/or its affiliates.
+
 package tlc2;
 
 import java.io.BufferedWriter;
@@ -197,7 +199,10 @@ public class REPL {
             } catch (UserInterruptException e) {
                 return;
             } catch (EndOfFileException e) {
-                e.printStackTrace();
+                String partial = e.getPartialLine();
+                if (partial != null && !partial.isBlank()) {
+                    System.err.println("Warning: ignoring partial line '" + partial + '\'');
+                }
                 return;
             } finally {
 				// Persistent file and directory will be create on demand.
