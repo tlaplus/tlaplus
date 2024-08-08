@@ -82,7 +82,8 @@ public class TableauNodePtrTable {
 	 * can only happen during liveness checking of a <b>partial</b> liveness
 	 * graph.
 	 */
-	public static final long UNDONE = 0xFFFFFFFE00000000L;
+	static final long UNDONE = 0xFFFFFFFE00000000L;
+	static final long DONE = 0xFFFFFFFD00000000L;
 	
 	private int count;
 	private int length;
@@ -130,11 +131,24 @@ public class TableauNodePtrTable {
 		}
 	}
 
+	public final void put(final long k, final int tidx) {
+		// Writing (long) UNDONE will result in node[3] = -2,
+		// and DONE will be node[3] = -3.  isDone is
+		// true if node[3] = -2.  Method setDone also sets
+		// node[3] = - 3 to mark the node as done.
+		put(k, tidx, UNDONE, DONE);
+	}
+	
 	/**
-	 * Add <tidx, elem> into the table. If the table has already contained <k,
-	 * tidx>, overwrite the old value.
+	 * Add the triple <k, tidx, elem> into the table. If the table already contains
+	 * and entry with the composite key <k, tdix>, the old elem will be replaced with
+	 * the new one.
 	 */
 	public final void put(long k, int tidx, long elem) {
+		put(k, tidx, elem, elem);
+	}
+
+	private final void put(long k, int tidx, long addElem, long newElem) {
 		if (this.count >= this.thresh) {
 			this.grow();
 		}
@@ -142,7 +156,7 @@ public class TableauNodePtrTable {
 		while (true) {
 			int[] node = this.nodes[loc];
 			if (node == null) {
-				this.nodes[loc] = addElem(k, tidx, elem);
+				this.nodes[loc] = addElem(k, tidx, addElem);
 				this.count++;
 				return;
 			}
@@ -159,13 +173,13 @@ public class TableauNodePtrTable {
 					// yet, thus append a new element. Technically, it means we
 					// grow the nodes array by three and insert the tableau idx
 					// and its element.
-					this.nodes[loc] = appendElem(node, tidx, elem);
+					this.nodes[loc] = appendElem(node, tidx, newElem);
 				} else {
 					// Nodes already contains an entry for the given tableau.
 					// Update its element. The element is either a pointer
 					// location, MAX_LINK, MAX_PTR or a REACHABLE mark. The
 					// previous value is overwritten.
-					putElem(this.nodes[loc], elem, cloc);
+					putElem(this.nodes[loc], addElem, cloc);
 				}
 				return;
 			}

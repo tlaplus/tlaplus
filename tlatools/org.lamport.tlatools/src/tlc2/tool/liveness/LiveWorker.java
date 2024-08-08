@@ -194,7 +194,7 @@ public class LiveWorker implements Callable<Boolean> {
 				// allowed to be undone. If it's not the final check, ptr has to
 				// be UNDONE (a non-UNDONE negative pointer is probably a bug).
 				// isFinalCheck => ptr # UNDONE
-				assert !isFinalCheck || ptr != TableauNodePtrTable.UNDONE;
+				assert !isFinalCheck || (ptr != TableauNodePtrTable.UNDONE && ptr != TableauNodePtrTable.DONE);
 			}
 		}
 
