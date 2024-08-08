@@ -431,7 +431,7 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 
 		final Label lblVersion = new Label(outerContainer, SWT.WRAP);
 		lblVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-		lblVersion.setText("Version 1.7.3 of 20 March 2023");
+		lblVersion.setText("Version 1.7.4 of 08 August 2024");
 		lblVersion.setBackground(backgroundColor);
 	}
 
