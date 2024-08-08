@@ -99,8 +99,8 @@ openFile
    </configurations>
 
    <repositories>
-      <repository location="http://lamport.org/tlatoolbox/branches/1.8.0/toolboxUpdate/" enabled="true" />
-      <repository location="http://lamport.org/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
+      <repository location="http://dl.tlapl.us/tlatoolbox/branches/1.8.0/toolboxUpdate/" enabled="true" />
+      <repository location="http://dl.tlapl.us/tlatoolbox/ci/toolboxUpdate/" enabled="false" />
    </repositories>
 
    <preferencesInfo>
