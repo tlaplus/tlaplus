@@ -78,7 +78,7 @@ public class AutomaticUpdatesPreferencePage extends PreferencePage implements IW
 
 	public void init(IWorkbench workbench) {
 		final ProvisioningUI ui = ProvUIActivator.getDefault().getProvisioningUI();
-		uri = URI.create("http://lamport.org/tlatoolbox/ci/toolboxUpdate/");
+		uri = URI.create("http://dl.tlapl.us/tlatoolbox/ci/toolboxUpdate/");
 		artifactRepositoryManager = ProvUI.getArtifactRepositoryManager(ui.getSession());
 		metadataRepositoryManager = ProvUI.getMetadataRepositoryManager(ui.getSession());
 	}
