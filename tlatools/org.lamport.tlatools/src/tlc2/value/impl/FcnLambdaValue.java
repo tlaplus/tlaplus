@@ -520,17 +520,6 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
     }
   }
 
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      return (val instanceof FcnLambdaValue);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
     this.fcnRcd = (FcnRcdValue)ois.readObject();
   }

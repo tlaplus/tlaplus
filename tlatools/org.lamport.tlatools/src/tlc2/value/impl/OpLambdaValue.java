@@ -190,17 +190,6 @@ public class OpLambdaValue extends OpValue {
   @Override
   public final IValue deepCopy() { return this; }
 
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      throw new WrongInvocationException("Should not initialize an operator.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
   /* String representation of the value.  */
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {

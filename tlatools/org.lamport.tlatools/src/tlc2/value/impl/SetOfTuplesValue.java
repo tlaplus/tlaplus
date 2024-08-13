@@ -262,17 +262,6 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue deepCopy() { return this; }
 
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      return this.equals(val);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
   /* The fingerprint  */
   @Override
   public final long fingerPrint(long fp) {

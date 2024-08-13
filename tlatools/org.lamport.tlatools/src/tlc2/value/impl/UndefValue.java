@@ -127,9 +127,6 @@ public class UndefValue extends Value {
   @Override
   public final IValue deepCopy() { return this; }
 
-  @Override
-  public final boolean assignable(Value val) { return true; }
-
   /* The string representation. */
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {

@@ -192,18 +192,6 @@ public class IntValue extends Value {
   @Override
   public final IValue deepCopy() { return this; }
 
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      return ((val instanceof IntValue) &&
-        this.val == ((IntValue)val).val);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
 	@Override
 	public void write(IValueOutputStream vos) throws IOException {
 		vos.writeByte(INTVALUE);

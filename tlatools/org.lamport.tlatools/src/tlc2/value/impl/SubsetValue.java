@@ -235,17 +235,6 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue deepCopy() { return this; }
 
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      return this.equals(val);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
 		pset.write(vos);

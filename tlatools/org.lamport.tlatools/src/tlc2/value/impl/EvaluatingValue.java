@@ -217,16 +217,6 @@ public class EvaluatingValue extends OpValue {
 
   public final IValue deepCopy() { return this; }
 
-  public final boolean assignable(Value val) {
-    try {
-      throw new WrongInvocationException("It is a TLC bug: Attempted to initialize an operator.");
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
   /* String representation of the value.  */
   public final StringBuffer toString(StringBuffer sb, int offset, boolean ignored) {
     try {

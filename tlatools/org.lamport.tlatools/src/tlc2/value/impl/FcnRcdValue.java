@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
@@ -753,26 +752,6 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
     	  return new FcnRcdValue(Arrays.copyOf(this.domain, this.domain.length), vals, false);
       }
       return new FcnRcdValue(this, vals);
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
-  }
-
-  @Override
-  public final boolean assignable(Value val) {
-    try {
-      boolean canAssign = ((val instanceof FcnRcdValue) &&
-        this.values.length == ((FcnRcdValue)val).values.length);
-      if (!canAssign) return false;
-      FcnRcdValue fcn = (FcnRcdValue)val;
-      for (int i = 0; i < this.values.length; i++) {
-        canAssign = (canAssign &&
-         this.domain[i].equals(fcn.domain[i]) &&
-         this.values[i].assignable(fcn.values[i]));
-      }
-      return canAssign;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

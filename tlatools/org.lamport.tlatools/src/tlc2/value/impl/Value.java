@@ -91,9 +91,6 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   /* This method returns a new value after taking the excepts. */
   public abstract Value takeExcept(ValueExcept[] exs);
 
-  /* This method returns true iff val can be assigned to this. */
-  abstract boolean assignable(Value val);
-  
   public abstract Value normalize();
 
   @Override

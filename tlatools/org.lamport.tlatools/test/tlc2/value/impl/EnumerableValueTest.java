@@ -139,11 +139,6 @@ public class EnumerableValueTest {
 		}
 
 		@Override
-		public boolean assignable(Value val) {
-			return false;
-		}
-
-		@Override
 		public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
 			return toString(sb, offset, swallow);
 		}
