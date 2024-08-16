@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2024, Oracle and/or its affiliates.
 
 package tlc2.value.impl;
 
@@ -11,7 +11,7 @@ import tlc2.tool.EvalException;
  * <p>TODO: move some of the function operations from {@link Value} to this interface,
  *          such as {@link Value#takeExcept(ValueExcept)} and {@link Value#select(Value[])}.
  */
-public interface FunctionValue extends Applicable {
+public interface FunctionValue {
 
   /**
    * Apply this function to multiple arguments.
@@ -29,7 +29,6 @@ public interface FunctionValue extends Applicable {
    * @throws EvalException if evaluation fails
    * @throws util.Assert.TLCRuntimeException if the argument is not in the function's domain
    */
-  @Override
   default Value apply(Value[] args, int control) throws EvalException {
     return args.length == 1
             ? apply(args[0], control)
@@ -45,7 +44,6 @@ public interface FunctionValue extends Applicable {
    * @throws EvalException if evaluation fails
    * @throws util.Assert.TLCRuntimeException if the argument is not in the function's domain
    */
-  @Override
   Value apply(Value arg, int control) throws EvalException;
 
   /**
@@ -54,7 +52,6 @@ public interface FunctionValue extends Applicable {
    * @return the domain of this function
    * @throws EvalException if evaluation fails
    */
-  @Override
   Value getDomain() throws EvalException;
 
   /**
@@ -71,7 +68,6 @@ public interface FunctionValue extends Applicable {
    * @return the apply result or null if the argument is not in this function's domain
    * @throws EvalException if evaluation fails
    */
-  @Override
   Value select(Value arg) throws EvalException;
 
 }
