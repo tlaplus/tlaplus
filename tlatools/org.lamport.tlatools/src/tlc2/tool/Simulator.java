@@ -211,9 +211,21 @@ public class Simulator {
 	 * Shut down all of the given workers and make sure they have stopped.
 	 */
 	private void shutdownAndJoinWorkers(final List<SimulationWorker> workers) throws InterruptedException {
+		// Do not wait indefinitely for other workers to terminate gracefully. Instead,
+		// forcefully terminate them if they do not shut down within 10 seconds.
+		// 
+		// For example, if a worker prints a counterexample and then calls
+		// `shutdownAndJoinWorkers` to stop the other workers, TLC should not
+		// wait too long. This prevents delays when workers take an extended time to
+		// generate successor states for a particular action (a disjunct of the
+		// next-state relation), such as an action like \E n \in 1..10000000: x' = n.
 		for (SimulationWorker worker : workers) {
+			// First signal all workers...
 			worker.interrupt();
-			worker.join();
+		}
+		for (SimulationWorker worker : workers) {
+			// ... and then wait for all workers.
+			worker.join(10_000L);
 		}
 	}
 
