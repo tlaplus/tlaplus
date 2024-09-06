@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.regex.*;
 
 /**
@@ -239,6 +240,26 @@ public class CorpusParser {
 	public static class CorpusTest {
 		
 		/**
+		 * Attributes associated with this test, given as colon-prefixed
+		 * tags in the header below the test name. See this for details:
+		 * https://tree-sitter.github.io/tree-sitter/creating-parsers#command-test
+		 */
+		public static enum Attribute {
+
+			/**
+			 * The test should be skipped, probably due to an existing parser
+			 * bug that would make the test fail.
+			 */
+			SKIP,
+
+			/**
+			 * The test is expected to produce a parse error. The expected
+			 * parse tree will be ignored in this case.
+			 */
+			ERROR
+		}
+		
+		/**
 		 * The name of the corpus test.
 		 */
 		public final String name;
@@ -249,21 +270,72 @@ public class CorpusParser {
 		public final String tlaplusInput;
 		
 		/**
-		 * The expected parse tree, in normalized form.
+		 * The expected parse tree, in normalized form. This will be null if
+		 * this test has the ERROR attribute.
 		 */
 		public final AstNode expectedAst;
 		
 		/**
+		 * Attributes possessed by this test.
+		 */
+		public final List<Attribute> attributes;
+		
+		/**
 		 * Initializes corpus test info by parsing the expected syntax tree.
 		 * 
-		 * @param name The name of the corpus test.
+		 * @param header The header text of the corpus test.
 		 * @param tlaplusInput The unparsed TLA+ code.
 		 * @param expectedAst The expected syntax tree, as an unparsed S-expression.
 		 */
-		public CorpusTest(String name, String tlaplusInput, String expectedAst) throws ParseException {
-			this.name = name;
+		public CorpusTest(String header, String tlaplusInput, String expectedAst) throws ParseException {
+			this.name = getTestName(header);
+			this.attributes = getTestAttributes(header);
 			this.tlaplusInput = tlaplusInput;
-			this.expectedAst = parseAst(expectedAst);
+			this.expectedAst =
+				this.attributes.contains(Attribute.ERROR)
+				? null : parseAst(expectedAst);
+		}
+		
+		/**
+		 * Gets the test name from the test header.
+		 * @param header The header to parse.
+		 * @return The test's name.
+		 */
+		private static String getTestName(String header) {
+			return header
+				.lines()
+				.takeWhile(line -> !line.startsWith(":"))
+				.collect(Collectors.joining("\n"))
+				.trim();
+		}
+		
+		/**
+		 * Gets the list of attributes from the test header.
+		 * @param header The header to parse.
+		 * @return A list of attributes found in the header.
+		 */
+		private static List<Attribute> getTestAttributes(String header) {
+			return header
+				.lines()
+				.filter(line -> line.startsWith(":"))
+				.map(tag -> tagToAttribute(tag))
+				.collect(Collectors.toList());
+		}
+		
+		/**
+		 * Resolves a tag name found in the header to an attribute.
+		 * @param tag The tag to resolve to an attribute.
+		 * @return An attribute corresponding to the tag.
+		 */
+		private static Attribute tagToAttribute(String tag) {
+			String tagName = tag.strip().substring(1); // Chop leading colon
+			return Stream
+				.of(Attribute.values())
+				.filter(attribute -> attribute.name().equalsIgnoreCase(tagName))
+				.findFirst()
+				.orElseThrow(
+					() -> new RuntimeException(
+						String.format("Invalid test attribute %s", tag)));
 		}
 	}
 	
@@ -275,12 +347,22 @@ public class CorpusParser {
 		/**
 		 * Regex for identifying test headers.
 		 */
-		private static final Pattern headerRegex = Pattern.compile("^===+\\|\\|\\|\r?\n(?<testName>[^\r\n]*)\r?\n===+\\|\\|\\|\r?\n", Pattern.MULTILINE);
-		
+		private static final Pattern headerRegex =
+			Pattern.compile(
+				"^===+\\|\\|\\|\r?\n"
+				+ "(?<testName>.*?(?=\r?\n===+\\|\\|\\|))\r?\n"
+				+ "===+\\|\\|\\|\r?\n",
+				Pattern.MULTILINE | Pattern.DOTALL
+			);
+
 		/**
 		 * Regex for identifying test separators.
 		 */
-		private static final Pattern separatorRegex = Pattern.compile("^---+\\|\\|\\|\r?\n", Pattern.MULTILINE);
+		private static final Pattern separatorRegex =
+			Pattern.compile(
+				"^---+\\|\\|\\|\r?\n",
+				Pattern.MULTILINE
+			);
 
 		/**
 		 * The path to the corpus test file.

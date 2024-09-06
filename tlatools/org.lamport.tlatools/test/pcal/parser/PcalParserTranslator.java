@@ -1,5 +1,6 @@
 package pcal.parser;
 
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -160,7 +161,7 @@ public class PcalParserTranslator {
 	 * @return The corresponding node in normalized universal corpus form.
 	 * @throws ParseAlgorithmException If a construct could not be translated.
 	 */
-	public static AstNode translate(AST astNode) throws ParseAlgorithmException {
+	public static AstNode translate(AST astNode) throws ParseException {
 		if (astNode.getClass().equals(AST.Uniprocess.class)) {
 			AST.Uniprocess node = (AST.Uniprocess)astNode;
 			AstNode sourceFile = Kind.SOURCE_FILE.asNode();
@@ -193,7 +194,7 @@ public class PcalParserTranslator {
 			assertNode.addChild(translate(node.exp));
 			return assertNode;
 		} else {
-			throw new ParseAlgorithmException("Unhandled AST class " + astNode.getClass().getCanonicalName());
+			throw new ParseException("Unhandled AST class " + astNode.getClass().getCanonicalName(), 0);
 		}
 	}
 }

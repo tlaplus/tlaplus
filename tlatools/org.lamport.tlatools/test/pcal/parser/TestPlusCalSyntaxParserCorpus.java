@@ -9,8 +9,8 @@ import java.text.ParseException;
 
 import util.AstNode;
 import util.CorpusParser;
-import util.CorpusParser.CorpusTest;
 import util.CorpusParser.CorpusTestFile;
+import util.SyntaxCorpusTestRunner;
 
 import pcal.exception.ParseAlgorithmException;
 import tlc2.tool.CommonTestCase;
@@ -44,6 +44,24 @@ public class TestPlusCalSyntaxParserCorpus {
 	}
 	
 	/**
+	 * Implements a parser test target interface for the PlusCal parser.
+	 */
+	private class PlusCalParserTestTarget implements SyntaxCorpusTestRunner.IParserTestTarget {
+
+		/**
+		 * {@inheritDoc}
+		 */
+		public AstNode parse(String input) throws ParseException {
+			try {
+				AST plusCalAst = PcalParserTranslator.parse(input);
+				return PcalParserTranslator.translate(plusCalAst);
+			} catch (ParseAlgorithmException e) {
+				return null;
+			}
+		}
+	}
+
+	/**
 	 * Iterates through each corpus test in each corpus test file, feeds the
 	 * raw input into the PlusCal parser, translates the output to the format
 	 * expected by the test, then compares this translated output to the
@@ -52,30 +70,9 @@ public class TestPlusCalSyntaxParserCorpus {
 	 * @throws ParseException If translating PlusCal's output fails.
 	 */
 	@Test
-	public void testAll() throws ParseAlgorithmException, Exception {
-		int testCount = 0;
-		for (CorpusTestFile corpusTestFile : TestPlusCalSyntaxParserCorpus.corpus) {
-			System.out.println(corpusTestFile.path);
-			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				// Sometimes you just want to run a single test so you can
-				// trace it in the debugger; to do that, put its name in the
-				// if-statement then uncomment the continue statement.
-				// Keeping this here because it was very useful during
-				// development of the translate function.
-				if (!corpusTest.name.equals("Subexpression Tree Navigation")) {
-					//continue;
-				}
-				System.out.println(corpusTest.name);
-				AST parsed = PcalParserTranslator.parse(corpusTest.tlaplusInput);
-				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
-				AstNode actual = PcalParserTranslator.translate(parsed);
-				System.out.println(String.format("Actual: %s", actual));
-				corpusTest.expectedAst.testEquality(actual);
-				testCount++;
-			}
-		}
-		Assert.assertTrue(testCount > 0);
-		System.out.println(String.format("Total corpus test count: %d", testCount));
+	public void testAll() throws ParseException {
+		PlusCalParserTestTarget parser = new PlusCalParserTestTarget();
+		SyntaxCorpusTestRunner.run(corpus, parser);
 	}
 
 	/**

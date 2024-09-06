@@ -3,7 +3,7 @@ package tla2sany;
 import util.AstNode;
 import util.CorpusParser;
 import util.CorpusParser.CorpusTestFile;
-import util.CorpusParser.CorpusTest;
+import util.SyntaxCorpusTestRunner;
 import tla2sany.configuration.Configuration;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
@@ -53,6 +53,22 @@ public class ParseCorpusTest {
 	}
 	
 	/**
+	 * Implements a parser test target interface for SANY.
+	 */
+	private class SanyParserTestTarget implements SyntaxCorpusTestRunner.IParserTestTarget {
+
+		/**
+		 * {@inheritDoc}
+		 */
+		public AstNode parse(String input) throws ParseException {
+			byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+			InputStream inputStream = new ByteArrayInputStream(inputBytes);
+			TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
+			return parser.parse() ? SanyTranslator.toAst(parser) : null;
+		}
+	}
+	
+	/**
 	 * Iterates through each corpus test in each corpus test file, feeds the
 	 * raw TLA+ input into SANY, translates SANY's output to the format
 	 * expected by the test, then compares this translated output to the
@@ -62,37 +78,8 @@ public class ParseCorpusTest {
 	 */
 	@Test
 	public void testEntireTlaPlusSyntaxParserCorpus() throws ParseException {
-		int testCount = 0;
-		for (CorpusTestFile corpusTestFile : ParseCorpusTest.corpus) {
-			System.out.println(corpusTestFile.path);
-			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				// Sometimes you just want to run a single test so you can
-				// trace it in the debugger; to do that, put its name in the
-				// if-statement then uncomment the continue statement.
-				// Keeping this here because it was very useful during
-				// development of the translate function.
-				if (!corpusTest.name.equals("Subexpression Tree Navigation")) {
-					//continue;
-				}
-				System.out.println(corpusTest.name);
-				byte[] inputBytes = corpusTest.tlaplusInput.getBytes(StandardCharsets.UTF_8);
-				InputStream inputStream = new ByteArrayInputStream(inputBytes);
-				TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
-				String testSummary = String.format(
-						"%s/%s\n%s",
-						corpusTestFile.path,
-						corpusTest.name,
-						corpusTest.tlaplusInput);
-				Assert.assertTrue(testSummary, parser.parse());
-				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
-				AstNode actual = SanyTranslator.toAst(parser);
-				System.out.println(String.format("Actual: %s", actual));
-				corpusTest.expectedAst.testEquality(actual);
-				testCount++;
-			}
-		}
-		Assert.assertTrue(testCount > 0);
-		System.out.println(String.format("Total corpus test count: %d", testCount));
+		SanyParserTestTarget parser = new SanyParserTestTarget();
+		SyntaxCorpusTestRunner.run(corpus, parser);
 	}
 
 	/**
