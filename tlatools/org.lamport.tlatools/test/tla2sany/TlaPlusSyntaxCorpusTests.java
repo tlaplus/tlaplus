@@ -1,9 +1,9 @@
 package tla2sany;
 
 import util.AstNode;
-import util.CorpusParser;
-import util.CorpusParser.CorpusTestFile;
-import util.SyntaxCorpusTestRunner;
+import util.SyntaxCorpusFileParser;
+import util.SyntaxCorpusFileParser.CorpusTestFile;
+import util.SyntaxCorpusRunner;
 import tla2sany.configuration.Configuration;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Runs all corpus tests through SANY, checking its syntax parsing.
  */
-public class ParseCorpusTest {
+public class TlaPlusSyntaxCorpusTests {
 	
 	/**
 	 * The parsed corpus test files.
@@ -45,7 +45,7 @@ public class ParseCorpusTest {
 	public static void setup() throws IOException, ParseException, AbortException {
 		// Load corpus test files.
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/tla2sany/corpus");
-		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(corpusDir);
+		TlaPlusSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);
 		
 		// Static initialization of SANY.
 		Configuration.load(null);
@@ -55,7 +55,7 @@ public class ParseCorpusTest {
 	/**
 	 * Implements a parser test target interface for SANY.
 	 */
-	private class SanyParserTestTarget implements SyntaxCorpusTestRunner.IParserTestTarget {
+	private class SanyParserTestTarget implements SyntaxCorpusRunner.IParserTestTarget {
 
 		/**
 		 * {@inheritDoc}
@@ -64,7 +64,7 @@ public class ParseCorpusTest {
 			byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
 			InputStream inputStream = new ByteArrayInputStream(inputBytes);
 			TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
-			return parser.parse() ? SanyTranslator.toAst(parser) : null;
+			return parser.parse() ? TlaPlusParserOutputTranslator.toAst(parser) : null;
 		}
 	}
 	
@@ -77,9 +77,9 @@ public class ParseCorpusTest {
 	 * @throws ParseException If translating SANY's output fails.
 	 */
 	@Test
-	public void testEntireTlaPlusSyntaxParserCorpus() throws ParseException {
+	public void testAll() throws ParseException {
 		SanyParserTestTarget parser = new SanyParserTestTarget();
-		SyntaxCorpusTestRunner.run(corpus, parser);
+		SyntaxCorpusRunner.run(corpus, parser);
 	}
 
 	/**

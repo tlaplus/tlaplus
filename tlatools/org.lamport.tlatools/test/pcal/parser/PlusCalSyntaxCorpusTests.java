@@ -8,9 +8,9 @@ import java.nio.file.Paths;
 import java.text.ParseException;
 
 import util.AstNode;
-import util.CorpusParser;
-import util.CorpusParser.CorpusTestFile;
-import util.SyntaxCorpusTestRunner;
+import util.SyntaxCorpusFileParser;
+import util.SyntaxCorpusFileParser.CorpusTestFile;
+import util.SyntaxCorpusRunner;
 
 import pcal.exception.ParseAlgorithmException;
 import tlc2.tool.CommonTestCase;
@@ -24,7 +24,7 @@ import org.junit.Ignore;
 /**
  * Runs all corpus tests through the PlusCal parser, checking its syntax parsing.
  */
-public class TestPlusCalSyntaxParserCorpus {
+public class PlusCalSyntaxCorpusTests {
 
 	/**
 	 * The parsed corpus test files.
@@ -40,21 +40,21 @@ public class TestPlusCalSyntaxParserCorpus {
 	@BeforeClass
 	public static void setup() throws IOException, ParseException {
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/pcal/parser/corpus");
-		TestPlusCalSyntaxParserCorpus.corpus = CorpusParser.getAndParseCorpusTestFiles(corpusDir);
+		PlusCalSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);
 	}
 	
 	/**
 	 * Implements a parser test target interface for the PlusCal parser.
 	 */
-	private class PlusCalParserTestTarget implements SyntaxCorpusTestRunner.IParserTestTarget {
+	private class PlusCalParserTestTarget implements SyntaxCorpusRunner.IParserTestTarget {
 
 		/**
 		 * {@inheritDoc}
 		 */
 		public AstNode parse(String input) throws ParseException {
 			try {
-				AST plusCalAst = PcalParserTranslator.parse(input);
-				return PcalParserTranslator.translate(plusCalAst);
+				AST plusCalAst = PlusCalParserOutputTranslator.parse(input);
+				return PlusCalParserOutputTranslator.translate(plusCalAst);
 			} catch (ParseAlgorithmException e) {
 				return null;
 			}
@@ -72,7 +72,7 @@ public class TestPlusCalSyntaxParserCorpus {
 	@Test
 	public void testAll() throws ParseException {
 		PlusCalParserTestTarget parser = new PlusCalParserTestTarget();
-		SyntaxCorpusTestRunner.run(corpus, parser);
+		SyntaxCorpusRunner.run(corpus, parser);
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class TestPlusCalSyntaxParserCorpus {
 	 */
 	@Test
 	@Ignore
-	public void testAllNodesUsed() {
+	public void testAllPlusCalNodesUsed() {
 		EnumSet<AstNode.Kind> unused = AstNode.Kind.getUnusedPlusCalNodeKinds();
 		System.out.println(String.format("Total unused node kinds: %d", unused.size()));
 		System.out.println(unused);

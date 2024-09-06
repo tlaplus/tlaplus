@@ -15,7 +15,7 @@ import java.util.regex.*;
 /**
  * Handles reading and parsing the corpus test files.
  */
-public class CorpusParser {
+public class SyntaxCorpusFileParser {
 	
 	/**
 	 * Holds info about tokens in the AST DSL.
@@ -417,7 +417,7 @@ public class CorpusParser {
 	 * @throws IOException If a file could not be found or opened or read.
 	 * @throws ParseException If a file contains invalid test syntax.
 	 */
-	public static List<CorpusTestFile> getAndParseCorpusTestFiles(Path corpusDir) throws IOException, ParseException {
+	public static List<CorpusTestFile> getAllUnder(Path corpusDir) throws IOException, ParseException {
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.txt");
 		ArrayList<CorpusTestFile> corpus = new ArrayList<CorpusTestFile>();
 		for (Path path : Files.walk(corpusDir).filter(matcher::matches).collect(Collectors.toList())) {

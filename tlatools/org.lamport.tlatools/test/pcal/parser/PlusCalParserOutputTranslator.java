@@ -23,7 +23,7 @@ import org.junit.Assert;
  * Utilities for parsing PlusCal and converting it to a form compatible with
  * the unified TLA+ syntax parser test corpus.
  */
-public class PcalParserTranslator {
+public class PlusCalParserOutputTranslator {
 	
 	/**
 	 * Simple data class holding info about the start of a PlusCal block.
