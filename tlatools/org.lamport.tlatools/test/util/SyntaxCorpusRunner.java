@@ -3,15 +3,15 @@ package util;
 import java.text.ParseException;
 import java.util.List;
 
-import util.CorpusParser.CorpusTest;
-import util.CorpusParser.CorpusTestFile;
+import util.SyntaxCorpusFileParser.CorpusTest;
+import util.SyntaxCorpusFileParser.CorpusTestFile;
 
 import org.junit.Assert;
 
 /**
  * Functionality to run a parser against a corpus of syntax tests.
  */
-public class SyntaxCorpusTestRunner {
+public class SyntaxCorpusRunner {
 
 	/**
 	 * A parser can implement this interface to be subjected to a corpus of

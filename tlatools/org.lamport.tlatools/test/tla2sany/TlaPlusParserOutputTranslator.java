@@ -38,7 +38,7 @@ import org.junit.Assert;
  *     tests to be written ensuring all major TLA+ parsers output the same
  *     parse tree on the same input.
  */
-public class SanyTranslator {	
+public class TlaPlusParserOutputTranslator {	
 
 	/**
 	 * Sometimes SANY provides very little structure in its parse output,
@@ -204,7 +204,7 @@ public class SanyTranslator {
 			if (this.isAtEnd()) {
 				throw new ParseException(String.format("EOF; expected %s", expected), this.current);
 			} else {
-				return SanyTranslator.translate(this.advance());
+				return TlaPlusParserOutputTranslator.translate(this.advance());
 			}
 		}
 		
@@ -216,7 +216,7 @@ public class SanyTranslator {
 		 * @throws ParseException If node kind is not what was given.
 		 */
 		public AstNode translate(int... expected) throws ParseException {
-			return SanyTranslator.translate(this.consume(expected));
+			return TlaPlusParserOutputTranslator.translate(this.consume(expected));
 		}
 		
 		/**
@@ -228,7 +228,7 @@ public class SanyTranslator {
 		 * @throws ParseException If node kind is not what was given.
 		 */
 		public void flatTranslate(AstNode parent, int... expected) throws ParseException {
-			SanyTranslator.flatTranslate(parent, this.consume(expected));
+			TlaPlusParserOutputTranslator.flatTranslate(parent, this.consume(expected));
 		}
 	}
 	
