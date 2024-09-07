@@ -30,6 +30,7 @@
 
 package tla2sany.semantic;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -1194,6 +1195,34 @@ public class OpDefNode extends OpDefOrDeclNode
       return false;
     }
     return this.opLevelCond[i][j][k];
+  }
+
+  /**
+   * Returns an array giving the maximum levels of the parameters to this
+   * operator, or null if no such information is available. The array is a
+   * copy of the internal data to ensure external modification is ignored.
+   * 
+   * @return The maximum arg levels.
+   */
+  public final int[] getArgMaxLevels() {
+    return
+      this.maxLevels == null
+      ? null
+      : Arrays.copyOf(this.maxLevels, this.maxLevels.length);
+  }
+  
+  /**
+   * Returns an array giving the weights of the parameters to this operator,
+   * or null if no such information is available. The array is a copy of the
+   * internal data to ensure external modification is ignored.
+   * 
+   * @return The arg weights.
+   */
+  public final int[] getArgWeights() {
+    return
+      this.weights == null
+      ? null
+      : Arrays.copyOf(this.weights, this.weights.length);
   }
 
   /**
