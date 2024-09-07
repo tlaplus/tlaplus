@@ -41,7 +41,7 @@ import util.UniqueString;
  */
 public class Context implements ExploreNode {
 
-  class Pair {
+  public class Pair {
     Pair       link;
     SymbolNode info;
 
