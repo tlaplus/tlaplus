@@ -6,9 +6,7 @@ import java.util.Enumeration;
 import org.junit.Assert;
 import org.junit.Test;
 
-import tla2sany.configuration.Configuration;
 import tla2sany.semantic.ASTConstants;
-import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.OpDefNode;
@@ -211,20 +209,15 @@ public class TestBuiltInOperatorInitialization {
   /**
    * Tests that initialization & re-initialization code sets the built-in
    * operator properties as expected.
-   * 
-   * @throws AbortException Can be thrown by Configuration.load().
    */
   @Test
-  public void testInitAndReInit() throws AbortException {
+  public void testInitAndReInit() {
     // First static initialization
-    Configuration.load(null);
     BuiltInLevel.load();
     testCorrectAndComplete();
     
     // Re-initialization when parsing second file
     Context.reInit();
-    Configuration.ReInit();
-    Configuration.load(null);
     BuiltInLevel.load();
     testCorrectAndComplete();
   }
