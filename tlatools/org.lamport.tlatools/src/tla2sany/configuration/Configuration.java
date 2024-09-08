@@ -218,37 +218,42 @@ public final class Configuration implements ConfigConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case INFIX:
       jj_consume_token(INFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
-                        new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode( us ) ),
-                        errors);
+      // This is initialized statically now.
+      //Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 2,
+      //                  new FormalParamNode[2], false, null, null, null, new SyntaxTreeNode( us ) ),
+      //                  errors);
       break;
     case PREFIX:
       jj_consume_token(PREFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
-                        errors);
+      // This is initialized statically now.
+      //Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+      //                  new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      //                  errors);
       break;
     case POSTFIX:
       jj_consume_token(POSTFIX);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
-                        new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
-                        errors);
+      // This is initialized statically now.
+      //Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 1,
+      //                  new FormalParamNode[1], false, null, null, null, new SyntaxTreeNode( us ) ),
+      //                  errors);
       break;
     case CONSTANT:
       jj_consume_token(CONSTANT);
-      Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
-                        new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode( us ) ),
-                        errors);
+      // This is initialized statically now.
+      //Context.addGlobalSymbol( us, new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, 0,
+      //                  new FormalParamNode[0], false, null, null, null, new SyntaxTreeNode( us ) ),
+      //                  errors);
       break;
     case NUMBER:
       t = jj_consume_token(NUMBER);
       int n = Integer.parseInt( t.image );
       FormalParamNode fpn[] = null;
       if ( n != -1 ) fpn = new FormalParamNode[ n ];
-      Context.addGlobalSymbol( us, 
-                        new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
-                                       fpn, false, null, null, null, new SyntaxTreeNode( us ) ),
-                                       errors);
+      // This is initialized statically now.
+      //Context.addGlobalSymbol( us,
+      //                  new OpDefNode( us, tla2sany.semantic.ASTConstants.BuiltInKind, n,
+      //                                 fpn, false, null, null, null, new SyntaxTreeNode( us ) ),
+      //                                 errors);
       break;
     default:
       jj_la1[6] = jj_gen;
