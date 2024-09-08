@@ -42,6 +42,7 @@ import org.w3c.dom.Element;
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -412,27 +413,36 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-  /* Invoked in configuration.Configuration for built-in ops */
-  public OpDefNode(UniqueString us, int k, int ar, FormalParamNode[] parms,
-                   boolean localness, ExprNode exp, ModuleNode oModNode,
-                   SymbolTable symbolTable, TreeNode stn) {
-    super(us, k, (parms == null ? -1 : parms.length), oModNode, symbolTable, stn);
-    params = parms;
+  /**
+   * Initializes a new instance of the OpDefNode class. Invoked in
+   * Context.initialize to define built-in operators.
+   * 
+   * @param op Details about the built-in operator.
+   */
+  public OpDefNode(BuiltInOperator op) {
+    super(op.Name, ASTConstants.BuiltInKind, op.Arity, null, null, new SyntaxTreeNode(op.Name));
 
     // Create phony FormalParamNodes for built-in operators
     if ( arity >= 0 ) {
+      params = new FormalParamNode[arity];
       for (int i = 0; i < params.length; i++ ) {
         params[i] = new FormalParamNode(UniqueString.uniqueStringOf("Formal_" + i),
-                                        0, null, symbolTable, oModNode);
+                                        0, null, null, null);
       }
     }
     if (st != null) {
-      st.addSymbol(us, this);
+      st.addSymbol(op.Name, this);
     }
     isDefined = true ;
       /*********************************************************************
       * All built-in operators are obviously defined.                      *
       *********************************************************************/
+
+    // Not all built-in ops have their levels defined; see
+    // https://github.com/tlaplus/tlaplus/issues/1008
+    if (op.ArgMaxLevels != null && op.ArgWeights != null) {
+      this.setBuiltInLevel(op);
+    }
   }
 
   /* Invoked by ordinary operator definition. */
@@ -954,18 +964,22 @@ public class OpDefNode extends OpDefOrDeclNode
     * of opArg.                                                            *
     ***********************************************************************/
 
-  /* Set the level information for this builtin operator. */
-  public final void setBuiltinLevel(BuiltInLevel.Data d) {
-    if (d.arity == -1) {
-      if (d.argMaxLevels.length > 0) {
+  /**
+   * Set the level information for the given built-in operator.
+   * 
+   * @param op Details about the built-in operator.
+   */
+  private final void setBuiltInLevel(BuiltInOperator op) {
+    if (arity == -1) {
+      if (op.ArgMaxLevels.length > 0) {
         /*******************************************************************
         * This test added on 3 Aug 2007 because the newly-introduced       *
         * $Witness builtin operator has arity -1 but no arguments.         *
         *******************************************************************/
         this.maxLevels = new int[1];
-        this.maxLevels[0] = d.argMaxLevels[0];
+        this.maxLevels[0] = op.ArgMaxLevels[0];
         this.weights = new int[1];
-        this.weights[0] = d.argWeights[0];
+        this.weights[0] = op.ArgWeights[0];
 
        }
       else {
@@ -974,21 +988,21 @@ public class OpDefNode extends OpDefOrDeclNode
        }
     }
     else {
-      this.maxLevels = d.argMaxLevels;
-      this.weights = d.argWeights;
+      this.maxLevels = op.ArgMaxLevels;
+      this.weights = op.ArgWeights;
     };
 
     /***********************************************************************
     * Set Leibniz fields.                                                  *
     ***********************************************************************/
     this.isLeibniz = true;
-    this.isLeibnizArg = new boolean[d.argWeights.length] ;
-    for (int i = 0 ; i < d.argWeights.length ; i++) {
-      this.isLeibnizArg[i] = (d.argWeights[i] > 0) ;
+    this.isLeibnizArg = new boolean[op.ArgWeights.length] ;
+    for (int i = 0 ; i < op.ArgWeights.length ; i++) {
+      this.isLeibnizArg[i] = (op.ArgWeights[i] > 0) ;
       this.isLeibniz = this.isLeibniz && isLeibnizArg[i] ;
      } ;
 
-    this.level              = d.opLevel;
+    this.level              = op.OpLevel;
     this.levelChecked       = 99 ;
       /*********************************************************************
       * Never need to level-check a built-in operator.                     *
