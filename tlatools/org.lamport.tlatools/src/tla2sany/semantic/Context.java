@@ -14,7 +14,8 @@ import java.util.Hashtable;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
-import tla2sany.st.Location;
+import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import util.UniqueString;
@@ -152,6 +153,7 @@ public class Context implements ExploreNode {
    */
   public static void reInit() {
     initialContext =  new Context(null, new Errors()); // null because outside of any module
+    initialize();
   }
 
   /**
@@ -175,13 +177,20 @@ public class Context implements ExploreNode {
 
   public Errors getErrors() { return errors; }
 
-  // Adds a symbol to the (unique) initialContext; aborts if already there
-  public static void addGlobalSymbol(UniqueString name, SymbolNode sn, Errors errors)
-  throws AbortException {
-    if (initialContext.getSymbol(name) != null) {
-      errors.addAbort(Location.nullLoc,
-		      "Error building initial context: Multiply-defined builtin operator " +
-		      name + " at " + sn, false );
+  /**
+   * Adds a symbol to the initial context. Throws an unhandled runtime
+   * exception if symbol has already been defined, although since this
+   * function is only ever called from static initialization code that
+   * should never happen.
+   *
+   * @param name The name of the operator.
+   * @param sn Various operator properties.
+   */
+  private static void addGlobalSymbol(UniqueString name, SymbolNode sn) {
+    if (initialContext.occurSymbol(name)) {
+      throw new RuntimeException(
+        "Error building initial context: Multiply-defined builtin operator " +
+        name + " at " + sn );
     }
     else {
       initialContext.addSymbolToContext( name, sn );
@@ -553,4 +562,27 @@ public class Context implements ExploreNode {
   /*public Element export(Document doc) {
     return getContextSymbolEnumeration().export(doc);
   }*/
+
+  /**
+   * Load all built-in operators into the initial context.
+   */
+  private static void initialize() {
+    for (BuiltInOperator op : BuiltInOperators.Properties) {
+      OpDefNode node = new OpDefNode(
+        op.Name,
+        tla2sany.semantic.ASTConstants.BuiltInKind,
+        op.Arity,
+        op.Arity == -1 ? null : new FormalParamNode[op.Arity],
+        false,
+        null,
+        null,
+        null,
+        new SyntaxTreeNode(op.Name));
+      Context.addGlobalSymbol(op.Name, node);
+    }
+  }
+
+  static {
+    initialize();
+  }
 }
