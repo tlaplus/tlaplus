@@ -6,7 +6,6 @@ import java.util.Enumeration;
 import org.junit.Assert;
 import org.junit.Test;
 
-import tla2sany.configuration.Configuration;
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
@@ -212,14 +211,11 @@ public class TestBuiltInOperatorInitialization {
   @Test
   public void testInitAndReInit() throws AbortException {
     // First static initialization
-    Configuration.load(null);
     BuiltInLevel.load();
     testCorrectAndComplete();
     
     // Re-initialization when parsing second file
     Context.reInit();
-    Configuration.ReInit();
-    Configuration.load(null);
     BuiltInLevel.load();
     testCorrectAndComplete();
   }

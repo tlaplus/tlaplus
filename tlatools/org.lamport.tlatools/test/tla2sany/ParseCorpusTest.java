@@ -4,7 +4,6 @@ import util.AstNode;
 import util.CorpusParser;
 import util.CorpusParser.CorpusTestFile;
 import util.CorpusParser.CorpusTest;
-import tla2sany.configuration.Configuration;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.BuiltInLevel;
@@ -48,7 +47,6 @@ public class ParseCorpusTest {
 		ParseCorpusTest.corpus = CorpusParser.getAndParseCorpusTestFiles(corpusDir);
 		
 		// Static initialization of SANY.
-		Configuration.load(null);
 		BuiltInLevel.load();
 	}
 	
