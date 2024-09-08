@@ -13,7 +13,6 @@ import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
-import tla2sany.semantic.BuiltInLevel;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
@@ -166,9 +165,6 @@ public class SANY {
     try {
       // (Re)create the built-in operators Context object
       Context.reInit();
-
-      // (Re)read & initialize level data for builtin operators
-      BuiltInLevel.load();
 
       // Print any errors from parsing during initialization phase
       if (! initErrors.isSuccess()) {

@@ -6,7 +6,6 @@ import util.SyntaxCorpusFileParser.CorpusTestFile;
 import util.SyntaxCorpusRunner;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
-import tla2sany.semantic.BuiltInLevel;
 import tlc2.tool.CommonTestCase;
 
 import org.junit.Assert;
@@ -45,9 +44,6 @@ public class TlaPlusSyntaxCorpusTests {
 		// Load corpus test files.
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/tla2sany/corpus");
 		TlaPlusSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);
-		
-		// Static initialization of SANY.
-		BuiltInLevel.load();
 	}
 	
 	/**
