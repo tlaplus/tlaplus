@@ -568,17 +568,7 @@ public class Context implements ExploreNode {
    */
   private static void initialize() {
     for (BuiltInOperator op : BuiltInOperators.Properties) {
-      OpDefNode node = new OpDefNode(
-        op.Name,
-        tla2sany.semantic.ASTConstants.BuiltInKind,
-        op.Arity,
-        op.Arity == -1 ? null : new FormalParamNode[op.Arity],
-        false,
-        null,
-        null,
-        null,
-        new SyntaxTreeNode(op.Name));
-      Context.addGlobalSymbol(op.Name, node);
+      Context.addGlobalSymbol(op.Name, new OpDefNode(op));
     }
   }
 
