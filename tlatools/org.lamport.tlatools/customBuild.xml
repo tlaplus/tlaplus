@@ -98,20 +98,11 @@
 
 	<!-- Runs JavaCC to generate the TLA+ parser files. -->
 	<target name="generate">
-		<tempfile property="javacc-tmpdir" destdir="${java.io.tmpdir}" prefix="javacc_" />
-		<mkdir dir="${javacc-tmpdir}" />
 		<java classpath="lib/javacc-4.0.jar" classname="javacc" fork="true" failonerror="true">
-			<arg value="-OUTPUT_DIRECTORY=${javacc-tmpdir}" />
+			<arg value="-OUTPUT_DIRECTORY=src/tla2sany/parser" />
 			<arg value="javacc/tla+.jj" />
 			<jvmarg value="-Dfile.encoding=UTF-8" />
 		</java>
-		<fixcrlf srcdir="${javacc-tmpdir}" eol="lf" includes="*.java" />
-		<move todir="src/tla2sany/parser">
-			<fileset dir="${javacc-tmpdir}">
-				<include name="*.java" />
-			</fileset>
-		</move>
-		<delete dir="${javacc-tmpdir}" />
 	</target>
 
 	<!-- ===========================================================-->
