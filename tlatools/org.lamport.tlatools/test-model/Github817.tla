@@ -7,15 +7,31 @@ Next ==
     \/ x = "in-progress" /\ x' = "done"
 
 AbstractX == IF x = "done" THEN "done" ELSE "in-progress"
+
 Abstract == INSTANCE Abstract WITH
     x <- AbstractX
+
+AbstractParam(n) == INSTANCE Abstract WITH
+    x <- n
 
 Spec ==
     /\ Init
     /\ [][Next]_x
     /\ WF_x(Next)
 
+
 Refinement == Abstract!Spec
+RefinementParam == AbstractParam(AbstractX)!Spec
+
+op(b) == [][b]_x
+PropParam == op(TRUE)
+
+\* Checking property PropParamRec causes a StackOverflow
+RECURSIVE opRec(_)
+opRec(b) == IF b THEN [][b]_x ELSE opRec(~b)
+PropParamRec == opRec(TRUE)
+
+PropParamF == op(FALSE)
 ==========================================================================
 
 ----------------------------- MODULE Abstract ----------------------------
@@ -42,5 +58,5 @@ Spec ==
 ---------------------------- CONFIG Github817 ----------------------------
 SPECIFICATION Spec
 CHECK_DEADLOCK FALSE
-PROPERTY Refinement
+PROPERTY Refinement PropParam
 ===========================================================================
