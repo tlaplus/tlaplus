@@ -3963,7 +3963,7 @@ public abstract class Tool
     return contexts(Ordering.NORMALIZED, appl, c, s0, s1, control, cm);
   }
 
-	private final ContextEnumerator contexts(Ordering ordering, OpApplNode appl, Context c, TLCState s0, TLCState s1, final int control,
+	public final ContextEnumerator contexts(Ordering ordering, OpApplNode appl, Context c, TLCState s0, TLCState s1, final int control,
 			CostModel cm) {
 		FormalParamNode[][] formals = appl.getBdedQuantSymbolLists();
 	    boolean[] isTuples = appl.isBdedQuantATuple();

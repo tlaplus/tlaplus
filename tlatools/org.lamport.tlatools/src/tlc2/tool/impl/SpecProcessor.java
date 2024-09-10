@@ -103,6 +103,7 @@ import tlc2.value.impl.SetEnumValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.Value;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.FilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
@@ -1419,10 +1420,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             OpApplNode pred1 = (OpApplNode) pred;
             ExprOrOpArgNode[] args = pred1.getArgs();
+            final SymbolNode opNode = pred1.getOperator();
+            final Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
+
             if (args.length == 0)
             {
-                SymbolNode opNode = pred1.getOperator();
-                Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
                 if (val instanceof OpDefNode)
                 {
                     if (((OpDefNode) val).getArity() != 0)
@@ -1447,7 +1449,59 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 }
                 return;
             }
+
+			if (val instanceof OpDefNode) {
+				// Handle parameterized instantiation:
+				//
+				//   SM(param) == INSTANCE SomeModule WITH foo <- param
+				//   Property == ... SM(42)!Spec
+				//
+				// If pred1 is the application of a non-recursive, non-builtin, non-zero arity
+				// operator definition, the args define the values of the defs (formal)
+				// parameters. Thus, link the def's parameters to the args via the def's context.
+				// Afterwards, recurse on this operator definition.
+				// (Built-ins have no body, and I do not know how to handle recursive).
+				final OpDefNode odn = (OpDefNode) val;
+				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length) {
+					// Link the operator's (formal) parameters to the given args.
+					c = symbolNodeValueLookupProvider.getOpContext(odn, args, c, false, toolId);
+					// Recurse.
+					this.processConfigProps(opNode.getName().toString(), odn.getBody(), c, subs);
+					return;
+				}
+			}
+          
             int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
+			if (opcode == OPCODE_bf) {
+				ContextEnumerator ctxts = null;
+				try {
+					ctxts = opDefEvaluator.contexts(pred1, c);
+				} catch (TLCRuntimeException ignored) {
+					// pred1 is not a constant expression or some constants cannot be found. In this
+					// case, we do not handle this OPCODE_bf at here but (hopefully) elsewhere.
+				}
+				if (ctxts != null) {
+					if (ctxts.isDone()) {
+						Assert.fail(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
+					}
+					// Handle universal quantification in parameterized instantiation by "unrolling"
+					// the quantification into a list of conjuncts. To achieve this, we need to
+					// evaluate the set over which the specification quantifies. This may fail for
+					// reasons such as non-constant expressions. If it fails we do not handle
+					// OPCODE_bf but continue property processing in hopes that it can still be
+					// handled later.
+					//
+					//   SM(param) == INSTANCE SomeModule WITH foo <- param
+					//   Property == \A n \in S : SM(n)!Spec
+					//
+					Context c1;
+					while ((c1 = ctxts.nextElement()) != null) {
+						final ExprNode expr = (ExprNode) args[0];
+						this.processConfigProps(expr.toString(), expr, c1, subs);
+					}
+					return;
+				}
+			}
             if (opcode == OPCODE_cl || opcode == OPCODE_land)
             {
                 for (int i = 0; i < args.length; i++)
