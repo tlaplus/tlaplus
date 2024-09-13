@@ -1156,11 +1156,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             OpApplNode pred1 = (OpApplNode) pred;
             ExprOrOpArgNode[] args = pred1.getArgs();
+            final SymbolNode opNode = pred1.getOperator();
+            final Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
 
             if (args.length == 0)
             {
-                SymbolNode opNode = pred1.getOperator();
-                Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
                 if (val instanceof OpDefNode)
                 {
                     if (((OpDefNode) val).getArity() != 0)
@@ -1192,6 +1192,21 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 }
                 return;
             }
+
+			if (val instanceof OpDefNode) {
+				// Support parameterized instantiation when formula is the behavior spec
+				// (compare "iwx4yrb9" below):
+				//
+				//    R(c) == INSTANCE Ring WITH cardinality <- c
+				//    Spec == R(42)
+				// 
+				final OpDefNode odn = (OpDefNode) val;
+				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length) {
+					c = symbolNodeValueLookupProvider.getOpContext((OpDefNode) val, args, c, false, toolId);
+					this.processConfigSpec(odn.getBody(), c, subs);
+					return;
+				}
+			}
 
             int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
             if ((opcode == OPCODE_te) || (opcode == OPCODE_tf))
@@ -1451,7 +1466,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             }
 
 			if (val instanceof OpDefNode) {
-				// Handle parameterized instantiation:
+				// Handle parameterized instantiation (iwx4yrb9):
 				//
 				//   SM(param) == INSTANCE SomeModule WITH foo <- param
 				//   Property == ... SM(42)!Spec
