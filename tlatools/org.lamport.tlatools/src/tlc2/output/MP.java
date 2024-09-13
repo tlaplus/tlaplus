@@ -1205,16 +1205,7 @@ public class MP
             b.append("The %1% of %2% is equal to %3%");
             break;
         case EC.TLC_CONFIG_MISSING_INIT:
-            b.append("The configuration file did not specify the initial state predicate." +
-                     // The below part of the error message was added by LL on 15 Nov 2012
-            		 //
-            		 //	ldq, 13 Feb 2020: I don't think this is semantically correct; I receive
-                     //			no errors when defining a specification that references
-            		 //			a formula which is a parameterized INSTANCE. I *do* receive
-                     //			such an error when that formula is being constrained via
-            		 //			the temporal existential qualifier.
-                     "\nCan also be caused by trying to run TLC on a specification from" +
-                     "\na module imported with a parameterized INSTANCE statement.");
+            b.append("The configuration file did not specify the initial state predicate.");
             break;
         case EC.TLC_CONFIG_MISSING_NEXT:
             b.append("The configuration file did not specify the next state predicate.");
