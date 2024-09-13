@@ -1209,6 +1209,77 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 			}
 
             int opcode = BuiltInOPs.getOpCode(pred1.getOperator().getName());
+			/*
+			
+			Do not handle OPCODE_bf even though the spec Outer below would be an
+			interesting use case.  However, TLC can handle only specifications 
+			with one next-state relation  ("Error: The specification contains
+			more than one conjunct of the form [][Next]_v, but TLC can handle
+			only specifications with one next-state relation."):
+			
+			--------- MODULE Outer ---------
+			VARIABLE value
+			
+			R(n) == INSTANCE Ring
+			        WITH Cardinality <- n
+			
+			Spec == \A n \in {1,2} : R(n)!Spec
+			
+			THEOREM \A n \in {1,2} :
+						 R(n)!Spec => R(n)!Prop
+			=================================
+			
+			---------- MODULE Ring ----------
+			EXTENDS Naturals
+			
+			CONSTANT Cardinality
+			
+			VARIABLE value
+			  
+			RingMembers == (0 .. (Cardinality - 1))
+			  
+			Init == /\ Cardinality > 1
+			        /\ value \in RingMembers
+			          
+			Increment == 
+			     value' = (value + 1) % Cardinality
+			  
+			Decrement == 
+			     value' = IF value = 0
+			              THEN (Cardinality - 1)
+			              ELSE (value - 1)
+			  
+			Next == \/ Increment
+			        \/ Decrement
+			  
+			Spec == /\ Init
+			        /\ [][Next]_value
+			
+			Prop == value \in RingMembers     
+			=================================
+			
+			
+			if (opcode == OPCODE_bf) {
+				ContextEnumerator ctxts = null;
+				try {
+					ctxts = opDefEvaluator.contexts(pred1, c);
+				} catch (TLCRuntimeException ignored) {
+					// pred1 is not a constant expression or some constants cannot be found. In this
+					// case, we do not handle this OPCODE_bf at here but (hopefully) elsewhere.
+				}
+				if (ctxts != null) {
+					if (ctxts.isDone()) {
+						Assert.fail(EC.TLC_LIVE_FORMULA_TAUTOLOGY);
+					}
+					Context c1;
+					while ((c1 = ctxts.nextElement()) != null) {
+						final ExprNode expr = (ExprNode) args[0];
+						this.processConfigSpec(expr, c1, subs);
+					}
+					return;
+				}
+			}
+			 */
             if ((opcode == OPCODE_te) || (opcode == OPCODE_tf))
             {
             	Assert.fail(EC.TLC_SPECIFICATION_FEATURES_TEMPORAL_QUANTIFIER);
