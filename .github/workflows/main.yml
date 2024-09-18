@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  repository_dispatch:
   workflow_dispatch:
     inputs:
       failfast:
@@ -248,10 +249,11 @@ jobs:
            mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
 
       ##
-      ## Trigger build of CommunityModule as integration tests.
+      ## Trigger build of CommunityModule as integration tests, unless it creates and endless 
+      ## cycle if this build was triggered from a build of the CommunityModules.
       ##
     - name: Integration tests with CommunityModules
-      if: matrix.operating-system == 'ubuntu-latest'
+      if: matrix.operating-system == 'ubuntu-latest' && github.event.client_payload.source != 'CommunityModules'
       uses: peter-evans/repository-dispatch@v1
       with:
           token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
