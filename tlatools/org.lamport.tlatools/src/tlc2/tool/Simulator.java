@@ -302,6 +302,8 @@ public class Simulator {
 			return MP.printError(EC.TLC_NO_STATES_SATISFYING_INIT_AND_CONSTRAINT);
 		}
 
+		MP.printMessage(EC.TLC_INIT_GENERATED1, String.valueOf(initStates.size()), "");
+
 		// It appears deepNormalize brings the states into a canonical form to
 		// speed up equality checks.
 		initStates.deepNormalize();
