@@ -1,0 +1,36 @@
+===============================|||
+Basic Module Assumptions
+===============================|||
+
+---- MODULE Test ----
+ASSUME TRUE
+ASSUMPTION TRUE
+AXIOM TRUE
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (assumption (boolean))
+  (assumption (boolean))
+  (assumption (boolean))
+(double_line)))
+
+===============================|||
+Named Module Assumptions
+===============================|||
+
+---- MODULE Test ----
+ASSUME a1 == TRUE
+ASSUMPTION a2 == TRUE
+AXIOM a3 == TRUE
+====
+
+-------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (assumption name: (identifier) (def_eq) (boolean))
+  (assumption name: (identifier) (def_eq) (boolean))
+  (assumption name: (identifier) (def_eq) (boolean))
+(double_line)))
+

@@ -6,6 +6,7 @@ Function Definition
 f[x \in Nat] == x
 f[x, y \in Nat] == x
 f[x, y \in Nat, z \in Real] == x
+f[x \in [Nat -> (Nat)]] == x
 ====
 
 -------------------------------|||
@@ -44,6 +45,18 @@ f[x, y \in Nat, z \in Real] == x
       intro: (identifier)
       (set_in)
       set: (real_number_set)
+    )
+    (def_eq)
+    definition: (identifier_ref)
+  )
+  (function_definition
+    name: (identifier)
+    (quantifier_bound
+      intro: (identifier)
+      (set_in)
+      set: (set_of_functions
+        (nat_number_set) (maps_to) (parentheses (nat_number_set))
+      )
     )
     (def_eq)
     definition: (identifier_ref)

@@ -170,3 +170,18 @@ disj ==
   )
 (double_line)))
 
+=============|||
+Invalid parentheses use in jlist
+:error
+=============|||
+
+---- MODULE Test ----
+op ==
+    /\ 1
+    /\ (2
+)
+    /\ 3
+====
+    
+-------------|||
+

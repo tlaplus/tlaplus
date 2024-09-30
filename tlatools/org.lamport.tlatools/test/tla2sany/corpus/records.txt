@@ -23,6 +23,38 @@ op == [
 (double_line)))
 
 ==============================|||
+Nested Record Literal
+==============================|||
+
+---- MODULE Test ----
+op == [
+  foo |-> [
+    foo |-> 1,
+    bar |-> 2,
+    baz |-> 3
+  ],
+  bar |-> 2,
+  baz |-> 3
+]
+====
+
+------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (record_literal
+      (identifier) (all_map_to) (record_literal
+        (identifier) (all_map_to) (nat_number)
+        (identifier) (all_map_to) (nat_number)
+        (identifier) (all_map_to) (nat_number)
+      )
+      (identifier) (all_map_to) (nat_number)
+      (identifier) (all_map_to) (nat_number)
+    )
+  )
+(double_line)))
+
+==============================|||
 Record Literal with JList
 ==============================|||
 
@@ -77,6 +109,39 @@ op == [
     )
   )
 (double_line)))
+
+==============================|||
+Nested Set of Records
+==============================|||
+
+---- MODULE Test ----
+op == [
+  foo : [
+    foo : Nat,
+    bar : Int,
+    baz : Real
+  ],
+  bar : Int,
+  baz : Real
+]
+====
+
+------------------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (set_of_records
+      (identifier) (set_of_records
+        (identifier) (nat_number_set)
+        (identifier) (int_number_set)
+        (identifier) (real_number_set)
+      )
+      (identifier) (int_number_set)
+      (identifier) (real_number_set)
+    )
+  )
+(double_line)))
+
 
 ==============================|||
 Set of Records with JList
