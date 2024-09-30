@@ -107,12 +107,12 @@ public interface SyntaxTreeConstants {
   int  N_RcdConstructor  =  409 ;
   int  N_RecordComponent  =  410 ;
   int  N_SetEnumerate  =  411 ;
-  int  N_SetExcept  =  412 ;
+//  int  N_SetExcept  =  412 ;        // Removed by Andrew Helwer 05 Oct 2024
   int  N_SetOfAll  =  413 ;
   int  N_SetOfFcns  =  414 ;
   int  N_SetOfRcds  =  415 ;
-  int  N_SExceptSpec  =  416 ;
-  int  N_SFcnDecl  =  417 ;
+//  int  N_SExceptSpec  =  416 ;      // Removed by Andrew Helwer 05 Oct 2024
+//  int  N_SFcnDecl  =  417 ;         // Removed by Andrew Helwer 05 Oct 2024
   int  N_String  =  418 ;
   int  N_SubsetOf  =  419 ;
   int  N_Substitution  =  420 ;
@@ -560,12 +560,12 @@ public interface SyntaxTreeConstants {
     UniqueString.uniqueStringOf("N_RcdConstructor"),
     UniqueString.uniqueStringOf("N_RecordComponent"),
     UniqueString.uniqueStringOf("N_SetEnumerate"),
-    UniqueString.uniqueStringOf("N_SetExcept"),
+    UniqueString.uniqueStringOf("Not a node"),
     UniqueString.uniqueStringOf("N_SetOfAll"),
     UniqueString.uniqueStringOf("N_SetOfFcns"),
     UniqueString.uniqueStringOf("N_SetOfRcds"),
-    UniqueString.uniqueStringOf("N_SExceptSpec"),
-    UniqueString.uniqueStringOf("N_SFcnDecl"),
+    UniqueString.uniqueStringOf("Not a node"),
+    UniqueString.uniqueStringOf("Not a node"),
     UniqueString.uniqueStringOf("N_String"),
     UniqueString.uniqueStringOf("N_SubsetOf"),
     UniqueString.uniqueStringOf("N_Substitution"),
