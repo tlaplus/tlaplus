@@ -248,6 +248,17 @@ jobs:
            ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
            mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
 
+
+      ##
+      ## Upload tla2tools.jar maven packages to OSS Sonatype (see ossrh.xml.README).
+      ##
+    - name: Upload maven packages to OSS Sonatype 
+      if: matrix.operating-system == 'ubuntu-latest'
+      run: |
+           cd tlatools/org.lamport.tlatools/
+           zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
+           mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/content/repositories/snapshots -DrepositoryId=ossrh -DpomFile=ossrh.xml -Dfile=dist/tla2tools.jar
+
       ##
       ## Trigger build of CommunityModule as integration tests, unless it creates and endless 
       ## cycle if this build was triggered from a build of the CommunityModules.
