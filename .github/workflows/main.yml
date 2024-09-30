@@ -83,7 +83,7 @@ jobs:
       run: 'echo "$MVN_SETTINGS_XML" > ~/.m2/settings.xml'
       shell: bash
       env:
-        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML }}
+        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML_2024 }}
     - name: Set up Comodo Codesign keystore part I
       run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
       shell: bash
@@ -237,7 +237,7 @@ jobs:
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
 
       ##
-      ## Upload tla2tools.jar to Github maven packages.
+      ## Upload tla2tools.jar to OSS Sonatype.
       ##
     - name: Upload to Github maven packages
       if: matrix.operating-system == 'ubuntu-latest'
@@ -245,8 +245,8 @@ jobs:
            cd tlatools/org.lamport.tlatools/
            ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
            zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
-           ## github.xml replaces the Tycho pom.xml with a specific one to publish tla2tools.jar.
-           mvn deploy:deploy-file -Dgithub.packages.username=${{ github.actor }} -Dgithub.packages.password=${{ secrets.GITHUB_TOKEN }} -Dfile=dist/tla2tools.jar -Durl=https://maven.pkg.github.com/${{ github.repository }} -DpomFile=github.xml -DrepositoryId=github -f github.xml
+           ## Upload tla2tools.jar maven packages to OSS Sonatype (see ossrh.xml.README).
+           mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/content/repositories/snapshots -DrepositoryId=ossrh -DpomFile=ossrh.xml -Dfile=dist/tla2tools.jar -f ossrh.xml
 
       ##
       ## Trigger build of CommunityModule as integration tests, unless it creates and endless 
