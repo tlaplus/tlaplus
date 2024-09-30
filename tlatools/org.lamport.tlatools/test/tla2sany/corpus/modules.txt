@@ -62,3 +62,24 @@ Multiple Nested modules
   (double_line))
 )
 
+=============|||
+Blank File Parse Error
+:error
+=============|||
+-------------|||
+
+=============|||
+Missing Module Terminator
+:error
+=============|||
+---- MODULE Test ----
+-------------|||
+
+=============|||
+Terminating Open Parentheses
+:error
+=============|||
+---- MODULE Test ----
+f[x \in Nat] == (
+-------------|||
+

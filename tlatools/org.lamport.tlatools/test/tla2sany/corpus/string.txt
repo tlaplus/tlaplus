@@ -87,3 +87,26 @@ op == STRING
   (operator_definition name: (identifier) (def_eq) definition: (string_set))
 (double_line)))
 
+==================|||
+String with supported escape chars
+==================|||
+
+---- MODULE Test ----
+op == "\\ \n \r \f \t \""
+====
+
+------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (string
+      (escape_char)
+      (escape_char)
+      (escape_char)
+      (escape_char)
+      (escape_char)
+      (escape_char)
+    )
+  )
+(double_line)))
+
