@@ -56,19 +56,15 @@ config.jj.
 
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 
-// WARNING - order of definition of tokens *does* matter : check ClosedExpressionOrOp
   /*************************************************************************
-  * ClosedExpressionOrOp is irrelevant here.  The "order of definition of  *
-  * tokens" in this file determines the actual numbers assigned to the     *
-  * `kind' fields of the tokens.  (Those assignemnts are put by the        *
-  * parser in TLAplusParserConstants.java.)  These values are used in the  *
-  * definitions of isOp and is...fixOp, which I imagine are called         *
-  * somewhere in methods called by methods called by ...  methods called   *
-  * by ClosedExpressionOrOp.  The other thing to note is that the values   *
-  * of token `kind' fields must be different from those of nodes' kind     *
-  * fields, which are defined in st/SyntaxTreeConstants.java.              *
+  * The order of definition of tokens in this file determines the actual   *
+  * numbers assigned to the 'kind' fields of the tokens (those assignments *
+  * are put by the parser in TLAplusParserConstants.java). These values    *
+  * are used in the definitions of isOp and is(Pre|In|Post)fixOp. The      *
+  * other thing to note is that the values of token 'kind' fields must not *
+  * overlap with those of syntax tree nodes' 'kind' fields, which are      *
+  * defined in st/SyntaxTreeConstants.java.                                *
   *************************************************************************/
-  
 
 // Handling of FieldName : when the token is a keyword, the type of the token is changed to IDENTIFIER, and then we proceed with regular Identifier() handling.
 
@@ -199,24 +195,6 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
 //   ParseTree.setNumberFlags( numberFlag, decimalFlag );
     return PErrors.empty();
   }
-
-  private SyntaxTreeNode anchor = null;
-    /***********************************************************************
-    * This is set to a non-null value only in Expression().  If a          *
-    * ClosedExpressionOrOp node is found when parsing an expression,       *
-    * anchor is set to that node.  It is set to null in the following      *
-    * places:                                                              *
-    *                                                                      *
-    *  - When beginning to parse a Substitution()                          *
-    *                                                                      *
-    *  - When OpSuite() or Substitution() finds that anchor equals an      *
-    *    Op Symbol, as described below.                                    *
-    *                                                                      *
-    * The Substitution() and OpSuite() procedures look for an              *
-    * Expression or Op Symbol by calling Expression() and, if that throws  *
-    * an exception, catching the expression and checking if anchor is the  *
-    * desired Op Symbol.                                                   *
-    ***********************************************************************/
 
 // Lookahead mechanisms for definitions
   /*************************************************************************
@@ -413,38 +391,6 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     currentT.next = nextT;
   }
 
-//
-  void skipOver( int l ) {
-    while ( true ) {
-      Token t = getToken(1);
-      int k = t.kind;
-      if ( (k == EOF) || (t.beginColumn < l ) ) return;
-      t = getNextToken();
-    }
-  }
-
-/***************************************************************************
-* Note: the non-terminal ClosedStart was commented out, apparently to be   *
-* replaced by this boolean-valued method.                                  *
-***************************************************************************/
-boolean
-ClosedStart( Token t ) {
-  return   t.kind == IDENTIFIER
-        || (t.kind >= op_57 && t.kind <= op_119)
-           /****************************************************************
-           * These are all prefix, infix, and postfix operators.           *
-           ****************************************************************/
-        || t.kind == NUMBER_LITERAL
-        || t.kind == LBR
-        || t.kind == LSB
-        || t.kind == LAB
-        || t.kind == LBC
-        || t.kind == LWB
-        || t.kind == STRING_LITERAL
-        || t.kind == WF
-        || t.kind == SF;
-}
-
 boolean
 isOp( Token t ) {
   return t.kind >= op_57 && t.kind <= op_119;
@@ -481,42 +427,6 @@ Operator lastOp;
       return false;
   }
 
-//  boolean IsNotExpression () {
-//    /***********************************************************************
-//    * This method is called only in NumberedAssumeProve.                   *
-//    ***********************************************************************/
-//    Token t = initPreviewToken();
-//          t = getNextPreviewToken(t);
-//      /*********************************************************************
-//      * Previous statement added on 1 Mar 2007 by J-Ch and LL to fix bug.  *
-//      *********************************************************************/
-//    int k = t.kind;
-//    if ( k == US || k == LOCAL || k == VARIABLE || k == PARAMETER || k == INSTANCE || k == CONSTANT || k == STATE || k == ACTION || k == TEMPORAL ) return true;
-//    else {
-//      t = getNextPreviewToken(t); k = t.kind;
-//      if ( k == US || k == DEF || k  == LSB )
-//        return true;
-//      else if (k == LBR) {
-//        int depth = 1;
-//        Token nt = getNextPreviewToken(t);
-//        while (true) {
-//          t = nt; nt = getNextPreviewToken(t); k = t.kind;
-//          if ( k == RBR ) {
-//             if ( depth == 1 )
-//               if ( nt.kind == DEF ) return true;
-//               else return false;
-//             else
-//                depth--;
-//          } else
-//          if ( k == LBR ) { depth++;
-//          } else
-//          if ( k == EOF ) return false;
-//        }
-//      }
-//    }
-//    return false;
-//  }
-//
   boolean isFieldNameToken( Token t ) {
     /***********************************************************************
     * Modified by LL on 10 Oct 2007 because of new keywords added and      *
@@ -609,17 +519,6 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
        } ;
      } ;
     }
-
-// predicate used in lookahead to discriminate between the Case Separator and
-// the box operator. Returns true if it is most likely not the separator.
-// This is a weak mechanism.
-  boolean boxDisc() {
-    Token t = getToken(1);
-    if ( t.kind == CASESEP )
-      return OperatorStack.preInEmptyTop();
-    else
-      return true;
-  }
 
   boolean caseSep() {
     Token t = getToken(1);
@@ -935,13 +834,6 @@ private void popProofLevel() throws ParseException {
   proofDepth-- ;
  }
 
-private void setProofLevel(int val) throws ParseException {
-  if (proofDepth < 0) {
-    throw new ParseException("Parser bug: proof step found outside proof." ) ;
-   } ;
-  proofLevelStack[proofDepth] = val;  
- }
-
 private int getProofLevel() { 
   if (proofDepth < 0) { return proofDepth; } ;
   return proofLevelStack[proofDepth]; }
@@ -1029,7 +921,7 @@ private boolean correctLevel(Token tok) {
 
 
 PARSER_END(TLAplusParser)
-
+
 /* the default mode while skip over text, looking for the marker of a pragma, or the beginning of the spec. */
 
 TOKEN_MGR_DECLS :
@@ -1067,7 +959,7 @@ TOKEN: {
 // | < #CASESEP: "[]" >
 }
 
-
+
 /* in pragma mode, we worry only about strings and numbers */
 
 <PRAGMA> TOKEN : {
@@ -1076,7 +968,7 @@ TOKEN: {
 }
 
 <PRAGMA> SKIP : { < ~[] > }
-
+
 /* SPEC mode is defined for TLA+ specifications. */
 
 /*
@@ -1413,7 +1305,10 @@ TOKEN: {
   op_118 : "\\times"> | <
   op_119 : "\\X">
 }
-// op_119 : dernier compteur : impact sur ClosedStart et autres !!!
+// NOTE: op_119 is the last operator token, and it is used in helper methods
+// to delineate token classes. We have to be careful to adjust those uses if
+// we ever add new operator tokens past this point; alternatively it would be
+// easier to add new operator tokens to the middle of the range.
 
 <SPEC,PRAGMA> TOKEN : /* IDENTIFIERS */ {
   < IDENTIFIER : <CASE0> | <CASE1> | <CASE2> | <CASE3> |  <CASE6> | <CASEN> | "@" | <NUMBER_SET> >
@@ -1498,7 +1393,7 @@ TOKEN: {
 | "-" (".")* | (".")+)>
 }
 
-
+
 /* beginning of the grammar productions */
 Token
 PrefixOpToken() : {
@@ -1804,7 +1699,7 @@ EndModule() : {
     lSTN[0] = new SyntaxTreeNode(mn, t);
     return new SyntaxTreeNode(mn, N_EndModule, lSTN ); }
 }
-
+
 SyntaxTreeNode
 Extends() : {
   SyntaxTreeNode tn;
@@ -2278,11 +2173,6 @@ Substitution() : {
   SyntaxTreeNode zn[] = new SyntaxTreeNode[3];
   SyntaxTreeNode tn = null;
   Token t;
-  anchor = null;
-    /***********************************************************************
-    * See the comments for the declaration of anchor to see what this is   *
-    * being used for.                                                      *
-    ***********************************************************************/
   String n;
   bpa("Substitution");
 } {
@@ -2303,72 +2193,6 @@ expecting = "Expression or Op. Symbol"; }
   tn = OpOrExpr()
   { epa(); zn[2] = tn; return new SyntaxTreeNode(mn, N_Substitution, zn ); }
 }
-
-/***************************************************************************
-* Substitution ::=                                                         *
-*     ( Identifier | NonExpPrefixOp | InfixOp | PostfixOp)                 *
-*     <SUBSTITUTE> ( <op_76> | Lambda | Expression )                       *
-*                                                                          *
-* Note: <op_76> is "-.", the prefix - operator.                            *
-*       <SUBSTITUTE> is "<-"                                               *
-*                                                                          *
-* Modified 27 March 2007 by LL to allow Lambda substitutions.              *
-***************************************************************************/
-SyntaxTreeNode
-OldSubstitution() : {
-  SyntaxTreeNode zn[] = new SyntaxTreeNode[3];
-  SyntaxTreeNode tn = null;
-  Token t;
-  anchor = null;
-    /***********************************************************************
-    * See the comments for the declaration of anchor to see what this is   *
-    * being used for.                                                      *
-    ***********************************************************************/
-  String n;
-  bpa("Substitution");
-} {
-  ( tn = Identifier() { zn[0] = tn; }
-/*
-  | LOOKAHEAD( <OpSymbol>, { isPrefixDeclOp( getToken(1) )  } ) tn = NonExpPrefixOp() { zn[0] = tn; }
-  | LOOKAHEAD( <OpSymbol>, { isInfixOp( getToken(1) )  } ) tn = InfixOp() { zn[0] = tn; }
-  | LOOKAHEAD( <OpSymbol>, { isPostfixOp( getToken(1) )  } ) tn = PostfixOp() { zn[0] = tn; }
-*/
-  | tn = NonExpPrefixOp() { zn[0] = tn; }
-  | tn = InfixOp() { zn[0] = tn; }
-  | tn = PostfixOp() { zn[0] = tn; }
-  )
-{ expecting = "<-"; }
-  t = <SUBSTITUTE> { n = tn.getImage();
-     zn[1] = new SyntaxTreeNode(mn, t);
-expecting = "Expression or Op. Symbol"; }
-  try {
-    ( LOOKAHEAD( <op_76> )
-    t = <op_76> {
-      SyntaxTreeNode zzn[] = new SyntaxTreeNode[2];
-      zzn[0] = new SyntaxTreeNode( mn, N_IdPrefix, new SyntaxTreeNode[0] );
-      zzn[1] =  new SyntaxTreeNode( mn, N_NonExpPrefixOp, t );
-      tn = new SyntaxTreeNode( mn, N_GenNonExpPrefixOp, zzn );
-    }
-|   tn = Expression() 
-|   tn = Lambda()
-)
-  } catch ( ParseException e ) {
-// first things first - restore evaluation stack
-    if ( OperatorStack.isWellReduced() )
-      OperatorStack.popStack();
-    else
-      throw e;
-// check the nature of the node returned. It can only be a GenOp. */
-// should be reviewed - N_GenNonExpPrefixOp may be unnecessary because -. has been checked.
-    if ( ( anchor != null )
-       &&( anchor.isKind( N_GenPrefixOp ) || anchor.isKind( N_GenInfixOp ) || anchor.isKind( N_GenPostfixOp ) || anchor.isKind( N_GenNonExpPrefixOp ) ) ) {
-       tn = anchor; anchor = null;
-    } else
-       throw e;
-  }
-  { epa(); zn[2] = tn; return new SyntaxTreeNode(mn, N_Substitution, zn ); }
-}
-
 
 SyntaxTreeNode
 PrefixOp() : {
@@ -2416,7 +2240,7 @@ Identifier() : {
 }{
   t = <IDENTIFIER> { return new SyntaxTreeNode(mn, t); }
 }
-
+
 /***************************************************************************
 * Assumption ::= ( <ASSUME> | <ASSUMPTION> )                               *
 *                  ( Identifier <DEF> )? Expression                        *
@@ -2629,9 +2453,6 @@ expecting = "Expression"; }
   { epa(); return new SyntaxTreeNode( mn, N_MaybeBound, zn); }
 }
 
-
-
-
 /***************************************************************************
 * Theorem ::= ( <THEOREM> | <PROPOSITION> )                                *
 *                ( Identifier <DEF> )? ( AssumeProve | Expression )        *
@@ -2675,8 +2496,6 @@ expecting = "=="; }
     epa(); return new SyntaxTreeNode( mn, N_Theorem, sn); }
 }
 
-
-
 /***************************************************************************
 * The Grammar of Proofs                                                    *
 *  XXXXXXX THIS IS OBSOLETE                                                *
@@ -2699,12 +2518,7 @@ expecting = "=="; }
 * Step ::=   N_DefStep                                                     *
 *          | N_UseOrHide                                                   *
 *          | N_NonLocalInstance                                            *
-*          | N_NumerableStep                                               *
 *          | N_QEDStep                                                     *
-*                                                                          *
-* NumerableStep ==    ExprStep                                             *
-*                   | NumberedStep                                         *
-*                   | UnnumberedStep                                       *
 *                                                                          *
 * DefStep ::= (<DEFINE>)? OperatorOrFunctionDefinition                     *
 *                                                                          *
@@ -2728,7 +2542,6 @@ expecting = "=="; }
 *     (InnerProof)?                                                        *
 ***************************************************************************/
 
-
 SyntaxTreeNode
 Proof() : {
 /***************************************************************************
@@ -3192,217 +3005,6 @@ AssertStep() : {
     }
 }
 
-// SyntaxTreeNode
-// NumerableStep() : {
-// /***************************************************************************
-// * Returns an N_NumerableStep node, which has the syntax                    *
-// *                                                                          *
-// *  ( <ProofStep[Dot]Lexeme> (N_NonExprBody node)                           *
-// *   | N_NonExprBody node )                                                 *
-// *  ( N_Proof node | N_TerminalProof node)?                                 *
-// ***************************************************************************/
-//  Token t = null;
-//  SyntaxTreeNode tn = null;
-//  boolean mayHaveProof = true ;
-//  bpa("NumerableStep") ;
-//  }{( LOOKAHEAD(2)
-//      (t = <ProofStepLexeme> | t = <ProofStepDotLexeme>)
-//      { tn = new SyntaxTreeNode(mn, t) ;
-//        addHeir(tn); 
-//        if ((proofDepth > 0) && (proofLevelStack[proofDepth-1] == -1)){
-//          throw new ParseException(tn.getLocation() + 
-//                     ": numbered step inside unnumbered proof.");
-//         } ;
-//        if (!correctLevel(t)) {
-//          throw new ParseException(tn.getLocation() + 
-//                     ": step number has incorrect level.");
-//         } ;
-//       }
-//      ( (t = <CASE> {addHeir(new SyntaxTreeNode(mn, t)); })?          // XXXX
-// //     ^^^^^^^^^^^
-// // javacc generates the following warning here:
-// //   Choice conflict in [...] construct at line 2700, column 8.
-// //   Expansion nested within construct and expansion following construct
-// //   have common prefixes, one of which is: "CASE"
-// //   Consider using a lookahead of 2 or more for nested expansion.
-// //
-// // This conflict is between "<1>2.  CASE expr" and 
-// // "<1>2.  CASE p -> ...".  This is an inherent ambiguity that arises
-// // from the use of "CASE" as a keyword here.  Javacc resolves
-// // conflicts by choosing the first successful match.  Here, this
-// // means that "<1>2.  CASE p -> ..." is parsed as
-// //
-// //      <ProofStepDotLexeme> <CASE> Expression()
-// //
-// // causing an error when it tries to parse "-> ..." as an expression.
-// 
-// 
-// 
-//        tn = Expression() {addHeir(tn);                               // XXXX
-//                           mayHaveProof = true ;}   // XXXX
-//       |                                                              // XXXX
-//         tn = NonExprBody() {addHeir(tn);
-//                             mayHaveProof = nonExprBodyMayHaveProof;}
-//       )                                                              // XXXX
-//    | t = <CASE> {addHeir(new SyntaxTreeNode(mn, t)); }             // XXXX
-//      tn = Expression() {addHeir(tn);                               // XXXX
-//                         mayHaveProof = nonExprBodyMayHaveProof;} // XXXX
-// 
-//    | tn = NonExprBody() 
-//        { addHeir(tn); 
-//          mayHaveProof = nonExprBodyMayHaveProof;
-//          if (getProofLevel() == -2)
-//            { setProofLevel(-1) ;
-//           }
-//          else {
-//           if (getProofLevel() != -1) {
-//          throw new ParseException(tn.getLocation() + 
-//                     ": Unnumbered step in numbered proof.");
-//             }
-//           }
-//       }
-//   )
-//   ( LOOKAHEAD( {mayHaveProof && beginsProof(getToken(1))} )
-//      tn = Proof() 
-//      { addHeir(tn) ; }
-//   )?
-//   { SyntaxTreeNode sn[] = getLastHeirs();
-//     epa(); 
-//     return new SyntaxTreeNode(mn, N_NumerableStep, sn);
-//   }
-// }
-
-// /***************************************************************************
-// * Hack: In addition to returning a node, NonExprBody() needs to return a   *
-// * boolean saying whether or not the statement it is returning can have a   *
-// * proof.  It does this by setting the field nonExprBodyMayHaveProof.       *
-// ***************************************************************************/
-// SyntaxTreeNode
-// NonExprBody() : {
-//  SyntaxTreeNode tn = null;
-//  Token t = null;
-//  nonExprBodyMayHaveProof = false ;
-//  bpa("NonExprBody") ;
-// }{ (  LOOKAHEAD(2)
-//       (t = <SUFFICES>    { addHeir(new SyntaxTreeNode(mn, t)); }) ? 
-//       tn = AssumeProve() { addHeir(tn) ; 
-//                            nonExprBodyMayHaveProof = true;}
-//     | LOOKAHEAD(2)
-//       ( t = <PROVE> | t = <SUFFICES>)   // | t = <PROOFCASE>
-//       { addHeir(new SyntaxTreeNode(mn, t));  
-//         expecting = "expression";}
-//       tn = Expression() { addHeir(tn) ; 
-//                           nonExprBodyMayHaveProof = true;}
-//     | t = <HAVE> { addHeir(new SyntaxTreeNode(mn, t)) ;   
-//                    expecting = "expression";}
-//       tn = Expression() { addHeir(tn) ; }
-//     | t = <TAKE> { addHeir(new SyntaxTreeNode(mn, t)) ;    
-//                    expecting = "identifier";}
-//       ( LOOKAHEAD (  <IDENTIFIER> (<COMMA> <IDENTIFIER>)* <IN>
-//                    | <LAB>) 
-//         tn = QuantBound() { addHeir(tn) ;  
-//                             expecting = "comma or step";}
-//         ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); 
-//                         expecting = "identifier or tuple of identifiers";}
-//           tn = QuantBound() { addHeir(tn) ;  
-//                               expecting = "comma or proof step";}
-//         )*
-//       |  
-//         tn = Identifier() { addHeir(tn) ; 
-//                              expecting = "comma or proof step";}
-//          ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); 
-//                           expecting = "identifier";}
-//            tn = Identifier() { addHeir(tn) ;  
-//                                expecting = "comma or proof step";}
-//          )*
-//       )
-// 
-//     | t = <WITNESS> { addHeir(new SyntaxTreeNode(mn, t)) ;     
-//                       expecting = "expression";}
-//       tn = Expression() { addHeir(tn) ; }
-//       /*********************************************************************
-//       * Note: The semantic phase must determine if this is expr \in expr,  *
-//       * or <<expr, ...  , expr>> \in expr, or just expr.                   *
-//       *********************************************************************/
-//       ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); 
-//                         expecting = "expression";}
-//         tn = Expression() { addHeir(tn) ;  
-//                             expecting = "comma or colon";}
-//       )*
-//       
-//     | t = <PICK> { addHeir(new SyntaxTreeNode(mn, t)) ;  
-//                    expecting = "identifier";}
-//       ( LOOKAHEAD ( <IDENTIFIER> ( <COMMA> <IDENTIFIER> )* <COLON> ) 
-//                           /* CommaList Identifier */
-//         tn = Identifier() { addHeir(tn) ; 
-//                              expecting = "comma, or colon";}
-//          ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); 
-//                           expecting = "identifier";}
-//            tn = Identifier() { addHeir(tn) ;  
-//                                expecting = "comma or colon";}
-//          )*
-//       |  
-//         tn = QuantBound() { addHeir(tn) ;  
-//                             expecting = "comma or colon";}
-//         ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); 
-//                         expecting = "identifier or tuple of identifiers";}
-//           tn = QuantBound() { addHeir(tn) ;  
-//                               expecting = "comma or colon";}
-//         )*
-//        )
-//        t = <COLON> { addHeir( new SyntaxTreeNode(mn, t) );  
-//                      expecting = "expression";}
-//        tn = Expression() { addHeir(tn) ; }
-//        { nonExprBodyMayHaveProof = true;}
-//    )
-//   { SyntaxTreeNode sn[] = getLastHeirs();
-//     epa(); 
-//     return new SyntaxTreeNode(mn, N_NonExprBody, sn);
-//   }
-// }
-
-
-
-/***************************************************************************
-* The GeneralId() production is not used and can be deleted.  The parser   *
-* uses Java code to construct N_GeneralId nodes inside Extension(),        *
-* NoOpExtension(), and BraceCases()                                        *
-***************************************************************************/
-SyntaxTreeNode
-GeneralId() : {
-  SyntaxTreeNode zn[] = new SyntaxTreeNode[2];
-  Token t;
-  bpa("General ID");
-}{
-  zn[0] = IdPrefix()
-  zn[1] = Identifier()
-  { epa(); return new SyntaxTreeNode( mn, N_GeneralId, zn); }
-}
-
-SyntaxTreeNode
-IdPrefix() : {
-  SyntaxTreeNode tn;
-  bpa("ID Prefix");
-}{
-  ( LOOKAHEAD( IdPrefixElement() )
-    tn = IdPrefixElement(){ addHeir( tn ); } )*
-  { SyntaxTreeNode sn[] = getLastHeirs();
-    epa(); return new SyntaxTreeNode(mn, N_Proof, sn ); }
-}
-
-SyntaxTreeNode
-IdPrefixElement() : {
-  SyntaxTreeNode tn;
-  Token t;
-  bpa("ID Prefix Element");
-}{
-  tn = Identifier() { addHeir( tn ); }
-  [ tn = OpArgs(){ addHeir( tn ); } ]
-  t = <BANG> { addHeir( new SyntaxTreeNode(mn, t) ); }
-  { SyntaxTreeNode sn[] = getLastHeirs();
-    epa(); return  new SyntaxTreeNode(mn, N_IdPrefixElement, sn); }
-}
-
 SyntaxTreeNode
 ParenthesesExpression() : {
   SyntaxTreeNode tn;
@@ -3414,49 +3016,11 @@ ParenthesesExpression() : {
 }
 
 SyntaxTreeNode
-ClosedExpressionOrOp() : {
-  SyntaxTreeNode tn;
-  Token t;
-} {
-  ( tn = ElementaryExpression() | tn = ParenthesesExpression() )
-  { return tn; }
-}
-
-/***************************************************************************
-* The following does not seem to be used anywhere.                         *
-***************************************************************************/
-SyntaxTreeNode
-ClosedExpressionOnly() : {
-  SyntaxTreeNode tn;
-} {
-  tn = ClosedExpressionOrOp()
-  { if ( isGenOp( tn ) ) throw new ParseException( "Encountered unexpected Operator" );
-    else return tn;
-  }
-}
-
-SyntaxTreeNode
 OpenExpression() : {
   SyntaxTreeNode tn;
 } {
   ( tn = SomeQuant() | tn = SomeTQuant() | tn = IfThenElse()
   | tn = Case() | tn = LetIn() | tn = UnboundOrBoundChoose() )
-  { return tn; }
-}
-
-/*
-  L.GeneralId, L.OpApplication, L.String, L.Number, L.GenOp...
-*/
-SyntaxTreeNode
-ElementaryExpression() : {
-  SyntaxTreeNode tn;
-  Token t;
-  bpa("Elementary expression");
-} {
-  ( tn = Extension() /* may return GeneralId, GenOp.. or OpApplication */
-  | tn = String() { epa(); }
-  | tn = Number() { epa(); }
-  )
   { return tn; }
 }
 
@@ -3496,82 +3060,6 @@ Number() : {
       kind = N_Number;
     }
     return new SyntaxTreeNode(mn, kind, sn); }
-}
-
-SyntaxTreeNode
-Extension() : {
-  SyntaxTreeNode last = null, tid, top = null;
-  Token t = null;
-  SyntaxTreeNode heirs[];
-} {
-  (//  LOOKAHEAD( { isPrefixOp( getToken(1) )  } )
-      top = PrefixOp() {
-        heirs = new SyntaxTreeNode[2];
-        heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, getLastHeirs() );
-        heirs[1] = top;
-        last = new SyntaxTreeNode( mn, N_GenPrefixOp, heirs );
-        epa();
-      }
-  |// LOOKAHEAD( { isInfixOp( getToken(1) )  } )
-      top = InfixOp() {
-        heirs = new SyntaxTreeNode[2];
-        heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, getLastHeirs() );
-        heirs[1] = top;
-        last =  new SyntaxTreeNode( mn, N_GenInfixOp, heirs );
-        epa();
-      }
-  |// LOOKAHEAD( { isPostfixOp( getToken(1) )  } )
-      top = PostfixOp() {
-        heirs = new SyntaxTreeNode[2];
-        heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, getLastHeirs() );
-        heirs[1] = top;
-        last =  new SyntaxTreeNode( mn, N_GenPostfixOp, heirs );
-        epa();
-      }
-  | tid = Identifier()
-    [ top = OpArgs() ]
-// ^^^  
-// Warning 1  -- Eliminated in SANY2
-    [ t = <BANG> {
-        if ( top == null ) {
-          heirs = new SyntaxTreeNode[2];
-          heirs[1] = new SyntaxTreeNode( mn, t );
-        } else {
-          heirs = new SyntaxTreeNode[3];
-          heirs[1] = top;
-          heirs[2] = new SyntaxTreeNode(mn, t );
-        }
-        heirs[0] = tid;
-        SyntaxTreeNode current = new SyntaxTreeNode( mn, N_IdPrefixElement, heirs );
-        addHeir( current );
-      }
-      last = Extension() ]
-    { if ( last == null ) {
-         if ( top == null ) {
-           heirs = new SyntaxTreeNode[2];
-           heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, getLastHeirs() );
-           heirs[1] = tid;
-           last = new SyntaxTreeNode( mn, N_GeneralId, heirs );
-         } else {
-/* XXX Wrong.
-           addHeir( tid );
-           tid = new SyntaxTreeNode( mn, N_GeneralId, getLastHeirs() );
-*/
-           heirs = new SyntaxTreeNode[2];
-           heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, getLastHeirs() );
-           heirs[1] = tid;
-           tid = new SyntaxTreeNode( mn, N_GeneralId, heirs );
-
-           heirs = new SyntaxTreeNode[2];
-           heirs[0] = tid;
-           heirs[1] = top;
-           last = new SyntaxTreeNode( mn, N_OpApplication, heirs );
-         }
-         epa();
-      }
-    }
-  )
-  { return last; }
 }
 
 SyntaxTreeNode
@@ -3722,61 +3210,6 @@ OpSuite() : {
 SyntaxTreeNode tn; 
 }{ tn = OpOrExpr() {addHeir(tn);}
 } // OpSuite
-
-
-// void /* nodes are linked internally here : no value returned */
-// oldOpSuite() : {
-//   SyntaxTreeNode tn = null;
-//   anchor = null;
-//     /***********************************************************************
-//     * See the comments for the declaration of anchor to see what this is   *
-//     * being used for.                                                      *
-//     ***********************************************************************/
-//   Token t;
-// } {
-//   ( /***********************************************************************
-//     * This handles the operator argument "-." (token op_76)                *
-//     ***********************************************************************/
-// // XXXXX -- this won't work with the new expression syntax.
-//     t = <op_76> {
-//     tn = new SyntaxTreeNode(mn, N_NonExpPrefixOp, t); 
-//     SyntaxTreeNode heirs[] = new SyntaxTreeNode[2];
-//     heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, ( SyntaxTreeNode []) null );
-//     heirs[1] = tn;
-//     tn = new SyntaxTreeNode( mn, N_GenNonExpPrefixOp, heirs ); }
-//   | LOOKAHEAD( (<AND> | <OR>) (<COMMA>|<RBR>) )
-//       tn = InfixOp() {
-//         heirs = new SyntaxTreeNode[2];
-//         heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, (SyntaxTreeNode []) null );
-//         heirs[1] = tn;
-//         tn =  new SyntaxTreeNode( mn, N_GenInfixOp, heirs );
-//      }
-//   | tn = Lambda() 
-//   | try {
-//       tn = Expression()
-//     } catch ( ParseException e ) {
-// // ToolIO.out.println("Caught exception (bis)");
-// // first things first - restore evaluation stack
-//     if ( OperatorStack.isWellReduced() )
-//       OperatorStack.popStack();
-//     else
-//       throw e;
-//     /* it wasn't an expression, what was it ? */
-//     /* check the nature of the node returned. It can only be a prefixed op. */
-//     if ( ( anchor != null )
-//        &&(    anchor.isKind( N_GenPrefixOp ) 
-//            || anchor.isKind( N_GenInfixOp ) 
-//            || anchor.isKind( N_GenPostfixOp ) ) ) {tn = anchor; anchor = null;
-//       } else {
-// // ToolIO.out.println("anchor is " + anchor.toString());
-//        throw e;
-//       } // end else
-//     } // end catch.
-// )
-//     /* it wasn't an expression, what was it ?  L.GenNonExpPrefixOp | L.GenInfixOp | L.GenPostfixOp */
-//     /* check the nature of the node returned . Below Expression, it has to be a prefixed op. */
-//   { addHeir( tn ); }
-// }
 
 SyntaxTreeNode
 ParenExpr() : {
@@ -3960,11 +3393,11 @@ BraceCases() : {
         * actually an expression of type N_SubsetOf.                       *
         *******************************************************************/
         SyntaxTreeNode Hone[] = (SyntaxTreeNode[])tn.heirs();
-	if (Hone.length>1) { // better make sure it's long enough.
+        if (Hone.length>1) { // better make sure it's long enough.
           Hone = (SyntaxTreeNode[])Hone[1].heirs(); // second heir of second heir
           if ( tn.isKind( N_InfixExpr ) && Hone[1].getImage().equals("\\in") ) {
             throw new ParseException( "Form {a \\in b : c \\in d }, at line " + t.beginLine + ", is not allowed" );
-	  }
+          }
         }
         addHeir( new SyntaxTreeNode(mn, t) );}
       tn = QuantBound() { addHeir( tn );}
@@ -4522,11 +3955,6 @@ Lambda() : {
                        return new SyntaxTreeNode( mn, N_Lambda, sn); }
    }
 
-
-
-// boxDisc (riminate) uses preInEmptyTop
-// note that junction is processed separately.
-
 SyntaxTreeNode
 Expression() : {
   SyntaxTreeNode tn, tn0, tn1, tn2;
@@ -4840,7 +4268,7 @@ PrimitiveExp() : {
                 heirs[1] = (SyntaxTreeNode) lastBang[2] ;
                 tn = new SyntaxTreeNode(mn, N_OpApplication, heirs) ;
           } // else       
-      }	// else
+      } // else
      }
    )
 )
