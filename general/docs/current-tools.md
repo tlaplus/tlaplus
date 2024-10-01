@@ -258,7 +258,7 @@ In case of a property violation, formats the TLA+ error trace to the given forma
 Example: `-dumpTrace tla file.tla -dumpTrace json file.json`.
 
 `-dump` _format file_
-The _format_ parameter can be omitted, or it can be a comma-separated list beginning with `dot` that may also contain one or both of the items `colorize` and `actionlabels`. If _format_ is omitted, TLC writes a list of all reachable states, described by TLA+ formulas, on _file_. Otherwise, TLC writes the state graph in dot format, the input format of the GraphViz program for displaying graphs. The parameter `colorize` indicates that state transitions should be colored according to the action generating the transition, and `actionlabels` indicates that they should be labeled with the name of the action. 
+The _format_ parameter can be omitted, or it can be a comma-separated list beginning with `dot` that may also contain any subset of `colorize`, `actionlabels`, and `constrained`. If _format_ is omitted, TLC writes a list of all reachable states, described by TLA+ formulas, on _file_. Otherwise, TLC writes the state graph in dot format, the input format of the GraphViz program for displaying graphs. The parameter `colorize` indicates that state transitions should be colored according to the action generating the transition, and `actionlabels` indicates that they should be labeled with the name of the action.  The parameter `constrained` causes TLC to include states in the dot file that are excluded from the model via a state or action constraint.
 
 Example: `-dump dot,colorize,actionlabels file.dot`.
 
