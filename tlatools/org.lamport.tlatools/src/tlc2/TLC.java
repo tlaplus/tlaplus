@@ -1571,15 +1571,17 @@ public class TLC {
         sharedArguments.add(new UsageGenerator.Argument("-dump", "format file",
                                                         "dump all states into the specified file.\n"
     													+ "The format parameter can be omitted, or it can be a comma-separated\n"
-    														+ "list beginning with 'dot' that may also contain one or both of\n"
-    														+ "the items 'colorize' and 'actionlabels'. If format is omitted,\n"
-    														+ "TLC writes a list of all reachable states, described by TLA+ formulas, \n"
-                                                            + "on file. Otherwise, TLC writes the state graph in dot format, \n"
+    														+ "list beginning with 'dot' that may also contain a subset of\n"
+    														+ "the items 'colorize', 'actionlabels', and 'constrained'. If format is\n"
+    														+ "omitted, TLC writes a list of all reachable states, described by TLA+\n"
+                                                            + "formulas, on file. Otherwise, TLC writes the state graph in dot format,\n"
                                                             + "the input format of the GraphViz program for displaying graphs. \n"
                                                             + "The parameter 'colorize' indicates that state transitions should be \n"
                                                             + "colored according to the action generating the transition,  \n"
                                                             + "and 'actionlabels' indicates that they should be labeled with \n"
-    														+ "the name of the action.", true));
+    														+ "the name of the action. The parameter 'constrained' causes TLC to include\n"
+    														+ "states in the dot file that are excluded from the model via a state or\n"
+    														+ "action constraint.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-fp", "N",
     													"use the Nth irreducible polynomial from the list stored\n"
     														+ "in the class FP64", true));
