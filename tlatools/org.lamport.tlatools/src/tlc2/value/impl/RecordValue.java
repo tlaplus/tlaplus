@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Set;
 
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
@@ -110,6 +111,19 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[4] = MOD;
 		this.values[4] = new StringValue(location.sourceAsUniqueString());
 		
+		this.isNorm = false;
+  }
+  
+  public RecordValue(final OpDefNode odn) {
+	  	this.names = new UniqueString[2];
+    	this.values = new Value[this.names.length];
+    	
+		this.names[0] = NAME;
+		this.values[0] = new StringValue(odn.getName());
+		
+		this.names[1] = LOC;
+		this.values[1] = new RecordValue(odn.getLocation());
+    	
 		this.isNorm = false;
   }
   

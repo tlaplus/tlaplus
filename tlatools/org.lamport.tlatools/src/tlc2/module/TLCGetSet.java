@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.OpDefNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.overrides.Evaluation;
@@ -105,6 +106,8 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString SPEC_ACTIONS = UniqueString.of("actions");
 	private static final UniqueString SPEC_INITS = UniqueString.of("inits");
 	private static final UniqueString SPEC_VARS = UniqueString.of("variables");
+	private static final UniqueString SPEC_ACTION_CONSTRAINTS = UniqueString.of("actionconstraints");
+	private static final UniqueString SPEC_CONSTRAINTS = UniqueString.of("constraints");
 
 	// TLCGet(..)
 	// BFS & Simulation mode
@@ -307,7 +310,7 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
-			final UniqueString[] n = new UniqueString[7];
+			final UniqueString[] n = new UniqueString[9];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -345,6 +348,18 @@ public class TLCGetSet implements ValueConstants {
 			v[6] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getSpecProcessor().getVariablesNodes()).stream()
 					.map(TLCGetSet::variable2Value).collect(Collectors.toList())), false);
 
+			n[7] = SPEC_ACTION_CONSTRAINTS;
+			v[7] = new SetEnumValue(new ValueVec(
+					Arrays.asList(tool.getActionConstraints()).stream().map(expr -> expr.getToolObject(tool.getId()))
+							.map(o -> (OpDefNode) o).map(odn -> new RecordValue(odn)).collect(Collectors.toList())),
+					false);
+			
+			n[8] = SPEC_CONSTRAINTS;
+			v[8] = new SetEnumValue(new ValueVec(
+					Arrays.asList(tool.getModelConstraints()).stream().map(expr -> expr.getToolObject(tool.getId()))
+							.map(o -> (OpDefNode) o).map(odn -> new RecordValue(odn)).collect(Collectors.toList())),
+					false);
+			
 			return new RecordValue(n, v, false);
 		} else if (LEVEL == sv.val) {
 			// Contrary to "diameter", "level" is not monotonically increasing. "diameter"
