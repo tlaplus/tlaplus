@@ -36,7 +36,9 @@ import java.util.stream.Stream;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.LevelConstants;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDeclNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.StringNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -354,5 +356,31 @@ public class TLCExt {
 		// TLC has no value to represent a long, thus, downcast to int.
 		// However, note tla2sany.semantic.NumeralNode#bigVal
 		return IntValue.gen(FP64.Hash(val.fingerPrint(FP64.New())));
+	}
+
+	@Evaluation(definition = "TLCEvalDefinition", module = "TLCExt", warn = false, silent = true)
+	public static Value tlcDefByName(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+			final TLCState s1, final int control, final CostModel cm) {
+		
+		// Determine the name of the definition to evaluate.
+		final Value v = tool.eval(args[0], c, s0, s1, control, cm);
+		if (!(v instanceof StringValue)) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "TLCEvalDefinition", "string", Values.ppr(v.toString()) });
+		}	
+		final StringValue sv = (StringValue) v;
+		
+		final ModuleNode mn = tool.getSpecProcessor().getModuleTbl().getRootModule();
+		assert mn != null;
+		
+		// Try to find the definition (not declaration, ...) starting at the root module.
+		final OpDefNode opDef = mn.getOpDef(sv.val);
+		if (opDef == null) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "TLCEvalDefinition", "name of a definition reachable from the root module", Values.ppr(v.toString()) });
+		}
+		
+		// Evaluate (the body of) the requested definition in the existing scope (context & states).
+		return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
 	}
 }
