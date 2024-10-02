@@ -38,9 +38,11 @@ For instructions on building & testing these as well as setting up a development
 We welcome your contributions to this open source project!
 TLA⁺ is used in safety-critical systems, so we have a contribution process in place to ensure quality is maintained; read [CONTRIBUTING.md](CONTRIBUTING.md) before beginning work.
 
-Copyright History
+License & Copyright
 -----------------
-Copyright (c) 199?-2003 HP Corporation  
-Copyright (c) 2003-2020 Microsoft Corporation
+Copyright © 199? HP Corporation  
+Copyright © 2003 Microsoft Corporation  
+Copyright © 2023 Linux Foundation
 
-Licensed under the [MIT License](http://lamport.azurewebsites.net/tla/license.html)
+Licensed under the [MIT License](LICENSE).
+
