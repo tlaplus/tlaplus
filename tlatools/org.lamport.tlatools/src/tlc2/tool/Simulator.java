@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
+import tla2sany.semantic.ExprNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.module.TLCGetSet;
@@ -361,7 +362,10 @@ public class Simulator {
 			result = workerResultQueue.take();
 
 			// If the result is an error, print it.
-			if (result.isError()) {
+			if (result.workerId() == -1) {
+				runningWorkers.clear();
+				break;
+			} else if (result.isError()) {
 				SimulationWorkerError error = result.error();
 				
 				// We assume that if a worker threw an unexpected exception, there is a bug
@@ -598,6 +602,7 @@ public class Simulator {
 		volatile boolean isRunning = true;
 
 		public void run() {
+			final ExprNode periodic = tool.getSpecProcessor().getPeriodic();
 			int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 			try {
 				while (isRunning) {
@@ -622,6 +627,11 @@ public class Simulator {
 					}
 
 					writeActionFlowGraph();
+
+					if (periodic != null && BoolValue.ValFalse.equals(tool.eval(periodic))) {
+						MP.printError(EC.TLC_ASSUMPTION_FALSE, periodic.toString());
+						workerResultQueue.add(SimulationWorkerResult.OK(-1));
+					}
 				}
 			} catch (Exception e) {
 				// SZ Jul 10, 2009: changed from error to bug
