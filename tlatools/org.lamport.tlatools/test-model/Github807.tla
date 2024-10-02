@@ -77,7 +77,9 @@ PostCondition ==
 				                beginColumn |-> 10,
 				                endLine |-> 3,
 				                endColumn |-> 10,
-				                module |-> "Github807" ] ] } ]
+				                module |-> "Github807" ] ] },
+				  actionconstraints |-> {},
+				  constraints |-> {} ]
 ==============================================================================
 ---------------------------- CONFIG Github807 ----------------------------
 SPECIFICATION Spec
