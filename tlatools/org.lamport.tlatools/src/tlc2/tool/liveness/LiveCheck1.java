@@ -8,7 +8,9 @@ package tlc2.tool.liveness;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import tlc2.output.EC;
@@ -628,7 +630,9 @@ public class LiveCheck1 implements ILiveCheck {
 		if (cycleStack.size() == 0) {
 			cycleStack.push(curNode);
 		}
-
+		
+		final Resolver r = stateTrace != null && !stateTrace.isEmpty() ? new StateTraceResolver(stateTrace) : new Resolver();
+		
 		// Now, print the error trace. We first construct the prefix that
 		// led to the bad cycle. The nodes on prefix and cycleStack then
 		// form the complete counter example.
@@ -639,20 +643,14 @@ public class LiveCheck1 implements ILiveCheck {
 
 		// Recover the initial state:
 		long fp = prefix[0].stateFP;
-		TLCStateInfo sinfo = myTool.getState(fp);
-		if (sinfo == null) {
-			throw new EvalException(EC.TLC_FAILED_TO_RECOVER_INIT);
-		}
+		TLCStateInfo sinfo = r.getState(fp);
 		states[stateNum++] = sinfo;
 
 		// Recover the successor states:
 		for (int i = 1; i < states.length; i++) {
 			long fp1 = prefix[i].stateFP;
 			if (fp1 != fp) {
-				sinfo = myTool.getState(fp1, sinfo.state);
-				if (sinfo == null) {
-					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-				}
+				sinfo = r.getState(fp1, sinfo.state);
 				states[stateNum++] = sinfo;
 			}
 			fp = fp1;
@@ -678,10 +676,7 @@ public class LiveCheck1 implements ILiveCheck {
 		sinfo = states[stateNum - 1];
 		for (int i = 1; i < fps.length; i++) {
 			if (fps[i] != fps[i - 1]) {
-				sinfo = myTool.getState(fps[i], sinfo.state);
-				if (sinfo == null) {
-					throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
-				}
+				sinfo = r.getState(fps[i], sinfo.state);
 				trace.add(sinfo);
 				StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++stateNum);
 				lastState = sinfo.state;
@@ -691,7 +686,7 @@ public class LiveCheck1 implements ILiveCheck {
 			StatePrinter.printStutteringState(stateNum);
 			return new CounterExample(trace, stateNum);
 		} else {
-			sinfo = myTool.getState(cycleState.fingerPrint(), sinfo);
+			sinfo = r.getState(cycleState.fingerPrint(), sinfo);
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
@@ -1011,5 +1006,54 @@ public class LiveCheck1 implements ILiveCheck {
 	public IBucketStatistics calculateOutDegreeDiskGraphs(IBucketStatistics aGraphStats) throws IOException {
 		return new DummyBucketStatistics();
 	}
+	
+	private class Resolver {
 
+		public TLCStateInfo getState(final long fp) {
+			final TLCStateInfo sinfo = myTool.getState(fp);
+			if (sinfo == null) {
+				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+			}
+			return sinfo;
+		}
+
+		public TLCStateInfo getState(long fp, TLCState predecessor) {
+			final TLCStateInfo sinfo = myTool.getState(fp, predecessor);
+			if (sinfo == null) {
+				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+			}
+			return sinfo;
+		}
+
+		public TLCStateInfo getState(long fp, TLCStateInfo predecessor) {
+			final TLCStateInfo sinfo = myTool.getState(fp, predecessor);
+			if (sinfo == null) {
+				throw new EvalException(EC.TLC_FAILED_TO_RECOVER_NEXT);
+			}
+			return sinfo;
+		}
+	}
+
+	private final class StateTraceResolver extends Resolver {
+		private final Map<Long, TLCState> fp2state = new HashMap<>();
+
+		public StateTraceResolver(final StateVec stateTrace) {
+			for (int i = 0; i < stateTrace.size(); i++) {
+				final TLCState state = stateTrace.elementAt(i);
+				fp2state.put(state.fingerPrint(), state);
+			}
+		}
+
+		public TLCStateInfo getState(final long fp) {
+			return new TLCStateInfo(fp2state.get(fp));
+		}
+
+		public TLCStateInfo getState(long fp, TLCState predecessor) {
+			return getState(fp);
+		}
+
+		public TLCStateInfo getState(long fp, TLCStateInfo predecessor) {
+			return getState(fp);
+		}
+	}
 }
