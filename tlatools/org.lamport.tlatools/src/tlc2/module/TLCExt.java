@@ -380,6 +380,11 @@ public class TLCExt {
 					new String[] { "TLCEvalDefinition", "name of a definition reachable from the root module", Values.ppr(v.toString()) });
 		}
 		
+		if (opDef.getArity() != 0) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "TLCEvalDefinition", "a zero-arity definition", opDef.getSignature() });
+		}
+		
 		// Evaluate (the body of) the requested definition in the existing scope (context & states).
 		return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
 	}
