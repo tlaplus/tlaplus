@@ -81,7 +81,7 @@ public class TLC {
 	/**
 	 * Whether the TLA+ spec is encoded in a .jar file, not a TLA+ text file.
 	 */
-    private static boolean MODEL_PART_OF_JAR = false;
+    private boolean modelPartOfJar = false;
     
     /**
      * Possible TLC run modes: either model checking or simulation.
@@ -323,7 +323,7 @@ public class TLC {
 
 		final MailSender ms = new MailSender();
 		// Setup how spec files will be resolved in the filesystem.
-		if (MODEL_PART_OF_JAR) {
+		if (tlc.modelPartOfJar) {
 			// There was not spec file given, it instead exists in the
 			// .jar file being executed. So we need to use a special file
 			// resolver to parse it.
@@ -1030,7 +1030,7 @@ public class TLC {
 			// indicator to check the in-jar model/ folder for a spec.
 			// If a spec is found, use it instead.
 			if (ModelInJar.hasModel()) {
-				MODEL_PART_OF_JAR = true;
+				modelPartOfJar = true;
 				ModelInJar.loadProperties();
 				TLCGlobals.tool = true; // always run in Tool mode (to parse output by Toolbox later)
 				TLCGlobals.chkptDuration = 0; // never use checkpoints with distributed TLC (highly inefficient)
