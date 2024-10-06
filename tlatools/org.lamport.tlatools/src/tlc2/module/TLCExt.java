@@ -388,4 +388,26 @@ public class TLCExt {
 		// Evaluate (the body of) the requested definition in the existing scope (context & states).
 		return tool.eval(opDef.getBody(), c, s0, s1, control, cm);
 	}
+
+	@TLAPlusOperator(identifier = "TLCGetOrDefault", module = "TLCExt", warn = false)
+	public static Value tlcGetOrDefault(final Value vidx, final Value defVal) {
+		// Partially Copy&Pasted from TLCGetSet.java.
+		if (vidx instanceof IntValue) {
+			final int idx = ((IntValue) vidx).val;
+			final Thread th = Thread.currentThread();
+			Value res = null;
+			if (th instanceof IdThread) {
+				res = (Value) ((IdThread) th).getLocalValue(idx);
+			} else if (TLCGlobals.mainChecker != null) {
+				res = (Value) tlc2.TLCGlobals.mainChecker.getValue(0, idx);
+			} else if (tlc2.TLCGlobals.simulator != null) {
+				res = (Value) tlc2.TLCGlobals.simulator.getLocalValue(idx);
+			}
+			if (res == null) {
+				return defVal;
+			}
+			return res;
+		}
+		return defVal;
+	}
 }

@@ -27,9 +27,12 @@ AssertError(err, exp) ==
 
 -----------------------------------------------------------------------------
 
+TLCGetOrDefault(key, defaultVal) ==
+  CHOOSE n : TRUE
+
 TLCGetAndSet(key, Op(_,_), val, defaultVal) ==
-    LET oldVal == IF key \in DOMAIN TLCGet("all") THEN TLCGet(key) ELSE defaultVal
-    IN CHOOSE v \in {oldVal} : TLCSet(key, Op(oldVal, val))
+  LET oldVal == TLCGetOrDefault(key, defaultVal)
+  IN CHOOSE v \in {oldVal} : TLCSet(key, Op(oldVal, val))
 
 -----------------------------------------------------------------------------
 
