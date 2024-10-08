@@ -4,8 +4,6 @@ import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
-import tla2sany.configuration.Configuration;
-import tla2sany.semantic.BuiltInLevel;
 import tla2sany.st.SyntaxTreeConstants;
 import util.ToolIO;
 import util.UniqueString;
@@ -260,8 +258,6 @@ public class OperatorPrecedenceTests {
 	 */
 	@BeforeClass
 	public static void setup() throws AbortException {
-		Configuration.load(null);
-		BuiltInLevel.load();
 		ToolIO.out = new PrintStream(new NullOutputStream());
 	}
 	

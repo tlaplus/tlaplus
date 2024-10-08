@@ -7,14 +7,12 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import tla2sany.configuration.Configuration;
 import tla2sany.explorer.Explorer;
 import tla2sany.explorer.ExplorerQuitException;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
-import tla2sany.semantic.BuiltInLevel;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
@@ -165,20 +163,8 @@ public class SANY {
     String fileName   = spec.getFileName();
     Errors initErrors = spec.initErrors;
     try {
-      // Read & initialize config file for each specification
-
-      // Set Configuration class to (re)start
-      Configuration.ReInit();
-
-      // (Re)create an empty Context object
+      // (Re)create the built-in operators Context object
       Context.reInit();
-
-      // (Re)parse tables of builtin operators and synonyms into the 
-      // global context
-      Configuration.load(initErrors);
-
-      // (Re)read & initialize level data for builtin operators
-      BuiltInLevel.load();
 
       // Print any errors from parsing during initialization phase
       if (! initErrors.isSuccess()) {
