@@ -127,12 +127,10 @@ public class TLCTest {
 	public void testHandleParametersSimulateFileNum() {
 		TLC tlc = new TLC();
 		assertTrue(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "num=5,file=test.txt"}));
-		// reset static field
-		tlc.setTraceNum(Long.MAX_VALUE);
+		tlc = new TLC();
 		assertFalse(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "file=test.txt"}));
-		// reset static fields.
-		tlc.setTraceNum(Long.MAX_VALUE);
-		assertFalse(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "num=10"}));
+		tlc = new TLC();
+		assertTrue(tlc.handleParameters(new String[] {TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "-simulate", "num=10"}));
     }
 
 

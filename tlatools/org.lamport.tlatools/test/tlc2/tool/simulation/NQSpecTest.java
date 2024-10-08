@@ -41,8 +41,7 @@ import util.TLAConstants;
 public class NQSpecTest extends ModelCheckerTestCase {
 
 	public NQSpecTest() {
-		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "simulation" + File.separator + "NQSpec", new String[] { "-simulate" });
-		TLC.setTraceNum(100);
+		super(TLAConstants.Files.MODEL_CHECK_FILE_BASENAME, "simulation" + File.separator + "NQSpec", new String[] { "-simulate", "num=100" });
 	}
 
 	@Test

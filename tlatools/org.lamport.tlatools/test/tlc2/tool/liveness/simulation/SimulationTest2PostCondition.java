@@ -36,8 +36,7 @@ import tlc2.output.EC;
 public class SimulationTest2PostCondition extends SuccessfulSimulationTestCase {
 
 	public SimulationTest2PostCondition() {
-		super("Test2", "/", new String[] { "-config", "Test2PostCondition.cfg", "-simulate", "-depth", "6" }, EC.ExitStatus.VIOLATION_ASSUMPTION);
-		TLC.setTraceNum(1);
+		super("Test2", "/", new String[] { "-config", "Test2PostCondition.cfg", "-simulate", "num=1", "-depth", "6" }, EC.ExitStatus.VIOLATION_ASSUMPTION);
 	}
 	@Test
 	public void testSpec() {
