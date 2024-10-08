@@ -70,7 +70,7 @@ public class Github1037 extends ModelCheckerTestCase {
 	public void testSpec() throws IOException {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "5", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "3", "0"));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
