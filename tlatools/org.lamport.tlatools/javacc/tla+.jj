@@ -144,7 +144,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
 
   private tla2sany.parser.OperatorStack OperatorStack = new tla2sany.parser.OperatorStack( PErrors );
 
-  private BracketStack BStack;
+  private JunctionListContext junctionListCtx = new JunctionListContext();
     /***********************************************************************
     * This is a stack of the kinds and offsets of the tokens that start a  *
     * bulleted list within which the parser is currently grabbing tokens.  *
@@ -160,24 +160,6 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * Expression().                                                        *
     ***********************************************************************/
     
-    /***********************************************************************
-    * The following code sets BStack to a new BracketStack object and      *
-    * initializes its classes field as described in BracketStack.java.     *
-    ***********************************************************************/
-    BStack = new BracketStack();
-    BStack.newClass();
-//    BStack.registerInCurrentClass( BAND );
-    BStack.registerInCurrentClass( AND );
-    BStack.newClass();
-//    BStack.registerInCurrentClass( BOR );
-    BStack.registerInCurrentClass( OR );
-    BStack.newClass();
-    BStack.registerInCurrentClass( PROOF );
-    BStack.newClass();
-    BStack.registerInCurrentClass( LBR );
-    BStack.newClass();
-    BStack.registerInCurrentClass( ASSUME );
-
     try { ParseTree = CompilationUnit(); } 
     catch( ParseException e ) {
          PErrors.push( new ParseError( msgStackToString(e) ) ); }  
@@ -216,23 +198,6 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     }
 //   ParseTree.setNumberFlags( numberFlag, decimalFlag );
     return PErrors.empty();
-  }
-
-/*
-  this is required to store temporarily information required by
-  the semantic lookahead, as it doesn't have access to the variables
-  of the production
-*/
-  private SyntaxTreeNode local;
-
-  void registerTN( SyntaxTreeNode some) { local = some ; }
-
-  boolean testTN() {
-    /***********************************************************************
-    * THIS METHOD IS APPARENTLY NOT USED.                                  *
-    ***********************************************************************/
-    return local.isKind(N_IdPrefix)
-        && BStack.aboveReference( local.first().first().location[0] ) ;
   }
 
   private SyntaxTreeNode anchor = null;
@@ -634,7 +599,7 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
       SyntaxTreeNode child = (SyntaxTreeNode) children[i] ;
       if (! (   child.isKind(N_ConjList) 
              || child.isKind(N_DisjList))) {
-         if (!BStack.aboveReference(child.location[1])) {
+         if (!junctionListCtx.isAboveCurrent(child.location[1])) {
            throw new ParseException(
               "Item at " + child.getLocation().toString() +
               " is not properly indented inside conjunction or " + 
@@ -2648,52 +2613,6 @@ NewSymb () : {
     epa(); return new SyntaxTreeNode( mn, N_NewSymb, sn); } 
 }
 
-
-// NumberedAssumeProve() commented out 5 Mar 2007 by LL
-// number . sequence 
-// SyntaxTreeNode
-// NumberedAssumeProve () : {
-//   SyntaxTreeNode tn;
-//   Token t;
-//   boolean b = false;
-//   bpa("Numbered Assume-Prove");
-// }{
-//   [ LOOKAHEAD(2)
-//     t = <NUMBER_LITERAL>  { addHeir( new SyntaxTreeNode(mn, t) );
-// expecting = "."; }
-//     t = <DOT> {
-//       BStack.newReference(t.endColumn, ASSUME); b = true;
-//       addHeir( new SyntaxTreeNode(mn, t) );
-// expecting = "Assume-Prove, Assume-Decl or expression"; } ]
-//   ( tn = AssumeProve()
-//   | LOOKAHEAD( { IsNotExpression() } ) tn = AssumeDecl()
-//   | tn = Expression() ) /* XXX parser confusion here !!! */
-//   { if (b) BStack.popReference();
-//     addHeir(tn);
-//     SyntaxTreeNode sn[] = getLastHeirs();
-//     epa(); return new SyntaxTreeNode( mn, N_NumberedAssumeProve, sn); }
-// }
-
-// AssumeDecl() commented out 27 March 2007; it seems to be left over
-//   from the old proof grammar.
-// SyntaxTreeNode
-// AssumeDecl () : {
-//   SyntaxTreeNode zn[] = null;
-//   SyntaxTreeNode tn;
-//   Token t;
-//   bpa("Assume Decl.");
-// }{
-//   ( tn = VariableDeclaration() { zn = new SyntaxTreeNode[1]; zn[0] = tn; }
-//   | ( tn = ParamDeclaration() {
-//         zn = new SyntaxTreeNode[2]; zn[0] = tn;
-// expecting = "optional \\in or ..."; }
-//       zn[1] = MaybeBound() )
-//   | LOOKAHEAD (2) tn = OperatorOrFunctionDefinition() { zn = new SyntaxTreeNode[1]; zn[0] = tn; }
-//   | tn = Instance() { zn = new SyntaxTreeNode[1]; zn[0] = tn; } )
-//   { epa();
-//     return new SyntaxTreeNode( mn, N_AssumeDecl, zn );  }
-// }
-
 SyntaxTreeNode
 MaybeBound() : {
   SyntaxTreeNode zn[] = null;
@@ -3487,12 +3406,11 @@ IdPrefixElement() : {
 SyntaxTreeNode
 ParenthesesExpression() : {
   SyntaxTreeNode tn;
-//  BStack.newReference(0, LBR);
 } {
   ( tn = ParenExpr() | tn = BraceCases() | tn = SBracketCases()
   | tn = SetExcept() | tn = TupleOrAction()  | tn = FairnessExpr() 
 )
-  {  return tn; } // BStack.popReference();
+  {  return tn; }
 }
 
 SyntaxTreeNode
@@ -3766,7 +3684,7 @@ int kind ;
             (<COMMA> | <RBR> | <DEFBREAK> | <LOCAL> | <INSTANCE> | 
               <THEOREM> | <ASSUME> | <END_MODULE> | <SEPARATOR> | <_BM0>
               | <ASSUMPTION> | <CONSTANT> | <VARIABLE> | <RECURSIVE> ),
-             {   BStack.aboveReference( getToken(1).beginColumn)
+             {   junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
              } )           
   (   tn = NonExpPrefixOp() {kind = N_GenNonExpPrefixOp;}
     | tn = InfixOp()        
@@ -3784,9 +3702,9 @@ int kind ;
     heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, ( SyntaxTreeNode []) null );
     heirs[1] = tn;
     tn = new SyntaxTreeNode(mn, kind, heirs); }
-| LOOKAHEAD( <LAMBDA>,  {BStack.aboveReference( getToken(1).beginColumn)} )
+| LOOKAHEAD( <LAMBDA>,  {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
     /***********************************************************************
-    * Need the BStack.aboveReference check to make sure that the LAMBDA    *
+    * Need the junction list column check to make sure that the LAMBDA     *
     * is properly indented with respect to any enclosing dis/conjunction   *
     * list.  However, without the <LAMBDA>, the lookahead would succeed    *
     * and the next production would be executed even if it shouldn't       *
@@ -4493,10 +4411,10 @@ LetDefinitions() : {
 
 SyntaxTreeNode
 Junctions () : {
-  BStack.newReference(getToken(1).beginColumn, getToken(1).kind);
+  junctionListCtx.startNewJunctionList(getToken(1).beginColumn, getToken(1).kind);
     /***********************************************************************
-    * Pushes onto BStack an element of the appropriate kind with offset    *
-    * equal to the column of the last character in the /\ or \/ token.     *
+    * Indicate start of new junction list, identified by token type and    *
+    * column of first character in the /\ or \/ token.                     *
     ***********************************************************************/
     
   bpa("AND-OR Junction");
@@ -4505,7 +4423,7 @@ Junctions () : {
   ( LOOKAHEAD( /* <BOR> | */ <OR> ) { kind = N_DisjList; } DisjList()
   | LOOKAHEAD( /* <BAND> | */ <AND> ) {kind = N_ConjList; } ConjList()
   )
-  { BStack.popReference(); 
+  { junctionListCtx.terminateCurrentJunctionList(); 
     SyntaxTreeNode sn[] = getLastHeirs();
     epa(); return new SyntaxTreeNode( mn, kind, sn); }
 }
@@ -4516,7 +4434,7 @@ DisjList() : {
 } {
   tn = JuncItem( N_DisjItem) {
     addHeir(tn); }
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { junctionListCtx.isNewBullet( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_DisjItem) { addHeir(tn); }
   )*
 }
@@ -4527,7 +4445,7 @@ ConjList() : {
 } {
   tn = JuncItem( N_ConjItem) {
     addHeir( tn );}
-  ( LOOKAHEAD( { BStack.onReference( getToken(1).beginColumn, getToken(1).kind ) })
+  ( LOOKAHEAD( { junctionListCtx.isNewBullet( getToken(1).beginColumn, getToken(1).kind ) })
     tn = JuncItem( N_ConjItem) { addHeir( tn ); }
   )*
 }
@@ -4618,7 +4536,7 @@ Expression() : {
   OperatorStack.newStack();
 } {
 ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {BStack.aboveReference( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
   (  tn = PrefixOp() {kind = N_GenPrefixOp;}
    | tn = InfixOp()  {kind = N_GenInfixOp;}
        /********************************************************************
@@ -4637,9 +4555,9 @@ Expression() : {
           *****************************************************************/
    }       
 )*
-( LOOKAHEAD(OpenStart(), {BStack.aboveReference( getToken(1).beginColumn)})
+( LOOKAHEAD(OpenStart(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
   tn = OpenExpression() { OperatorStack.pushOnStack( tn, null ); }
-| LOOKAHEAD( {BStack.aboveReference( getToken(1).beginColumn)} )
+| LOOKAHEAD( {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
   ExtendableExpr() // { OperatorStack.pushOnStack( tn, null ); }
     /*********************************************************************
     * ExtendableExpr() pushes stuff on the stack.                        *
@@ -4669,9 +4587,7 @@ ExtendableExpr() : {
    ************************************************************************/
    LOOKAHEAD( /* <BAND> | <BOR> | */
             <AND> | <OR>, 
-         {   OperatorStack.preInEmptyTop() 
-           // && BStack.aboveReference( getToken(1).beginColumn) 
-         } )
+         {   OperatorStack.preInEmptyTop() } )
    tn = Junctions() { OperatorStack.pushOnStack( tn, null ); }
   |
    /************************************************************************
@@ -4684,7 +4600,7 @@ ExtendableExpr() : {
    ************************************************************************/
    tn = PrimitiveExp() { OperatorStack.pushOnStack( tn, null ); }
 )
-(  LOOKAHEAD (PostfixOp(), {BStack.aboveReference( getToken(1).beginColumn)} )
+(  LOOKAHEAD (PostfixOp(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
    tn = PostfixOp()
      { heirs = new SyntaxTreeNode[2];
        heirs[0] = 
@@ -4694,15 +4610,15 @@ ExtendableExpr() : {
                                  lastOp);
        if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
- | LOOKAHEAD(<DOT>, {BStack.aboveReference( getToken(1).beginColumn)})
+ | LOOKAHEAD(<DOT>, {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    t = <DOT> 
      { Token next = getToken(1);
        if (isFieldNameToken( next )) next.kind = IDENTIFIER;
      }
-   LOOKAHEAD({BStack.aboveReference( getToken(1).beginColumn)})
+   LOOKAHEAD({junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    tn = Identifier()
        { OperatorStack.reduceRecord(  new SyntaxTreeNode(mn, t) , tn ); }
- | LOOKAHEAD(<LSB>, {BStack.aboveReference( getToken(1).beginColumn)})
+ | LOOKAHEAD(<LSB>, {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
      /**********************************************************************
      * Next token is "[", so this must be function application.            *
      **********************************************************************/
@@ -4724,7 +4640,7 @@ ExtendableExpr() : {
     }
 )*   
 
-( LOOKAHEAD ( InfixOp(), {BStack.aboveReference( getToken(1).beginColumn)} )
+( LOOKAHEAD ( InfixOp(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
   tn = InfixOp() 
    { heirs = new SyntaxTreeNode[2];
      heirs[0] = new SyntaxTreeNode( mn, N_IdPrefix, (SyntaxTreeNode []) null);
@@ -4734,7 +4650,7 @@ ExtendableExpr() : {
      if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
   ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {BStack.aboveReference( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
     (  tn = PrefixOp() {kind = N_GenPrefixOp;}
      | tn = InfixOp()  {kind = N_GenInfixOp;}
          /********************************************************************
@@ -4753,16 +4669,16 @@ ExtendableExpr() : {
           *****************************************************************/
     }       
   )*
-  ( LOOKAHEAD(OpenStart(), {BStack.aboveReference( getToken(1).beginColumn)})
+  ( LOOKAHEAD(OpenStart(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
     tn = OpenExpression() { OperatorStack.pushOnStack( tn, null ); }
-  | LOOKAHEAD( {BStack.aboveReference( getToken(1).beginColumn)} )
+  | LOOKAHEAD( {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
     ExtendableExpr() // { OperatorStack.pushOnStack( tn, null ); }
       /*********************************************************************
       * ExtendableExpr() pushes stuff on the stack.                        *
       *********************************************************************/
   )   
 
-| LOOKAHEAD(<COLONCOLON>, {BStack.aboveReference( getToken(1).beginColumn)})
+| LOOKAHEAD(<COLONCOLON>, {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
   t = <COLONCOLON> 
    { tn1 = new SyntaxTreeNode(mn, t) ;
      tn0 = OperatorStack.topOfStack().getNode();
@@ -4800,10 +4716,10 @@ PrimitiveExp() : {
   Token t;
   bpa("Primitive expression") ;
 } {
-(  LOOKAHEAD (String(), {BStack.aboveReference( getToken(1).beginColumn)})
+(  LOOKAHEAD (String(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    tn = String() 
  | LOOKAHEAD (<NUMBER_LITERAL>, 
-               {BStack.aboveReference( getToken(1).beginColumn)})
+               {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    tn = Number() 
  | ( ( ( tn0 = Identifier() 
         | (t = <ProofStepLexeme> | t = <ProofImplicitStepLexeme>)
@@ -4995,109 +4911,6 @@ StructOp() : {
            return new SyntaxTreeNode(mn, N_StructOp, heirs) ; } ;
  }
 }
-
-// SyntaxTreeNode
-// oldExpression() : {
-//   /*************************************************************************
-//   * The basic production is                                                *
-//   *                                                                        *
-//   *    Expression ::= (  OpenExpression                                    *
-//   *                     | (Junctions                                       *
-//   *                         | ClosedExpressionOrOp                         *
-//   *                         | <DOT> Identifier                             *
-//   *                         | <COLONCOLON> Expression                      *
-//   *                        )+                                              *
-//   *                        ( OpenExpression )?                             *
-//   *                   )                                                    *
-//   *************************************************************************/
-//   SyntaxTreeNode tn, tn0, tn1, tn2;
-//   Token t;
-//   OperatorStack.newStack();
-// } { 
-// ( 
-//  LOOKAHEAD(OpenStart(), {BStack.aboveReference( getToken(1).beginColumn) } )
-//    tn = OpenExpression() { OperatorStack.pushOnStack( tn, null ); }
-// |   (  LOOKAHEAD( /* <BAND> | <BOR> | */ <AND> | <OR>, 
-// // ^^^ 
-// // Warning 4 -- Eliminated in SANY2
-//          { OperatorStack.preInEmptyTop() && 
-//            BStack.aboveReference( getToken(1).beginColumn) } )
-//        tn = Junctions() { OperatorStack.pushOnStack( tn, null ); }
-//      | LOOKAHEAD( {    ClosedStart(getToken(1)) 
-//                    && boxDisc()  
-//                         /***************************************************
-//                        * \equiv                                            *
-//                        *   (token is "[]" => it's the temporal operator)   *
-//                         ***************************************************/
-//                    && BStack.aboveReference( 
-//                                 getToken(1).beginColumn) })
-//        tn = ClosedExpressionOrOp() {
-//           anchor = tn; // XXX is this correct ? Why had it disappered ? 
-//                        // This is the only place where anchor is set it seems.
-//           /*****************************************************************
-//           * If tn is an operator, push it on the stack and, if it's not    *
-//           * the only thing on the stack, then reduce the stack.            *
-//           * Otherwise, just push it on the stack.                          *
-//           *****************************************************************/
-//           if ( isGenOp( tn ) ) {
-//             OperatorStack.pushOnStack( tn, lastOp );
-//             if (OperatorStack.size() != 1)
-//               OperatorStack.reduceStack();
-// // else
-// // ToolIO.out.println("size of 1");
-//           } else OperatorStack.pushOnStack( tn, null );
-//         }
-//      | 
-//        t = <DOT> { 
-//         Token next = getToken(1);
-//         if (isFieldNameToken( next )) next.kind = IDENTIFIER;
-//        }
-//        tn = Identifier()
-//        { OperatorStack.reduceRecord(  new SyntaxTreeNode(mn, t) , tn ); }
-//      |
-//        t = <COLONCOLON> {
-//         tn1 = new SyntaxTreeNode(mn, t) ;
-//         tn0 = OperatorStack.topOfStack().getNode();
-//         if (! isLabel(tn0)) {
-//           throw new ParseException("`::' at " + tn1.getLocation().toString()
-//                                     + " does not follow a label.") ;
-//          } ;
-//         OperatorStack.popCurrentTop() ;
-//        } // t = <COLONCOLON>
-//        tn2 = Expression() {
-// // String str = "null" ;
-// // if (lastOp != null) { str = lastOp.toString(); } ;
-// // ToolIO.out.println("lastOp after parsing labeled expression is: " + str);
-//         if (! labelDoesNotChangeParse(tn2, lastOp)) {
-//           /*****************************************************************
-//           * Note: if tn1 is a prefix, infix, or postfix expression, then   *
-//           * I believe (perhaps naively) that lastOp will be its operator.  *
-//           *****************************************************************/
-//           throw new ParseException(
-//              "Removing label at " + tn0.getLocation().toString() +
-//              " would change expression parsing.") ;
-//           } ;
-//         SyntaxTreeNode labelHeirs[] = {tn0, tn1, tn2} ;
-//         tn = new SyntaxTreeNode(N_Label, labelHeirs) ;
-//         OperatorStack.pushOnStack( tn, null );
-//       }
-//   )+
-//   [ LOOKAHEAD( OpenStart(), {BStack.aboveReference( getToken(1).beginColumn) } )
-//     tn = OpenExpression() { OperatorStack.pushOnStack( tn, null ); } ]
-// )
-//  { tn = OperatorStack.finalReduce();
-//    if (tn==null) throw new ParseException( " Couldn't reduce expression stack.");
-//    OperatorStack.popStack();
-//    return tn; }
-// } // Expression()
-
-/* Obsolete
-void
-ClosedStart() : {
-}{
-  <IDENTIFIER> | <STRING_LITERAL> | <NUMBER_LITERAL> | <LBR> | <LSB> | <LAB> | <LBC> | <LWB> | <OpSymbol> | <OR> | <AND> | <WF> | <SF>
-}
-*/
 
 void
 OpenStart() : {
