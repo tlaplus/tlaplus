@@ -38,8 +38,7 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class Github602Test extends ModelCheckerTestCase {
 
 	public Github602Test() {
-		super("Github602", new String[] { "-config", "Github602.tla", "-simulate" });
-		TLC.setTraceNum(1);
+		super("Github602", new String[] { "-config", "Github602.tla", "-simulate", "num=1" });
 	}
 
 	@Test

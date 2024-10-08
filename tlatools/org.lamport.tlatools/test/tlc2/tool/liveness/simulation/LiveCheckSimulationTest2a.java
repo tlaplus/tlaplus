@@ -51,10 +51,8 @@ public class LiveCheckSimulationTest2a extends ModelCheckerTestCase {
 	}
 
 	public LiveCheckSimulationTest2a() {
-		super("Test2a", "/", new String[] {"-simulate", "-depth", "10"}, ExitStatus.VIOLATION_LIVENESS);
-		
+		super("Test2a", "/", new String[] {"-simulate", "num=100", "-depth", "10"}, ExitStatus.VIOLATION_LIVENESS);
 		// Stop after 100 traces due to lack of general timeout regardless of outcome
-		TLC.setTraceNum(100);
 	}
 	
 	@Test

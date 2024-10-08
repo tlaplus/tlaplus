@@ -157,7 +157,7 @@ public class TLC {
     /**
      * The number of traces/behaviors to generate in simulation mode
      */
-    private static long traceNum = Long.MAX_VALUE;
+    private long traceNum = Long.MAX_VALUE;
 
     /**
      * Name of the file to which to write state traces.
@@ -384,10 +384,6 @@ public class TLC {
 		}
 		
 		return true;
-	}
-
-	public static void setTraceNum(long aTraceNum) {
-		traceNum = aTraceNum;
 	}
 
     /**

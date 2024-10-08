@@ -31,7 +31,6 @@ import tlc2.TLC;
 public class SimulationTest2 extends SuccessfulSimulationTestCase {
 
 	public SimulationTest2() {
-		super("Test2", "/", new String[] {"-simulate", "-depth", "6"});
-		TLC.setTraceNum(50);
+		super("Test2", "/", new String[] {"-simulate", "num=50", "-depth", "6"});
 	}
 }
