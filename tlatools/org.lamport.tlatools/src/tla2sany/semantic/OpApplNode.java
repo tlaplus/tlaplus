@@ -234,6 +234,10 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    */
   public final SymbolNode getOperator() { return this.operator; }
 
+  public void resetOperator(final OpDefNode odn) {
+	this.operator = odn;
+  }
+
   /**
    * Changes the operator field of this OpApplNode; used only to
    * change nonrecursive function definition operator to recursive
