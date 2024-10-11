@@ -1,11 +1,9 @@
-package tla2sany;
+package tla2sany.parser;
 
 import util.AstNode;
 import util.SyntaxCorpusFileParser;
 import util.SyntaxCorpusFileParser.CorpusTestFile;
 import util.SyntaxCorpusRunner;
-import tla2sany.parser.TLAplusParser;
-import tla2sany.semantic.AbortException;
 import tlc2.tool.CommonTestCase;
 
 import org.junit.Assert;
@@ -37,10 +35,9 @@ public class TlaPlusSyntaxCorpusTests {
 	 * 
 	 * @throws IOException If corpus test file cannot be found or read.
 	 * @throws ParseException If corpus test file fails to parse.
-	 * @throws AbortException If SANY static initialization fails.
 	 */
 	@BeforeClass
-	public static void setup() throws IOException, ParseException, AbortException {
+	public static void setup() throws IOException, ParseException {
 		// Load corpus test files.
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/tla2sany/corpus");
 		TlaPlusSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);

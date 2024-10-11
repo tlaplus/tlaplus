@@ -1,4 +1,4 @@
-package tla2sany;
+package tla2sany.semantic;
 
 import java.nio.charset.StandardCharsets;
 import java.io.InputStream;
@@ -8,12 +8,6 @@ import org.junit.Test;
 import org.junit.Assert;
 
 import tla2sany.parser.TLAplusParser;
-import tla2sany.semantic.AbortException;
-import tla2sany.semantic.Context;
-import tla2sany.semantic.Errors;
-import tla2sany.semantic.Generator;
-import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.SemanticNode;
 import tla2sany.st.TreeNode;
 
 /**

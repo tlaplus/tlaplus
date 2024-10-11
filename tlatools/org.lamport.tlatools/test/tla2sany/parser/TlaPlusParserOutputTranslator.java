@@ -1,13 +1,9 @@
-package tla2sany;
+package tla2sany.parser;
 
 import util.AstNode;
 import util.AstNode.Kind;
 
 import tla2sany.modanalyzer.SyntaxTreePrinter;
-import tla2sany.parser.Operators;
-import tla2sany.parser.SyntaxTreeNode;
-import tla2sany.parser.TLAplusParser;
-import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
 import util.UniqueString;
 
