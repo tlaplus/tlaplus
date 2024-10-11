@@ -42,7 +42,7 @@ import util.UniqueString;
  */
 public class Context implements ExploreNode {
 
-  public class Pair {
+  class Pair {
     Pair       link;
     SymbolNode info;
 
@@ -77,7 +77,7 @@ public class Context implements ExploreNode {
      *   \A i \in 1..n : List(reversePairList())[i].info =
      *                      List(this)[n-i+1].info
      */
-    public Pair reversePairList() {
+    private Pair reversePairList() {
         Pair curResult = new Pair(null, this.info) ;
         Pair nextOriginal = this.link  ;
         while (nextOriginal != null) {
@@ -234,7 +234,7 @@ public class Context implements ExploreNode {
    * Returns Enumeration of the elements of the Hashtable "Table",
    * which are pair of the form (Pair link, SymbolNode sn)
    */
-  public Enumeration<Pair> content() {
+  Enumeration<Pair> content() {
     return table.elements();
   }
 

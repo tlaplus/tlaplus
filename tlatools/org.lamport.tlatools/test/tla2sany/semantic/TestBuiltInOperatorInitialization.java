@@ -1,4 +1,4 @@
-package tla2sany;
+package tla2sany.semantic;
 
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -6,12 +6,7 @@ import java.util.Enumeration;
 import org.junit.Assert;
 import org.junit.Test;
 
-import tla2sany.semantic.ASTConstants;
-import tla2sany.semantic.BuiltInOperators;
 import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
-import tla2sany.semantic.Context;
-import tla2sany.semantic.OpDefNode;
-import tla2sany.semantic.SymbolNode;
 import util.UniqueString;
 
 /**
