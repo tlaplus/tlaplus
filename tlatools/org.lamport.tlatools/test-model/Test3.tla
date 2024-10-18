@@ -16,8 +16,7 @@ Prop1 ==  <>[](x#1) \/ <>[](x#2)
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
-	/\ \/ CounterExample = [state|->{},action|->{}] 
-	   \/ /\ ToTrace(CounterExample) = <<[x |-> 0], [x |-> 1], [x |-> 0], [x |-> 2]>>
+	/\ \/ /\ ToTrace(CounterExample) = <<[x |-> 0], [x |-> 1], [x |-> 0], [x |-> 2]>>
 	   
 	      /\ CounterExample =
 			[ action |->

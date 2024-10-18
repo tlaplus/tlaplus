@@ -269,7 +269,13 @@ public class ModelChecker extends AbstractChecker
                 }
 
                 // We get here because the checking has been completed.
-                result = EC.NO_ERROR;
+                
+                // Check the postcondition.
+                result = tool.checkPostCondition();
+                if (result != EC.NO_ERROR) {
+                	return result;
+                }
+
                 reportSuccess(this.theFPSet, getStatesGenerated());
             } else if (this.keepCallStack)
             {
