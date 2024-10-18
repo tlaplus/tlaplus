@@ -96,12 +96,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 				curState = this.squeue.sDequeue();
 				if (curState == null) {
 					synchronized (this.tlc) {
-						if(!this.tlc.setDone()) {
-							final int ec = tool.checkPostCondition();
-							if (ec != EC.NO_ERROR) {
-								tlc.setError(true, ec);
-							}
-						}
+						this.tlc.setDone();
 						this.tlc.notify();
 					}
 					//TODO: finishAll not inside the synchronized block above, while

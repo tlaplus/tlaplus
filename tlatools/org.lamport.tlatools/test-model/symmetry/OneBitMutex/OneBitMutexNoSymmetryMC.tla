@@ -23,8 +23,7 @@ StarvationFreedom
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
 	/\ PrintT(ToTrace(CounterExample))
-  	/\ \/ CounterExample = [state|->{},action|->{}]
-  	   \/ /\ CounterExample = 
+  	/\ \/ /\ CounterExample = 
 				[ action |->
 				      { << << 1,
 				              [ x |-> (A :> FALSE @@ B :> FALSE),

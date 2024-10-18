@@ -11,8 +11,7 @@ x=1 ~> x=0
 ----
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
-	/\ \/ CounterExample = [state |-> {}, action |-> {}]
-	   \/ /\ CounterExample = 
+	/\ \/ /\ CounterExample = 
 				[ state |->
 				      { <<1, [x |-> 1, b |-> FALSE]>>,
 				        <<2, [x |-> 2, b |-> TRUE]>>,

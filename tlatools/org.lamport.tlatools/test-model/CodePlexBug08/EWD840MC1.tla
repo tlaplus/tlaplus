@@ -5,8 +5,7 @@ const_123 == 4
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
-	/\ \/ CounterExample = [ action |-> {} , state |-> {} ]
-	   \/ /\ ToTrace(CounterExample) = 
+	/\ \/ /\ ToTrace(CounterExample) = 
 				<< [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
 				     color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white" @@ 3 :> "white"),
 				     tpos |-> 0,
