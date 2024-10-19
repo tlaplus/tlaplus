@@ -25,8 +25,7 @@ There are other files and directories beyond these, but these are the most impor
 │       ├── src/                # The TLA⁺ Tools source code dir
 │       ├── test/               # Unit tests for the TLA⁺ Tools
 │       ├── test-model/         # TLA⁺ modules and models for use in tests
-│       ├── lib/                # Vendored dependencies; checked-in jar files
-│       └── javacc/             # Source files for the TLA⁺ parser generator
+│       └── lib/                # Vendored dependencies; checked-in jar files
 └───.github/
     ├── CODE_OF_CONDUCT.md      # The code of conduct
     └── workflows/              # GitHub CI workflow definition files

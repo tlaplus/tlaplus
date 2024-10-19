@@ -98,14 +98,15 @@
 
 	<!-- Runs JavaCC to generate the TLA+ parser files. -->
 	<target name="generate">
+		<property name="SANY_SYNTAX_PARSER_DIR" value="${src.dir}/tla2sany/parser"/>
 		<java classpath="lib/javacc-4.0.jar" classname="javacc" fork="true" failonerror="true">
-			<arg value="-OUTPUT_DIRECTORY=src/tla2sany/parser" />
-			<arg value="javacc/tla+.jj" />
+			<arg value="-OUTPUT_DIRECTORY=${SANY_SYNTAX_PARSER_DIR}" />
+			<arg value="${SANY_SYNTAX_PARSER_DIR}/tla+.jj" />
 			<jvmarg value="-Dfile.encoding=UTF-8" />
 		</java>
 		<java classpath="lib/javacc-4.0.jar" classname="jjdoc" fork="true" failonerror="true">
-			<arg value="-OUTPUT_FILE=javacc/tla+.html" />
-			<arg value="javacc/tla+.jj" />
+			<arg value="-OUTPUT_FILE=${SANY_SYNTAX_PARSER_DIR}/tla+.html" />
+			<arg value="${SANY_SYNTAX_PARSER_DIR}/tla+.jj" />
 			<jvmarg value="-Dfile.encoding=UTF-8" />
 		</java>
 	</target>
