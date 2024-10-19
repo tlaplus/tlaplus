@@ -1080,8 +1080,6 @@ TOKEN: {
 | < LSB: "[" >
 | < ARSB: "]_" >
 | < RSB: "]" >
-| < LWB: "{|" >  // Obsolete
-| < RWB: "|}" >  // Obsolete
 | < LBC: "{" >
 | < RBC: "}" >
 | < LAB: "<<" | "⟨" >
@@ -3010,7 +3008,7 @@ ParenthesesExpression() : {
   SyntaxTreeNode tn;
 } {
   ( tn = ParenExpr() | tn = BraceCases() | tn = SBracketCases()
-  | tn = SetExcept() | tn = TupleOrAction()  | tn = FairnessExpr() 
+  | tn = TupleOrAction()  | tn = FairnessExpr() 
 )
   {  return tn; }
 }
@@ -3566,45 +3564,6 @@ ExceptComponent () : {
     return new SyntaxTreeNode( mn, N_ExceptComponent, sn ); }
 }
 
-/***************************************************************************
-* The SetExcept non-terminal was eliminated from the grammar, but not      *
-* from the parser.                                                         *
-***************************************************************************/
-SyntaxTreeNode
-SetExcept() : {
-  SyntaxTreeNode tn;
-  Token t;
-  bpa("Set Except");
-} {
-  t = <LWB> { addHeir( new SyntaxTreeNode(mn, t) ); }
-  tn = Expression() { addHeir( tn ); }
-  t = <EXCEPT> { addHeir( new SyntaxTreeNode(mn, t) ); }
-  tn = SExceptSpec() { addHeir( tn ); }
-  ( t = <COMMA> { addHeir( new SyntaxTreeNode(mn, t) ); }
-    tn = SExceptSpec() { addHeir( tn ); } )*
-  t = <RWB> { addHeir( new SyntaxTreeNode(mn, t) ); }
-  { SyntaxTreeNode sn[] = getLastHeirs();
-    epa(); return new SyntaxTreeNode( mn, N_SetExcept, sn ); }
-}
-
-SyntaxTreeNode
-SExceptSpec() : {
-  SyntaxTreeNode zn[] = new SyntaxTreeNode[4];
-  SyntaxTreeNode tn;
-  Token t;
-  bpa("Set Expect Spec");
-} {
-  t = <BANG> { zn[0] = new SyntaxTreeNode(mn, t); }
-  zn[1] = ExceptComponent()
-  { expecting = "= or \\in"; }
-  ( t = <EQUALS> {
-      zn[2] =  new SyntaxTreeNode(mn, t); zn[2].setKind( T_EQUAL ); }
-  | t = <IN> {
-      zn[2] =  new SyntaxTreeNode(mn, t); zn[2].setKind( T_IN ); } )
-  zn[3] = Expression()  
-  { epa(); return new SyntaxTreeNode( mn, N_SExceptSpec, zn ); }
-}
-
 SyntaxTreeNode
 TupleOrAction() : {
   int kind = 0;
@@ -3681,7 +3640,6 @@ ReducedExpression() : {
  | expr = ParenExpr()
  | expr = BraceCases()
  | expr = SBracketCases()
- | expr = SetExcept()
  | expr = TupleOrAction()
  ) { epa(); return expr; } 
 }
