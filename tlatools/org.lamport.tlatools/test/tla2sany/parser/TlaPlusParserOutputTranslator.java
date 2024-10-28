@@ -603,8 +603,9 @@ public class TlaPlusParserOutputTranslator {
 				}
 				break;
 			} case SyntaxTreeConstants.N_IdentLHS: { // f ==, f(a, b) ==, f(g(_, _)), etc.
-				parser.consume(TLAplusParserConstants.IDENTIFIER);
-				parent.addField("name", Kind.IDENTIFIER.asNode());
+				parent.addField("name", parser
+						.translate(TLAplusParserConstants.IDENTIFIER)
+						.alias(Kind.IDENTIFIER_REF, Kind.IDENTIFIER));
 				if (parser.match(TLAplusParserConstants.LBR)) {
 					do {
 						parent.addField(
