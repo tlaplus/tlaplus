@@ -15,13 +15,38 @@ op == { }
 (double_line)))
 
 ======================|||
+Mistaken Set Filter Test
+======================|||
+
+---- MODULE Test ----
+
+op == {x \in Nat}
+op == {x \in BOOLEAN, y \in STRING}
+
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (finite_set_literal
+      (bound_infix_op lhs: (identifier_ref) symbol: (in) rhs: (nat_number_set))
+    )
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (finite_set_literal
+      (bound_infix_op lhs: (identifier_ref) symbol: (in) rhs: (boolean_set))
+      (bound_infix_op lhs: (identifier_ref) symbol: (in) rhs: (string_set))
+    )
+  )
+(double_line)))
+
+======================|||
 Set Literal
 ======================|||
 
 ---- MODULE Test ----
 op == {
-  x \in BOOLEAN,
-  y \in STRING,
   TRUE,
   FALSE,
   ((1 + 2) * 3),
@@ -34,8 +59,6 @@ op == {
 (source_file (module (header_line) name: (identifier) (header_line)
   (operator_definition name: (identifier) (def_eq)
     definition: (finite_set_literal
-      (bound_infix_op lhs: (identifier_ref) symbol: (in) rhs: (boolean_set))
-      (bound_infix_op lhs: (identifier_ref) symbol: (in) rhs: (string_set))
       (boolean)
       (boolean)
       (parentheses
@@ -138,6 +161,17 @@ op == {x \in Nat : P(x)}
     )
   )
 (double_line)))
+
+======================|||
+Set Filter With Too Many Quantifiers
+:error
+======================|||
+
+---- MODULE Test ----
+op == {x \in Nat, y \in Int : P(x, y)}
+====
+
+----------------------|||
 
 ======================|||
 Set Filter with Tuple
