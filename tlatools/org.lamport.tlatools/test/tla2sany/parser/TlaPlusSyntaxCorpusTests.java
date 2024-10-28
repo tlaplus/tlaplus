@@ -73,10 +73,7 @@ public class TlaPlusSyntaxCorpusTests {
 		SyntaxCorpusRunner.run(
 			corpus,
 			parser,
-			SyntaxCorpusRunner.skipSpecificTests(
-				// TODO: fix syntax tree translation functions for these.
-				"Number Set Definitions"
-			),
+			SyntaxCorpusRunner::runAllTests,
 			SyntaxCorpusRunner.expectFailures(
 				// TODO: analyze Cartesian product parsing logic to figure
 				// out whether this should be considered a syntax bug or
