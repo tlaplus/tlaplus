@@ -170,6 +170,22 @@ public class TlaPlusParserOutputTranslator {
 		}
 
 		/**
+		 * Resolves the given {@link SyntaxTreeConstants} or
+		 * {@link TLAplusParserConstants} kind value to a human-readable
+		 * string name.
+		 *
+		 * @param kind The token kind to resolve.
+		 * @return A human-readable string version of the token kind.
+		 */
+		private static String kindToName(int kind) {
+			String name =
+				kind < TLAplusParserConstants.tokenImage.length
+				? TLAplusParserConstants.tokenImage[kind]
+				: SyntaxTreeConstants.SyntaxNodeImage[kind].toString();
+			return String.format("[%d] %s", kind, name);
+		}
+
+		/**
 		 * Consume the given node kind, or throw exception if current node is
 		 * not of that kind.
 		 * 
@@ -181,11 +197,20 @@ public class TlaPlusParserOutputTranslator {
 			for (int kind : kinds) {
 				if (check(kind)) return advance();
 			}
-			String expected = Arrays.stream(kinds).mapToObj(String::valueOf).collect(Collectors.joining(", "));
+			String expected = Arrays
+				.stream(kinds)
+				.mapToObj(SanyReparser::kindToName)
+				.collect(Collectors.joining(", "));
 			if (this.isAtEnd()) {
-				throw new ParseException(String.format("EOF; expected %s", expected), this.current);
+				String message = String.format("EOF; expected %s", expected);
+				throw new ParseException(message, this.current);
 			} else {
-				throw new ParseException(String.format("Expected %s; actual %d", expected, this.peek().getKind()), this.current);
+				String message = String.format(
+					"Expected %s; actual %s",
+					expected,
+					kindToName(this.peek().getKind())
+				);
+				throw new ParseException(message, this.current);
 			}
 		}
 
