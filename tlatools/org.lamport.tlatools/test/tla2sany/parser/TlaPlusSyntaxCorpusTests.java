@@ -75,9 +75,7 @@ public class TlaPlusSyntaxCorpusTests {
 			parser,
 			SyntaxCorpusRunner.skipSpecificTests(
 				// TODO: fix syntax tree translation functions for these.
-				"Number Set Definitions",
-				"Implicit Proof Steps With Names",
-				"Plus Proof Step With Name"
+				"Number Set Definitions"
 			),
 			SyntaxCorpusRunner.expectFailures(
 				// TODO: analyze Cartesian product parsing logic to figure
