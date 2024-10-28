@@ -675,6 +675,7 @@ public class TlaPlusParserOutputTranslator {
 				AstNode qedStep = Kind.QED_STEP.asNode();
 				qedStep.addChild(parser.translate(
 						TLAplusParserConstants.ProofStepLexeme,
+						TLAplusParserConstants.ProofImplicitStepLexeme,
 						TLAplusParserConstants.ProofStepDotLexeme,
 						TLAplusParserConstants.BareLevelLexeme)
 							.alias(Kind.PROOF_STEP_REF, Kind.PROOF_STEP_ID));
@@ -1509,6 +1510,7 @@ public class TlaPlusParserOutputTranslator {
 				AstNode proofStep = Kind.PROOF_STEP.asNode();
 				proofStep.addChild(parser.translate(
 						TLAplusParserConstants.ProofStepLexeme,
+						TLAplusParserConstants.ProofImplicitStepLexeme,
 						TLAplusParserConstants.ProofStepDotLexeme,
 						TLAplusParserConstants.BareLevelLexeme)
 							.alias(Kind.PROOF_STEP_REF, Kind.PROOF_STEP_ID));
