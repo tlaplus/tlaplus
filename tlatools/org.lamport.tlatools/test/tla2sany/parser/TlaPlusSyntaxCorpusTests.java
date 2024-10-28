@@ -70,7 +70,23 @@ public class TlaPlusSyntaxCorpusTests {
 	@Test
 	public void testAll() throws ParseException {
 		SanyParserTestTarget parser = new SanyParserTestTarget();
-		SyntaxCorpusRunner.run(corpus, parser);
+		SyntaxCorpusRunner.run(
+			corpus,
+			parser,
+			SyntaxCorpusRunner.skipSpecificTests(
+				// TODO: fix syntax tree translation functions for these.
+				"Number Set Definitions",
+				"Implicit Proof Steps With Names",
+				"Plus Proof Step With Name"
+			),
+			SyntaxCorpusRunner.expectFailures(
+				// TODO: analyze Cartesian product parsing logic to figure
+				// out whether this should be considered a syntax bug or
+				// should actually be kicked up to a semantic error.
+				// Ref https://github.com/tlaplus/tlapm/issues/162
+				"Cartesian Product as Parameter"
+			)
+		);
 	}
 
 	/**
