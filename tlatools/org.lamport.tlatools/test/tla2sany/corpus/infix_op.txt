@@ -1,4 +1,20 @@
 =============|||
+Cartesian Product Infix Op Definition
+=============|||
+
+---- MODULE Test ----
+x \X y == 0
+x \times y == 0
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition parameter: (identifier) name: (infix_op_symbol (times)) parameter: (identifier) (def_eq) definition: (nat_number))
+  (operator_definition parameter: (identifier) name: (infix_op_symbol (times)) parameter: (identifier) (def_eq) definition: (nat_number))
+(double_line)))
+
+=============|||
 Infix Operator Definition
 =============|||
 
@@ -100,8 +116,6 @@ x \succ y == 92
 x \succeq y == 93
 x \supset y == 94
 x \supseteq y == 95
-x \X y == 96
-x \times y == 97
 x \uplus y == 98
 x | y == 99
 x || y == 100
@@ -208,14 +222,28 @@ x \wr y == 101
   (operator_definition parameter: (identifier) name: (infix_op_symbol (succeq)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (supset)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (supseteq)) parameter: (identifier) (def_eq) definition: (nat_number))
-  (operator_definition parameter: (identifier) name: (infix_op_symbol (times)) parameter: (identifier) (def_eq) definition: (nat_number))
-  (operator_definition parameter: (identifier) name: (infix_op_symbol (times)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (uplus)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (vert)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (vertvert)) parameter: (identifier) (def_eq) definition: (nat_number))
   (operator_definition parameter: (identifier) name: (infix_op_symbol (wr)) parameter: (identifier) (def_eq) definition: (nat_number))
 (double_line)))
 
+=============|||
+Cartesian Product Declaration as Parameter
+=============|||
+
+---- MODULE Test ----
+op(_ \X _, _ \times _) == TRUE
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier)
+    parameter: (operator_declaration (placeholder) name: (infix_op_symbol (times)) (placeholder))
+    parameter: (operator_declaration (placeholder) name: (infix_op_symbol (times)) (placeholder))
+  (def_eq) definition: (boolean))
+(double_line)))
 
 =============|||
 Infix Operator Declaration as Parameter
@@ -320,8 +348,6 @@ op(
   _ \succeq _,
   _ \supset _,
   _ \supseteq _,
-  _ \X _,
-  _ \times _,
   _ \uplus _,
   _ | _,
   _ || _,
@@ -430,8 +456,6 @@ op(
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (succeq)) (placeholder))
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (supset)) (placeholder))
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (supseteq)) (placeholder))
-    parameter: (operator_declaration (placeholder) name: (infix_op_symbol (times)) (placeholder))
-    parameter: (operator_declaration (placeholder) name: (infix_op_symbol (times)) (placeholder))
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (uplus)) (placeholder))
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (vert)) (placeholder))
     parameter: (operator_declaration (placeholder) name: (infix_op_symbol (vertvert)) (placeholder))
@@ -664,6 +688,39 @@ op == {
 (double_line)))
 
 =============|||
+Cartesian Product as Parameter
+=============|||
+
+---- MODULE Test ----
+op == f(\X, \times)
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition: (bound_op name: (identifier_ref)
+    parameter: (infix_op_symbol (times))
+    parameter: (infix_op_symbol (times))
+  ))
+(double_line)))
+
+=============|||
+Infix Minus as Parameter
+=============|||
+
+---- MODULE Test ----
+op == f ( - )
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition: (bound_op name: (identifier_ref)
+    parameter: (infix_op_symbol (minus))
+  ))
+(double_line)))
+
+=============|||
 Infix Operators as Parameters
 =============|||
 
@@ -703,6 +760,7 @@ op == f(
   <=>,
   =>,
   \in,
+  /\,
   \land,
   =|,
   ~>,
@@ -710,12 +768,12 @@ op == f(
   =<,
   \leq,
   \ll,
+  \/,
   \lor,
   -|,
   <,
   <:,
   :>,
-  -,
   --,
   %,
   %%,
@@ -809,6 +867,7 @@ op == f(
     parameter: (infix_op_symbol (implies))
     parameter: (infix_op_symbol (in))
     parameter: (infix_op_symbol (land))
+    parameter: (infix_op_symbol (land))
     parameter: (infix_op_symbol (ld_ttile))
     parameter: (infix_op_symbol (leads_to))
     parameter: (infix_op_symbol (leq))
@@ -816,11 +875,11 @@ op == f(
     parameter: (infix_op_symbol (leq))
     parameter: (infix_op_symbol (ll))
     parameter: (infix_op_symbol (lor))
+    parameter: (infix_op_symbol (lor))
     parameter: (infix_op_symbol (ls_ttile))
     parameter: (infix_op_symbol (lt))
     parameter: (infix_op_symbol (map_from))
     parameter: (infix_op_symbol (map_to))
-    parameter: (infix_op_symbol (minus))
     parameter: (infix_op_symbol (minusminus))
     parameter: (infix_op_symbol (mod))
     parameter: (infix_op_symbol (modmod))

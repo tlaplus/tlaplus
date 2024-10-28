@@ -1,10 +1,24 @@
 ======================|||
-All Number Formats
+Common Number Formats
 ======================|||
 
 ---- MODULE Test ----
 op == 12345
 op == 12345.12345
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (nat_number))
+  (operator_definition (identifier) (def_eq) (real_number))
+(double_line)))
+
+======================|||
+Bitfield Number Formats
+======================|||
+
+---- MODULE Test ----
 op == \b01010101
 op == \B10101010
 op == \o01234567
@@ -16,8 +30,6 @@ op == \H9876543210FEDCBA
 ----------------------|||
 
 (source_file (module (header_line) (identifier) (header_line)
-  (operator_definition (identifier) (def_eq) (nat_number))
-  (operator_definition (identifier) (def_eq) (real_number))
   (operator_definition (identifier) (def_eq) (binary_number (format) (value)))
   (operator_definition (identifier) (def_eq) (binary_number (format) (value)))
   (operator_definition (identifier) (def_eq) (octal_number (format) (value)))
@@ -42,5 +54,38 @@ op == Real
   (operator_definition name: (identifier) (def_eq) definition: (nat_number_set))
   (operator_definition name: (identifier) (def_eq) definition: (int_number_set))
   (operator_definition name: (identifier) (def_eq) definition: (real_number_set))
+(double_line)))
+
+=============|||
+Number Set Definitions
+=============|||
+
+---- MODULE Test ----
+Nat == {}
+op == A!Nat
+Int == {}
+op == A!Int
+Real == {}
+op == A!Real
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (nat_number_set) (def_eq) definition: (finite_set_literal))
+  (operator_definition name: (identifier) (def_eq) definition: (prefixed_op
+    prefix: (subexpr_prefix (subexpr_component (identifier_ref)))
+    op: (nat_number_set)
+  ))
+  (operator_definition name: (int_number_set) (def_eq) definition: (finite_set_literal))
+  (operator_definition name: (identifier) (def_eq) definition: (prefixed_op
+    prefix: (subexpr_prefix (subexpr_component (identifier_ref)))
+    op: (int_number_set)
+  ))
+  (operator_definition name: (real_number_set) (def_eq) definition: (finite_set_literal))
+  (operator_definition name: (identifier) (def_eq) definition: (prefixed_op
+    prefix: (subexpr_prefix (subexpr_component (identifier_ref)))
+    op: (real_number_set)
+  ))
 (double_line)))
 

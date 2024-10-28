@@ -1,5 +1,99 @@
 =============|||
-Use & Hide Declarations
+Simple Use or Hide
+=============|||
+
+---- MODULE Test ----
+USE X, Y
+HIDE X
+HIDE Y
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+      (identifier_ref)
+    )
+  ))
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+    )
+  ))
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+    )
+  ))
+(double_line)))
+
+=============|||
+Hide Multiple Definitions
+=============|||
+
+---- MODULE Test ----
+HIDE X, Y
+HIDE DEFS X, Y
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+      (identifier_ref)
+    )
+  ))
+  (use_or_hide (use_body
+    (use_body_def
+      (identifier_ref)
+      (identifier_ref)
+    )
+  ))
+(double_line)))
+
+=============|||
+Complicated Use & Hide
+=============|||
+
+---- MODULE Test ----
+USE x, 1 + 3
+HIDE DEFS -., *, ^+
+USE x DEF z, x
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+      (bound_infix_op lhs: (nat_number) symbol: (plus) rhs: (nat_number))
+    )
+  ))
+  (use_or_hide (use_body
+    (use_body_def
+      (prefix_op_symbol (negative))
+      (infix_op_symbol (mul))
+      (postfix_op_symbol (sup_plus))
+    )
+  ))
+  (use_or_hide (use_body
+    (use_body_expr
+      (identifier_ref)
+    )
+    (use_body_def
+      (identifier_ref)
+      (identifier_ref)
+    )
+  ))
+(double_line)))
+
+=============|||
+Use & Hide Modules
 =============|||
 
 ---- MODULE Test ----
@@ -37,4 +131,3 @@ USE x, MODULE M DEF MODULE M, x
     )
   ))
 (double_line)))
-
