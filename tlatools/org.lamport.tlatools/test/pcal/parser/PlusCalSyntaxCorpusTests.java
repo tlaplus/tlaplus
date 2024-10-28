@@ -72,7 +72,12 @@ public class PlusCalSyntaxCorpusTests {
 	@Test
 	public void testAll() throws ParseException {
 		PlusCalParserTestTarget parser = new PlusCalParserTestTarget();
-		SyntaxCorpusRunner.run(corpus, parser);
+		SyntaxCorpusRunner.run(
+			corpus,
+			parser,
+			SyntaxCorpusRunner::runAllTests,
+			SyntaxCorpusRunner::expectNoFailures
+		);
 	}
 
 	/**
