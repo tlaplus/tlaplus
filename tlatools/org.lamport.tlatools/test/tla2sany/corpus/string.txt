@@ -53,6 +53,28 @@ op == <<"/\\", "\\/">>
 (double_line)))
 
 ==================|||
+String with comment start
+==================|||
+
+---- MODULE Test ----
+op == "\*"
+====
+
+------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (string
+        (escape_char)))
+    (double_line)))
+
+==================|||
 String with block comment start
 ==================|||
 
@@ -108,5 +130,19 @@ op == "\\ \n \r \f \t \""
       (escape_char)
     )
   )
+(double_line)))
+
+==================|||
+String with Backtick
+==================|||
+
+---- MODULE Test ----
+op == "foo ` bar"
+====
+
+------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (string))
 (double_line)))
 

@@ -42,6 +42,30 @@ op == {x \in BOOLEAN, y \in STRING}
 (double_line)))
 
 ======================|||
+Mistaken Set Filter Tuples Test
+======================|||
+
+---- MODULE Test ----
+
+op == {<<x, y>> \in Nat}
+
+====
+
+----------------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (finite_set_literal
+      (bound_infix_op
+        lhs: (tuple_literal (langle_bracket) (identifier_ref) (identifier_ref) (rangle_bracket))
+        symbol: (in)
+        rhs: (nat_number_set)
+      )
+    )
+  )
+(double_line)))
+
+======================|||
 Set Literal
 ======================|||
 
@@ -240,7 +264,7 @@ op == {
       :
     /\ D
     /\ E
-    /\ F 
+    /\ F
 }
 ====
 

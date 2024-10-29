@@ -77,3 +77,195 @@ op == f(LAMBDA x, y : x + y, LAMBDA x : 0)
   )
 (double_line)))
 
+=============|||
+Nonfix Minus (GH tlaplus/tlaplus #GH884)
+=============|||
+
+---- MODULE Test ----
+op == - (1,2)
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (bound_nonfix_op (infix_op_symbol (minus)) (nat_number) (nat_number))
+  )
+(double_line)))
+
+=============|||
+Nonfix Submodule Excl (GH tlaplus/tlaplus #GH884)
+=============|||
+
+---- MODULE Test ----
+op == A!B!!!(x,y)
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (prefixed_op prefix: (subexpr_prefix (subexpr_component (identifier_ref)) (subexpr_component (identifier_ref))) op:
+      (bound_nonfix_op symbol: (infix_op_symbol (excl)) (identifier_ref) (identifier_ref)))
+  )
+(double_line)))
+
+=============|||
+Nonfix Double Exclamation Operator (GH TSTLA #GH97, GH tlaplus/tlaplus #884)
+=============|||
+
+---- MODULE Test ----
+op == A!!!(1,2)
+op == A!B!!!(1,2)
+op == A!!! !!!(1,2)
+op == !! !!! !!! !!! !!!(1,2)
+op == A !! B
+op ==
+  /\ A
+  /\ B
+  !! C
+op ==
+  /\ A
+  /\ B
+   !! C
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (prefixed_op prefix: (subexpr_prefix (subexpr_component (identifier_ref))) op:
+      (bound_nonfix_op symbol: (infix_op_symbol (excl)) (nat_number) (nat_number)))
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (prefixed_op
+      prefix: (subexpr_prefix
+        (subexpr_component (identifier_ref))
+        (subexpr_component (identifier_ref))
+      )
+      op: (bound_nonfix_op symbol: (infix_op_symbol (excl)) (nat_number) (nat_number)))
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (prefixed_op
+      prefix: (subexpr_prefix
+        (subexpr_component (identifier_ref))
+        (subexpr_component (infix_op_symbol (excl)))
+      )
+      op: (bound_nonfix_op symbol: (infix_op_symbol (excl)) (nat_number) (nat_number)))
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (prefixed_op
+      prefix: (subexpr_prefix
+        (subexpr_component (infix_op_symbol (excl)))
+        (subexpr_component (infix_op_symbol (excl)))
+        (subexpr_component (infix_op_symbol (excl)))
+        (subexpr_component (infix_op_symbol (excl)))
+      )
+      op: (bound_nonfix_op symbol: (infix_op_symbol (excl)) (nat_number) (nat_number)))
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_infix_op lhs: (identifier_ref) symbol: (excl) rhs: (identifier_ref))
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_infix_op
+      lhs: (conj_list
+        (conj_item (bullet_conj) (identifier_ref))
+        (conj_item (bullet_conj) (identifier_ref))
+      )
+      symbol: (excl)
+      rhs: (identifier_ref)
+    )
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (conj_list
+      (conj_item (bullet_conj) (identifier_ref))
+      (conj_item (bullet_conj)
+        (bound_infix_op lhs: (identifier_ref) symbol: (excl) rhs: (identifier_ref))
+      )
+    )
+  )
+(double_line)))
+
+=============|||
+Operators with Colon Prefixes & Jlists (GH TSTLA #87)
+=============|||
+
+---- MODULE Test ----
+op ==
+  /\ A :> B
+  /\ A := B
+  /\ A ::= B
+  /\ A :: B
+  /\ A
+====
+
+--------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (conj_list
+      (conj_item (bullet_conj)
+        (bound_infix_op (identifier_ref) (map_to) (identifier_ref))
+      )
+      (conj_item (bullet_conj)
+        (bound_infix_op (identifier_ref) (assign) (identifier_ref))
+      )
+      (conj_item (bullet_conj)
+        (bound_infix_op (identifier_ref) (bnf_rule) (identifier_ref))
+      )
+      (conj_item (bullet_conj)
+        (label (identifier) (label_as) (identifier_ref))
+      )
+      (conj_item (bullet_conj) (identifier_ref))
+    )
+  )
+(double_line)))
+
+=============|||
+Junct Tokens as Higher-Level Parameters (GH TSTLA #96)
+=============|||
+
+---- MODULE Test ----
+op == op(/\, x, /\)
+op == op(\/, x, \/)
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_op name: (identifier_ref)
+      parameter: (infix_op_symbol (land))
+      parameter: (identifier_ref)
+      parameter: (infix_op_symbol (land))
+    )
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_op name: (identifier_ref)
+      parameter: (infix_op_symbol (lor))
+      parameter: (identifier_ref)
+      parameter: (infix_op_symbol (lor))
+    )
+  )
+(double_line)))
+
+=============|||
+Negative Prefix Op on RHS of Infix (GH tlaplus/tlaplus #893)
+=============|||
+
+---- MODULE Test ----
+op == A & -B
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_infix_op
+      lhs: (identifier_ref)
+      symbol: (amp)
+      rhs: (bound_prefix_op symbol: (negative) rhs: (identifier_ref))
+    )
+  )
+(double_line)))
+

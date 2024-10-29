@@ -89,3 +89,16 @@ op == A!Real
   ))
 (double_line)))
 
+======================|||
+Decimal No Leading Zero (GH tlaplus/tlaplus #596)
+======================|||
+
+---- MODULE Test ----
+op == .5
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq) (real_number))
+(double_line)))

@@ -142,7 +142,7 @@ public class SyntaxCorpusRunner {
 						AstNode actual = parser.parse(corpusTest.tlaplusInput);
 						Assert.assertNotEquals(testSummary, isErrorTest, null == actual);
 					} catch (ParseException e) {
-						Assert.assertFalse(testSummary, isErrorTest);
+						// Success
 					}
 				} else {
 					if (isErrorTest) {

@@ -3,7 +3,7 @@ Basic Label
 =============|||
 
 ---- MODULE Test ----
-op(x) == lbl :: x
+op(x) ≜ lbl ∷ x
 ====
 
 -------------|||
@@ -19,7 +19,7 @@ Label With Parameters
 =============|||
 
 ---- MODULE Test ----
-op == \A a, b \in Nat : lbl(a, b) :: P(a, b)
+op ≜ ∀ a, b ∈ ℕ : lbl(a, b) ∷ P(a, b)
 ====
 
 -------------|||
@@ -37,46 +37,4 @@ op == \A a, b \in Nat : lbl(a, b) :: P(a, b)
     )
   )
 (double_line)))
-
-=============|||
-Label not interfering with precedence
-=============|||
-
----- MODULE Test ----
-op == a + lab :: b * c
-====
-
--------------|||
-
-(source_file (module (header_line) name: (identifier) (header_line)
-  (operator_definition name: (identifier) (def_eq) definition:
-    (bound_infix_op lhs: (identifier_ref) symbol: (plus) rhs:
-      (label name: (identifier) (label_as) expression:
-        (bound_infix_op lhs: (identifier_ref) symbol: (mul) rhs: (identifier_ref))
-      )
-    )
-  )
-(double_line)))
-
-=============|||
-Label interfering with precedence
-:error
-=============|||
-
----- MODULE Test ----
-op == a * lab :: b + c
-====
-
--------------|||
-
-=============|||
-Label with Subexpression Prefix (GH tlaplus/tlaplus #885)
-:error
-=============|||
-
----- MODULE Test ----
-op == \A x \in {} : A!B!lbl(x) :: x
-====
-
--------------|||
 

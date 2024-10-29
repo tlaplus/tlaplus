@@ -671,7 +671,6 @@ THEOREM TRUE
 
 ------------------------------|||
 
-
 (source_file (module (header_line) (identifier) (header_line)
   (theorem (boolean) (non_terminal_proof
     (proof_step (proof_step_id (level) (name)) (suffices_proof_step
@@ -691,4 +690,18 @@ THEOREM TRUE
     (qed_step (proof_step_id (level) (name)))
   ))
 (double_line)))
+
+==============================|||
+Invalid Use of LOCAL in Proof
+:error
+==============================|||
+
+---- MODULE LocalInDefStep ----
+THEOREM TRUE
+PROOF
+    <1> DEFINE LOCAL x == 4
+    <1> QED
+====
+
+------------------------------|||
 

@@ -79,7 +79,47 @@ public class TlaPlusSyntaxCorpusTests {
 				// out whether this should be considered a syntax bug or
 				// should actually be kicked up to a semantic error.
 				// Ref https://github.com/tlaplus/tlapm/issues/162
-				"Cartesian Product as Parameter"
+				"Cartesian Product as Parameter",
+
+				// https://github.com/tlaplus/tlaplus/issues/430
+				"Named Theorem After Submodule (GH tlaplus/tlaplus #430)",
+
+				// https://github.com/tlaplus/tlaplus/issues/487
+				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
+				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
+				
+				// https://github.com/tlaplus/tlaplus/issues/596
+				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
+				
+				// https://github.com/tlaplus/tlaplus/issues/616
+				"Invalid Use of LOCAL in LET/IN",
+				"Invalid Use of LOCAL in Proof",
+
+				// https://github.com/tlaplus/tlaplus/issues/737
+				"Step Expression Requiring Lookahead",
+
+				// https://github.com/tlaplus/tlaplus/issues/802
+				"String with Backtick",
+
+				// https://github.com/tlaplus/tlaplus/issues/812
+				"String with comment start",
+				
+				// https://github.com/tlaplus/tlaplus/issues/884
+				"Nonfix Minus (GH tlaplus/tlaplus #GH884)",
+				"Nonfix Submodule Excl (GH tlaplus/tlaplus #GH884)",
+				"Nonfix Double Exclamation Operator (GH TSTLA #GH97, GH tlaplus/tlaplus #884)",
+
+				// https://github.com/tlaplus/tlaplus/issues/885
+				"Label with Subexpression Prefix (GH tlaplus/tlaplus #885)",
+				
+				// https://github.com/tlaplus/tlaplus/issues/888
+				"Empty Tuple Quantification (GH tlaplus/tlaplus #888)",
+
+				// https://github.com/tlaplus/tlaplus/issues/893
+				"Negative Prefix Op on RHS of Infix (GH tlaplus/tlaplus #893)",
+				
+				// https://github.com/tlaplus/tlaplus/issues/1021
+				"Mistaken Set Filter Tuples Test"
 			)
 		);
 	}
