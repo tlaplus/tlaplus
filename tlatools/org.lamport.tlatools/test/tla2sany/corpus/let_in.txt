@@ -251,3 +251,15 @@ op ==
     )
   )
 (double_line)))
+
+=============|||
+Invalid Use of LOCAL in LET/IN
+:error
+=============|||
+
+---- MODULE LocalInLetIn ----
+foo == LET LOCAL bar == 5 IN TRUE
+====
+
+-------------|||
+

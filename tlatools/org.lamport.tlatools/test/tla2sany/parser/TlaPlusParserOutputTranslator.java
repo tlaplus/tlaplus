@@ -651,7 +651,7 @@ public class TlaPlusParserOutputTranslator {
 				break;
 			} case SyntaxTreeConstants.N_LetDefinitions: { // LET x == 1 y == 3 IN ...
 				do {
-					parent.addChild(parser.translate("unit definition"));
+					parent.addField("definitions", parser.translate("unit definition"));
 				} while (!parser.isAtEnd());
 			} case SyntaxTreeConstants.N_MaybeBound: { // \in Nat or nothing
 				if (!parser.isAtEnd()) {
@@ -775,11 +775,17 @@ public class TlaPlusParserOutputTranslator {
 				return instance;
 			} case SyntaxTreeConstants.N_ModuleDefinition: { // M == INSTANCE O WITH x <- y
 				AstNode moduleDefinition = Kind.MODULE_DEFINITION.asNode();
+				AstNode parent = moduleDefinition;
+				if (parser.match(TLAplusParserConstants.LOCAL)) {
+					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
+					localDefn.addChild(moduleDefinition);
+					parent = localDefn;
+				}
 				parser.flatTranslate(moduleDefinition, SyntaxTreeConstants.N_IdentLHS);
 				moduleDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
-				moduleDefinition.addChild(parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
+				moduleDefinition.addField("definition", parser.translate(SyntaxTreeConstants.N_NonLocalInstance));
 				Assert.assertTrue(parser.isAtEnd());
-				return moduleDefinition;
+				return parent;
 			} case SyntaxTreeConstants.N_Substitution: { // x <- y
 				AstNode substitution = Kind.SUBSTITUTION.asNode();
 				substitution.addChild(parser.translate(
@@ -796,6 +802,12 @@ public class TlaPlusParserOutputTranslator {
 				return Kind.GETS.asNode();
 			} case SyntaxTreeConstants.N_OperatorDefinition: { // op(a, b) == expr
 				AstNode operatorDefinition = Kind.OPERATOR_DEFINITION.asNode();
+				AstNode parent = operatorDefinition;
+				if (parser.match(TLAplusParserConstants.LOCAL)) {
+					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
+					localDefn.addChild(operatorDefinition);
+					parent = localDefn;
+				}
 				parser.flatTranslate(operatorDefinition,
 						SyntaxTreeConstants.N_IdentLHS,
 						SyntaxTreeConstants.N_PrefixLHS,
@@ -804,7 +816,7 @@ public class TlaPlusParserOutputTranslator {
 				operatorDefinition.addChild(parser.translate(TLAplusParserConstants.DEF));
 				operatorDefinition.addField("definition", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
-				return operatorDefinition;
+				return parent;
 			} case SyntaxTreeConstants.N_IdentDecl: { // f, f(_, _), etc.
 				parser.consume(TLAplusParserConstants.IDENTIFIER);
 				if (parser.isAtEnd()) {
@@ -821,6 +833,12 @@ public class TlaPlusParserOutputTranslator {
 				return op;
 			} case SyntaxTreeConstants.N_FunctionDefinition: { // f[x, y \in Nat, z \in Real] == ...
 				AstNode fn = Kind.FUNCTION_DEFINITION.asNode();
+				AstNode parent = fn;
+				if (parser.match(TLAplusParserConstants.LOCAL)) {
+					AstNode localDefn = Kind.LOCAL_DEFINITION.asNode();
+					localDefn.addChild(fn);
+					parent = localDefn;
+				}
 				parser.consume(TLAplusParserConstants.IDENTIFIER);
 				fn.addField("name", Kind.IDENTIFIER.asNode());
 				parser.consume(TLAplusParserConstants.LSB);
@@ -831,7 +849,7 @@ public class TlaPlusParserOutputTranslator {
 				fn.addChild(parser.translate(TLAplusParserConstants.DEF));
 				fn.addField("definition", parser.translate("expression"));
 				Assert.assertTrue(parser.isAtEnd());
-				return fn;
+				return parent;
 			} case SyntaxTreeConstants.N_Recursive: { // RECURSIVE F(_, _), G(_)
 				AstNode recursiveDeclaration = Kind.RECURSIVE_DECLARATION.asNode();
 				parser.consume(TLAplusParserConstants.RECURSIVE);

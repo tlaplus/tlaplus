@@ -237,6 +237,17 @@ op == \E <<x, y>> \in Nat, a, b \in Int : TRUE
 (double_line)))
 
 ==============================|||
+Empty Tuple Quantification (GH tlaplus/tlaplus #888)
+:error
+==============================|||
+
+---- MODULE Test ----
+op == \A <<>> \in STRING : TRUE
+====
+
+------------------------------|||
+
+==============================|||
 Unbounded Quantification
 ==============================|||
 

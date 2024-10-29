@@ -471,10 +471,12 @@ op ≜ f(
   ⇔,
   ⇒,
   ∈,
+  ∧,
   ⫤,
   ↝,
   ≤,
   ≪,
+  ∨,
   ⊣,
   ≠,
   ∉,
@@ -542,10 +544,12 @@ op ≜ f(
     parameter: (infix_op_symbol (iff))
     parameter: (infix_op_symbol (implies))
     parameter: (infix_op_symbol (in))
+    parameter: (infix_op_symbol (land))
     parameter: (infix_op_symbol (ld_ttile))
     parameter: (infix_op_symbol (leads_to))
     parameter: (infix_op_symbol (leq))
     parameter: (infix_op_symbol (ll))
+    parameter: (infix_op_symbol (lor))
     parameter: (infix_op_symbol (ls_ttile))
     parameter: (infix_op_symbol (neq))
     parameter: (infix_op_symbol (notin))
@@ -795,5 +799,33 @@ op ≜ {
     (prefixed_op prefix: (subexpr_prefix (subexpr_component (identifier_ref)) (subexpr_component (identifier_ref))) op:
       (bound_nonfix_op symbol: (postfix_op_symbol (sup_plus)) (identifier_ref)))
   ))
+(double_line)))
+
+=============|||
+Unicode Junct Tokens as Higher-Level Parameters (GH TSTLA #96)
+=============|||
+
+---- MODULE Test ----
+op == op(∧, x, ∧)
+op == op(∨, x, ∨)
+====
+
+--------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_op name: (identifier_ref)
+      parameter: (infix_op_symbol (land))
+      parameter: (identifier_ref)
+      parameter: (infix_op_symbol (land))
+    )
+  )
+  (operator_definition name: (identifier) (def_eq) definition:
+    (bound_op name: (identifier_ref)
+      parameter: (infix_op_symbol (lor))
+      parameter: (identifier_ref)
+      parameter: (infix_op_symbol (lor))
+    )
+  )
 (double_line)))
 

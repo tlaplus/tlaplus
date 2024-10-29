@@ -26,24 +26,32 @@ EXTENDS M1, M2, M3
 (double_line)))
 
 =============|||
-Nested modules
+Nested Modules
 =============|||
 
----- MODULE Test ----
+---- MODULE Outer ----
 ---- MODULE Inner ----
+---- MODULE Inner2 ----
+---- MODULE Inner3 ----
+====
+====
 ====
 ====
 
 -------------|||
 
 (source_file
-  (module (header_line) (identifier) (header_line)
-    (module (header_line) (identifier) (header_line) (double_line))
+  (module (header_line) name: (identifier) (header_line)
+    (module (header_line) name: (identifier) (header_line)
+      (module (header_line) name: (identifier) (header_line)
+        (module (header_line) name: (identifier) (header_line) (double_line))
+      (double_line))
+    (double_line))
   (double_line))
 )
 
 =============|||
-Multiple Nested modules
+Sequential Nested modules
 =============|||
 
 ---- MODULE Test ----
@@ -59,6 +67,44 @@ Multiple Nested modules
   (module (header_line) (identifier) (header_line)
     (module (header_line) (identifier) (header_line) (double_line))
     (module (header_line) (identifier) (header_line) (double_line))
+  (double_line))
+)
+
+=============|||
+Definition After Nested Module
+=============|||
+
+---- MODULE Test ----
+---- MODULE Inner ----
+====
+op == x
+====
+
+-------------|||
+
+(source_file
+  (module (header_line) name: (identifier) (header_line)
+    (module (header_line) name: (identifier) (header_line) (double_line))
+    (operator_definition name: (identifier) (def_eq) definition: (identifier_ref))
+  (double_line))
+)
+
+=============|||
+Named Theorem After Submodule (GH tlaplus/tlaplus #430)
+=============|||
+
+---- MODULE Test ----
+---- MODULE Inner ----
+====
+THEOREM T == TRUE
+====
+
+--------------|||
+
+(source_file
+  (module (header_line) name: (identifier) (header_line)
+    (module (header_line) name: (identifier) (header_line) (double_line))
+    (theorem name: (identifier) (def_eq) statement: (boolean))
   (double_line))
 )
 
