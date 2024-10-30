@@ -416,11 +416,11 @@ public class GraphNode extends AbstractGraphNode {
 		return buf.substring(0, buf.length() - ", ".length()); // chop off dangling ", "
 	}
 
-	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen) {
-		return toDotViz(isInitState, hasTableau, slen, alen, null);
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, final OrderOfSolution oos) {
+		return toDotViz(isInitState, hasTableau, slen, alen, null, oos);
 	}
 
-	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter) {
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter, final OrderOfSolution oos) {
 		// The node's id including its tidx if any. It uses the complete
 		// fingerprint.
 		String id = Long.toString(this.stateFP);
@@ -445,6 +445,23 @@ public class GraphNode extends AbstractGraphNode {
 				}
 			}
 		}
+		
+		// Annotate the GraphNode if it fulfills the promises.
+		final int plen = oos.getPromises().length;
+		if (plen > 0) {
+			label += "\n";
+			for (int i = 0; i < plen; i++) {
+				final LNEven promise = oos.getPromises()[i];
+				final TBPar par = getTNode(oos.getTableau()).getPar();
+				boolean fulfilling = par.isFulfilling(promise);
+				if (fulfilling) {
+					label += "t";
+				} else {
+					label += "f";
+				}
+			}
+		}
+
 		final StringBuffer buf = new StringBuffer();
 		if (isInitState) {
 			buf.append("\"" + id + "\" [style = filled][label = \"" + label + "\"]\n"); // node's label

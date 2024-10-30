@@ -305,7 +305,7 @@ public class TableauDiskGraph extends AbstractDiskGraph {
 				int tidx = nodePtrRAF.readInt();
 				long loc = nodePtrRAF.readLongNat();
 				GraphNode gnode = this.getNode(fp, tidx, loc);
-				sb.append(gnode.toDotViz(isInitState(gnode), true, slen, alen));
+				sb.append(gnode.toDotViz(isInitState(gnode), true, slen, alen, oos));
 			}
 			sb.append("}}");
 			this.nodeRAF.seek(nodePtr);

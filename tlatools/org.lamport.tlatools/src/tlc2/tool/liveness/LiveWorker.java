@@ -1314,7 +1314,7 @@ public class LiveWorker implements Callable<Boolean> {
 
 				final GraphNode curNode = this.dg.getNode(state1, tidx1, loc1);
 				sb.append(curNode.toDotViz((state1 == state && tidx1 == tidx), true, oos.getCheckState().length,
-						oos.getCheckAction().length, tnpt));
+						oos.getCheckAction().length, tnpt, oos));
 			}
 		}
 		
