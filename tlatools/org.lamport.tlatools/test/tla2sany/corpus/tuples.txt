@@ -1,0 +1,82 @@
+======================|||
+Empty Tuple
+======================|||
+
+---- MODULE Test ----
+op == <<>> 
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (tuple_literal (langle_bracket) (rangle_bracket))
+  )
+(double_line)))
+
+======================|||
+Nonempty Tuple
+======================|||
+
+---- MODULE Test ----
+op == <<1, 2, 3, 4, 5>> 
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (tuple_literal (langle_bracket)
+      (nat_number)
+      (nat_number)
+      (nat_number)
+      (nat_number)
+      (nat_number)
+    (rangle_bracket))
+  )
+(double_line)))
+
+======================|||
+Tuple of Identifiers
+======================|||
+
+---- MODULE Test ----
+op == <<x, y, z>> 
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (tuple_literal (langle_bracket)
+      (identifier_ref)
+      (identifier_ref)
+      (identifier_ref)
+    (rangle_bracket))
+  )
+(double_line)))
+
+======================|||
+Nested Tuple
+======================|||
+
+---- MODULE Test ----
+op == <<<<x, y>>, <<z>>>> 
+====
+
+----------------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (operator_definition (identifier) (def_eq)
+    (tuple_literal (langle_bracket)
+      (tuple_literal (langle_bracket)
+        (identifier_ref)
+        (identifier_ref)
+      (rangle_bracket))
+      (tuple_literal (langle_bracket)
+        (identifier_ref)
+      (rangle_bracket))
+    (rangle_bracket))
+  )
+(double_line)))
+
