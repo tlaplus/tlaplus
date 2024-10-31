@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.LinkedList;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -40,14 +41,6 @@ import util.SimpleFilenameToStream;
 import util.ToolIO;
 
 public class XMLExporter {
-
-  static final String JAXP_SCHEMA_LANGUAGE =
-        "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-  static final String W3C_XML_SCHEMA =
-        "http://www.w3.org/2001/XMLSchema";
-  static final String TLA_SCHEMA = "http://tla.msr-inria.inria.fr/tlaps/sany.xsd";
-  static final String JAXP_SCHEMA_SOURCE =
-        "http://java.sun.com/xml/jaxp/properties/schemaSource";
 
   public static final void main(String[] args) throws XMLExportingException {
 
@@ -160,8 +153,13 @@ public class XMLExporter {
       // validate the file, do not fail if there is a URL connection error
       if (!offline_mode) { //skip validation in offline mode
         try {
-          SchemaFactory factory = SchemaFactory.newInstance(W3C_XML_SCHEMA);
-          Schema schema = factory.newSchema(new URL(TLA_SCHEMA));
+          SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+          URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+          if (null == schemaFile) {
+            ToolIO.err.println("ERROR: Unable to find sany.xsd schema file that is expected to be embedded in the jar.");
+            System.exit(1);
+          }
+          Schema schema = factory.newSchema(schemaFile);
           // create a Validator instance, which can be used to validate an instance document
           Validator validator = schema.newValidator();
           //validate the DOM tree
