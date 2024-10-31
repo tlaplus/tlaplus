@@ -11,12 +11,14 @@ import java.io.ByteArrayOutputStream;
 
 import java.io.PrintStream;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -42,40 +44,118 @@ import util.ToolIO;
 
 public class XMLExporter {
 
-  public static final void main(String[] args) throws XMLExportingException {
+  /**
+   * CLI help text listing various options.
+   */
+  private static final String HELP_TEXT =
+    "SANY XML Exporter\n" +
+    "Usage:\n\n" +
+    "  java tla2sany.xml.XMLExporter [-o|-p] [-I <dir_path>]* <input_file>.tla\n\n" +
+    "Options:\n" +
+    "  -o: Offline mode; skip XML schema validation step.\n" +
+    "  -p: Pretty-print; format XML output to be read by humans.\n" +
+    "  -I: Include; use given directory path to resolve module dependencies.\n" +
+    "  -h: Help; print this help text.\n";
 
-    // parse arguments, possible flag
-    // s
-    // -I (a modules path) can be repeated
-    // -o offline mode (no validation) //TODO: use a resolver to do offline validation
-    // then a list of top level modules to parse)
-    if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
-    LinkedList pathsLs = new LinkedList();
+  /**
+   * The main entry-point to the XML exporter program. Parses the command-
+   * line args then calls the main run function. Terminates with 0 exit code
+   * if successful, 1 on failure.
+   *
+   * @param args The command-line args.
+   */
+  public static final void main(String[] args) {
+    try {
+      RunOptions options = parseArgs(args);
+      if (null == options) {
+        ToolIO.out.println(HELP_TEXT);
+      } else {
+        boolean success = run(options.OfflineMode, options.PrettyPrint, options.Include, options.TlaFile);
+        System.exit(success ? 0 : 1);
+      }
+    } catch (IllegalArgumentException e) {
+      ToolIO.err.println("ERROR: " + e.getMessage() + "\n");
+      ToolIO.err.println(HELP_TEXT);
+      System.exit(1);
+    } catch (XMLExportingException e) {
+      ToolIO.err.println(e.toString());
+      System.exit(1);
+    }
+  }
 
+  static class RunOptions {
+    public final boolean OfflineMode;
+    public final boolean PrettyPrint;
+    public final String[] Include;
+    public final String TlaFile;
+    public RunOptions(boolean offlineMode, boolean prettyPrint, String[] include, String tlaFile) {
+      this.OfflineMode = offlineMode;
+      this.PrettyPrint = prettyPrint;
+      this.Include = include;
+      this.TlaFile = tlaFile;
+    }
+  }
+
+  /**
+   * Parses command-line args.
+   *
+   * @return Null if help request, {@link:RunOptions} instance otherwise.
+   * @throws IllegalArgumentException If args are invalid.
+   */
+  static RunOptions parseArgs(String[] args) {
+    List<String> paths = new ArrayList<String>();
     boolean offline_mode = false;
-    int lastarg = -1; // lastarg will be incremented, initialize at -1
-    for (int i = 0; i < args.length - 1; i++) {
+    boolean pretty_print = false;
+    String tla_name = null;
+    for (int i = 0; i < args.length; i++) {
       if ("-o".equals(args[i])) {
         offline_mode = true;
-        lastarg = i;
+      } else if ("-p".equals(args[i])) {
+        pretty_print = true;
+      } else if ("-h".equals(args[i])) {
+        return null;
       } else if ("-I".equals(args[i])) {
         i++;
-        if (i > args.length - 2)
-          throw new IllegalArgumentException("the -I flag must be followed by a directory and at least one .tla file");
-        pathsLs.addLast(args[i]);
-        lastarg = i;
+        if (i > args.length - 1) {
+          throw new IllegalArgumentException("The -I flag must be followed by a directory path.");
+        }
+        paths.add(args[i]);
+      } else {
+        if (null == tla_name) {
+          tla_name = args[i];
+        } else {
+          String message =
+            "Unrecognized command-line option " + args[i]
+            + "\nNote: only one TLA+ file can be translated per run.";
+          throw new IllegalArgumentException(message);
+        }
       }
     }
 
-    lastarg++;
+    if (null == tla_name) {
+      throw new IllegalArgumentException("At least one .tla file must be given.");
+    }
 
-    String[] paths = new String[pathsLs.size()];
-    for (int i = 0; i < paths.length; i++) paths[i] = (String) pathsLs.get(i);
+    return new RunOptions(offline_mode, pretty_print, paths.toArray(String[]::new), tla_name);
+  }
 
-    if (args.length - lastarg != 1)
-      throw new IllegalArgumentException("Only one TLA file to check allowed!");
-
-    String tla_name = args[lastarg++];
+  /**
+   * Parses the given TLA+ spec and outputs the parse tree as XML. The XML is
+   * sent to standard output.
+   *
+   * @param offline_mode If true, skip validating XML against schema.
+   * @param pretty_print If true, print human-readable XML.
+   * @param paths Paths to use to search for module dependencies.
+   * @param tla_name The TLA+ spec to parse.
+   * @return Whether parsing & translation was successful.
+   * @throws XMLExportingException If serialization to XML failed.
+   */
+  public static boolean run(
+      boolean offline_mode,
+      boolean pretty_print,
+      String[] paths,
+      String tla_name
+    ) throws XMLExportingException {
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
@@ -105,11 +185,11 @@ public class XMLExporter {
         // For debugging
         fe.printStackTrace();
         ToolIO.out.println(fe);
-        return;
+        return false;
       }
     } else {
       ToolIO.out.println("Cannot find the specified file " + tla_name + ".");
-      return;
+      return false;
     }
 
 
@@ -148,6 +228,10 @@ public class XMLExporter {
       //Create XML file
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
+      if (pretty_print) {
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+      }
       DOMSource source = new DOMSource(doc);
 
       // validate the file, do not fail if there is a URL connection error
@@ -184,6 +268,7 @@ public class XMLExporter {
       throw new XMLExportingException("failed to validate XML", se);
     }
 
+    return true;
   }
 
   static void insertRootName(Document doc, Element rootElement, SpecObj spec) {
