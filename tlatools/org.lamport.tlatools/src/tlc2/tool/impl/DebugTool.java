@@ -121,9 +121,6 @@ public class DebugTool extends Tool {
 		
 		// This and FastTool share state.  Do not evaluate things concurrently.
 		this.fastTool = new FastTool(this);
-		// Evaluation related to fingerprinting should not/cannot use DebugTool. There
-		// is nothing that a user could debug except, perhaps, for EvaluationExceptions.
-		TLCStateMutExt.setTool(this.fastTool);
 		
 		this.target = target.setTool(this);
 	}
@@ -693,10 +690,17 @@ public class DebugTool extends Tool {
 		// LazyValue#eval should not be intercepted when the debugger triggers toString
 		// or eval.
 		final EvalMode old = setDebugger();
+		// Temporarily disable the debugger when evaluating expressions triggered by the
+		// debugger. For instance, expanding the current State or Trace in the
+		// Debugger's variable view when the debugger backend is paused at a breakpoint
+		// set within a TLC view will trigger the state's fingerprint calculation,
+		// which, in turn, evaluates the view.
+		final ITool oldTool = TLCStateMutExt.resetTool(fastTool);
 		try {
 			return supplier.get();
 		} finally {
 			mode = old;
+			TLCStateMutExt.resetTool(oldTool);
 		}
 	}
 	
