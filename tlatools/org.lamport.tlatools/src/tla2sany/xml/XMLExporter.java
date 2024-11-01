@@ -79,14 +79,7 @@ public class XMLExporter {
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
-    // redirecting System.out
-    PrintStream out = System.out;
-    System.setOut(new PrintStream(new ByteArrayOutputStream()));
-
     SpecObj spec = new SpecObj(tla_name, fts);
-
-    // Print documentation line on System.out
-    ToolIO.out.println("\n****** SANY2 " + SANY.version + "\n");
 
     // Get next file name from command line; then parse,
     // semantically analyze, and level check the spec started in
@@ -96,7 +89,7 @@ public class XMLExporter {
     //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
     if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
       try {
-        SANY.frontEndMain(spec, tla_name, System.err);
+        SANY.frontEndMain(spec, tla_name, new PrintStream(new ByteArrayOutputStream()));
         if (spec.getExternalModuleTable() == null)
           throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
         if (spec.getExternalModuleTable().getRootModule() == null)
@@ -173,7 +166,7 @@ public class XMLExporter {
             // but fail for other errors
           }*/
       }
-      StreamResult result = new StreamResult(out);
+      StreamResult result = new StreamResult(ToolIO.out);
 
       transformer.transform(source, result);
     } catch (ParserConfigurationException pce) {
