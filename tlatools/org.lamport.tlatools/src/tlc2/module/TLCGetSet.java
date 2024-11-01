@@ -351,13 +351,13 @@ public class TLCGetSet implements ValueConstants {
 			n[7] = SPEC_ACTION_CONSTRAINTS;
 			v[7] = new SetEnumValue(new ValueVec(
 					Arrays.asList(tool.getActionConstraints()).stream().map(expr -> expr.getToolObject(tool.getId()))
-							.map(o -> (OpDefNode) o).map(odn -> new RecordValue(odn)).collect(Collectors.toList())),
+							.map(TLCGetSet::constraint2Value).collect(Collectors.toList())),
 					false);
-			
+
 			n[8] = SPEC_CONSTRAINTS;
 			v[8] = new SetEnumValue(new ValueVec(
 					Arrays.asList(tool.getModelConstraints()).stream().map(expr -> expr.getToolObject(tool.getId()))
-							.map(o -> (OpDefNode) o).map(odn -> new RecordValue(odn)).collect(Collectors.toList())),
+							.map(TLCGetSet::constraint2Value).collect(Collectors.toList())),
 					false);
 			
 			return new RecordValue(n, v, false);
@@ -536,5 +536,13 @@ public class TLCGetSet implements ValueConstants {
 			return new RecordValue(odn, COVERAGE, coverage);
 		}
 		return new RecordValue(odn);
+	}
+
+	private static RecordValue constraint2Value(Object o) {
+		if (o instanceof OpDefNode) {
+			return new RecordValue((OpDefNode) o);
+		} else {
+			return new RecordValue((Action) o);
+		}
 	}
 }
