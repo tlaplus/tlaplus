@@ -44,9 +44,58 @@ PostCondition ==
   /\ \A v,w \in 1..TLCGet("config").worker:
        /\ TLCGet("all")[r][v] # {0}
        /\ TLCGet("all")[r][v] = TLCGet("all")[r][w]
-       
+  /\ TLCGet("spec") = 
+				[ impliedinits |-> {},
+				  invariants |-> {},
+				  impliedtemporals |-> {},
+				  temporals |-> {},
+				  actions |->
+				      { [ name |-> "Next",
+				          location |->
+				              [ beginLine |-> 31,
+				                beginColumn |-> 3,
+				                endLine |-> 35,
+				                endColumn |-> 17,
+				                module |-> "Github866" ] ] },
+				  inits |->
+				      { [ name |-> "Init",
+				          location |->
+				              [ beginLine |-> 27,
+				                beginColumn |-> 3,
+				                endLine |-> 27,
+				                endColumn |-> 7,
+				                module |-> "Github866" ] ] },
+				  variables |->
+				      { [ name |-> "x",
+				          location |->
+				              [ beginLine |-> 24,
+				                beginColumn |-> 11,
+				                endLine |-> 24,
+				                endColumn |-> 11,
+				                module |-> "Github866" ] ] },
+				  actionconstraints |->
+				      { [ name |-> "ActionConstraint",
+				          location |->
+				              [ beginLine |-> 94,
+				                beginColumn |-> 1,
+				                endLine |-> 94,
+				                endColumn |-> 30,
+				                module |-> "Github866" ] ] },
+				  constraints |->
+				      { [ name |-> "Constraint",
+				          location |->
+				              [ beginLine |-> 93,
+				                beginColumn |-> 1,
+				                endLine |-> 93,
+				                endColumn |-> 23,
+				                module |-> "Github866" ] ] } ]
+				  
+Constraint == x \in Nat
+ActionConstraint == x' \in Nat
 ==========================================================================
 ---------------------------- CONFIG Github866 ----------------------------
 SPECIFICATION Spec
 POSTCONDITION PostCondition
+CONSTRAINT Constraint
+ACTION_CONSTRAINT ActionConstraint
 ==========================================================================
