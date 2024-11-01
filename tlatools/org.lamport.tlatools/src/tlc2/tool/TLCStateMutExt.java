@@ -76,6 +76,12 @@ public final class TLCStateMutExt extends TLCState implements Serializable {
     viewMap = tool.getViewSpec();
     perms = tool.getSymmetryPerms();
   }
+  
+  public static ITool resetTool(final ITool tool) {
+	  final ITool old = mytool;
+	  mytool = tool;
+	  return old;
+  }
 
   public final TLCState createEmpty() {
 	  IValue[] vals = new IValue[vars.length];

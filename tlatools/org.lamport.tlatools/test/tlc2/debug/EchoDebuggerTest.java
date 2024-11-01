@@ -28,9 +28,13 @@ package tlc2.debug;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
+import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
+import org.eclipse.lsp4j.debug.VariablesArguments;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -263,7 +267,40 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 133, 16, 138, 40, RM, (Context) null, getVars());
+
+		sba = createBreakpointArgument(MDL, 38, "View");
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(11, stackFrames.length);
+		assertTLCStateFrame(stackFrames[0], 38, 9, 38, 12, MDL, Context.Empty);
 		
+		frame = (TLCStateStackFrame) stackFrames[0];
+		constants = frame.getConstants();
+		nested = frame.getVariables(constants[0].getVariablesReference());
+		assertEquals(4, nested.length);
+		assertEquals("I1", nested[0].getName());
+		assertEquals("a", nested[0].getValue());
+		assertEquals("N1", nested[1].getName());
+		assertEquals("{\"a\", \"b\", \"c\"}", nested[1].getValue());
+		assertEquals("ProcSet", nested[2].getName());
+		assertEquals("{\"a\", \"b\", \"c\"}", nested[2].getValue());
+		assertEquals("R1", nested[3].getName());
+		assertEquals("(<<\"a\", \"a\">> :> FALSE @@ <<\"a\", \"b\">> :> TRUE @@ <<\"a\", \"c\">> :> TRUE @@ <<\"b\", \"a\">> :> TRUE @@ <<\"b\", \"b\">> :> FALSE @@ <<\"b\", \"c\">> :> TRUE @@ <<\"c\", \"a\">> :> TRUE @@ <<\"c\", \"b\">> :> TRUE @@ <<\"c\", \"c\">> :> FALSE)", nested[3].getValue());
+
+		trace = frame.getTrace();
+		assertEquals(12, trace.length);
+		assertEquals("1: <Init line 95, col 9 to line 101, col 43 of module Echo>", trace[trace.length - 1].getName());
+
+		final Scope[] scopes = frame.getScopes();
+		assertEquals(4, scopes.length);
+		final Scope stateScope = Arrays.asList(scopes).stream().filter(s -> s.getName().equals("State")).findFirst().get();
+		
+		final VariablesArguments args = new VariablesArguments();
+		args.setVariablesReference(stateScope.getVariablesReference());
+		nested = debugger.variables(args).get().getVariables();
+		assertEquals(1, nested.length);
+		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
+	
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

@@ -32,5 +32,8 @@ R2 == CHOOSE r \in [ N1 \X N1 -> BOOLEAN ] :
         /\ IsIrreflexive(r, N1)
 
 \* Print R to stdout at startup.
-TestSpec == PrintT(R) /\ Spec        
+TestSpec == PrintT(R) /\ Spec
+
+View ==
+	vars
 ===================================
