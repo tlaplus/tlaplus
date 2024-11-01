@@ -17,6 +17,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -48,15 +49,20 @@ public class XMLExporter {
     // s
     // -I (a modules path) can be repeated
     // -o offline mode (no validation) //TODO: use a resolver to do offline validation
+    // -t terse XML output without any newline or tab formatting
     // then a list of top level modules to parse)
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
     LinkedList pathsLs = new LinkedList();
 
     boolean offline_mode = false;
+    boolean pretty_print = true;
     int lastarg = -1; // lastarg will be incremented, initialize at -1
     for (int i = 0; i < args.length - 1; i++) {
       if ("-o".equals(args[i])) {
         offline_mode = true;
+        lastarg = i;
+      } else if ("-t".equals(args[i])) {
+        pretty_print = false;
         lastarg = i;
       } else if ("-I".equals(args[i])) {
         i++;
@@ -148,6 +154,10 @@ public class XMLExporter {
       //Create XML file
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
+      if (pretty_print) {
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+      }
       DOMSource source = new DOMSource(doc);
 
       // validate the file, do not fail if there is a URL connection error
