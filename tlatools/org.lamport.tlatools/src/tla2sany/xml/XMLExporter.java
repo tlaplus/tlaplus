@@ -11,7 +11,9 @@ import java.io.ByteArrayOutputStream;
 
 import java.io.PrintStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -40,17 +42,65 @@ import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
+import util.UsageGenerator;
 
 public class XMLExporter {
 
-  public static final void main(String[] args) throws XMLExportingException {
+  /**
+   * Construct & output the usage text for this program.
+   *
+   * @param out The output stream to which to print the usage.
+   */
+  static final void printUsage(final PrintStream out) {
+    List<List<UsageGenerator.Argument>> variants = new ArrayList<List<UsageGenerator.Argument>>();
+    List<UsageGenerator.Argument> args = new ArrayList<UsageGenerator.Argument>();
+    args.add(new UsageGenerator.Argument(
+        "-o", "Offline mode; skip XML schema validation step.", true));
+    args.add(new UsageGenerator.Argument(
+        "-t", "Terse; format XML output without tabs or newlines.", true));
+    args.add(new UsageGenerator.Argument(
+        "-I", "Include; use given directory path to resolve module dependencies.", true));
+    args.add(new UsageGenerator.Argument(
+        "-help", "Print this usage information.", true));
+    args.add(new UsageGenerator.Argument(
+        "FILE", "The TLA+ module to parse.", false));
+    variants.add(args);
+    List<String> tips = new ArrayList<String>();
+    tips.add("Only one root TLA+ file can be parsed per run.");
+    tips.add("Multiple directory search paths can be given by providing multiple -I arguments.");
+    tips.add("XML schema validation does not require network access.");
+    UsageGenerator.displayUsage(
+        out,
+        XMLExporter.class.getCanonicalName(),
+        SANY.version,
+        "Emit SANY's parse tree as XML",
+        "Given a TLA+ file, parse that file with SANY then translate the module's " +
+        "semantic parse tree to XML, including all the modules depended on. The " +
+        "XML is printed to stdout and its output format is given by an XML Schema " +
+        "file (.xsd) found at https://proofs.tlapl.us/doc/web/sany.xsd.",
+        variants,
+        tips,
+        ' '
+      );
+  }
 
-    // parse arguments, possible flag
-    // s
-    // -I (a modules path) can be repeated
-    // -o offline mode (no validation) //TODO: use a resolver to do offline validation
-    // -t terse XML output without any newline or tab formatting
-    // then a list of top level modules to parse)
+  public static void main(String... args) throws XMLExportingException {
+    System.exit(run(args));
+  }
+
+  static int run(String... args) throws XMLExportingException {
+    try {
+      moduleToXML(args);
+      return 0;
+    } catch (IllegalArgumentException e) {
+      ToolIO.err.println("ERROR: " + e.getMessage());
+      printUsage(ToolIO.err);
+      return 1;
+    }
+  }
+
+  static void moduleToXML(String... args) throws XMLExportingException {
+
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
     LinkedList pathsLs = new LinkedList();
 
@@ -81,6 +131,11 @@ public class XMLExporter {
     if (args.length - lastarg != 1)
       throw new IllegalArgumentException("Only one TLA file to check allowed!");
 
+    if (args[args.length - 1].equals("-help")) {
+        printUsage(ToolIO.out);
+        return;
+    }
+
     String tla_name = args[lastarg++];
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
@@ -90,9 +145,6 @@ public class XMLExporter {
     System.setOut(new PrintStream(new ByteArrayOutputStream()));
 
     SpecObj spec = new SpecObj(tla_name, fts);
-
-    // Print documentation line on System.out
-    ToolIO.out.println("\n****** SANY2 " + SANY.version + "\n");
 
     // Get next file name from command line; then parse,
     // semantically analyze, and level check the spec started in
@@ -110,12 +162,11 @@ public class XMLExporter {
       } catch (FrontEndException fe) {
         // For debugging
         fe.printStackTrace();
-        ToolIO.out.println(fe);
+        ToolIO.err.println(fe);
         return;
       }
     } else {
-      ToolIO.out.println("Cannot find the specified file " + tla_name + ".");
-      return;
+      throw new IllegalArgumentException("Cannot find the specified file " + tla_name + ".");
     }
 
 
