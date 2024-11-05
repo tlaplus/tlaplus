@@ -86,6 +86,10 @@ public abstract class TLCState implements Serializable {
   public abstract StateVec addToVec(StateVec states);
   public abstract void deepNormalize();
   public abstract long fingerPrint();
+  public long fingerPrint(ITool tool) {
+		return fingerPrint();
+  }
+
   public abstract boolean allAssigned();
   public abstract Set<OpDeclNode> getUnassigned();
   public abstract TLCState createEmpty();
