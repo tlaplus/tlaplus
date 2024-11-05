@@ -71,6 +71,7 @@ import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
+import tlc2.tool.impl.WorkerValue;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
@@ -353,7 +354,8 @@ public class TLCStackFrame extends StackFrame {
 					// If there is only one module, do *not* organize the constants in the variable
 					// view by modules. In other words, constants get moved up by one level in the
 					// variable view iff there is only one module.
-					e.getValue().entrySet().stream().map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
+					e.getValue().entrySet().stream()
+							.map(c -> getVariable((Value) WorkerValue.mux(c.getValue()), c.getKey().getName()))
 							.forEach(var -> vars.add(var));
 				} else {
 					final ModuleNode module = e.getKey();

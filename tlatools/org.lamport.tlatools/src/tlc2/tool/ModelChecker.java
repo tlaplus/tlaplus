@@ -80,7 +80,8 @@ public class ModelChecker extends AbstractChecker
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
+			this.workers[i] = this.trace.addWorker(
+					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
     }
     
@@ -93,7 +94,8 @@ public class ModelChecker extends AbstractChecker
         this.workers = new Worker[TLCGlobals.getNumWorkers()];
         for (int i = 0; i < this.workers.length; i++)
         {
-            this.workers[i] = this.trace.addWorker(new Worker(i, this, this.metadir, this.tool.getRootName()));
+			this.workers[i] = this.trace.addWorker(
+					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
     }
     
@@ -287,7 +289,7 @@ public class ModelChecker extends AbstractChecker
 					// to rewrite the trace file but to reconstruct actual states referenced by
 					// their fingerprints in the trace.
 					this.doNext(cTool, this.predErrState, this.checkLiveness ? new SetOfStates() : null,
-							new Worker(4223, this, this.metadir, tool.getRootName()));
+							new Worker(4223, this, tool, this.metadir, tool.getRootName()));
                 } catch (FingerprintException e)
                 {
 					result = MP.printError(EC.TLC_FINGERPRINT_EXCEPTION, new String[] {

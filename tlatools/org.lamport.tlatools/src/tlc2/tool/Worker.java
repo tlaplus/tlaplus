@@ -65,14 +65,14 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	private volatile int maxLevel = 0;
 
 	// SZ Feb 20, 2009: changed due to super type introduction
-	public Worker(int id, AbstractChecker tlc, String metadir, String specFile) throws IOException {
+	public Worker(int id, AbstractChecker tlc, ITool tool, String metadir, String specFile) throws IOException {
 		super(id);
 		// SZ 12.04.2009: added thread name
 		this.setName("TLC Worker " + id);
 		this.tlc = (ModelChecker) tlc;
 		this.checkLiveness = this.tlc.checkLiveness;
 		this.checkDeadlock = this.tlc.checkDeadlock;
-		this.tool = (Tool) this.tlc.tool;
+		this.tool = (Tool) tool;
 		this.mode = this.tool.getMode();
 		this.squeue = this.tlc.theStateQueue;
 		this.theFPSet = this.tlc.theFPSet;
