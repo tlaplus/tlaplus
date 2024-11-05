@@ -169,7 +169,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		final long curStateFP = curState.fingerPrint();
 
 		// Add the stuttering step:
-		liveNextStates.put(curStateFP, curState);
+		liveNextStates.put(curStateFP, curState, tool);
 		this.tlc.allStateWriter.writeState(curState, curState, IStateWriter.IsUnseen, IStateWriter.Visualization.STUTTERING);
 
 		// Contrary to exceptions that are thrown during the evaluation of the init
@@ -520,7 +520,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 
 	private final boolean isSeenState(final TLCState curState, final TLCState succState, final Action action)
 			throws IOException {
-		final long fp = succState.fingerPrint();
+		final long fp = succState.fingerPrint(tool);
 		final boolean seen = this.theFPSet.put(fp);
 		// Write out succState when needed:
 		this.allStateWriter.writeState(curState, succState, seen ? IStateWriter.IsSeen : IStateWriter.IsUnseen, action);
@@ -539,7 +539,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		// For liveness checking:
 		if (this.checkLiveness || mode == Mode.MC_DEBUG)
 		{
-			this.setOfStates.put(fp, succState);
+			this.setOfStates.put(fp, succState, tool);
 		}
 		return seen;
 	}

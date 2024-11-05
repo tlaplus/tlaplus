@@ -174,9 +174,14 @@ public final class TLCStateMutExt extends TLCState implements Serializable {
    * via the state queue. They have to be normalized before adding to
    * the state queue.  We do that here.
    */
+    @Override
 	public final long fingerPrint() {
-		int sz = this.values.length;
+		return fingerPrint(mytool);
+	}
 
+    @Override
+	public final long fingerPrint(final ITool tool) {
+			int sz = this.values.length;
 		// TLC supports symmetry reduction. Symmetry reduction works by defining classes
 		// of symmetrically equivalent states for which TLC only checks a
 		// single representative of the equivalence class (orbit). E.g. in a two
@@ -271,7 +276,7 @@ public final class TLCStateMutExt extends TLCState implements Serializable {
 			if (minVals != this.values) {
 				state = new TLCStateMutExt(minVals);
 			}
-			IValue val = mytool.eval(viewMap, Context.Empty, state);
+			IValue val = tool.eval(viewMap, Context.Empty, state);
 			fp = val.fingerPrint(fp);
 		}
 		return fp;

@@ -29,6 +29,7 @@ package tlc2.util;
 import java.util.HashSet;
 
 import tlc2.tool.Action;
+import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -60,6 +61,13 @@ public final class SetOfStates {
 		this.states = new TLCState[length];
 	}
 
+	public SetOfStates(final StateVec sv, final ITool tool) {
+		this(sv.size());
+		for (int i = 0; i < sv.size(); i++) {
+			put(sv.elementAt(i), tool);
+		}
+	}
+
 	public SetOfStates(final StateVec sv) {
 		this(sv.size());
 		for (int i = 0; i < sv.size(); i++) {
@@ -72,6 +80,22 @@ public final class SetOfStates {
 		this.states = new TLCState[length];
 	}
 	
+	private final void grow(final ITool tool) {
+		final TLCState[] old = states;
+		this.count = 0;
+		this.length = 2 * this.length + 1;
+		this.thresh = this.length / 2;
+		this.states = new TLCState[this.length];
+		for (int i = 0; i < old.length; i++) {
+			final TLCState s = old[i];
+			// This is where we have to redundantly compute the state's
+			// fingerprint. Thus, try to minimize the number of grow operations.
+			if (s != null) {
+				this.put(s.fingerPrint(tool), s, tool);
+			}
+		}
+	}
+
 	private final void grow() {
 		final TLCState[] old = states;
 		this.count = 0;
@@ -88,14 +112,28 @@ public final class SetOfStates {
 		}
 	}
 
+	public final boolean put(final TLCState aState, final ITool tool) {
+		return put(aState.fingerPrint(tool), aState, tool);
+	}
+
 	public final boolean put(final TLCState aState) {
 		return put(aState.fingerPrint(), aState);
 	}
-
+	
+	public final boolean put(final long fingerprint, final TLCState aState, final ITool tool) {
+		if (count >= thresh) {
+			this.grow(tool);
+		}
+		return put0(fingerprint, aState);
+	}
 	public final boolean put(final long fingerprint, final TLCState aState) {
 		if (count >= thresh) {
 			this.grow();
 		}
+		return put0(fingerprint, aState);
+	}
+
+	private boolean put0(final long fingerprint, final TLCState aState) {
 		int loc = ((int) fingerprint & 0x7FFFFFFF) % this.length;
 		// This loop keep going until either a match or a null bucket is found.
 		while (true) {
