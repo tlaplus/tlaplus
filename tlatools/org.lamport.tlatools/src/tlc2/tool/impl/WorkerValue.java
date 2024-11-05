@@ -27,6 +27,7 @@ package tlc2.tool.impl;
 
 import tla2sany.semantic.ExprOrOpArgNode;
 import tlc2.TLCGlobals;
+import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
@@ -131,7 +132,8 @@ public class WorkerValue {
     			RandomEnumerableValues.setSeed(seed);
     			// Ideally, we could invoke IValue#deepCopy here instead of evaluating opDef again.  However,
     			// IValue#deepCopy doesn't create copies for most values.
-    			values[i] = spec.eval(en, Context.Empty, TLCState.Empty, cm);
+				final ITool noDebug = ((ITool) spec).noDebug();
+				values[i] = noDebug.eval(en, Context.Empty, TLCState.Empty, cm);
     			values[i].deepNormalize();
     		}
     		

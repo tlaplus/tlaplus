@@ -1014,9 +1014,10 @@ public class TLC {
             }
         }
 		
-		if (TLCGlobals.getNumWorkers() != 1 && debugPort >= 0) {
+		if (TLCGlobals.getNumWorkers() != 1 && debugPort >= 0
+				&& !Boolean.getBoolean(TLC.class.getName() + ".multiWorkerDebug")) {
 			printErrorMsg("Error: TLA+ Debugger does not support running with multiple workers.");
-            return false;
+			return false;
 		}
 		
         startTime = System.currentTimeMillis();
@@ -1228,7 +1229,6 @@ public class TLC {
 				
             	// model checking
 				if (debugPort >= 0) {
-					assert TLCGlobals.getNumWorkers() == 1 : "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
 						tool = new DebugTool(mainFile, configFile, resolver, params, instance);

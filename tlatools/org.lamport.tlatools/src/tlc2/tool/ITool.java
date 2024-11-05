@@ -38,6 +38,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.ModelConfig;
+import tlc2.tool.impl.OpDefEvaluator;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
@@ -48,7 +49,7 @@ import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
 import util.FilenameToStream;
 
-public interface ITool extends TraceApp {
+public interface ITool extends TraceApp, OpDefEvaluator {
 
 	Mode getMode();
 	
