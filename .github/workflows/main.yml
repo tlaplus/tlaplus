@@ -239,8 +239,9 @@ jobs:
       ##
       ## Upload tla2tools.jar to OSS Sonatype.
       ##
-    - name: Upload to Github maven packages
+    - name: Upload to OSS Sonatype
       if: matrix.operating-system == 'ubuntu-latest'
+      continue-on-error: true
       run: |
            cd tlatools/org.lamport.tlatools/
            ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
