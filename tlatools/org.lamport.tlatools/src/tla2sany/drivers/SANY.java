@@ -383,7 +383,6 @@ public class SANY {
       final List<UsageGenerator.Argument> variant = new ArrayList<>();
       variant.add(new UsageGenerator.Argument(
           "-s", "Turns off semantic analysis", true));
-      commandVariants.add(variant);
       variant.add(new UsageGenerator.Argument(
           "-l", "Turns off level checking. Level checking won't be\n" +
           "used, if the semantic analysis is disabled. ", true));
