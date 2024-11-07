@@ -660,7 +660,8 @@ public class LiveCheck1 implements ILiveCheck {
 		TLCState cycleState = null;
 		for (int i = 0; i < stateNum; i++) {
 			trace.add(states[i]);
-			StatePrinter.printInvariantViolationStateTraceState(states[i], cycleState, i + 1);
+			sinfo = myTool.getDebugger().evalAlias(states[i], cycleState);
+			StatePrinter.printInvariantViolationStateTraceState(sinfo, cycleState, i + 1);
 			cycleState = states[i].state;
 		}
 
@@ -677,6 +678,7 @@ public class LiveCheck1 implements ILiveCheck {
 		for (int i = 1; i < fps.length; i++) {
 			if (fps[i] != fps[i - 1]) {
 				sinfo = r.getState(fps[i], sinfo.state);
+				sinfo = myTool.getDebugger().evalAlias(sinfo, lastState);
 				trace.add(sinfo);
 				StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, ++stateNum);
 				lastState = sinfo.state;
