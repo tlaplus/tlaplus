@@ -74,10 +74,6 @@ public class SANY {
     // true <=> control should be transferred to debugger;
     //          default is false; turned ON by -D switch
 
-  private static boolean doStats            = false; 
-    // true <=> statistics about builtin operator usage 
-    //          should be reported
-
   private static boolean doStrictErrorCodes   = false;
     // true <=> error level should be reported as the tools'
     //          return value
@@ -381,14 +377,6 @@ public class SANY {
     return;
   }
 
-  /** 
-   * This method should print statistics about the specification
-   * It is obviously not finished.
-   */
-  public static final void frontEndStatistics(SpecObj spec) {
-    
-  }
-
   private static void printUsage()
   {
       final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
@@ -399,9 +387,6 @@ public class SANY {
       variant.add(new UsageGenerator.Argument(
           "-l", "Turns off level checking. Level checking won't be\n" +
           "used, if the semantic analysis is disabled. ", true));
-      variant.add(new UsageGenerator.Argument(
-          "-stat", "Turns off reporting statistics about builtin operator\n" +
-          "usage." , true));
       variant.add(new UsageGenerator.Argument(
           "-error-codes", "If enabled, error level will be reported as the tools'\n" +
           "return value." , true));
@@ -436,8 +421,10 @@ public class SANY {
            doLevelChecking    = !doLevelChecking;
       else if (args[i].equals("-D") || args[i].equals("-d")) 
            doDebugging        = !doDebugging;
-      else if (args[i].equals("-STAT") || args[i].equals("-stat")) 
-           doStats      = !doStats;      
+      else if (args[i].equals("-STAT") || args[i].equals("-stat")) {
+           // The stat argument is still accepted to avoid breaking existing 
+           // scripts but is ignored.
+      }
       else if (args[i].toLowerCase().equals("-error-codes"))
            doStrictErrorCodes = true;
       else if (args[i].toLowerCase().equals("-help")) {
@@ -481,9 +468,6 @@ public class SANY {
               ToolIO.out.println(fe);
               System.exit(-1);
             }
-
-            // Compile operator usage stats
-            if (doStats) frontEndStatistics(spec);
 
             if (doDebugging) {
               // Run the Semantic Graph Exploration tool
