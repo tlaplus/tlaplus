@@ -120,7 +120,7 @@ public class Simulator {
 					final String tmpDir = Files.createTempDirectory(String.format("tlc-simulator-%s-", i)).toString();
 					liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
 				} else {
-					liveCheck = new LiveCheck1(this.tool.noDebug());
+					liveCheck = new LiveCheck1(this.tool.noDebug(), i != 0);
 				}
 			}
 			

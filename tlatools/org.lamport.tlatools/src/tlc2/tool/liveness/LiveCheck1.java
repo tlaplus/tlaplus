@@ -79,8 +79,12 @@ public class LiveCheck1 implements ILiveCheck {
 	private BEGraphNode initNode = null;
 
 	public LiveCheck1(ITool tool) {
+		this(tool, false);
+	}
+
+	public LiveCheck1(ITool tool, final boolean silent) {
 		myTool = tool;
-		solutions = Liveness.processLiveness(myTool);
+		solutions = Liveness.processLiveness(myTool, silent);
 		bgraphs = new BEGraph[0];
 	}
 
