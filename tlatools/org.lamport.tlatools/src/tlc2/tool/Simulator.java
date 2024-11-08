@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
@@ -111,6 +112,7 @@ public class Simulator {
 		this.aril = 0;
 
 		ILiveCheck liveCheck = new NoOpLiveCheck(tool, metadir);
+		final AtomicBoolean errorFound = new AtomicBoolean(false);
 		this.numWorkers = numWorkers;
 		this.workers = new ArrayList<>(numWorkers);
 		for (int i = 0; i < this.numWorkers; i++) {
@@ -120,7 +122,7 @@ public class Simulator {
 					final String tmpDir = Files.createTempDirectory(String.format("tlc-simulator-%s-", i)).toString();
 					liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
 				} else {
-					liveCheck = new LiveCheck1(this.tool.noDebug(), i != 0);
+					liveCheck = new LiveCheck1(this.tool.noDebug(), errorFound, i != 0);
 				}
 			}
 			
