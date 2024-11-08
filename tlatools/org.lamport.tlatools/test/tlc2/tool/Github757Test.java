@@ -28,6 +28,7 @@ package tlc2.tool;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -39,7 +40,7 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class Github757Test extends ModelCheckerTestCase {
 
 	public Github757Test() {
-		super("Github757", new String[] { "-config", "Github757.tla", "-dumpTrace", "json", "Github757.json" },
+		super("Github757", new String[] { "-config", "Github757.tla", "-dumpTrace", "json", "states" + File.separator + "Github757.json" },
 				EC.ExitStatus.VIOLATION_SAFETY);
 	}
 	

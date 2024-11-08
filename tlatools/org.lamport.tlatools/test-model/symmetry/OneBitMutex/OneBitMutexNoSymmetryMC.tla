@@ -22,7 +22,6 @@ StarvationFreedom
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
-	/\ PrintT(ToTrace(CounterExample))
   	/\ \/ /\ CounterExample = 
 				[ action |->
 				      { << << 1,
@@ -378,8 +377,5 @@ PostCondition ==
 						     pc |-> (A :> "e1" @@ B :> "e1"),
 						     unchecked |-> (A :> {} @@ B :> {}),
 						     other |-> (A :> B @@ B :> A) ] >>
-  	      /\ LET J == INSTANCE Json
-  	         IN /\ J!JsonSerialize("OneBitMutextNoSymmetry.json", ToTrace(CounterExample))
-                /\ PrintT(<<"Dumped trace to json", "OneBitMutextNoSymmetry.json">>)
 
 =============================================================================
