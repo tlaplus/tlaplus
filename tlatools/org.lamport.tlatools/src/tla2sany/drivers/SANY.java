@@ -408,6 +408,11 @@ public class SANY {
    * ExternalModuleTable.
    */
   public static void SANYmain(String args[]) {
+    if (args.length == 0) {
+      printUsage();
+      System.exit(-1);
+    }
+
     int i;
     // Parse and process the command line switches, which are
     // distinguished by the fact that they begin with a '-' character.
@@ -430,10 +435,16 @@ public class SANY {
            printUsage();
            System.exit(0);
       } else {
-           ToolIO.out.println("Command-line error: " + args[i]);
+           ToolIO.out.println("Invalid option: " + args[i]);
            ToolIO.out.println("Use -help option for more information.");
            System.exit(-1);
       }
+    }
+
+    if (i == args.length) {
+      ToolIO.out.println("At least 1 filename is required.");
+      ToolIO.out.println("Use -help option for more information.");
+      System.exit(-1);
     }
 
     // After the termination of the previous loop, the remaining
