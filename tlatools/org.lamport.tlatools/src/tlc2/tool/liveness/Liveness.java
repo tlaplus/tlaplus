@@ -532,6 +532,10 @@ public class Liveness implements ToolGlobals, ASTConstants {
 	 * <i>liveness properties</i> to be checked.
 	 */
 	public static OrderOfSolution[] processLiveness(final ITool tool) {
+		return processLiveness(tool, false);
+	}
+
+	public static OrderOfSolution[] processLiveness(final ITool tool, final boolean silent) {
 		LiveExprNode lexpr = parseLiveness(tool);
 
 		// Contrary to the Manna & Pnueli book - which discusses LTL and LTL with only
@@ -773,9 +777,9 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 		// Could null TBPar tfbin and Vect<Vect<OSExprPem>> pembin here.
 
-		MP.printMessage(EC.TLC_LIVE_IMPLIED, String.valueOf(oss.length));
-		// SZ Jul 28, 2009: What for?
-		// ToolIO.out.flush();
+		if (!silent) {
+			MP.printMessage(EC.TLC_LIVE_IMPLIED, String.valueOf(oss.length));
+		}
 
 		return oss;
 	}
