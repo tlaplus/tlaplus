@@ -109,33 +109,33 @@ public class Simulator {
 		this.rng = rng;
 		this.seed = seed;
 		this.aril = 0;
-		// Initialization for liveness checking
-		if (this.checkLiveness) {
-			if (EXPERIMENTAL_LIVENESS_SIMULATION) {
-				final String tmpDir = Files.createTempDirectory("tlc-simulator-").toString();
-				liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
-			} else {
-				liveCheck = new LiveCheck1(this.tool.noDebug());
-			}
-		} else {
-			liveCheck = new NoOpLiveCheck(tool, metadir);
-		}
 
+		ILiveCheck liveCheck = new NoOpLiveCheck(tool, metadir);
 		this.numWorkers = numWorkers;
 		this.workers = new ArrayList<>(numWorkers);
 		for (int i = 0; i < this.numWorkers; i++) {
+			// Minimize thread contention by not sharing (real) ILiveCheck instances among workers.
+			if (this.checkLiveness) {
+				if (EXPERIMENTAL_LIVENESS_SIMULATION) {
+					final String tmpDir = Files.createTempDirectory(String.format("tlc-simulator-%s-", i)).toString();
+					liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
+				} else {
+					liveCheck = new LiveCheck1(this.tool.noDebug());
+				}
+			}
+			
 			if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
 				this.workers.add(new RLSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
 				this.workers.add(new RLActionSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else {
 				this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						this.liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			}
 		}
 	
@@ -158,7 +158,6 @@ public class Simulator {
 	}
 
 	/* Fields */
-	private final ILiveCheck liveCheck;
 	private final ITool tool;
 	private final Action[] invariants; // the invariants to be checked
 	private final boolean checkDeadlock; // check deadlock?
