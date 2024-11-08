@@ -26,25 +26,27 @@
 
 package tlc2.tool.liveness.simulation;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
+
+	private final String name;
 
 	public AbstractExampleTestCase(final String cfg) {
 		// Checks the depth parameter too. Depth <= 100 will cause simluation to
 		// go on forever.
 		super(cfg, "simulation", new String[] { "-simulate", "-depth", "11" }, ExitStatus.VIOLATION_LIVENESS);
+		this.name = cfg;
 	}
 	
 	@Test
@@ -60,27 +62,23 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		List<Object> trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		
-		assertEquals(10, trace.size());
-
-		int i = 0; // State's position in records
-		Object[] objs = (Object[]) trace.get(i++);
-		TLCStateInfo stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 0", stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
-		assertEquals(i, objs[1]);
-		
-		objs = (Object[]) trace.get(9);
-		stateInfo = (TLCStateInfo) objs[0];
-		assertEquals("x = 9", stateInfo.toString().trim());
-		
-		// Must not stutter
-		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT3));
-		
-		// Must show back loop to init state
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		trace = recorder.getRecords(EC.TLC_STATE_PRINT2);
-		objs = (Object[]) trace.get(0);
-		assertEquals(1, objs[1]);
+		final List<String> expectedTrace = new ArrayList<String>(10);
+		expectedTrace.add("x = 0");
+		expectedTrace.add("x = 1");
+		expectedTrace.add("x = 2");
+		expectedTrace.add("x = 3");
+		expectedTrace.add("x = 4");
+		expectedTrace.add("x = 5");
+		expectedTrace.add("x = 6");
+		expectedTrace.add("x = 7");
+		expectedTrace.add("x = 8");
+		expectedTrace.add("x = 9");
+		final List<String> expectedActions = new ArrayList<>(expectedTrace.size());
+		expectedActions.add("<Init line 6, col 9 to line 6, col 13 of module " + name + ">");
+		for (int i = 1; i < expectedTrace.size(); i++) {
+			expectedActions.add("<Next line 8, col 9 to line 8, col 27 of module " + name + ">");
+		}
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
+		assertBackToState(1, "<Next line 8, col 9 to line 8, col 27 of module " + name + ">");
 	}
 }
