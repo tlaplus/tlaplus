@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import tlc2.output.EC;
@@ -33,6 +34,7 @@ import tlc2.util.statistics.IBucketStatistics;
 import tlc2.value.impl.CounterExample;
 
 public class LiveCheck1 implements ILiveCheck {
+	private final AtomicBoolean errorFound;
 	/**
 	 * Implementation of liveness checking based on MP book.
 	 */
@@ -79,13 +81,14 @@ public class LiveCheck1 implements ILiveCheck {
 	private BEGraphNode initNode = null;
 
 	public LiveCheck1(ITool tool) {
-		this(tool, false);
+		this(tool, new AtomicBoolean(false), false);
 	}
 
-	public LiveCheck1(ITool tool, final boolean silent) {
+	public LiveCheck1(ITool tool, final AtomicBoolean errorFound, final boolean silent) {
 		myTool = tool;
 		solutions = Liveness.processLiveness(myTool, silent);
 		bgraphs = new BEGraph[0];
+		this.errorFound = errorFound;
 	}
 
 	public void init(ITool tool, Action[] acts, String mdir) {
@@ -775,18 +778,15 @@ public class LiveCheck1 implements ILiveCheck {
 		}
 		// This component must contain a counter-example because all three
 		// conditions are satisfied. So, print a counter-example!
-		try {
-			throw new LiveCounterExampleException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "LiveCheck: Found error trace.",
-					printErrorTrace(node));
-		} catch (IOException e) {
-			MP.printError(EC.GENERAL, "printing an error trace", e); // LL
-			// changed
-			// call
-			// 7
-			// April
-			// 2012
+		if (errorFound.compareAndSet(false, true)) {
+			try {
+				throw new LiveCounterExampleException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED,
+						"LiveCheck: Found error trace.", printErrorTrace(node));
+			} catch (IOException e) {
+				MP.printError(EC.GENERAL, "printing an error trace", e);
+			}
+			throw new LiveException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "LiveCheck: Found error trace.");
 		}
-		throw new LiveException(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "LiveCheck: Found error trace.");
 	}
 
 	/**
