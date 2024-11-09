@@ -382,13 +382,25 @@ public class SANY {
       final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
       final List<UsageGenerator.Argument> variant = new ArrayList<>();
       variant.add(new UsageGenerator.Argument(
-          "-s", "Turns off semantic analysis", true));
+          "-s", "Turns off semantic analysis and level-checking.", true));
       variant.add(new UsageGenerator.Argument(
-          "-l", "Turns off level checking. Level checking won't be\n" +
-          "used, if the semantic analysis is disabled. ", true));
+          "-l", "Turns off level-checking.", true));
       variant.add(new UsageGenerator.Argument(
-          "-error-codes", "If enabled, error level will be reported as the tools'\n" +
-          "return value." , true));
+          "-error-codes", "Return a descriptive exit code in case of error.\n\n" +
+          "'2' Error during parsing.\n" +
+          "'4' Error during semantic analysis or level-checking.", true));
+      variant.add(new UsageGenerator.Argument(
+          "-d", "Opens the semantic graph explorer prompt. The prompt accepts the following commands:\n" +
+          "'cst' Prints out the concrete syntax tree.\n" +
+          "'dot' Emits the semantic graph to a ModuleName.dot file in the DOT graph" +
+          " description language.\n" +
+          "'mt'  Prints the module table, a list of all imported modules and their" +
+          " top-level definitions.\n" +
+          "'mt*' Prints the extended module table including built-in operator definitions.\n\n" +
+          "Optionally, skip the prompt and run a command directly by appending it like" +
+          " 'SANY -d ModuleName.tla cst'", true));
+      variant.add(new UsageGenerator.Argument(
+          "FILE...", "1 or more files" , false));
       commandVariants.add(variant);
       final List<String> tips = new ArrayList<String>();
       UsageGenerator.displayUsage(
@@ -436,14 +448,14 @@ public class SANY {
            System.exit(0);
       } else {
            ToolIO.out.println("Invalid option: " + args[i]);
-           ToolIO.out.println("Use -help option for more information.");
+           ToolIO.out.println("Try 'SANY -help' for more information.");
            System.exit(-1);
       }
     }
 
     if (i == args.length) {
       ToolIO.out.println("At least 1 filename is required.");
-      ToolIO.out.println("Use -help option for more information.");
+      ToolIO.out.println("Try 'SANY -help' for more information.");
       System.exit(-1);
     }
 
