@@ -1,5 +1,5 @@
 ------------------------------ MODULE Example2 ------------------------------
-EXTENDS Integers
+EXTENDS Integers, TLC
 
 VARIABLE x
 
@@ -10,5 +10,7 @@ Next == x' = ( x + 1 ) % 10
 Spec == Init /\ [][Next]_<<x>> /\ []<><<TRUE>>_<<x>> 
 
 Liveness2 == <>(x = 11)
+
+Alias == [ x |-> x, l |-> TLCGet("level") ]
 
 =============================================================================
