@@ -80,5 +80,9 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		}
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		assertBackToState(1, "<Next line 8, col 9 to line 8, col 27 of module " + name + ">");
+		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));		
 	}
 }
