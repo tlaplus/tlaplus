@@ -63,16 +63,16 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(10);
-		expectedTrace.add("x = 0");
-		expectedTrace.add("x = 1");
-		expectedTrace.add("x = 2");
-		expectedTrace.add("x = 3");
-		expectedTrace.add("x = 4");
-		expectedTrace.add("x = 5");
-		expectedTrace.add("x = 6");
-		expectedTrace.add("x = 7");
-		expectedTrace.add("x = 8");
-		expectedTrace.add("x = 9");
+		expectedTrace.add("/\\ x = 0\n/\\ l = 1");
+		expectedTrace.add("/\\ x = 1\n/\\ l = 2");
+		expectedTrace.add("/\\ x = 2\n/\\ l = 3");
+		expectedTrace.add("/\\ x = 3\n/\\ l = 4");
+		expectedTrace.add("/\\ x = 4\n/\\ l = 5");
+		expectedTrace.add("/\\ x = 5\n/\\ l = 6");
+		expectedTrace.add("/\\ x = 6\n/\\ l = 7");
+		expectedTrace.add("/\\ x = 7\n/\\ l = 8");
+		expectedTrace.add("/\\ x = 8\n/\\ l = 9");
+		expectedTrace.add("/\\ x = 9\n/\\ l = 10");
 		final List<String> expectedActions = new ArrayList<>(expectedTrace.size());
 		expectedActions.add("<Init line 6, col 9 to line 6, col 13 of module " + name + ">");
 		for (int i = 1; i < expectedTrace.size(); i++) {
