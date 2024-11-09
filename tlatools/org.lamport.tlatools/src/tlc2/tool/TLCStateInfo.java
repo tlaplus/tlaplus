@@ -115,6 +115,10 @@ public class TLCStateInfo {
 	  }
 	  return Action.UNKNOWN;
   }
+  
+	public int getStateNumber() {
+		return (int) stateNumber;
+	}
 
   public Value toRecordValue() {
       if (state instanceof PrintTLCState) {
