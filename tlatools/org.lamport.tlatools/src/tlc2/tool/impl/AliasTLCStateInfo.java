@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
+import tlc2.tool.Action;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 
@@ -35,6 +36,16 @@ public class AliasTLCStateInfo extends TLCStateInfo {
 	public AliasTLCStateInfo(TLCState alias, TLCStateInfo current) {
 		super(alias, current);
 		originalState = current.state;
+	}
+	  
+	@Override
+	public int getStateNumber() {
+		return originalState.getLevel();
+	}
+
+	@Override
+	public Action getAction() {
+		return originalState.getAction();
 	}
 
 	@Override
