@@ -664,8 +664,8 @@ public class LiveCheck1 implements ILiveCheck {
 		// Print the prefix:
 		TLCState cycleState = null;
 		for (int i = 0; i < stateNum; i++) {
-			trace.add(states[i]);
 			sinfo = myTool.getDebugger().evalAlias(states[i], cycleState);
+			trace.add(sinfo);
 			StatePrinter.printInvariantViolationStateTraceState(sinfo, cycleState, i + 1);
 			cycleState = states[i].state;
 		}
