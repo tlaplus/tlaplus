@@ -1030,6 +1030,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           errors.addError(
             stn.getLocation(),
             "[] followed by action not of form [A]_v.");
+          this.levelCorrect = false;
         }
       }
     };
@@ -1046,6 +1047,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             errors.addError(
               stn.getLocation(),
               "<> followed by action not of form <<A>>_v.");
+            this.levelCorrect = false;
           }
         }
       };
@@ -1060,6 +1062,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
              stn.getLocation(),
              "Action used where only temporal formula or " +
              "state predicate allowed.");
+          this.levelCorrect = false;
       }
     };
 
@@ -1090,6 +1093,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     		errors.addError(
     	             stn.getLocation(),
     	             pop + " has both temporal formula and action as arguments.");
+    		this.levelCorrect = false;
     	}
     }
 
@@ -1104,6 +1108,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
               errors.addError(
                  this.ranges[i].stn.getLocation(),
                  "Action-level bound of quantified temporal formula.");
+              this.levelCorrect = false;
             }
           }
 
