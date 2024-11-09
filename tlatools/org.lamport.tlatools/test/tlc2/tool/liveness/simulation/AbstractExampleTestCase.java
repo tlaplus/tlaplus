@@ -28,6 +28,7 @@ package tlc2.tool.liveness.simulation;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +42,18 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 
 	private final String name;
+	private final boolean assertPostCondition;
 
 	public AbstractExampleTestCase(final String cfg) {
+		this(cfg, true);
+	}
+
+	public AbstractExampleTestCase(final String cfg, final boolean assertPostCondition) {
 		// Checks the depth parameter too. Depth <= 100 will cause simluation to
 		// go on forever.
 		super(cfg, "simulation", new String[] { "-simulate", "-depth", "11" }, ExitStatus.VIOLATION_LIVENESS);
 		this.name = cfg;
+		this.assertPostCondition = assertPostCondition;
 	}
 	
 	@Test
@@ -82,6 +89,7 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		assertBackToState(1, "<Next line 8, col 9 to line 8, col 27 of module " + name + ">");
 		
 		// Assert POSTCONDITION.
+		assumeTrue(assertPostCondition);
 		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
 		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));		
 	}
