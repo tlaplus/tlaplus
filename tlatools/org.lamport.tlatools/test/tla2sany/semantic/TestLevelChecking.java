@@ -21,6 +21,17 @@ public class TestLevelChecking {
   private static class LevelCheckingTestCase {
 
     /**
+     * Interpolate expressions into this string to form semantically-valid
+     * TLA+ parse inputs.
+     */
+    private static final String INPUT_FORMAT_STRING =
+      "---- MODULE Test ----\n" +
+      "CONSTANT c\n" +
+      "VARIABLE x\n" +
+      "op == %s\n" +
+      "====";
+
+    /**
      * The string parse input.
      */
     public final String Input;
@@ -37,10 +48,10 @@ public class TestLevelChecking {
      * @param expected The expected level-checking result on the input.
      */
     public LevelCheckingTestCase(String input, boolean expected) {
-      this.Input = String.format("---- MODULE Test ----\n%s\n====", input);
+      this.Input = String.format(INPUT_FORMAT_STRING, input);
       this.ExpectedLevelCheckingResult = expected;
     }
-    
+
     /**
      * Summarize this test for error reporting purposes.
      *
@@ -67,7 +78,7 @@ public class TestLevelChecking {
      * operator synonym resolution should happen before any operator details
      * are fetched. Here we test whether that hypothesis is true.
      */
-    new LevelCheckingTestCase("x == \\neg TRUE", true),
+    new LevelCheckingTestCase("\\neg c",         true),
 
     /**
      * Also during the work to remove config.jj, it was found that the dot .
@@ -77,14 +88,79 @@ public class TestLevelChecking {
      * this hypothesis is true. For further info, see this issue:
      * https://github.com/tlaplus/tlaplus/issues/1008
      */
-    new LevelCheckingTestCase("x == 5.foo", true),
+    new LevelCheckingTestCase("c.foo",           true),
 
     /**
      * This is another test of the dot record access operator to ensure it is
      * actually possible to go beyond its level constraints, so they are set
      * appropriately.
      */
-    new LevelCheckingTestCase("x == ([]5).foo", false),
+    new LevelCheckingTestCase("([]c).foo",       false),
+
+    /**
+     * Various tests to increase coverage of {@link OpApplNode} level-
+     * checking, especially with regard to temporal operators and their
+     * unicode equivalents.
+     */
+    // Constant-level parameters
+    new LevelCheckingTestCase("[]c",             true),
+    new LevelCheckingTestCase("□c",              true),
+    new LevelCheckingTestCase("<>c",             true),
+    new LevelCheckingTestCase("◇c",              true),
+
+    // Variable-level parameters
+    new LevelCheckingTestCase("[]x",             true),
+    new LevelCheckingTestCase("□x",              true),
+    new LevelCheckingTestCase("<>x",             true),
+    new LevelCheckingTestCase("◇x",              true),
+
+    // Action-level parameters
+    new LevelCheckingTestCase("[](x')",          false),
+    new LevelCheckingTestCase("□(x')",           false),
+    new LevelCheckingTestCase("<>(x')",          false),
+    new LevelCheckingTestCase("◇(x')",           false),
+    new LevelCheckingTestCase("[][c]_x",         true),
+    new LevelCheckingTestCase("□[c]_x",          true),
+    new LevelCheckingTestCase("[]<<c>>_x",       false),
+    new LevelCheckingTestCase("□⟨c⟩_x",          false),
+    new LevelCheckingTestCase("<><<c>>_x",       true),
+    new LevelCheckingTestCase("◇⟨c⟩_x",          true),
+    new LevelCheckingTestCase("<>[c]_x",         false),
+    new LevelCheckingTestCase("◇[c]_x",          false),
+
+    // Leads-to and plus-arrow
+    new LevelCheckingTestCase("c ~> c",          true),
+    new LevelCheckingTestCase("x' ~> c",         false),
+    new LevelCheckingTestCase("c ~> x'",         false),
+    new LevelCheckingTestCase("c ↝ c",           true),
+    new LevelCheckingTestCase("x' ↝ c",          false),
+    new LevelCheckingTestCase("c ↝ x'",          false),
+    new LevelCheckingTestCase("c -+-> c",        true),
+    new LevelCheckingTestCase("x' -+-> c",       false),
+    new LevelCheckingTestCase("c -+-> x'",       false),
+    new LevelCheckingTestCase("c ⇸ c",           true),
+    new LevelCheckingTestCase("x' ⇸ c",          false),
+    new LevelCheckingTestCase("c ⇸ x'",          false),
+
+    // Infix ops can have temporal or action but not both
+    new LevelCheckingTestCase("c /\\ c",         true),
+    new LevelCheckingTestCase("c ∧ c",           true),
+    new LevelCheckingTestCase("x /\\ c",         true),
+    new LevelCheckingTestCase("x ∧ c",           true),
+    new LevelCheckingTestCase("[]c /\\ c",       true),
+    new LevelCheckingTestCase("□c ∧ c",          true),
+    new LevelCheckingTestCase("c /\\ x'",        true),
+    new LevelCheckingTestCase("c ∧ x'",          true),
+    new LevelCheckingTestCase("[]c /\\ x'",      false),
+    new LevelCheckingTestCase("□c ∧ x'",         false),
+
+    // Quantifiers & temporal formulas
+    new LevelCheckingTestCase("∀ v ∈ c  : v",    true),
+    new LevelCheckingTestCase("∃ v ∈ x  : v",    true),
+    new LevelCheckingTestCase("∀ v ∈ x' : v",    true),
+    new LevelCheckingTestCase("∃ v ∈ x  : □v",   true),
+    new LevelCheckingTestCase("∀ v ∈ x' : □v",   false),
+    new LevelCheckingTestCase("∃ v ∈ □x : v",    false),
   };
 
   /**
@@ -143,6 +219,7 @@ public class TestLevelChecking {
       TreeNode parseTree = checkSyntax(testCase.Input);
       ModuleNode semanticTree = checkSemantic(parseTree, log);
       boolean actualLevelCheckingResult = checkLevel(semanticTree);
+      Assert.assertEquals(testCase.summarize(log), log.isSuccess(), actualLevelCheckingResult);
       Assert.assertEquals(testCase.summarize(log), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);
     }
   }
