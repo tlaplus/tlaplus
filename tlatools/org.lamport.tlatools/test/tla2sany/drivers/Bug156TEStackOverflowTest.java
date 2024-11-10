@@ -22,7 +22,7 @@ public class Bug156TEStackOverflowTest {
 	public void setUp() throws Exception {
 		// create a model and initialize
 		moduleSpec = new SpecObj("test-model/Bug156/TE.tla", new SimpleFilenameToStream());
-		SANY.frontEndInitialize(moduleSpec, ToolIO.out);
+		SANY.frontEndInitialize();
 	}
 
 	/**

@@ -124,14 +124,13 @@ public class Context implements ExploreNode {
     }*/
   }
 
-  private static Context initialContext = new Context(null, new Errors());
+  private static Context initialContext = new Context(null);
                                       // the one, static unique Context with builtin operators
                                       // null ModuleTable arg because this is shared by all modules
 
   private ExternalModuleTable exMT;   // The external ModuleTable that this context's SymbolTable
                                       // belongs to is null for global context shared by all modules.
 
-  private Errors         errors;      // Object in which to register errors
   private Hashtable<Object, Pair>      table;       // Mapping from symbol name to Pair's that include SymbolNode's
   private Pair           lastPair;    // Pair added last to the this.table
 
@@ -139,10 +138,9 @@ public class Context implements ExploreNode {
    * exMT is the ExternalModuleTable containing the module whose
    * SymbolTable this Context is part of (or null).
    */
-  public Context(ExternalModuleTable mt, Errors errs) {
+  public Context(ExternalModuleTable mt) {
     table = new Hashtable<>();
     this.exMT = mt;
-    this.errors = errs;
     this.lastPair = null;
   }
 
@@ -152,7 +150,7 @@ public class Context implements ExploreNode {
    * of a spec.
    */
   public static void reInit() {
-    initialContext =  new Context(null, new Errors()); // null because outside of any module
+    initialContext = new Context(null); // null because outside of any module
     initialize();
   }
 
@@ -174,8 +172,6 @@ public class Context implements ExploreNode {
 		}
 		return false;
 	}
-
-  public Errors getErrors() { return errors; }
 
   /**
    * Adds a symbol to the initial context.
@@ -372,7 +368,7 @@ public class Context implements ExploreNode {
    * 
    * Note that the return value is never used in our code base. (2020.03.06)
    */
-	public boolean mergeExtendContext(final Context ct) {
+	public boolean mergeExtendContext(final Context ct, Errors errors) {
 		if (ct.lastPair == null) {
 			// If the context represents an inner module that defines no EXTENDS, ct.lastPair will be null
 			return true;
@@ -449,7 +445,7 @@ public class Context implements ExploreNode {
    * linked-list of Pairs starting from this.lastpair.
    */
   public Context duplicate(ExternalModuleTable exMT) {    // Added argument exMT (DRJ)
-    Context dup       = new Context(exMT, errors);
+    Context dup       = new Context(exMT);
     Pair    p         = this.lastPair;
     Pair    current   = null;
     boolean firstTime = true;

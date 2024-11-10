@@ -3,7 +3,6 @@ package tla2sany.semantic;
 import org.junit.Assert;
 import org.junit.Test;
 
-import tla2sany.drivers.InitException;
 import tla2sany.drivers.SANY;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
@@ -33,17 +32,15 @@ public class TestMergeContextError {
 	 * a definition of the same name and same type (both operators).
 	 */
 	@Test
-	public void testSymbolConflictWarning() throws InitException, ParseException, SemanticException {
+	public void testSymbolConflictWarning() throws ParseException, SemanticException {
 		final String path = MODULE_DIR + "TestMergeContextWarning.tla";
 		SpecObj spec = new SpecObj(path, null);
-		SANY.frontEndInitialize(spec, ToolIO.out);
+		SANY.frontEndInitialize();
 		SANY.frontEndParse(spec, ToolIO.out);
 		SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
-		Context context = spec.getExternalModuleTable().getContextForRootModule();
-		Errors contextErrors = context.getErrors();
+		Errors contextErrors = spec.getSemanticErrors();
 		Assert.assertFalse(contextErrors.isFailure());
 		Assert.assertEquals(1, contextErrors.getWarnings().length);
-		Assert.assertEquals(contextErrors, spec.getGlobalContextErrors());
 	}
 
 	/**
@@ -52,16 +49,14 @@ public class TestMergeContextError {
 	 * constant).
 	 */
 	@Test
-	public void testSymbolConflictError() throws InitException, ParseException, SemanticException {
+	public void testSymbolConflictError() throws ParseException, SemanticException {
 		final String path = MODULE_DIR + "TestMergeContextError.tla";
 		SpecObj spec = new SpecObj(path, null);
-		SANY.frontEndInitialize(spec, ToolIO.out);
+		SANY.frontEndInitialize();
 		SANY.frontEndParse(spec, ToolIO.out);
 		SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
-		Context context = spec.getExternalModuleTable().getContextForRootModule();
-		Errors contextErrors = context.getErrors();
+		Errors contextErrors = spec.getSemanticErrors();
 		Assert.assertTrue(contextErrors.isFailure());
 		Assert.assertEquals(1, contextErrors.getErrors().length);
-		Assert.assertEquals(contextErrors, spec.getGlobalContextErrors());
 	}
 }
