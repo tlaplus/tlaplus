@@ -100,7 +100,7 @@ public class CheckImplFile extends CheckImpl
         SpecObj spec = new SpecObj(rfname, null);
         try
         {
-            SANY.frontEndInitialize(spec, ToolIO.out);
+            SANY.frontEndInitialize();
             SANY.frontEndParse(spec, ToolIO.out);
             SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
         } catch (Throwable e)
@@ -108,7 +108,7 @@ public class CheckImplFile extends CheckImpl
             String msg = (e.getMessage()==null)?e.toString():e.getMessage();
             Assert.fail(EC.CHECK_COULD_NOT_READ_TRACE, msg);
         }
-        if (!spec.initErrors.isSuccess() || !spec.parseErrors.isSuccess() || !spec.semanticErrors.isSuccess())
+        if (!spec.parseErrors.isSuccess() || !spec.semanticErrors.isSuccess())
         {
             Assert.fail(EC.TLC_PARSING_FAILED);
         }
