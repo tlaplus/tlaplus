@@ -715,7 +715,7 @@ public class ModelChecker extends AbstractChecker
             	updateRuntimeRatio(0L);
             }
             
-            if (periodic != null && BoolValue.ValFalse.equals(tool.eval(periodic))) {
+            if (periodic != null && BoolValue.ValFalse.equals(tool.noDebug().eval(periodic))) {
        			return EC.TLC_ASSUMPTION_FALSE;
             }
 
