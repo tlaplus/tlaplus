@@ -1199,14 +1199,17 @@ public class TLC {
 				
 				Simulator simulator;
 				if (debugPort >= 0) {
-					assert TLCGlobals.getNumWorkers() == 1
-							: "TLCDebugger does not support running with multiple workers.";
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
 						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params, instance);
 					}
-					simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
-	                        traceNum, traceActions, rng, seed, resolver);
+					if (Boolean.getBoolean(TLC.class.getName() + ".multiWorkerDebug")) {
+						simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
+								traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
+					} else {
+						simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
+								traceNum, traceActions, rng, seed, resolver);
+					}	
 				} else {
 					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params);
 					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 

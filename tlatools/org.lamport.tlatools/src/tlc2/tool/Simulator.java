@@ -94,8 +94,8 @@ public class Simulator {
 		this.tool = tool;
 
 		this.checkDeadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
-		this.checkLiveness = !this.tool.livenessIsTrue();
-		this.invariants = this.tool.getInvariants();
+		this.checkLiveness = !tool.livenessIsTrue();
+		this.invariants = tool.getInvariants();
 		if (traceDepth != -1) {
 			// this.actionTrace = new Action[traceDepth]; // SZ: never read
 			// locally
@@ -120,22 +120,23 @@ public class Simulator {
 			if (this.checkLiveness) {
 				if (EXPERIMENTAL_LIVENESS_SIMULATION) {
 					final String tmpDir = Files.createTempDirectory(String.format("tlc-simulator-%s-", i)).toString();
-					liveCheck = new LiveCheck(this.tool.noDebug(), tmpDir, new DummyBucketStatistics());
+					liveCheck = new LiveCheck(tool.noDebug(), tmpDir, new DummyBucketStatistics());
 				} else {
-					liveCheck = new LiveCheck1(this.tool.noDebug(), errorFound, i != 0);
+					liveCheck = new LiveCheck1(tool.noDebug(), errorFound, i != 0);
 				}
 			}
 			
+			final ITool t = i == 0 ? tool : tool.noDebug();
 			if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
-				this.workers.add(new RLSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+				this.workers.add(new RLSimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
-				this.workers.add(new RLActionSimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+				this.workers.add(new RLActionSimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			} else {
-				this.workers.add(new SimulationWorker(i, this.tool, this.workerResultQueue, this.rng.nextLong(),
+				this.workers.add(new SimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
 			}
@@ -629,7 +630,7 @@ public class Simulator {
 
 					writeActionFlowGraph();
 
-					if (periodic != null && BoolValue.ValFalse.equals(tool.eval(periodic))) {
+					if (periodic != null && BoolValue.ValFalse.equals(tool.noDebug().eval(periodic))) {
 						MP.printError(EC.TLC_ASSUMPTION_FALSE, periodic.toString());
 						workerResultQueue.add(SimulationWorkerResult.OK(-1));
 					}
@@ -818,7 +819,6 @@ public class Simulator {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
 			return w.getTrace();
 		} else {
-			assert numWorkers == 1 && workers.size() == numWorkers;
 			return workers.get(0).getTrace();
 		}
 	}
@@ -828,7 +828,6 @@ public class Simulator {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
 			return w.getTraceInfo(level);
 		} else {
-			assert numWorkers == 1 && workers.size() == numWorkers;
 			return workers.get(0).getTraceInfo(level);
 		}
 	}
