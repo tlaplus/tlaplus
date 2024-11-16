@@ -302,7 +302,7 @@ public class TLCStackFrame extends StackFrame {
 			if (ctxtId == vr) {
 				Context c = this.ctxt;
 				while (c.hasNext()) {
-					Object val = c.getValue();
+					Object val = WorkerValue.mux(c.getValue());
 					if (val instanceof LazyValue) {
 						// unlazy/eval LazyValues
 						val = unlazy((LazyValue) c.getValue());
@@ -317,7 +317,7 @@ public class TLCStackFrame extends StackFrame {
 					} else if (val instanceof RuntimeException) {
 						final Variable variable = new Variable();
 						variable.setName(c.getName().getName().toString());
-						variable.setValue(c.getValue().toString());
+						variable.setValue(WorkerValue.mux(c.getValue()).toString());
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());
 						vars.add(variable);
@@ -376,7 +376,7 @@ public class TLCStackFrame extends StackFrame {
 					final Set<Entry<OpDefOrDeclNode,Object>> entrySet = e.getValue().entrySet();
 					for (Entry<OpDefOrDeclNode, Object> entry : entrySet) {
 						final OpDefOrDeclNode oddn = entry.getKey();
-						final Object value = entry.getValue();
+						final Object value = WorkerValue.mux(entry.getValue());
 						if (oddn instanceof OpDefNode) {
 							final OpDefNode odn = (OpDefNode) oddn;
 							l.add((DebugTLCVariable) ((Value) value)
