@@ -425,7 +425,7 @@ public class ModuleNode extends SymbolNode {
   }
 
   public final OpDefNode getOpDef(final UniqueString name) {
-	  return Stream.of(getOpDefs()).filter(o -> o.getName() == name).findFirst().orElse(null);
+	  return Stream.of(getOpDefs()).filter(o -> o.getName().equals(name)).findFirst().orElse(null);
   }
 
   /*************************************************************************
