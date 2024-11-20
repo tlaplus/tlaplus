@@ -26,13 +26,19 @@
 package tlc2.value;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
 import tlc2.TLCGlobals;
+import tlc2.tool.queue.DiskByteArrayQueue;
+import tlc2.value.impl.StringValue;
 
 public class ValueInputOutputStreamTest {
 
@@ -114,5 +120,104 @@ public class ValueInputOutputStreamTest {
 		assertEquals(Integer.MAX_VALUE, in.readNat());
 		assertEquals(0, in.readNat());
 		in.close();
+	}
+	
+	private static interface WriteStringTestFns<Out extends IValueOutputStream, In extends IValueInputStream> {
+		Out freshOutputStream() throws IOException;
+		In getInputStream(Out out) throws IOException;
+	}
+	
+	private <Out extends IValueOutputStream, In extends IValueInputStream> void writeStringTestImpl(WriteStringTestFns<Out, In> fns) throws IOException {
+		final StringBuilder str16kBuilder = new StringBuilder();
+		for(int i = 0; i < 16_000; i++) {
+			final char ch = (char)((i % 26) + 'a');
+			str16kBuilder.append(ch);
+		}
+		final StringBuilder str16kMultibyteBuilder = new StringBuilder();
+		for(int i = 0; i < 16_000; i++) {
+			if(i % 2 == 1) {
+				str16kMultibyteBuilder.append("🗣️");
+			} else {
+				str16kMultibyteBuilder.append("🔥");
+			}
+		}
+		
+		final List<String> testStrings = Arrays.asList(
+				// Short cases
+				"",
+				"foo",
+				"ü",
+				// <Null> character (surrounded by other chars to check it doesn't break things)
+				"x\0x",
+				// A really long repeating alphabet (good for debugging)
+				str16kBuilder.toString(),
+				// Short emoji sequence
+				"🗣️🗣️🗣️🗣️🗣️🔥🔥🔥🔥🔥",
+				// Very long emoji sequence
+				str16kMultibyteBuilder.toString(),
+				// Accent soup, maybe a different kind of stress test ("Zalgo text")
+				"Z̴̢̳̫̤̥̗̻̙̦̘̣̞̝̝̫̫̭͓͛̒̂́̈́͋̔̏͊̃͂̒͜ä̷͈̯̜̬̹͓̩͇̠̙̼̰͓̤͔̱̞̹̹͈̺͔̏̃̅̽̂̂͌̓̏͂̈́̂̽̀́̎̕͜͝ͅḽ̸̛̞̣̜̭̱͎̮̳͙̃̾̉̂͗́̀̐͒̈̒͆̐̄̈̏̓̀͊̌̄̎͌͑́͑̋̂͒͒͌̓͝͝͝͝͝g̶̢̥͖̭̖͕̲̦͇̞͕̥͔̠̦̯͚͔̤̣̮̘̱͈͇̦͓̈́͒̄̅̇͗̾̈́̇͒̂̾̿̿̉̚͜͝ͅơ̸̻̠͙̼̼͚͖͖͙̲̠̹̹͓̣͋̾̇̿͌̓̾̆̾̍̈̀̉̂̓͆̉̃̀̿͗͑̂͆̋̿̑͘̚̚͘͠ͅͅ ̷̨̡̛̛̪͚̗̙̙̬̗̤̫͖̘̪̳̖͓͍̂͐̃̇͑̂́͆̎̃̃̏̈́̿̈́́̒̅͋̀̔͆̐̐̎̇͋̚͠͝͝͝͠͠ͅT̷̢̢̛͔̫̝̠̜͙͕͍̖͚͓̜̻̮͖̺̏͌̄̉̔͗́̓̉͐̀̇̾͆̿̅̔̅́̍͂̾̅͗̎̿́̕͝͠ȩ̶̗̲̦̤̻͓̥̯͍̦̐͌̔̈́͒̌͌̏̈́̌͌̉̆̾̀́̒̀͋̀͛͌̈́̈́̀͌̏̀̄̓́̑͌̒̍͊̚̚̕͜͜͝ͅx̵̡̡̡̡̢̡̛̤͖͙͖͉̬̥̹̖͔̱͕̞̩̟̹͔̦̣̦̗̫̺̜͍̻͈̃̓̇̓͑̽̅̎̓̌͑̂̇̔̒̇̄͐̅̌̓͋̄̕̚̚͠ţ̸̢̢̨̛̟͖̳̜̻̣̭̺͉̳̘̘̺͈͓̗̫̱͚̞̻͉̪͇̠̜͕͍͙͈̯͖̱̹͍̲̅̋͗̀̈́̓̈́͌̈́̆͑̽̓͌́̀̐̏͌͑̓͗̀͌̆̏͒̐̿̒̇̈͘͘͘͠͝͠ ̶̧̨̠̝̬̼͚̰̻̩͎̱̗͖͚̘͍̞̟̗̾͂͂́͑̓̑̽̐̽̌̂̀͘͝ͅͅĢ̸̧̛̻̳͚̈́̓̉́̎̓̀͛͒̌́̅̃̄̄͗́̋̈́̅͆͗̀̐̃̃̒̊̚͝͠e̸̢̢͈̬̮̥͎̠̫̘̎̄̐̍̈̿͌̇͌͘ͅn̴͈̹͙̊͋͒̈́̉̉̆̋́͌̐͆̀͆̐͆̊̊́̆̓̎̀͆̉͑̓̽̎̑̽̒͘͝͠͝͝ȩ̵̡̧̢̡̢̡͇̲̣͈̮̤̣͖͍̼͓̘̮͉͖͔̦̄̓̈́̓͒̈́̓̆̇̓͌̽͐͑̐́͛͋͊͑͊̅̀͜͜͝ͅͅŕ̶͙̠̞̯̺̠̞͚͕̥̮̝͖̝͒̆̈́̔̆͑͑̈́̀͒͗͛͘͜ͅa̸̱̪̩͚̝͉̖̰̹͎̠̐̿̃́̊̂̈̏̐̽̂̋̕͝t̸̘̗̯̜͆͋͒̾̋̂̓͌̑̋͗̋͛͂͌́̌̚͝ǫ̸̧̛̛̞̜͕͇̥̖̯̻͇͍̥͔̪͓͙͔̟̯̣̝͉͎̯͈͕̺͐͆̍̉̅̇̏̓͑̔̍̽̂̀͆̒̃̂̋̈́̈̈́͒̐͋͊͒̂͘̕͜͜͜͝͝͝͠ͅͅͅŕ̷̢̧̡̧̡̨̗̹̺̠̣̳͙͙͔͔̟̝̞̩͚̻̙̳̝͕͔̰̘͈̫̘̤̖̓̒̇̔͜͝ͅͅ ̶̢̲̘͇̼͙̖̥͇͖̼̙͉̹͎̗͚͖͉̇̆͂̀̓̔ͅͅi̴̧̡̯͖̝̺̥̟̞̤̫̳͉͙̫̼͔͍̤̼̼̊̆͋̈́̀̈́̃̾͌̓͗́̈̂̋̆͘s̵̢̧̢̡̗̬̟̳̹̘̠͉̜͖̻̫̹̻̼̙͖͈͕͖͎̪̖͉̗̜̥̩̺̜͔̮̥̙̰̑̀̋͒̈́͗̓͜ ̶̧̨̛̜̺̲͙̤̬͎̗̹͙͈̱̯͎̲͉̻͖̻̰̥̣͍̪̓̈́͋͑̎̀̊̆͂͊̀̅̐̌͘̕͠͝͝͠ͅą̶̡̨̛̼͇̞͈̰̗͓͇̤̲͈̲̙̩̹̩̙̰̼͎̗͚̳̗͓̞̪̫͓͇̔̈́̾͒̔̍́͋͌̂̀̀̀̄̓̉͂̎̍̎́̋̚̚͠͠ ̶̡̜̫͖̟̝͔͚̺͖͎͚̤̯͙̥͉̐̔̾̉̎̓̑̇̿̂̕̚͜͝f̶̡̨̧̛̖̜͖͚̤̥̼͕̭̥͕̼͔̭̳̫̹̞̯̫̅̈̎̀̿͋͐̽͊̋̂̀͂̑̑͗͌̾͊͗̇͒̌̊͂̚̚͝r̵̢̢̛͈̫̹̫̳̥̰̬̲̦̦̙̭͖̯͕͙̗̩͉̜̟̭̦̫̘͔͕̤͔̘̪̳̝̀̈́́̀̂͌̽͌̌̀͜͜͝ͅͅe̷̤̩̲͍͈͇̰̙͉͉̬̹̟͓̳̪͙͙̱͖͆͐̀̅͐̈́̒͝e̷̛͉̤͉͐̀̓̈́̂̂̇̀̉̏͂́́̒̔̄̍̈́́̀͛̿̽͆͒͑̀͌̑̚͠͝ ̵̩̺̟̹̰͋̆̐͑̀̈́͛͛̊ͅt̸̛̰̅̓̓̅ỏ̷͙̼͔͓͉̯͔̘̪͇͇̰͈̯̲̝͕̝̟̣̻̣͊͐͌͒̐̈́́̒̒͐͊̉̎̒̄̄̄̍̐͆̓́̃̈́́̄͘̕͠͠͠͝o̴̢̨̥̫̮͙̠̞̠̣͕̮͔̟̰̻̜͉͚̦̙̲̺̪̜̞̠̟͊̅̓͐̉̕͜͜͝ļ̵̡̨̛̦͖̘̰̼̞͎̘͉̩̳͈̫̰̟̈͛̑͂́̓̆̒̑̊͆̄̂̑̓͌͛̋͐̚͘͝ ̶̨̧̨̪̭̞̩̮͎̙̘͕̦̦̙̯̩̥͓͓̝̫͉̘̪̗̪͉̖̟̙̮̫͉̗͇̻̐̈́͛̆̈̌̆̈́̽̉͒̄̊̀͆͜͝͝ͅt̷̡̨̛̗̥̪̥̘̰̳͕̱̻̥̞͖͎̞͓͍̼̘̲̯̻̯̖͇͇͌̔͗́̃͋͆́̾̌̍́͋̇̊̑͂́̆̇́͐͒̄̑́͑̓̿̃̇̄͑̕̕͜͝͝ͅͅḩ̶̡̡̘̱̰̫͍͖̖̟͖̼͚̫̟̝͍͙̻̬̬̻̞̭̘̘̖̤̺̼͉͈̓̈́̾̓̈́ͅą̶̧̟͔͇̺͉͙̖̯̟͚̼̲̳̝͕̘̹̝͔̱̖̫͕̯̼̺̠̯͙̾̄̏͆t̶̛̟̏̃̎̌̐͌͑̈̎̂̓̌̉̏̋͌͋́̑̂̃̆̕͝͝͠ ̸̢̩̣̝͎͕͖̖̭̬̳̄͑̇̾̋̓̈́̽́̍̂́̄͐͊̈́͊̉̂̎̔̇̈́̏̋́̓̏̏̊͜͝͝͝͠͝͝͠ṭ̴̢̠͓̬̝̤̩̦̰͖̙̒̔̈́̈́͌̈͑̏̋͐̓̌̓͐̿̑̓͌́̌̈̓̇͌͊͒̃̉̌̋̑͘̚͠͝͠ṷ̶̧̧̨̨͓̫̟̰̜͉̜̲̱͖̬̬̞̪͖̙̘̰̤̖̞͎͐͜͜͜͝ͅͅr̷̢̧̡̩͖̘̝̺͙͕̳̯͙̳͕̠͓̼̫̱̼͖̙̝͈̂̋͐̔͆͐̊͛͐̈́͑͊͆͗̍͂̔̔͐̑͊͗͘̚͠͝͝͝͝͝͝n̴̢͎̪̲̮͍͚̖̩͙̤̖̥̝̝̱̹̬̖̦̘̖͙͍̹̲͖̲̹͓̩͍̠̑̒̄͐͛̆̕͘͜ͅs̷͍̹̫̣̬̣͐͂̔̀́̒̄͑͊̇̅͊͛̈́̌̋̇̅͊̔̕̚͘͜͜͝ͅ ̵̡̭̜̭̲͇̼̱͉͇̬̅̒̚͜ͅy̶̖̬͎̑̇̅̈̽̉̾̔̄̄͗̇͑̈́́͂͗̐͑̓͛̇͆̍͋͂̒͂̅͆̃͑̄̃̒̾̇̕͘͝o̶̧̱̝̮̲̰̫͙̻̯̙͙̮͗͐͌̀͊̽̀̿̏̑̏̈̒̾͗̐̔̀̿͐͂͘͠u̷̡͖̜͈̫̝̟̝̭͗̍̓̽͌͛r̵̡̡̛͉̟̪͙̳̹̳̘͕̻̘̯̻͙͚̪͖̱̞͔͚̤̤͔̱̽̈́̀͌͋͛͋͋̈́̉͜͝ͅ ̵̡̧̢̣̳̜̤̹͙̩̦͚͇̩̘̹̯̥̬͔͕͓͙̹̲͎̤̗̪̞̬̠̞̽͂̀̋̿̆̔̍͌͌̑͘͜͜n̷̡̛͎̣̭̳̟͔̠̖̩̼̜̈́̎̎̐̃̈̂̓̊͆̉͗̾̀̈́͂̽̕̕̕͜͝ơ̸̱̻͎̦̗͕̿̈̈́̋͛̓̀͊̔̍̓̆̓̃̄̇͒̾͌̉͊̈́͐̏̀̈̀̒͘͝͝r̵̨̧̛͔͙̬͕̩͙͎̤̹͉̣̹̘͔̠͕̟̻̘̟̹̂̌̈̽̔͊̾̈̉̉̆̐́͊̾͒̀̿̿̏̏͐̏̋́̏́̌́̽̄͑̎̃͘͝͝͝m̸̢̛̦͓͔̤͉̦̝͇̲͕̰̲͙̙̼̥̮͍̣͚̳͓̣̻̤͉̬̜̣͓̠̬̜̱̻̒̀̔͜͝a̴̛̬̦̰̟̟̙̭̲͈̱͎̦͋͋̃͌̈́̈́͗̋̌͆͑͒͊̉̉̃̆̂̔̍̓́͊͊̄̋̂̚̕͠ļ̸̢̤̤̣̜̩̮̗͕̗̼̩̹̙̩̜̟͖̖̰̜͖̣͖͎͔̪͎͓̖̙̀͒̈́̆̍̈͆́͑͌̕͜͠ ̶̨̧̖̣̣͉̩̼̤͓͕̲̜̰̲͔͓̘̊̑͌̈́̈͊̕͜t̵͓͔̬̦̼̬̪̹̱̮͚͔͈͕̮̘̲̆́̿͐̑͑̈́̇̇̑̕͘͜͠ͅȩ̵̢̡̧̛̩̠̪̦͎̦͉̭̹̮̭̜̭̞̖̮̤͍̗̰̤̭̘̟̖̩̞̗̬͈́̒͑̆͂͊̎̿́͋̿̄̈́͛̇̓̔̄̎̈͐̈́̅̚͜͝ͅx̷͈̻̟͎̘̠͚̘̖̗̩͍̼̝̹͍̫̪͙̖̣̦̮̯̤̣̮̩̫̱̣͓̖̗̞̏͊͌̒̊̃̅̊̋̔̔̇̑̅̓̎́̓̋̀̇̊̕͝ͅt̵̡̢̨̪̖̣͇̣̘̮̙̜̼̰͙̘̪̜̞̤͉̼̘̲͉̟̩̦̣̣̣̹̉̅̋́̒̈̃͐́͋̈́̊̒̄̈́͑̎̀͘͝͝ͅ ̷̢̮͖̫̝͕̥͈̭̹̰͖̞̗̰̗̳͔̠̌̿̔͐̀͑́́͠ï̴̧̛͈͇͎͎͙̳̤̜̂̓̎̇̄͑̐͐͑̈͛̀̓̈́̒̀́̓̿̀̾̀͒̍̐͒̈͆̚̚͘ń̴̡̡̨̛͇̰̰͖̳̤̲͖̺̖̮̃͂̆̀̌͗͂̏͒̊̌̊͊́̊̃͐̀̋̍̅̊̓͒̈́́͘͝͝͠ͅt̴̢̛̞̹̘̝͕̥̼̣̰͓̳̳̳̯͎́̌̓͂́̂̆͛̂͂̇͗̾̈́̄͒̈̆̇̏̈̐͆̚̚̕͘͝ờ̷͇̮̠̱͔̫̠̝̝̙̘̲͎̓͗͒̅͛͐̂́͊̊͑͘̚͘͘͜͝͝ ̴̡̡̛̛̙͈̜͔̯̻̻͚̗̖̖͓̪̗͍̫̠̗͍̜̯͙͕͗̆͊͌̓̇̀͒̃͌́͐̽͑͒͒̅̽̑̌̑̑̂͗̚͝͝͝͠c̷̛̮̥̰͔̱̬͗̆̐̇̽͊͆̈́̾̃̓͗͌̑̽̓̏̆̚͘͝r̶̢̧̛̘̮͚͓͍̤̟̭͖̳͕̣̻͚̜̦̰̮͖̼̖̭̹͍̖̣̠̲̪͕̱̘͙̗͉̃͂͆͑̓̅͐̉̀́͒̒̒̿̿̌͗̆̌̐̏̾̂̓͛̎̀̇̅̓́͘͜͜͝͝͠e̴̛̛̻͍͑̀̌̎̽͐͗̏̕͘̕e̶̢̫̯̳̟̪̩̪̥̥͈̭̪͓͎̝͕̙̬̹̲͉̭͕̔͐͊̉̃̊̾̏̉͌̓̈́̈̀̉̓̇̓͘͘͜ͅͅp̷̨̢̹͕͖̰̬̲̥̣̤̳̰̗͍̦͕͔̰̤̳̙̲͙͎̙̅̆̊̔͗͂̓̏̀̉̕̚͜͝͝ỷ̵̠͇̻̻̳͇̣̫̱̞̂͊̽͌͊̌̒̐͊̏͊̃̒̏̈́͂̋́̐͑̄͑̋̔ ̶̧̧̟̟̥̩̜̙̞̼̣͇͇̙͔̞͇͕̖͔̜̗̫̪͇̬͖̤̩̺̮̺̬͇̜̫̬̓͊̈̐͊̌̾̃̔̓͒͌̎̑̀̑͂̑̀̎͂̕̚͠͝ͅ(̸̧̲̹̙͚͖͍͓̻̠̤̯̮̻̫͕̱̥̝̮͚̞̞̽̌͐̈̓̌̐̾͑̂̀͒̀̒́̐̋̓͊́̽̕̕͘̕̕͘͠s̵̡̧̡̢͙͕͙͖͖͎̖̰̟͎͉̥̻̥̜̩̟͍̟̟̖̞͇̹̙̟̥̦͚̤̍̒̐͑̑͋ͅc̷̢̡̧̡̛̛̠̠̹̤͎̹͔͚͚͍̼̗̩͖̦̹̗̱̙̭̫̽̍̅̐̐̊̊͛̅̏͑̎͌͑͌̇̓̕à̵̧̡̧̧̢̢̡͇̻͉̯̯̱͈̻̯͕̥̙̭͙͔̱̦͔̖̤̳͚̗͙̝͓͚̙̈́r̷̨̧̧̨̢̯͕̰̩̹̯̼̲̦̗̩̝̪̭͍͇͍͍̣͔̦̳̟̠̍̔̽̐́̅͛̌̋̑͐̆͑̌̀̈́́̇̕͘͜ͅy̷̡̬̼͖̰̼̞͙̤͍̜̠̽̀̔̔̇̽̆̓̎̐́͌́͋̓́͒̆̋͒̇͋̎͆͆̀̈́͑̚͠͝͝)̷̜̼̪̞̤̭̲̘͓̍̅̅͑̅͑͂̍͂̄̇̅͑͒̒̿͋͑̒̋̀͆̓̊̄̀͑̽̂͗́̈́̕̚͘̕͜͠͝ ̴̢̡̥̞̱̪̭̹̱̞̘̞̱̺̬͉̰̣͓̯̉̄͌̒͋͜o̷̡̪̱͎̗̜͗̐͑͊̈́̒̇̒̾̌̐͑̓̀̂̀͂͑̎̎͆̈́̂́̄̚̚͜͝͝ŗ̴̢̡̧̨͎͎̣̪̹͉̹̮̠̼͔̬̫͚͓̺̱̼̟̗̘̮͈̦̟̤̰̟̮̮͍̣̎͂̒̅̓͌̕͜ ̷̡̨̨̛̩̭̥͕͇̯͓̼̺͖̰͍̲͖̘̬̤̖͓̯̠̩͚͈̹̭̞̰̲͚̼͈̠̖̑̑͋́̔͒͗̇̓͆̓͂̿́̔̔̆̍̄̇͐̓̋͛̔̕̕͘͜H̵̜̩̹̠͖͉̼̗͕̭̦̪͇̠̹͚̊̀͠͠ͅͅà̷̧̛̤̳̺̬͈͚͉̲͎͖͍̞͍͎͎̜̣̝̮̳̪̥̯̬̩̺̞̳͊̊͆̊̂̀̽́̄͜͜͜l̸̡̧͇̗̹̤̪̟̼̘̲͇̲̝͖̘͚͕̙̠͕̱͙̮̫͕̼̹̘̩̬͖͔̲̺̣̩̙̪̿̑̄̂͆͘͠ͅl̷̛̛͎̗̫̱̜̞̈́̄̅̔̒͑́̈́́̓͒́̾̔́̇̿̈́͒͋̄̑̒̌͑̊̀̂͌̍́̈́́́́͘̚͠o̶̡̡̲͍̼̗͔̦͚͕̣̯͔̟̦̖̲̤̖͎̘̖͉̻̗͖̅̾̆̉̅̅́́͌̐͊̃͑̈́̽̾͐̓̽̾́́͑͂̕̚̚̚͝͝ͅw̶̡͓̰̗̗͔̭͕̗̹͙͚̪͙͖͈͕̥̘̜̹̦͙̲̺̯͍̦͔̤͚̼͔̖͕̳̺̬̲͆̀̋͌̏̅̄̿͊̅̈́̊̿̇̉̈͗̅̊̇̏͂̾͘͜ę̸̱̫̘̘̯͚͙̠͋̐̿̑͗͊̈́̉͗̒̈̃̃̂̌͘͜͝͠ȩ̴̹̗̩̠̤̞̠̲͖̙͔͕̀͗̑̐̑͆͑̀͛̃͜ņ̵̨̧̧̛̰͕͖̦͕̮͚̜̱̲͕̭̈́̀̏̂̉͌̇͗͒̅͋̑͐̈́͋͆̅ ̸̢͙̲̦̮̂̋͌̑͐͌̒͂̏̋̂̾̈̈͆͋̋͒̋̐̅̓̀͗͜s̸̡̨̧̡̡̛̛̛͈̙̦̙̖̱̫͇̼̳̰̰̟̯͚̱̲͙̮̻͔͈̼̤̣̘͍͍̥̅̀̂͐̄̾͑̾͑͌̈́̇͗͗̍́̒͌̀̓̾͂̄̄̂͛͗̿͛͘͘͘̕͘͜͝t̶̨̧̨̡̧̡̢̢̛̞̺̲͚̟̘̫̫̺͎͚̯̫̬̥͚̙̪͇͛̇̏̍̌̂̊̽̌̂͂͋͗̈̓͊͌̾̑̽̈́̀͂̉̌̋͛̆̉͒̂̿͗̈̿͘͜͝ỳ̸̨̫̤̪̯͓̳̙̜̼͎͓͍̜̤̘͈̮̮̼̦̪̩̪͆̀̆͌̏̾̋͌̆̒͒̍́͆̈́̾̈̇͌̏̈́̎͐͊̾̉́̚͜͜͝͠l̵̙͖̐̈́̂͋̋̓̋́͝e̶̮͒̆̉̄͋̐̈́̓́̅́̎̅͆̕͠.̴̡̢̨̢̝̖͇̭̖͎̗͕͇͇͈̟͕̲̭̞͎̳̝̿͌͆̌̆͋̕̕͜͜"
+		);
+		
+		final ArrayList<StringValue> testStringValues = new ArrayList<>();
+		for(final String str : testStrings) {
+			testStringValues.add(new StringValue(str));
+		}
+		
+		// Note: for multibyte characters, behavior can sometimes vary depending
+		//       on our alignment with buffer boundaries.
+		//       This test has 2 versions offset by 1 byte relative to each other
+		//       in the hopes of representing this scenario.
+		for(final boolean causeMisalignment : new boolean[] { true, false } ) {
+			for(final String str : testStrings) {
+				final StringValue strVal = new StringValue(str);
+				
+				final var out = fns.freshOutputStream();
+				if(causeMisalignment) {
+					out.writeByte((byte)42);
+				}
+				strVal.write(out);
+				out.close();
+				
+				final var in = fns.getInputStream(out);
+				if(causeMisalignment) {
+					assertEquals((byte)42, in.readByte());
+				}
+				assertEquals(str, strVal, in.read());
+				// it would be bad if we only parsed a prefix of the stream
+				assertTrue(in.atEOF());
+				in.close();
+			}
+		}
+	}
+	
+	@Test
+	public void testWriteString() throws IOException {
+		final File tempFile = File.createTempFile("ValueOutputStreamTest-testWriteString", ".vos");
+		tempFile.deleteOnExit();
+		writeStringTestImpl(new WriteStringTestFns<ValueOutputStream, ValueInputStream>() {
+			@Override
+			public ValueOutputStream freshOutputStream() throws IOException {
+				return new ValueOutputStream(tempFile);
+			}
+			@Override
+			public ValueInputStream getInputStream(ValueOutputStream out) throws IOException {
+				return new ValueInputStream(tempFile);
+			}
+		});
+	}
+	
+	@Test
+	public void testWriteStringDiskByteArrayQueue() throws IOException {
+		writeStringTestImpl(new WriteStringTestFns<DiskByteArrayQueue.ByteValueOutputStream, DiskByteArrayQueue.ByteValueInputStream>() {
+			@Override
+			public DiskByteArrayQueue.ByteValueOutputStream freshOutputStream() throws IOException {
+				return new DiskByteArrayQueue.ByteValueOutputStream();
+			}
+			@Override
+			public DiskByteArrayQueue.ByteValueInputStream getInputStream(DiskByteArrayQueue.ByteValueOutputStream out) throws IOException {
+				return new DiskByteArrayQueue.ByteValueInputStream(out.toByteArray());
+			}
+		});
 	}
 }
