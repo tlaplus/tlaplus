@@ -24,7 +24,9 @@ public class SimulatorTest extends CommonTestCase {
                 new HashMap<>(), new StandaloneConstExpressionDebugger()), null,
                 "", false, -1, 0, null,
                 new RandomGenerator(0), 0, new SimpleFilenameToStream(), 0);
-        simulator.printBehavior(new Assert.TLCRuntimeException("TestException"), TLCStateMut.Empty.createEmpty(), new StateVec(0));
+        final StateVec stateVec = new StateVec(1);
+        stateVec.addElement(TLCStateMut.Empty.createEmpty());
+		simulator.printBehavior(new Assert.TLCRuntimeException("TestException"), stateVec);
         assertTrue(recorder.recorded(EC.TLC_ERROR_STATE));
     }
 

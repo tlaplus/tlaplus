@@ -89,7 +89,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(3, err.stateTrace.size());
+		assertEquals(4, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -101,8 +102,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals("1", getStateVal(err.stateTrace.elementAt(2), "depth"));
 		assertEquals("6", getStateVal(err.stateTrace.elementAt(2), "branch"));
 		
-		assertEquals("2", getStateVal(err.state, "depth"));
-		assertEquals("6", getStateVal(err.state, "branch"));
+		assertEquals("2", getStateVal(err.stateTrace.last(), "depth"));
+		assertEquals("6", getStateVal(err.stateTrace.last(), "branch"));
 		
 		// The worker should continue to generate random traces even after an invariant violation, so we should be
 		// able to receive more results. The worker should generate 2 more results before hitting the maximum trace count.
@@ -112,7 +113,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		err = res.error();
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(3, err.stateTrace.size());
+		assertEquals(4, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -128,7 +130,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		err = res.error();
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(3, err.stateTrace.size());
+		assertEquals(4, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -139,6 +142,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		
 		assertEquals("1", getStateVal(err.stateTrace.elementAt(2), "depth"));
 		assertEquals("5", getStateVal(err.stateTrace.elementAt(2), "branch"));
+		
+		assertEquals("2", getStateVal(err.stateTrace.elementAt(3), "depth"));
+		assertEquals("5", getStateVal(err.stateTrace.elementAt(3), "branch"));
 		
 		// The worker should push one final OK result onto the queue upon termination.
 		res = resultQueue.take();
@@ -162,7 +168,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(2, err.stateTrace.size());
+		assertEquals(3, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -171,15 +178,16 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(1), "depth"));
 		assertEquals("6", getStateVal(err.stateTrace.elementAt(1), "branch"));
 		
-		assertEquals("1", getStateVal(err.state, "depth"));
-		assertEquals("6", getStateVal(err.state, "branch"));
+		assertEquals("1", getStateVal(err.stateTrace.last(), "depth"));
+		assertEquals("6", getStateVal(err.stateTrace.last(), "branch"));
 		
 		// Check another result.
 		res = resultQueue.take();
 		assertTrue(res.isError());
 		err = res.error();
 		assertEquals(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(2, err.stateTrace.size());
+		assertEquals(3, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -188,8 +196,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(1), "depth"));
 		assertEquals("10", getStateVal(err.stateTrace.elementAt(1), "branch"));
 		
-		assertEquals("1", getStateVal(err.state, "depth"));
-		assertEquals("10", getStateVal(err.state, "branch"));		
+		assertEquals("1", getStateVal(err.stateTrace.last(), "depth"));
+		assertEquals("10", getStateVal(err.stateTrace.last(), "branch"));		
 				
 		worker.join();
 		assertFalse(worker.isAlive());
@@ -210,14 +218,15 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_INVARIANT_EVALUATION_FAILED, err.errorCode);
-		assertEquals(1, err.stateTrace.size());
+		assertEquals(2, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "branch"));
 
-		assertEquals("0", getStateVal(err.state, "depth"));
-		assertEquals("1", getStateVal(err.state, "branch"));
+		assertEquals("0", getStateVal(err.stateTrace.last(), "depth"));
+		assertEquals("1", getStateVal(err.stateTrace.last(), "branch"));
 
 		worker.join();
 		assertFalse(worker.isAlive());
@@ -259,14 +268,15 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, err.errorCode);
-		assertEquals(1, err.stateTrace.size());
+		assertEquals(2, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "branch"));
 				
-		assertEquals(null, err.state.getVals().get(UniqueString.uniqueStringOf("depth")));
-		assertEquals("0", getStateVal(err.state, "branch"));
+		assertEquals(null, err.stateTrace.last().getVals().get(UniqueString.uniqueStringOf("depth")));
+		assertEquals("0", getStateVal(err.stateTrace.last(), "branch"));
 
 		worker.join();
 		assertFalse(worker.isAlive());
@@ -288,8 +298,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_DEADLOCK_REACHED, err.errorCode);
 		
-		System.out.println(err.stateTrace.toString());
 		assertEquals(7, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -372,7 +382,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertTrue(res.isError());
 		SimulationWorkerError err = res.error();
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
-		assertEquals(3, err.stateTrace.size());
+		assertEquals(4, err.stateTrace.size());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());
 		
 		// Cancel the worker.
 		worker.interrupt();

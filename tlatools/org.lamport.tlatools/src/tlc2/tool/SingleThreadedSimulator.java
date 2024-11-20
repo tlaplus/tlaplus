@@ -102,10 +102,10 @@ public class SingleThreadedSimulator extends Simulator {
 						error.errorCode = ((LiveException) error.exception).errorCode;
 					} else if (error.exception instanceof TLCRuntimeException) {
 						final TLCRuntimeException exception = (TLCRuntimeException) error.exception;
-						printBehavior(exception, error.state, error.stateTrace);
+						printBehavior(exception, error.stateTrace);
 						error.errorCode = exception.errorCode;
 					} else {
-						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
+						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) },
 								error.stateTrace);
 						error.errorCode = EC.GENERAL;
 					}

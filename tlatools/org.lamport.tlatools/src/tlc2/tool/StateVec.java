@@ -76,16 +76,13 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
   }
 
   public final TLCState elementAt(int i) { return this.v[i]; }
-
-  public boolean isLastElement(final TLCState state) {
-	  if (isEmpty()) {
-		  return false;
-	  }
-	  return this.elementAt(size() - 1) == state;
-  }
   
   public TLCState first() {
 	return elementAt(0);
+  }
+  
+  public TLCState last() {
+	  return elementAt(size() - 1);
   }
 
   public final void clear() {

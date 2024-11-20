@@ -122,15 +122,14 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 * Encapsulates information about an error produced by a simulation worker.
 	 */
 	 public class SimulationWorkerError extends InvariantViolatedException  {
-		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace) {
-			this(errorCode, parameters, state, stateTrace, null);
+		public SimulationWorkerError(int errorCode, String[] parameters, StateVec stateTrace) {
+			this(errorCode, parameters, stateTrace, null);
 		}
 		
-		public SimulationWorkerError(int errorCode, String[] parameters, TLCState state, StateVec stateTrace,
+		public SimulationWorkerError(int errorCode, String[] parameters, StateVec stateTrace,
 				Exception e) {
 			this.errorCode = errorCode;
 			this.parameters = parameters;
-			this.state = state;
 			this.stateTrace = stateTrace;
 			this.exception = e;
 		}
@@ -140,9 +139,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 		// Any additional information to be included in a reported error string.
 		public final String[] parameters;
-
-		// The TLC state associated with the error.
-		public final TLCState state;
 
 		// The TLC trace associated with the error.
 		public final StateVec stateTrace;
@@ -504,7 +500,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			resultQueue.offer(SimulationWorkerResult.OK(this.myGetId()));
 			return false;
 		} catch (final Exception e) {
-			final SimulationWorkerError err = new SimulationWorkerError(0, null, this.curState, this.getTrace(), e);
+			final SimulationWorkerError err = new SimulationWorkerError(0, null, this.getTrace(this.curState), e);
 			resultQueue.offer(SimulationWorkerResult.Error(this.myGetId(), err));
 			return false;
 		}	
@@ -577,7 +573,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 										.collect(Collectors.joining(", ")) };
 			}
 
-			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, parameters, t, getTrace());
+			throw new SimulationWorkerError(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, parameters, getTrace(t));
 		}
 		
 		this.statistics.collectPreSuccessor(s, a, t);
@@ -589,7 +585,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				if (!tool.isValid(this.tool.getInvariants()[idx], t)) {
 					// We get here because of an invariant violation.
 					throw new SimulationWorkerError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-							new String[] { tool.getInvNames()[idx] }, t, getTrace());
+							new String[] { tool.getInvNames()[idx] }, getTrace(t));
 				}
 			}
 		} catch (final Exception e) {
@@ -597,7 +593,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				throw e;
 			}
 			throw new SimulationWorkerError(EC.TLC_INVARIANT_EVALUATION_FAILED,
-					new String[] { tool.getInvNames()[idx], e.getMessage() }, t, getTrace());
+					new String[] { tool.getInvNames()[idx], e.getMessage() }, getTrace(t));
 		}
 
 		// Check action properties.
@@ -606,7 +602,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				if (!tool.isValid(this.tool.getImpliedActions()[idx], curState, t)) {
 					// We get here because of implied-action violation.
 					throw new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR,
-							new String[] { tool.getImpliedActNames()[idx] }, t, getTrace());
+							new String[] { tool.getImpliedActNames()[idx] }, getTrace(t));
 				}
 			}
 		} catch (final Exception e) {
@@ -614,7 +610,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				throw e;
 			}
 			throw new SimulationWorkerError(EC.TLC_ACTION_PROPERTY_EVALUATION_FAILED,
-					new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, t, getTrace());
+					new String[] { tool.getImpliedActNames()[idx], e.getMessage() }, getTrace(t));
 		}
 		
 		if ((tool.isInModel(t) && tool.isInActions(s, t))) {
@@ -696,7 +692,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			if (nextStates.empty()) {
 				if (checkDeadlock) {
 					// We get here because of deadlock.
-					return Optional.of(new SimulationWorkerError(EC.TLC_DEADLOCK_REACHED, null, curState, getTrace(), null));
+					return Optional.of(new SimulationWorkerError(EC.TLC_DEADLOCK_REACHED, null, getTrace(this.curState), null));
 				}
 				break;
 			}
@@ -728,7 +724,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				// Pass a supplier instead of the trace directly to convert
 				// the linked list TLCStateMutExt <- TLCStateMutExt to an array
 				// iff liveness checking is enabled.
-				return getTrace();
+				return getTrace(SimulationWorker.this.curState);
 			}
 		});
 		
@@ -745,7 +741,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			final StateVec stateTrace = new Supplier<StateVec>() {
 				@Override
 				public StateVec get() {
-					return getTrace();
+					return getTrace(SimulationWorker.this.curState);
 				}
 			}.get();
 			for (int idx = 0; idx < stateTrace .size(); idx++) {
@@ -777,10 +773,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	public final long getTraceCnt() {
 		return this.traceCnt + 1; // +1 to account for the currently generated behavior. 
 	}
-	
-	public final StateVec getTrace() {
-		return getTrace(curState);
-	}
 
 	public synchronized final StateVec getTrace(TLCState t) {
 		if (t == null) {
@@ -810,7 +802,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 	
 	public final TLCStateInfo[] getTraceInfo(final int level) {
-		final StateVec stateTrace = getTrace();
+		final StateVec stateTrace = getTrace(this.curState);
 		assert 0 < level && level <= stateTrace.size();
 		final TLCStateInfo[] trace = new TLCStateInfo[level];
 		for (int i = 0; i < trace.length; i++) {
