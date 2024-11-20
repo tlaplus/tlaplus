@@ -814,15 +814,6 @@ public class Simulator {
 		}
 	}
 
-	public final StateVec getTrace() {
-		if (Thread.currentThread() instanceof SimulationWorker) {
-			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
-			return w.getTrace();
-		} else {
-			return workers.get(0).getTrace();
-		}
-	}
-
 	public TLCStateInfo[] getTraceInfo(final int level) {
 		if (Thread.currentThread() instanceof SimulationWorker) {
 			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
