@@ -451,7 +451,6 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, constraints[i]);				
 			    	}
 			    }
-			    return true;
 			}
 			
 			// Check if succState violates any invariant:
