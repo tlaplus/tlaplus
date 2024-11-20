@@ -13,6 +13,8 @@ B == x' = x + 1
 Next == A \/ B
 
 Constraint ==  x \in Nat
+
+Inv == x >= 0
 ====
 
 ---- CONFIG Github602 ----
