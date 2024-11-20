@@ -775,10 +775,6 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 
 	public synchronized final StateVec getTrace(TLCState t) {
-		if (t == null) {
-			return new StateVec(0);
-		}
-
 		final LinkedList<TLCState> trace = new LinkedList<>();
 
 		while (t != null) {
@@ -790,13 +786,19 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				t = s;
 				continue;
 			}
-			if (!trace.isEmpty()) {
-				// Correct the predecessor of t.getFirst to point to the new s state.
-				trace.getFirst().setPredecessor(t);
-			}
 			trace.addFirst(t);
 			t = t.getPredecessor();
+		}	
+		
+		// Correct the predecessors of all states after dropping *finite* stuttering steps
+		// in the while loop above.
+		for (int j = 1; j < trace.size(); j++) {
+			trace.get(j).setPredecessor(trace.get(j-1));
 		}
+		
+		assert trace.isEmpty() || (trace.getFirst().isInitial()
+				&& java.util.stream.IntStream.range(0, trace.size()).allMatch(i -> trace.get(i).getLevel() == i + 1)
+				&& trace.getLast().getLevel() == trace.size());
 		
 		return new StateVec(trace.toArray(TLCState[]::new));
 	}

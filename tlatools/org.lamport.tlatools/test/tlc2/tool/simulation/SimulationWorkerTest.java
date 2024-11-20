@@ -10,11 +10,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import tlc2.TLCGlobals;
 import tlc2.TestMPRecorder;
 import tlc2.output.EC;
 import tlc2.tool.CommonTestCase;
@@ -29,7 +27,6 @@ import tlc2.tool.impl.Tool;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.NoOpLiveCheck;
-import util.FileUtil;
 import util.SimpleFilenameToStream;
 import util.TLAConstants;
 import util.ToolIO;
@@ -91,6 +88,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(4, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		final StateVec st1 = err.stateTrace;
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> st1.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -115,6 +115,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(4, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		final StateVec st2 = err.stateTrace;
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> st2.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -132,6 +135,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(4, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		final StateVec st3 = err.stateTrace;
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> st3.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -170,6 +176,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(3, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		final StateVec st1 = err.stateTrace;
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> st1.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -188,6 +197,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(3, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		final StateVec st2 = err.stateTrace;
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> st2.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -220,6 +232,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_EVALUATION_FAILED, err.errorCode);
 		assertEquals(2, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> err.stateTrace.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -270,6 +284,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, err.errorCode);
 		assertEquals(2, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> err.stateTrace.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -299,7 +315,9 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_DEADLOCK_REACHED, err.errorCode);
 		
 		assertEquals(7, err.stateTrace.size());
-		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		assertTrue(err.stateTrace.elementAt(0).isInitial());	
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> err.stateTrace.elementAt(i).getLevel() == i + 1));
 		
 		// Check the generated trace.
 		assertEquals("0", getStateVal(err.stateTrace.elementAt(0), "depth"));
@@ -384,6 +402,8 @@ public class SimulationWorkerTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, err.errorCode);
 		assertEquals(4, err.stateTrace.size());
 		assertTrue(err.stateTrace.elementAt(0).isInitial());
+		assertTrue(java.util.stream.IntStream.range(0, err.stateTrace.size())
+				.allMatch(i -> err.stateTrace.elementAt(i).getLevel() == i + 1));
 		
 		// Cancel the worker.
 		worker.interrupt();
