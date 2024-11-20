@@ -381,10 +381,10 @@ public class Simulator {
 						error.errorCode = ((LiveException)error.exception).errorCode;
 					} else if (error.exception instanceof TLCRuntimeException) {
 						final TLCRuntimeException exception = (TLCRuntimeException)error.exception;
-						printBehavior(exception, error.state, error.stateTrace);
+						printBehavior(exception, error.stateTrace);
 						error.errorCode = exception.errorCode;
 					} else {
-						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) }, error.state,
+						printBehavior(EC.GENERAL, new String[] { MP.ECGeneralMsg("", error.exception) },
 								error.stateTrace);
 						error.errorCode = EC.GENERAL;
 					}
@@ -430,36 +430,30 @@ public class Simulator {
 		return result;
 	}
 
-	protected final void printBehavior(final TLCRuntimeException exception, final TLCState state, final StateVec stateTrace) {
+	protected final void printBehavior(final TLCRuntimeException exception, final StateVec stateTrace) {
 		MP.printTLCRuntimeException(exception);
-		printBehavior(state, stateTrace);
+		printBehavior(stateTrace);
 	}
 
 	protected final void printBehavior(SimulationWorkerError error) {
-		printBehavior(error.errorCode, error.parameters, error.state, error.stateTrace);
+		printBehavior(error.errorCode, error.parameters, error.stateTrace);
 	}
 
 	/**
 	 * Prints out the simulation behavior, in case of an error. (unless we're at
 	 * maximum depth, in which case don't!)
 	 */
-	protected final void printBehavior(final int errorCode, final String[] parameters, final TLCState state, final StateVec stateTrace) {
+	protected final void printBehavior(final int errorCode, final String[] parameters, final StateVec stateTrace) {
 		MP.printError(errorCode, parameters);
-		printBehavior(state, stateTrace);
+		printBehavior(stateTrace);
 		this.printSummary();
 	}
 	
-	private final void printBehavior(final TLCState state, final StateVec stateTrace) {
+	private final void printBehavior(final StateVec stateTrace) {
 		if (this.traceDepth == Integer.MAX_VALUE) {
 			MP.printMessage(EC.TLC_ERROR_STATE);
-			StatePrinter.printStandaloneErrorState(state);
+			StatePrinter.printStandaloneErrorState(stateTrace.last());
 		} else {
-			if (!stateTrace.isLastElement(state)) {
-				// MAK 09/24/2019: this method is called with state being the stateTrace's
-				// last element or not.
-				stateTrace.addElement(state);
-			}
-			
 			MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
 			// MAK 09/24/2019: For space reasons, TLCState does not store the state's action.
 			// This is why the loop below creates TLCStateInfo instances out of the pair cur
