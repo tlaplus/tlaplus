@@ -33,6 +33,8 @@ import java.io.IOException;
 import org.junit.Test;
 
 import tlc2.TLCGlobals;
+import tlc2.tool.queue.DiskByteArrayQueue;
+import tlc2.value.impl.StringValue;
 
 public class ValueInputOutputStreamTest {
 
@@ -114,5 +116,40 @@ public class ValueInputOutputStreamTest {
 		assertEquals(Integer.MAX_VALUE, in.readNat());
 		assertEquals(0, in.readNat());
 		in.close();
+	}
+	
+	private static interface IValueInputStreamSupplier {
+		IValueInputStream get() throws IOException; // declared for throws clause
+	}
+	
+	private void writeStringTestImpl(IValueOutputStream out, IValueInputStreamSupplier inSrc) throws IOException {
+		final StringValue str1 = new StringValue("foo");
+		final StringValue str2 = new StringValue("ü");
+		
+		str1.write(out);
+		str2.write(out);
+		out.close();
+		
+		final IValueInputStream in = inSrc.get();
+		assertEquals(str1, in.read());
+		assertEquals(str2, in.read());
+		in.close();
+	}
+	
+	@Test
+	public void testWriteString() throws IOException {
+		final File tempFile = File.createTempFile("ValueOutputStreamTest-testWriteString", ".vos");
+		tempFile.deleteOnExit();
+		
+		final ValueOutputStream out = new ValueOutputStream(tempFile);
+		final IValueInputStreamSupplier inSrc = () -> new ValueInputStream(tempFile);
+		writeStringTestImpl(out, inSrc);
+	}
+	
+	@Test
+	public void testWriteStringByteValue() throws IOException {
+		final var out = new DiskByteArrayQueue.ByteValueOutputStream();
+		final IValueInputStreamSupplier inSrc = () -> new DiskByteArrayQueue.ByteValueInputStream(out.toByteArray());
+		writeStringTestImpl(out, inSrc);
 	}
 }

@@ -8,6 +8,10 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 
 import tlc2.output.EC;
 
@@ -28,6 +32,9 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
     private int len;        /* number of valid bytes in "buff" */
     private int curr;       /* position of next byte to return */
     private byte[] temp;    /* temporary array used by various methods */
+    private CharsetDecoder utf8Decoder; /* a cached UTF-8 decoder */
+    private CharBuffer charBuffer; /* scratch buffer for string I/O */
+    
 
     /* Object invariants:
        this.out == null <==> ``stream is closed''
@@ -70,6 +77,9 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
         this.buff = new byte[8192];
         this.curr = 0;
         this.temp = new byte[8];
+        this.utf8Decoder = StandardCharsets.UTF_8.newDecoder();
+    	// chars are 2 bytes, so would need 1/2 size buffer
+        this.charBuffer = CharBuffer.allocate(8192 / 2);
     }
     
     /** REQUIRES LL = SELF */
@@ -262,29 +272,76 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
         return res;
     }
 
-    public final String readString(int n) throws IOException {
-      char[] b = new char[n];
-      int off = 0;
-      while (n > 0) {
-	if (this.len < 0) throw new EOFException();
-	int offInit = off;
-	while (n > 0 && this.len > 0) {
-	  int toCopy = Math.min(n, this.len - this.curr);
-	  for (int i = 0; i < toCopy; i++) {
-	    b[off+i] = (char)this.buff[this.curr+i];
-	  }
-	  this.curr += toCopy; off += toCopy; n -= toCopy;
-	  if (this.curr == this.len) {
-	    // refill buffer from underlying input stream
-	    this.len = this.in.read(this.buff);
-	    Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
-	    this.curr = 0;
-	  }
-	}
-	int numRead = off - offInit;
-	off += numRead; n -= numRead;
-      }
-      return new String(b);
+    public final String readString() throws IOException {
+    	final int strLen = readInt();
+    	// Implementation summary:
+    	// This is written with some care to avoid copying / allocating buffers when we don't need to in common cases.
+    	// Cases:
+    	// - strLen = 0: we read nothing and return a literal ""
+    	// - strLen <= buff.length (approx.): we manage to read everything into one pre-allocated char buffer.
+    	//                                    We directly build the string from the char buffer.
+    	// - strLen > buff.length: we use a StringBuilder to assemble a string that's >8Kb
+    	CharBuffer oneBufPtr = null;
+    	StringBuilder resultBuilder = null;
+    	this.utf8Decoder.reset();
+    	this.charBuffer.clear();
+    	
+    	int bytesRemaining = strLen;
+    	while(bytesRemaining > 0) {
+    		// EOF check
+    		Assert.check(this.len > 0, EC.SYSTEM_STREAM_EMPTY);
+    		
+    		// 1) we might get away with directly encoding our single char buffer as a string.
+    		//    Don't allocate a StringBuilder yet...
+    		// 2) We'll need to assemble a large string.
+    		//    Make a StringBuilder and store the char buffer there; oneBufPtr is no longer meaningful.
+    		if (oneBufPtr != null && !oneBufPtr.hasRemaining() && resultBuilder == null) {
+    			resultBuilder = new StringBuilder(oneBufPtr.flip());
+    		}
+    		
+    		// Feed this.buff into this.utf8Decoder ~8k at a time. For most short strings, this is one loop.
+    		// For really long strings, we read it in chunks.
+    		final ByteBuffer wrappedBuf = ByteBuffer.wrap(this.buff, this.curr, Integer.min(bytesRemaining, this.len - this.curr));
+    		final boolean isLastRead = wrappedBuf.remaining() == bytesRemaining;
+    		this.utf8Decoder.decode(wrappedBuf, this.charBuffer.clear(), isLastRead);
+    		this.curr = wrappedBuf.position(); // don't let wrappedBuf and this.curr desync
+    		final int bytesConsumed = bytesRemaining - wrappedBuf.remaining();
+    		
+    		bytesRemaining -= bytesConsumed;
+    		if(oneBufPtr == null) {
+    			// first iteration case; try to get away without copying into a StringBuilder
+    			oneBufPtr = this.charBuffer;
+    		} else if(resultBuilder == null) {
+    			// we still might fit in the single charBuffer
+    		} else if(resultBuilder != null) {
+    			// Big case: we have a StringBuilder.
+	    		// Copy from our fixed-size buffer into the StringBuilder
+    			resultBuilder.append(this.charBuffer.flip());
+    		}
+    		
+    		if(bytesRemaining > 0) {
+    			assert !isLastRead;
+    			// refill buff from underlying
+    			this.len = this.in.read(this.buff);
+    			this.curr = 0;
+    		} else {
+    			assert isLastRead;
+    		}
+    	}
+    	
+    	
+    	if(resultBuilder == null) {
+    		if(oneBufPtr == null) {
+    			// 0 iteration case: we read an empty string with 0 bytes
+    			return "";
+    		} else {
+    			// small case: our reads fit in the single char buffer
+    			return oneBufPtr.flip().toString();
+    		}
+    	} else {
+    		// big case: we have a string builder accumulating our results
+    		return resultBuilder.toString();
+    	}
     }
   
     /** REQUIRES LL = SELF */

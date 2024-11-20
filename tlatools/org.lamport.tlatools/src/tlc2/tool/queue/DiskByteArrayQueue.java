@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 
@@ -589,15 +593,20 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		  }
 	}
 	
-	static final class ByteValueOutputStream implements IValueOutputStream, IDataOutputStream {
+	public static final class ByteValueOutputStream implements IValueOutputStream, IDataOutputStream {
 
 		private byte[] bytes;
 		
 		private int idx;
 		
+		private final CharsetEncoder utf8Encoder;
+		private final ByteBuffer strBuffer;
+		
 		public ByteValueOutputStream() {
 			this.bytes = new byte[16]; // TLCState "header" already has 6 bytes.
 			this.idx = 0;
+			this.utf8Encoder = StandardCharsets.UTF_8.newEncoder();
+			this.strBuffer = ByteBuffer.allocate(1024);
 		}
 		
 	    private void ensureCapacity(int minCap) {
@@ -738,19 +747,31 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 */
 		@Override
 		public final void writeString(String str) throws IOException {
-			final int length = str.length();
-			ensureCapacity(idx + length);
+			this.utf8Encoder.reset();
+			this.strBuffer.clear();
 			
-			final char[] c = new char[length];
-			str.getChars(0, length, c, 0);
-			
-			for (int i = 0; i < c.length; i++) {
-				this.bytes[idx++] = (byte) c[i];
+			// fast path: we fit in a pre-allocated buffer, so we can encode, look at size,
+			// and then write the size before we write the buffer
+			final CharBuffer chars = CharBuffer.wrap(str);
+			this.utf8Encoder.encode(chars, this.strBuffer, true);
+			ByteBuffer wholeStr;
+			if (!chars.hasRemaining()) {
+				wholeStr = this.strBuffer.flip();
+				
+			} else {
+				// slow path: we didn't fit in the fixed-size buffer,
+				//            so just encode the whole string into a newly allocated buffer.
+				wholeStr = this.utf8Encoder.encode(CharBuffer.wrap(str));
 			}
+			final int strSize = wholeStr.remaining();
+			writeInt(strSize);
+			ensureCapacity(idx + strSize);
+			wholeStr.get(this.bytes, idx, strSize);
+			idx += strSize;
 		}
 	}
 	
-	static final class ByteValueInputStream implements ValueConstants, IValueInputStream, IDataInputStream {
+	public static final class ByteValueInputStream implements ValueConstants, IValueInputStream, IDataInputStream {
 
 		private final byte[] bytes;
 		
@@ -925,12 +946,12 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 * @see util.IDataInputStream#readString(int)
 		 */
 		@Override
-		public final String readString(int length) throws IOException {
-			final char[] s = new char[length];
-			for (int i = 0; i < s.length; i++) {
-				s[i] = (char) this.bytes[idx++];
-			}
-			return new String(s);
+		public final String readString() throws IOException {
+			final int length = readInt();
+			// Directly construct from the buffer, decoding from UTF-8 as we do.
+			final String result = new String(this.bytes, this.idx, length, StandardCharsets.UTF_8);
+			this.idx += length;
+			return result;
 		}
 	}
 

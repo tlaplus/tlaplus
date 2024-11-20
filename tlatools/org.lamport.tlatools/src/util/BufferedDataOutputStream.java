@@ -7,6 +7,10 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 
 /** A <code>BufferedDataOutputStream</code> is an optimized
     combination of a <code>java.io.BufferedOutputStream</code>
@@ -20,6 +24,7 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
     private byte[] buff; /* buffer of bytes to write */
     private int len;     /* number of valid bytes in "buff" */
     private byte[] temp; /* temporary array used by various methods */
+    private CharsetEncoder utf8Encoder; /* cached UTF-8 encoder */
 
     /* Object invariants:
        this.out == null <==> ``stream is closed''
@@ -59,6 +64,7 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
         this.buff = new byte[8192];
         this.len = 0;
         this.temp = new byte[8];
+        this.utf8Encoder = StandardCharsets.UTF_8.newEncoder();
     }
     
     /** Reopen this output stream on <code>os</code>. This method need
@@ -187,57 +193,38 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
     /** Write the characters of the string <code>s</code> to this
         stream as a sequence of bytes. */
     public final void writeString(String s) throws IOException {
-        int n = s.length();
-        int off = 0;
-        while (n > 0) {
-            int toCopy = Math.min(n, this.buff.length - this.len);
-            s.getBytes(off, off + toCopy, this.buff, this.len);
-            this.len += toCopy; off += toCopy; n -= toCopy;
-            if (this.buff.length == this.len) {
-                // write buffer to underlying stream
-                this.out.write(this.buff, 0, this.len);
-                this.len = 0;
-            }
-        }
+    	this.utf8Encoder.reset();
+    	final CharBuffer stringChars = CharBuffer.wrap(s);
+    	
+    	// If we have extremely little or no space in the buffer, flush before trying
+    	// fast path below.
+    	if(this.len + 4 >= this.buff.length) {
+    		this.out.write(this.buff, 0, this.len);
+    		this.len = 0;
+    	}
+    	// Try to write the entire string to the buffer, leaving 4 bytes for the size.
+    	final int shiftedBufOffset = this.len + 4;
+    	final int shiftedBufLen = this.buff.length - shiftedBufOffset;
+    	final ByteBuffer checkBuf = ByteBuffer.wrap(this.buff, shiftedBufOffset, shiftedBufLen);
+    	
+    	stringChars.mark();
+    	this.utf8Encoder.encode(stringChars, checkBuf, true);
+    	
+    	// fast path: we got all the string bytes into the buffer, so we can go back
+    	//            and write the size, then call it good.
+    	if (!stringChars.hasRemaining()) {
+    		final int bytesWritten = checkBuf.position() - this.len - 4;
+    		writeInt(bytesWritten);
+    		this.len = checkBuf.position();
+    		return;
+    	}
+    	
+    	// backup plan: just write the whole string to a fresh buffer, look at the size,
+    	//              and then dispatch the the generic array write operation.
+    	stringChars.reset();
+    	
+    	final ByteBuffer wholeStr = this.utf8Encoder.encode(stringChars);
+    	writeInt(wholeStr.remaining());
+    	write(wholeStr.array(), wholeStr.position(), wholeStr.remaining());
     }
-    
-    /** Write <code>n</code> characters of <code>chars</code> starting 
-        at offset <code>off</code> to this stream as a sequence of bytes. */
-    public final void writeChars(char[] chars, int off, int n) throws IOException {
-        int finOff = off + n;
-        while (off < finOff) {
-            // Copy (part of) chars to this.buff
-            int endOff = Math.min(finOff, off + this.buff.length - this.len);
-            while (off < endOff) this.buff[this.len++] = (byte)chars[off++];
-
-            // If this.buff is full, write it out
-            if (this.buff.length == this.len) {
-                // write buffer to underlying stream
-                this.out.write(this.buff, 0, this.len);
-                this.len = 0;
-            }
-        }        
-    }
-    
-    /** Write the string <code>s</code> to the stream in such a way that it
-        can be read back by <code>BufferedDataInputStream.readAnyString</code>,
-        even if <code>s</code> is <code>null</code> or if it contains newline 
-        characters. */
-    public final void writeAnyString(String s) throws IOException {
-      if (s == null) {
-	this.writeInt(-1);
-      }
-      else {
-	this.writeInt(s.length());
-	this.writeString(s);
-      }
-    }
-    
-    /** Write the characters of the string <code>s</code> to this
-        stream as a sequence of bytes, followed by a newline. */
-    public final void writeLine(String s) throws IOException {
-        this.writeString(s);
-        this.writeByte((byte) '\n');
-    }
-
 }

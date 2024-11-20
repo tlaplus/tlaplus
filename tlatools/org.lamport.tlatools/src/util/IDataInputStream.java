@@ -32,6 +32,6 @@ public interface IDataInputStream {
 
 	int readInt() throws IOException, EOFException;
 
-	String readString(int slen) throws IOException;
+	String readString() throws IOException;
 
 }
