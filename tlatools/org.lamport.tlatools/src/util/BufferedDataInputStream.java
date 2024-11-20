@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import tlc2.output.EC;
 
@@ -28,6 +29,7 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
     private int len;        /* number of valid bytes in "buff" */
     private int curr;       /* position of next byte to return */
     private byte[] temp;    /* temporary array used by various methods */
+    
 
     /* Object invariants:
        this.out == null <==> ``stream is closed''
@@ -218,73 +220,16 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
         res <<= 8; res |= (temp[7] & 0xff);
         return res;
     }
-    
-    /** REQUIRES LL = SELF */
-    /** Reads and returns the next line of text from this stream, or
-        <code>null</code> if the stream is exhausted. Any end-of-line
-        character(s) are not included in the result. A line is termined
-        by a carriage return character (<code>'\r'</code>), a newline 
-        character (<code>'\n'</code>), a carriage return immediately 
-        followed by a newline, or by the end of the stream. */
-    public final String readLine() throws IOException {
-        String res = null;
-        while (this.len > 0) {
-            for (int i = this.curr; i < this.len; i++) {
-                if (this.buff[i] == (byte)'\n' || this.buff[i] == (byte)'\r') {
-                    // remember EOL character
-                    byte eol = this.buff[i];
-                    
-                    // create new substring
-                    String s = new String(this.buff, /*offset=*/ this.curr,
-					  /*count=*/ i - this.curr);
-                    if (res == null) res = s; else res += s;
-                    
-                    // skip over bytes in stream
-                    this.skip(i + 1 - this.curr);
-                    
-                    // skip '\n' if it follows '\r'
-                    if (eol == (byte)'\r' && this.len > 0
-                        && this.buff[this.curr] == (byte)'\n') {
-                        this.readByte();
-                    }
-                    return res;
-                }
-            }
-            // hit end of buffer -- append rest of buffer to "res"
-            String s = new String(this.buff, /*offset=*/ this.curr,
-				  /*count=*/ this.len - this.curr);
-            if (res == null) res = s; else res += s;
-            
-            // skip over bytes in stream
-            this.skip(this.len - this.curr);
-        }
-        // hit EOF without seeing EOL chars
-        return res;
-    }
 
-    public final String readString(int n) throws IOException {
-      char[] b = new char[n];
-      int off = 0;
-      while (n > 0) {
-	if (this.len < 0) throw new EOFException();
-	int offInit = off;
-	while (n > 0 && this.len > 0) {
-	  int toCopy = Math.min(n, this.len - this.curr);
-	  for (int i = 0; i < toCopy; i++) {
-	    b[off+i] = (char)this.buff[this.curr+i];
-	  }
-	  this.curr += toCopy; off += toCopy; n -= toCopy;
-	  if (this.curr == this.len) {
-	    // refill buffer from underlying input stream
-	    this.len = this.in.read(this.buff);
-	    Assert.check(this.len != 0, EC.SYSTEM_STREAM_EMPTY);
-	    this.curr = 0;
-	  }
-	}
-	int numRead = off - offInit;
-	off += numRead; n -= numRead;
-      }
-      return new String(b);
+    public final String readString() throws IOException {
+        final int strLen = readInt();
+        if (strLen == 0) {
+            return "";
+        }
+        assert strLen > 0;
+        final byte[] strBytes = new byte[strLen];
+        this.readFully(strBytes, 0, strBytes.length);
+        return new String(strBytes, StandardCharsets.UTF_8);
     }
   
     /** REQUIRES LL = SELF */

@@ -66,6 +66,14 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 			 * 4) Locate the directory with the checkpoint data
 			 * 5) Replace the content of checkpoint.zip with the content of 4)
 			 * 6) Update the number below on states found...
+			 * 
+			 * Note from last updater:
+			 * To get a checkpoint, it may be more reliable to hardcode TLCGlobals.forceChkpt = true.
+			 * 
+			 * Worker count may also vary; if TLC fails with a missing file error, it means the worker count
+			 * is different between checkpoint and recover. You can adjust using -workers.
+			 * As a result, a detail or two of the counter-example may change.
+			 * 
 			 */
 			String prefix = BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator;
 			ZipFile zipFile = new ZipFile(prefix + "checkpoint.zip");
@@ -105,11 +113,11 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_START));
-		// Recovery completed. 1032 states examined. 996 states on queue.
+		// Recovery completed. 1510 states examined. 39 states on queue.
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1510", "39"));
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2334", "1566","0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2334", "1566", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertNoTESpec();
