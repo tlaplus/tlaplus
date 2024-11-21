@@ -297,7 +297,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 				int mean = (int) (acc & 0x00000000FFFFFFFFL);
 				long m2 = acc >>> 32;
 				final long delta = tl - mean;
-				mean += delta / (numOfGenTraces.longValue() + 0); //+1 prevent div-by-zero
+				mean += delta / Math.max(numOfGenTraces.longValue(), 1); // max(..., 1) to prevent div-by-zero
 				m2 += delta * (tl - mean);
 				return m2 << 32 | (mean & 0xFFFFFFFFL);
 			});
