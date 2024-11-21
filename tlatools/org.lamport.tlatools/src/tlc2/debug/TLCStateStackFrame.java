@@ -237,11 +237,13 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		// variable in the debugger's variable view) would be RecordValue. This would be
 		// bogus and is, thus, corrected to TLCState here.
 		try {
-			variable.setType(String.format("FP64: %s", Long.toString(getT().fingerPrint())));
-			return variable;
-		} catch (Exception e) {
-			return super.getStateAsVariable(value, varName);
+			if (getT().allAssigned()) {
+				variable.setType(String.format("FP64: %s", Long.toString(getT().fingerPrint())));
+				return variable;
+			}
+		} catch (TLCRuntimeException | EvalException | FingerprintException e) {
 		}
+		return super.getStateAsVariable(value, varName);
 	}
 
 	@Override
