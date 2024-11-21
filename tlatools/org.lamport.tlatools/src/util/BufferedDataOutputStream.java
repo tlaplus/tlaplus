@@ -196,35 +196,55 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
     	this.utf8Encoder.reset();
     	final CharBuffer stringChars = CharBuffer.wrap(s);
     	
-    	// If we have extremely little or no space in the buffer, flush before trying
-    	// fast path below.
-    	if(this.len + 4 >= this.buff.length) {
-    		this.out.write(this.buff, 0, this.len);
-    		this.len = 0;
+    	// We check that the string length is smaller than the buffer, otherwise
+    	// we will waste time trying the fast path when it can never work.
+    	final boolean stringMightFit = s.length() < this.buff.length - 4;
+    	if(stringMightFit) {
+    		// If we definitely have too little space in the buffer, flush before trying fast path.
+        	// At worst, this will cause us to empty the buffer early once, and then have a reasonable chance
+        	// of executing fast path serialization on the string.
+        	// Note: s.length() should be a lower bound on the number of bytes needed.
+	    	if(this.len + 4 + s.length() >= this.buff.length) {
+	    		this.out.write(this.buff, 0, this.len);
+	    		this.len = 0;
+	    	}
+	    	// Try to write the entire string to the buffer, leaving 4 bytes for the size.
+	    	final int shiftedBufOffset = this.len + 4;
+	    	final int shiftedBufLen = this.buff.length - shiftedBufOffset;
+	    	final ByteBuffer checkBuf = ByteBuffer.wrap(this.buff, shiftedBufOffset, shiftedBufLen);
+	    	
+	    	stringChars.mark();
+	    	this.utf8Encoder.encode(stringChars, checkBuf, true);
+	    	
+	    	// fast path: we got all the string bytes into the buffer, so we can go back
+	    	//            and fill in the size prefix without needing any extra buffering.
+	    	if (!stringChars.hasRemaining()) {
+	    		final int bytesWritten = checkBuf.position() - this.len - 4;
+	    		final int lenBeforeWriteInt = this.len;
+	    		writeInt(bytesWritten); // this.len didn't move yet!
+	    		// should have advanced by 4 without flushing the buffer
+	    		assert this.len == lenBeforeWriteInt + 4;
+	    		this.len = checkBuf.position(); // now update it to after the last byte
+	    		return;
+	    	}
+	    	// backup plan: just write the whole string to a fresh buffer, look at the size,
+	    	//              and then dispatch to the generic array write operation.
+	    	//              This should be rare in normal TLC usage.
+	    	//              (see below, outside the if statement)
+	    	stringChars.reset();
     	}
-    	// Try to write the entire string to the buffer, leaving 4 bytes for the size.
-    	final int shiftedBufOffset = this.len + 4;
-    	final int shiftedBufLen = this.buff.length - shiftedBufOffset;
-    	final ByteBuffer checkBuf = ByteBuffer.wrap(this.buff, shiftedBufOffset, shiftedBufLen);
     	
-    	stringChars.mark();
-    	this.utf8Encoder.encode(stringChars, checkBuf, true);
+    	// Possible alternative design: run the encoder twice. Once with
+    	// a dummy buffer just recording the byte count, then write that byte
+    	// count as the string length, then stream the string to disk.
+    	// This approach below just outputs the string in memory, which
+    	// should be fine for a rare code path, since all short strings should
+    	// be handled above.
+    	// This note is in case the code below becomes a bottleneck for some reason.
     	
-    	// fast path: we got all the string bytes into the buffer, so we can go back
-    	//            and write the size, then call it good.
-    	if (!stringChars.hasRemaining()) {
-    		final int bytesWritten = checkBuf.position() - this.len - 4;
-    		writeInt(bytesWritten);
-    		this.len = checkBuf.position();
-    		return;
-    	}
-    	
-    	// backup plan: just write the whole string to a fresh buffer, look at the size,
-    	//              and then dispatch the the generic array write operation.
-    	stringChars.reset();
-    	
-    	final ByteBuffer wholeStr = this.utf8Encoder.encode(stringChars);
-    	writeInt(wholeStr.remaining());
-    	write(wholeStr.array(), wholeStr.position(), wholeStr.remaining());
+    	final ByteBuffer allBytes = this.utf8Encoder.encode(stringChars);
+    	assert allBytes.remaining() >= s.length();
+    	writeInt(allBytes.remaining());
+    	write(allBytes.array(), allBytes.arrayOffset() + allBytes.position(), allBytes.remaining());
     }
 }

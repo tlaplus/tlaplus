@@ -13,9 +13,11 @@ import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -600,13 +602,13 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		private int idx;
 		
 		private final CharsetEncoder utf8Encoder;
-		private final ByteBuffer strBuffer;
 		
 		public ByteValueOutputStream() {
 			this.bytes = new byte[16]; // TLCState "header" already has 6 bytes.
 			this.idx = 0;
-			this.utf8Encoder = StandardCharsets.UTF_8.newEncoder();
-			this.strBuffer = ByteBuffer.allocate(1024);
+			this.utf8Encoder = StandardCharsets.UTF_8.newEncoder()
+					.onMalformedInput(CodingErrorAction.REPLACE)
+	        		.onUnmappableCharacter(CodingErrorAction.REPLACE);
 		}
 		
 	    private void ensureCapacity(int minCap) {
@@ -748,26 +750,33 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		@Override
 		public final void writeString(String str) throws IOException {
 			this.utf8Encoder.reset();
-			this.strBuffer.clear();
 			
-			// fast path: we fit in a pre-allocated buffer, so we can encode, look at size,
-			// and then write the size before we write the buffer
 			final CharBuffer chars = CharBuffer.wrap(str);
-			this.utf8Encoder.encode(chars, this.strBuffer, true);
-			ByteBuffer wholeStr;
-			if (!chars.hasRemaining()) {
-				wholeStr = this.strBuffer.flip();
+			final int lenIdx = this.idx;
+			this.idx += 4; // skip the 4 bytes for the string length (see below)
+			final int bytesStartIdx = this.idx;
+			while(chars.hasRemaining()) {
+				// We repeatedly ensure the number of bytes we think we need for the rest of the string.
+				// Ideally this happens once, but we might need a few iterations if we were very wrong about the length.
+				// Note that, due to the array size doubling, we may over-allocate to begin with and have enough bytes
+				// _even if the estimate was wrong_.
+				final int remainingBytesEstimate = Math.round(chars.remaining() * this.utf8Encoder.averageBytesPerChar() + 1);
+				assert remainingBytesEstimate > 0;
+				ensureCapacity(idx + remainingBytesEstimate);
+				// Note: re-wrap the bytes buffer every time, because ensureCapacity may reallocate the array.
+				final ByteBuffer wrappedBytes = ByteBuffer.wrap(this.bytes, this.idx, this.bytes.length - this.idx);
 				
-			} else {
-				// slow path: we didn't fit in the fixed-size buffer,
-				//            so just encode the whole string into a newly allocated buffer.
-				wholeStr = this.utf8Encoder.encode(CharBuffer.wrap(str));
+				this.utf8Encoder.encode(chars, wrappedBytes, true);
+				this.idx = wrappedBytes.position(); // remember to keep idx up to date with the buffer
 			}
-			final int strSize = wholeStr.remaining();
-			writeInt(strSize);
-			ensureCapacity(idx + strSize);
-			wholeStr.get(this.bytes, idx, strSize);
-			idx += strSize;
+			
+			// Jump back in the buffer and write the number of bytes we ended up producing.
+			// Unlike in streaming, we can always jump back here since we have access to the whole in-memory
+			// output array.
+			final int afterBytesIdx = this.idx;
+			this.idx = lenIdx;
+			writeInt(afterBytesIdx - bytesStartIdx);
+			this.idx = afterBytesIdx;
 		}
 	}
 	
@@ -952,6 +961,11 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 			final String result = new String(this.bytes, this.idx, length, StandardCharsets.UTF_8);
 			this.idx += length;
 			return result;
+		}
+		
+		@Override
+		public final boolean atEOF() {
+			return this.idx == this.bytes.length;
 		}
 	}
 
