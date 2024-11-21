@@ -1,5 +1,5 @@
 ---------- MODULE MCEcho ----------
-EXTENDS Echo
+EXTENDS Echo, TLC
 
 \* A tiny graph with three nodes.
 N1 == {"a", "b", "c"}
@@ -36,4 +36,7 @@ TestSpec == PrintT(R) /\ Spec
 
 View ==
 	vars
+
+PostCondition ==
+    TLCSet(42, TLCGet("generated"))
 ===================================

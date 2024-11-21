@@ -30,6 +30,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
@@ -39,6 +41,7 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.util.Context;
+import tlc2.value.impl.CounterExample;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 
@@ -48,7 +51,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 	private static final String MDL = "MCEcho";
 
 	public EchoDebuggerTest() {
-		super(MDL, RM, EC.ExitStatus.SUCCESS);
+		super(MDL, RM, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -300,7 +303,26 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		nested = debugger.variables(args).get().getVariables();
 		assertEquals(1, nested.length);
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
-	
+
+		// POSTCONDITION
+		debugger.unsetBreakpoints();
+		sba = createBreakpointArgument(MDL, 41);
+		debugger.setBreakpoints(sba);
+		// Simulate the user typing "violate" into the debugger frontend, which is
+		// supposed to trigger an artificial invariant violation.
+		final EvaluateArguments ea = new EvaluateArguments();
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("violate");
+		debugger.evaluate(ea);
+		stackFrames = debugger.continue_();
+		assertEquals(11, stackFrames.length);
+		assertTLCFrame(stackFrames[0], 41, 5, 41, 35, MDL, null); // null instead of Context.Empty to assert that there is some context.
+		final Context context = ((TLCStackFrame) stackFrames[0]).getContext();
+		assertEquals("CounterExample", context.getName().getName().toString());
+		CounterExample ce = (CounterExample) context.getValue();
+		assertEquals(12, ce.values[0].toSetEnum().size());
+		assertEquals(13, ce.values[1].toSetEnum().size());
+		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

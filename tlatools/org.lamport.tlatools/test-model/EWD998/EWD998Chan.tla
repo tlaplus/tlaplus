@@ -208,4 +208,6 @@ EnabledAlias ==
         Deactivate |-> \E n \in Nodes: ENABLED Deactivate(n)
     ]
 
+PostCondition ==
+	LET T == INSTANCE TLC IN T!TLCSet(42, T!TLCGet("generated"))
 =============================================================================

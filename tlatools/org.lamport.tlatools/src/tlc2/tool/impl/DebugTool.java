@@ -158,6 +158,11 @@ public class DebugTool extends Tool {
 			return this.isValid(act, state);
 		}
 	}
+	
+	public boolean isValid(ExprNode expr, Context ctxt) {
+		mode = EvalMode.Const;
+		return super.isValid(expr, ctxt);
+	}
 
 	@Override
 	public final IValue eval(SemanticNode expr, Context ctxt) {

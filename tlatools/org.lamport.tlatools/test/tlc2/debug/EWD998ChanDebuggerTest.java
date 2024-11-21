@@ -495,7 +495,15 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("FALSE", frob[3].getValue());
 		assertEquals("SendMsg", frob[4].getName());
 		assertEquals("TRUE", frob[4].getValue());
-				
+
+		// POSTCONDITION
+		debugger.unsetBreakpoints();
+		sba = createBreakpointArgument(MDL, 212);
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCFrame(stackFrames[0], 212, 9, 212, 68, MDL, Context.Empty);
+
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();
