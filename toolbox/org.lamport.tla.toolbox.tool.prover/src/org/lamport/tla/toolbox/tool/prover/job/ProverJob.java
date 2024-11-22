@@ -1,5 +1,7 @@
 package org.lamport.tla.toolbox.tool.prover.job;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,6 +102,10 @@ public class ProverJob extends Job {
      * Path to the tlapm executable.
      */
     private IPath tlapmPath;
+    /**
+     * cmdline_api_version as reported by tlapm --config
+     */
+    private int tlapmCmdlineApiVersion = 0;
     /**
      * Path to the folder containing cygwin.
      */
@@ -250,6 +256,32 @@ public class ProverJob extends Job {
          * of the underlying process.
          */
         this.launch = new Launch(null, "", null);
+    }
+
+    private int getCmdlineApiVersion()
+    {
+        if (this.tlapmCmdlineApiVersion == 0) {
+            // Default value when not present
+            this.tlapmCmdlineApiVersion = 1;
+            // Call tlapm --config to get the actual value
+            ProcessBuilder pb = new ProcessBuilder(constructCommandForConfig());
+            try {
+                Process process = pb.start();
+                BufferedReader output = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                final String prefix = "cmdline_api_version == ";
+                String line;
+                while ((line = output.readLine()) != null) {
+                    if (line.startsWith(prefix)) {
+                        try {
+                            this.tlapmCmdlineApiVersion = Integer.parseInt(line.substring(prefix.length()));
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+            } catch (IOException ignored) {
+            }
+        }
+        return this.tlapmCmdlineApiVersion;
     }
 
     /**
@@ -641,7 +673,7 @@ public class ProverJob extends Job {
          * 
          * > <tlapm-command> --toolbox <loc> <options> moduleName
          * 
-         * where <loc> is "bl el". If the entire module
+         * where <loc> is "bl,el". If the entire module
          * is to be checked, bl = el = 0.
          * 
          * Module name should end with .tla
@@ -665,6 +697,7 @@ public class ProverJob extends Job {
 
         if (toolboxMode)
         {
+            final boolean newCmdlineApi = getCmdlineApiVersion() == 2;
             command.add("--toolbox");
 
             /*
@@ -680,8 +713,12 @@ public class ProverJob extends Job {
              */
             if (nodeToProve instanceof ModuleNode)
             {
-                command.add("0");
-                command.add("0");
+                if (newCmdlineApi) {
+                    command.add("0,0");
+                } else {
+                    command.add("0");
+                    command.add("0");
+                }
             } else
             {
                 /*
@@ -690,8 +727,12 @@ public class ProverJob extends Job {
                 int beginLine = getBeginLine(nodeToProve);
                 int endLine = getEndLine(nodeToProve);
 
-                command.add("" + beginLine);
-                command.add("" + endLine);
+                if (newCmdlineApi) {
+                    command.add("" + beginLine + "," + endLine);
+                } else {
+                    command.add("" + beginLine);
+                    command.add("" + endLine);
+                }
             }
         }
 
@@ -761,6 +802,34 @@ public class ProverJob extends Job {
         // }
         
         return (String[]) command.toArray(new String[command.size()]);
+    }
+
+    /**
+     * Constructs and returns the command to get the prover config.
+     * 
+     * @return
+     */
+    private List<String> constructCommandForConfig()
+    {
+
+        List<String> command = new ArrayList<String>();
+        /*
+         * Launch from the command line:
+         * 
+         * > <tlapm-command> --config
+         */
+
+        command.add(tlapmPath.toOSString());
+
+        // WSL hack. See constructCommand above.
+        final boolean useWSL = tlapmPath.toOSString().contains("wsl.exe");
+        if (useWSL) {
+            command.add("tlapm");
+        }
+
+        command.add("--config");
+
+        return command;
     }
 
 

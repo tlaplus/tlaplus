@@ -2,7 +2,7 @@
 
 ************ What the toolbox sends to TLAPM ************
 
---toolbox <bl> <el> [options] FILE
+--toolbox <bl>,<el> [options] FILE
 
 <bl> and <el> are both integers that give the begin line and end line of the part of the 
 file to be considered by the prover. If the arguments are both equal to 0, the entire module 
@@ -56,7 +56,7 @@ NOTE: If neither --noproving (or -N) nor -C is specified, then tlapm will
 --nofp          erase fingerprints of obligations considered by the present launch of 
 		the toolbox (i.e. located between bl and el). Adds new fingerprints.
 
---nofpl b e     erase fingerprints of obligations both (considered by the present launch of 
+--nofpl b,e     erase fingerprints of obligations both (considered by the present launch of
 		the toolbox) and (located between lines b and e). Adds new fingerprints.
 
 --safefp        checks isabelle and zenon versions before loading fingerprints. Only uses 

@@ -14,7 +14,7 @@ public interface ITLAPMOptions
 {
 
     /**
-     * --toolbox <bl> <el> [options] FILE
+     * --toolbox <bl>,<el> [options] FILE
      * 
      * <bl> and <el> are both integers that give the begin line and end line of the part of the 
      * file to be considered by the prover. If the arguments are both equal to 0, the entire module 
@@ -98,7 +98,7 @@ public interface ITLAPMOptions
      */
     public static final String NOFP = "--nofp";
     /**
-     * --nofpl b e
+     * --nofpl b,e
      * 
      * Erase fingerprints of obligations both (considered by the present launch of 
      * the toolbox) and (located between lines b and e). Adds new fingerprints.
