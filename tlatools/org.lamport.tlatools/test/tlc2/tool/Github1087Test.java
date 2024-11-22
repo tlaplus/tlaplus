@@ -23,66 +23,28 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-
 package tlc2.tool;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
-import tlc2.util.DotStateWriter;
-import tlc2.util.IStateWriter;
 import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
-import util.FileUtil;
 
-public class DotConstrainedTest extends ModelCheckerTestCase {
+public class Github1087Test extends ModelCheckerTestCase {
 
-	public DotConstrainedTest() {
-		super("Github602",
-				new String[] { "-config", "DotConstrained.cfg", "-dump", "dot,constrained",
-						"${metadir}" + FileUtil.separator + DotConstrainedTest.class.getCanonicalName() + ".dot" },
-				ExitStatus.VIOLATION_SAFETY);
-	}
-
-	@Override
-	protected boolean doDump() {
-		// Explicitly passed -dump command in constructor.
-		return false;
-	}
-
-	private final AtomicBoolean constrained = new AtomicBoolean(false);
-	
-	@Override
-	protected IStateWriter getStateWriter(final IStateWriter sw) {
-		try {
-			return new DotStateWriter(sw.getDumpFileName(), "strict ", false, false, false, true, false, false) {
-				@Override
-				public void writeState(final TLCState state, final TLCState successor, final short stateFlags,
-						Action action, SemanticNode pred) {
-					super.writeState(state, successor, stateFlags, action, pred);
-					if (isSet(stateFlags, IStateWriter.IsNotInModel)) {
-						constrained.set(true);
-					}
-				}
-			};
-		} catch (IOException e) {
-			fail(e.getMessage());
-			return null;
-		}
+	public Github1087Test() {
+		super("Github602", new String[] { "-config", "Github1087.cfg" }, ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
@@ -90,31 +52,26 @@ public class DotConstrainedTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "2", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "1", "0"));
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR));
 
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>(3);
-		expectedTrace.add("x = 0");
+		final List<String> expectedTrace = new ArrayList<String>(2);
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = -1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
-		
-		assertTrue(constrained.get());
 		
 		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
 		// register.
 		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
 		assertTrue(!allValue.isEmpty());
-		assertEquals(IntValue.gen(4), allValue.get(0));
+		assertEquals(IntValue.gen(2), allValue.get(0));
 		
 		// Assert POSTCONDITION.
 		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
 		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
-	
-		assertZeroUncovered();
 	}
 }

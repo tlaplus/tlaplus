@@ -21,6 +21,7 @@ Spec ==
     Init /\ [][Next]_x
 
 PostCondition ==
-	TLCGet(0) = 63
+	/\ TLCSet(42, TLCGet("generated"))
+	/\ TLCGet(0) = 63
 
 =======

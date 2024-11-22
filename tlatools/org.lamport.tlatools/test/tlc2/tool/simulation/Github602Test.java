@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import tlc2.TLC;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 

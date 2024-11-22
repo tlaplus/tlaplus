@@ -103,7 +103,8 @@ view == <<buffer, waitset>>
 CONSTANTS c1, c2, p1
 
 PostCondition ==
-	CounterExample =
+	/\ TLCSet(42, TLCGet("generated"))
+	/\ CounterExample =
 		[ state |->
 		      { << 1,
 		           [ buffer |-> <<>>,
