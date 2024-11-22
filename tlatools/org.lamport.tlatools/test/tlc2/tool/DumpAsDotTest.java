@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -34,12 +35,16 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 public class DumpAsDotTest extends ModelCheckerTestCase {
 
@@ -55,6 +60,16 @@ public class DumpAsDotTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "18", "11", "0"));
 		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(18), allValue.get(0));
+	
 		// -dump appends the ".dump" extension to the file name
 		final File dumpFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "DumpAsDotTest.dot");
 		assertTrue(dumpFile.exists());
