@@ -10,14 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -601,14 +596,9 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		
 		private int idx;
 		
-		private final CharsetEncoder utf8Encoder;
-		
 		public ByteValueOutputStream() {
 			this.bytes = new byte[16]; // TLCState "header" already has 6 bytes.
 			this.idx = 0;
-			this.utf8Encoder = StandardCharsets.UTF_8.newEncoder()
-					.onMalformedInput(CodingErrorAction.REPLACE)
-	        		.onUnmappableCharacter(CodingErrorAction.REPLACE);
 		}
 		
 	    private void ensureCapacity(int minCap) {
@@ -749,34 +739,25 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 */
 		@Override
 		public final void writeString(String str) throws IOException {
-			this.utf8Encoder.reset();
-			
-			final CharBuffer chars = CharBuffer.wrap(str);
-			final int lenIdx = this.idx;
-			this.idx += 4; // skip the 4 bytes for the string length (see below)
-			final int bytesStartIdx = this.idx;
-			while(chars.hasRemaining()) {
-				// We repeatedly ensure the number of bytes we think we need for the rest of the string.
-				// Ideally this happens once, but we might need a few iterations if we were very wrong about the length.
-				// Note that, due to the array size doubling, we may over-allocate to begin with and have enough bytes
-				// _even if the estimate was wrong_.
-				final int remainingBytesEstimate = Math.round(chars.remaining() * this.utf8Encoder.averageBytesPerChar() + 1);
-				assert remainingBytesEstimate > 0;
-				ensureCapacity(idx + remainingBytesEstimate);
-				// Note: re-wrap the bytes buffer every time, because ensureCapacity may reallocate the array.
-				final ByteBuffer wrappedBytes = ByteBuffer.wrap(this.bytes, this.idx, this.bytes.length - this.idx);
-				
-				this.utf8Encoder.encode(chars, wrappedBytes, true);
-				this.idx = wrappedBytes.position(); // remember to keep idx up to date with the buffer
+			if(StandardCharsets.US_ASCII.newEncoder().canEncode(str)) {
+				// Save 50% space if we can losslessly encode as ASCII.
+				this.writeInt(str.length());
+				ensureCapacity(this.idx + str.length());
+				for(int i = 0; i < str.length(); i++) {
+					this.bytes[this.idx + i] = (byte)str.charAt(i);
+				}
+				this.idx += str.length();
+			} else {
+				this.writeInt(-str.length());
+				ensureCapacity(this.idx + str.length() * 2);
+				for(int i = 0; i < str.length(); i++) {
+					final char ch = str.charAt(i);
+					// big-endian
+					this.bytes[this.idx + i * 2] = (byte)((ch >> 8) & 0xff);
+					this.bytes[this.idx + i * 2 + 1] = (byte)(ch & 0xff);
+				}
+				this.idx += str.length() * 2;
 			}
-			
-			// Jump back in the buffer and write the number of bytes we ended up producing.
-			// Unlike in streaming, we can always jump back here since we have access to the whole in-memory
-			// output array.
-			final int afterBytesIdx = this.idx;
-			this.idx = lenIdx;
-			writeInt(afterBytesIdx - bytesStartIdx);
-			this.idx = afterBytesIdx;
 		}
 	}
 	
@@ -957,10 +938,21 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		@Override
 		public final String readString() throws IOException {
 			final int length = readInt();
-			// Directly construct from the buffer, decoding from UTF-8 as we do.
-			final String result = new String(this.bytes, this.idx, length, StandardCharsets.UTF_8);
-			this.idx += length;
-			return result;
+			if(length == 0) {
+				return "";
+			} else if(length < 0) {
+				// UTF-16 unicode
+				final int lengthInBytes = -length * 2;
+				final String result = new String(this.bytes, this.idx, lengthInBytes, StandardCharsets.UTF_16);
+				this.idx += lengthInBytes;
+				return result;
+			} else {
+				// Just ASCII
+				assert length > 0;
+				final String result = new String(this.bytes, this.idx, length, StandardCharsets.US_ASCII);
+				this.idx += length;
+				return result;
+			}
 		}
 		
 		@Override

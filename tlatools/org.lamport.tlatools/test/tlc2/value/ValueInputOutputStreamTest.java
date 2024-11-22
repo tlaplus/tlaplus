@@ -39,7 +39,6 @@ import org.junit.Test;
 import tlc2.TLCGlobals;
 import tlc2.tool.queue.DiskByteArrayQueue;
 import tlc2.value.impl.StringValue;
-import util.BufferedDataInputStream;
 
 public class ValueInputOutputStreamTest {
 
@@ -148,7 +147,9 @@ public class ValueInputOutputStreamTest {
 				"",
 				"foo",
 				"ü",
-				// First, try a really long repeating alphabet (good for debugging)
+				// <Null> character
+				"\0",
+				// A really long repeating alphabet (good for debugging)
 				str16kBuilder.toString(),
 				// Short emoji sequence
 				"🗣️🗣️🗣️🗣️🗣️🔥🔥🔥🔥🔥",
@@ -165,7 +166,7 @@ public class ValueInputOutputStreamTest {
 		
 		// Note: for multibyte characters, behavior can sometimes vary depending
 		//       on our alignment with buffer boundaries.
-		//       This test runs 2 of itself versions offset by 1 byte relative to each other
+		//       This test has 2 versions offset by 1 byte relative to each other
 		//       in the hopes of representing this scenario.
 		for(final boolean causeMisalignment : new boolean[] { true, false } ) {
 			for(final String str : testStrings) {
