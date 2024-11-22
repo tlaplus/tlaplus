@@ -36,7 +36,8 @@ Sum(seq) ==
     IN S[Len(seq)]
 
 PostCondition ==
-    LET vals == TLCGet("all")
+ /\ TLCSet(42, TLCGet("generated"))
+ /\ LET vals == TLCGet("all")
     IN /\ DOMAIN vals = {R, 42} 
        \* vars[R] is a tuple with length N where N is the number of workers.
        \* In other words, vars[R] has the value of TLCGet(R) for each worker.

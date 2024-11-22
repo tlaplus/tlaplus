@@ -1,5 +1,5 @@
 ------ MODULE Github602 ------
-EXTENDS Integers
+EXTENDS Integers, TLC, TLCExt
 
 VARIABLE x
 
@@ -17,6 +17,16 @@ Constraint ==  x \in Nat
 Inv == x >= 0
 
 ActionConstraint == x' \in Nat
+
+PostCondition ==
+	/\ TLCSet(42, TLCGet("generated"))
+	/\ ToTrace(CounterExample) = << [x |-> 0],[x |-> 1],[x |-> -1] >> 
+
+Init2 == x = 1
+
+PostCondition2 ==
+	/\ TLCSet(42, TLCGet("generated"))
+	/\ ToTrace(CounterExample) = << [x |-> 1],[x |-> -1] >> 
 ====
 
 ---- CONFIG Github602 ----

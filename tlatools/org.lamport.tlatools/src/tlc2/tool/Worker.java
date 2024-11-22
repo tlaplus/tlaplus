@@ -639,6 +639,19 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		} else if (succState == null) {
 			trace.addAll(Arrays.asList(tlc.getTraceInfo(curState)));
 			trace.add(tool.getState(curState, trace.getLast().state));
+		} else if (succState.allAssigned() && succState.workerId == Short.MAX_VALUE) {
+			if (curState.isInitial()) {
+		        // Handle case where successor is fully assigned but not in the model because
+		    	// of an action- or state-constraint.
+				trace.add(tool.getState(curState.fingerPrint()));
+				trace.add(tool.getState(succState, curState));
+			} else {
+				// succState is not in the model because of an action- or state-constraint.
+				// Therefore, calling tlc.getTraceInfo(succState) would throw a NPE.
+				trace.addAll(Arrays.asList(tlc.getTraceInfo(curState)));
+				trace.add(tool.getState(curState, trace.getLast().state));
+				trace.add(tool.getState(succState, curState));
+			}
 		} else {
 			trace.addAll(Arrays.asList(tlc.getTraceInfo(succState)));
 			trace.add(tool.getState(succState, curState));

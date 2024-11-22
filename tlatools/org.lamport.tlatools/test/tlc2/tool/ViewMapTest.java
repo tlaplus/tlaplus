@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -33,9 +34,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 public class ViewMapTest extends ModelCheckerTestCase {
 
@@ -76,5 +80,15 @@ public class ViewMapTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
 		assertUncovered("line 91, col 60 to line 91, col 73 of module ViewMap: 0");
+		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(43), allValue.get(0));
 	}
 }

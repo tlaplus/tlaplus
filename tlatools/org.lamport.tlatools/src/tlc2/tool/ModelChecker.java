@@ -1072,6 +1072,10 @@ public class ModelChecker extends AbstractChecker
 		}
 	}
 
+	/**
+	 * PostCondition:
+	 *      IF IsInitial(s) THEN s \in Range(Trace) ELSE s \notin Range(Trace)
+	 */
 	@Override
 	public TLCStateInfo[] getTraceInfo(TLCState s) throws IOException {
 		return trace.getTrace(s);

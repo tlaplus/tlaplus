@@ -25,16 +25,21 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Test;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
 
 public class ChainedCdotsTest extends ModelCheckerTestCase {
 
@@ -58,5 +63,15 @@ public class ChainedCdotsTest extends ModelCheckerTestCase {
 
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
+		
+		// Assert POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+
+		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
+		// register.
+		final List<IValue> allValue = TLCGlobals.mainChecker.getAllValue(42);
+		assertTrue(!allValue.isEmpty());
+		assertEquals(IntValue.gen(9), allValue.get(0));
 	}
 }
