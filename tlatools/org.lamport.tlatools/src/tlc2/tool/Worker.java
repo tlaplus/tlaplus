@@ -439,18 +439,20 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 			if (inModel) {
 				unseen = !isSeenState(curState, succState, action);
 			} else if (allStateWriter.isConstrained()) {
-				final ExprNode[] constraints = this.tool.getModelConstraints();
-				for (int i = 0; i < constraints.length; i++) {
-					if (!this.tool.isInModel(constraints[i], succState)) {
-						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, constraints[i]);				
+				final ExprNode[] sConstraints = this.tool.getModelConstraints();
+				for (int i = 0; i < sConstraints.length; i++) {
+					if (!this.tool.isInModel(sConstraints[i], succState)) {
+						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action,
+								sConstraints[i]);
 					}
 				}
-			    final ExprNode[] constrs = this.tool.getActionConstraints();
-			    for (int i = 0; i < constrs.length; i++) {
-			    	if (!this.tool.isInActions(constrs[i], curState, succState)) {
-						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action, constraints[i]);				
-			    	}
-			    }
+				final ExprNode[] aConstraints = this.tool.getActionConstraints();
+				for (int i = 0; i < aConstraints.length; i++) {
+					if (!this.tool.isInActions(aConstraints[i], curState, succState)) {
+						this.allStateWriter.writeState(curState, succState, IStateWriter.IsNotInModel, action,
+								aConstraints[i]);
+					}
+				}
 			}
 			
 			// Check if succState violates any invariant:

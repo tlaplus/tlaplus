@@ -28,15 +28,21 @@ package tlc2.tool;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
+import tla2sany.semantic.SemanticNode;
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.util.DotStateWriter;
+import tlc2.util.IStateWriter;
 import util.FileUtil;
 
 public class DotConstrainedTest extends ModelCheckerTestCase {
@@ -52,6 +58,27 @@ public class DotConstrainedTest extends ModelCheckerTestCase {
 	protected boolean doDump() {
 		// Explicitly passed -dump command in constructor.
 		return false;
+	}
+
+	private final AtomicBoolean constrained = new AtomicBoolean(false);
+	
+	@Override
+	protected IStateWriter getStateWriter(final IStateWriter sw) {
+		try {
+			return new DotStateWriter(sw.getDumpFileName(), "strict ", false, false, false, true, false, false) {
+				@Override
+				public void writeState(final TLCState state, final TLCState successor, final short stateFlags,
+						Action action, SemanticNode pred) {
+					super.writeState(state, successor, stateFlags, action, pred);
+					if (isSet(stateFlags, IStateWriter.IsNotInModel)) {
+						constrained.set(true);
+					}
+				}
+			};
+		} catch (IOException e) {
+			fail(e.getMessage());
+			return null;
+		}
 	}
 
 	@Test
@@ -71,6 +98,8 @@ public class DotConstrainedTest extends ModelCheckerTestCase {
 		expectedTrace.add("x = 1");
 		expectedTrace.add("x = -1");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		
+		assertTrue(constrained.get());
 		
 		assertZeroUncovered();
 	}

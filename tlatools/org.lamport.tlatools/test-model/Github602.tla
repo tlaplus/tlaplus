@@ -15,6 +15,8 @@ Next == A \/ B
 Constraint ==  x \in Nat
 
 Inv == x >= 0
+
+ActionConstraint == x' \in Nat
 ====
 
 ---- CONFIG Github602 ----
