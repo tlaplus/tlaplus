@@ -25,11 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -42,6 +39,7 @@ import tlc2.debug.IDebugTarget;
 import tlc2.debug.IDebugTarget.AbortEvalException;
 import tlc2.debug.IDebugTarget.ResetEvalException;
 import tlc2.debug.IDebugTarget.StepDirection;
+import tlc2.debug.TLCDebugger;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
@@ -54,13 +52,11 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
-import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
 import tlc2.util.Context;
 import tlc2.util.SetOfStates;
 import tlc2.value.IValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
-import util.FilenameToStream;
 
 @SuppressWarnings("serial")
 public class DebugTool extends Tool {
@@ -74,14 +70,6 @@ public class DebugTool extends Tool {
 	public static void setForceViolation() {
 		forceViolation = true;
 	}
-
-	private static Map<String, Object> getParams(Map<String, Object> params) {
-		@SuppressWarnings("unchecked")
-		final List<Invariant> invs = (List<Invariant>) params.computeIfAbsent(
-				ParameterizedSpecObj.INVARIANT, k -> new ArrayList<Invariant>());
-		invs.add(new Invariant("_TLAPlusDebugger","_TLAPlusDebuggerInvariant"));
-		return params;
-	}
 	
 	private static final Set<Integer> KINDS = new HashSet<>(
 			Arrays.asList(ASTConstants.NumeralKind, ASTConstants.DecimalKind, ASTConstants.StringKind));
@@ -94,7 +82,7 @@ public class DebugTool extends Tool {
 	 * inferring what calls correspond to liveness expressions, the liveness-related
 	 * code gets this FastTool.
 	 */
-	private final FastTool fastTool;
+	private final Tool fastTool;
 
 	private EvalMode mode = EvalMode.Const;
 	
@@ -111,20 +99,13 @@ public class DebugTool extends Tool {
 	public enum EvalMode {
 		Const, State, Action, Debugger;
 	}
-	
-	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, final Map<String, Object> params, IDebugTarget target) {
-		this(mainFile, configFile, resolver, Mode.MC_DEBUG, params, target);
-	}
-	
-	public DebugTool(String mainFile, String configFile, FilenameToStream resolver, Mode mode, final Map<String, Object> params, IDebugTarget target) {
-		super(mainFile, configFile, resolver, mode, getParams(params));
-		
-		// This and FastTool share state.  Do not evaluate things concurrently.
-		this.fastTool = new FastTool(this);
-		
+
+	public DebugTool(Tool tool, TLCDebugger target) {
+		super(tool);
+		this.fastTool = tool;
 		this.target = target.setTool(this);
 	}
-
+	
 	// 88888888888888888888888888888888888888888888888888888888888888888888888888 //
 
 	@Override
