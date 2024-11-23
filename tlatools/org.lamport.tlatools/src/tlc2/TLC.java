@@ -32,16 +32,15 @@ import tlc2.output.ErrorTraceMessagePrinterRecorder;
 import tlc2.output.MP;
 import tlc2.output.Messages;
 import tlc2.tool.DFIDModelChecker;
-import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
-import tlc2.tool.SingleThreadedSimulator;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ParameterizedSpecObj;
+import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
@@ -189,7 +188,7 @@ public class TLC {
     /**
      * Interface to retrieve model properties.
      */
-    private volatile ITool tool;
+    private volatile Tool tool;
 
     /**
      * Records errors as TLC runs.
@@ -492,8 +491,12 @@ public class TLC {
                 TLCGlobals.debug = true;
             } else if (args[index].equals("-debugger"))
             {
-                index++;
-                debugPort = 4712;  //standard port.
+				index++;
+				@SuppressWarnings("unchecked")
+				final List<Invariant> invs = (List<Invariant>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
+						k -> new ArrayList<Invariant>());
+				invs.add(new Invariant("_TLAPlusDebugger", "_TLAPlusDebuggerInvariant"));
+				debugPort = 4712; // standard port.
 				if ((index < args.length) && (args[index].contains("port=") || args[index].contains("nosuspend")
 						|| args[index].contains("nohalt") || args[index].contains("suspend")
 						|| args[index].contains("halt"))) {
@@ -1014,12 +1017,6 @@ public class TLC {
             }
         }
 		
-		if (TLCGlobals.getNumWorkers() != 1 && debugPort >= 0
-				&& !Boolean.getBoolean(TLC.class.getName() + ".multiWorkerDebug")) {
-			printErrorMsg("Error: TLA+ Debugger does not support running with multiple workers.");
-			return false;
-		}
-		
         startTime = System.currentTimeMillis();
 
 		if (mainFile == null) {
@@ -1198,23 +1195,15 @@ public class TLC {
 				printStartupBanner(EC.TLC_MODE_SIMU, getSimulationRuntime(seed));
 				
 				Simulator simulator;
+				tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params);
 				if (debugPort >= 0) {
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params, instance);
+						tool = new DebugTool(tool, instance);
 					}
-					if (Boolean.getBoolean(TLC.class.getName() + ".multiWorkerDebug")) {
-						simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
-								traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
-					} else {
-						simulator = new SingleThreadedSimulator(tool, metadir, traceFile, deadlock, traceDepth, 
-								traceNum, traceActions, rng, seed, resolver);
-					}	
-				} else {
-					tool = new FastTool(mainFile, configFile, resolver, Tool.Mode.Simulation, params);
-					simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
-	                        traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
 				}
+				simulator = new Simulator(tool, metadir, traceFile, deadlock, traceDepth, 
+						traceNum, traceActions, rng, seed, resolver, TLCGlobals.getNumWorkers());
                 TLCGlobals.simulator = simulator;
                 result = simulator.simulate();
 			} else { // RunMode.MODEL_CHECK
@@ -1231,13 +1220,13 @@ public class TLC {
 				printStartupBanner(isBFS() ? EC.TLC_MODE_MC : EC.TLC_MODE_MC_DFS, getModelCheckingRuntime(fpIndex, fpSetConfiguration));
 				
             	// model checking
+				tool = new FastTool(mainFile, configFile, resolver, debugPort >= 0 ? Tool.Mode.MC_DEBUG : Tool.Mode.MC,
+						params);
 				if (debugPort >= 0) {
 					final TLCDebugger instance = TLCDebugger.Factory.getInstance(debugPort, suspend, halt);
 					synchronized (instance) {
-						tool = new DebugTool(mainFile, configFile, resolver, params, instance);
-					}
-				} else {
-					tool = new FastTool(mainFile, configFile, resolver, params);
+						tool = new DebugTool(tool, instance);
+					}											
 				}
                 deadlock = deadlock && tool.getModelConfig().getCheckDeadlock();
                 if (isBFS())
