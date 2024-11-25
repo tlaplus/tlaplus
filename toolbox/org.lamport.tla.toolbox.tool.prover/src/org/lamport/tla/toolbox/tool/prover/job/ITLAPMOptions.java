@@ -105,13 +105,6 @@ public interface ITLAPMOptions
      */
     public static final String NOFPL = "--nofpl";
     /**
-     * --fpdir <dir>
-     * 
-     * Sets to dir the directory from which the fingerprints file is loaded and to 
-     * which it is saved. (accepts both complete and relative pathnames)
-     */
-    public static final String FPDIR = "--fpdir";
-    /**
      * --safefp
      * 
      * Checks isabelle and zenon versions before loading fingerprints. Only uses 
@@ -167,12 +160,6 @@ public interface ITLAPMOptions
      * Add <dir> to search path.
      */
     public static final String ADD_DIR = "-I";
-    /**
-     * -d <dir>
-     * 
-     * Send generated output to <dir>.
-     */
-    public static final String SEND_DIR = "-d";
     /**
      * -k
      * 

@@ -59,9 +59,6 @@ NOTE: If neither --noproving (or -N) nor -C is specified, then tlapm will
 --nofpl b e     erase fingerprints of obligations both (considered by the present launch of 
 		the toolbox) and (located between lines b and e). Adds new fingerprints.
 
---fpdir <dir>   sets to dir the directory from which the fingerprints file is loaded and to 
-		which it is saved. (accepts both complete and relative pathnames)
-
 --safefp        checks isabelle and zenon versions before loading fingerprints. Only uses 
 		fingerprints whose zenon and isabelle versions equal the zenon and isabelle 
 		versions currently used by tlapm.
@@ -84,7 +81,6 @@ NOTE: If neither --noproving (or -N) nor -C is specified, then tlapm will
   --timing               show runtime statistics
 
   -I <dir>               add <dir> to search path
-  -d <dir>               send generated output to <dir>
 
   -k                     keep going on backend failures
   -N                     do not run any backend verifiers      
