@@ -25,9 +25,6 @@ will be considered.
 
 --solver        which smt solver to use
 
---isaprove      sends obligations to isabelle to be proved as soon as zenon fails 
-		or when isabelle is called by a pragma.
-
 --noproving     does not send any obligations to backends. Checks if an obligation is 
 		trivial or not and considers previous results in the fingerprint files. 
 		If an obligation is not trivial and does not appear in the fingerprints 
@@ -40,7 +37,7 @@ will be considered.
 		(if --paranoid is not called), already checked obligations, and obligations 
 		on which isabelle has already failed or succeeded.
 
-NOTE: If neither --isaprove nor --noproving (or -N) nor -C is specified, then tlapm will
+NOTE: If neither --noproving (or -N) nor -C is specified, then tlapm will
       use any prover (such as Zenon or the Cooper algorithm or an SMT solver) except
       Isabelle--even if an Isabelle tactic is explicitly specified by a proof.
 

@@ -34,13 +34,6 @@ public interface ITLAPMOptions
      * Which smt solver to use.
      */
     public static final String SOLVER = "--solver";
-    /**
-     * --isaprove
-     * 
-     * Sends obligations to isabelle to be proved as soon as zenon fails 
-     * or when isabelle is called by a pragma.
-     */
-    public static final String ISAPROVE = "--isaprove";
 
     /**
      * --cleanfp : Erase fingerprint file

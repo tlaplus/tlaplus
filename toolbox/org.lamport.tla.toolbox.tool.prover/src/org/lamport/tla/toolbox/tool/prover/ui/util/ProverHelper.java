@@ -1706,7 +1706,7 @@ public class ProverHelper
      * 
      * @return
      */
-    public static void runProverForActiveSelection(boolean checkStatus, boolean isaprove)
+    public static void runProverForActiveSelection(boolean checkStatus)
     {
         boolean proceed = UIHelper.promptUserForDirtyModules();
         if (!proceed)
@@ -1719,10 +1719,6 @@ public class ProverHelper
         Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
 
         String[] options = null;
-        if (isaprove)
-        {
-            options = new String[] { ITLAPMOptions.ISAPROVE };
-        }
 
         ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(),
                 ((ITextSelection) editor.getSelectionProvider().getSelection()).getOffset(), checkStatus, options, true);
@@ -1730,41 +1726,6 @@ public class ProverHelper
         proverJob.setUser(true);
         proverJob.schedule();
 
-    }
-
-    /**
-     * Runs the prover on the entire module in the active editor. If checkStatus is true,
-     * the prover is launched only for status checking. If it is false,
-     * the prover is launched for proving. If isaprove is true, the PM will
-     * be launched with the --isaprove option.
-     * 
-     * If there are dirty editors, this method first prompts the user to save them.
-     * 
-     * @param checkStatus true iff the prover should only be run for status checking
-     * @param isaprove true iff the PM should be called with the isaprove option
-     */
-    public static void runProverForEntireModule(boolean checkStatus, boolean isaprove)
-    {
-        boolean proceed = UIHelper.promptUserForDirtyModules();
-        if (!proceed)
-        {
-            // the user cancelled
-            return;
-        }
-
-        String[] options = null;
-        if (isaprove)
-        {
-            options = new String[] { ITLAPMOptions.ISAPROVE };
-        }
-
-        TLAEditor editor = EditorUtil.getTLAEditorWithFocus();
-        Assert.isNotNull(editor, "User attempted to run prover without a tla editor in focus. This is a bug.");
-
-        ProverJob proverJob = new ProverJob(((FileEditorInput) editor.getEditorInput()).getFile(), -1, checkStatus,
-                options, true);
-        proverJob.setUser(true);
-        proverJob.schedule();
     }
 
     /**

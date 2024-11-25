@@ -346,7 +346,6 @@ public class LaunchProverDialog extends Dialog
         	// need to pass anything. Note that this means the "Do not use Isabelle"
         	// button is obsolete: it does the same thing as "Use Isabelle only if
         	// necessary".
-            //command.add(ITLAPMOptions.ISAPROVE);
         } else if (isacheck.getSelection())
         {
             command.add(ITLAPMOptions.ISACHECK);
