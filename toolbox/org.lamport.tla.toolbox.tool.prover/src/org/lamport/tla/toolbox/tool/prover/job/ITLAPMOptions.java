@@ -35,12 +35,6 @@ public interface ITLAPMOptions
      */
     public static final String SOLVER = "--solver";
     /**
-     * --paranoid
-     * 
-     * Asks isabelle to check trivial obligations
-     */
-    public static final String PARANOID = "--paranoid";
-    /**
      * --isaprove
      * 
      * Sends obligations to isabelle to be proved as soon as zenon fails 

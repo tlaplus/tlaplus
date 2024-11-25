@@ -140,7 +140,7 @@ public class ProverJob extends Job {
      */
     private boolean toolboxMode = true;
     /**
-     * The options used to launch the PM in an array, e.g. {"--paranoid","--threads","2"}.
+     * The options used to launch the PM in an array, e.g. {"--threads","2"}.
      * The elements in the array would normally be separated by a space in the command line. This
      * array should NOT contain the --toolbox option or the --noproving option.
      */

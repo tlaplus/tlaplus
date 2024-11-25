@@ -73,12 +73,6 @@ public class LaunchProverDialog extends Dialog
     private Button toolboxMode;
 
     /**
-     * Button that should be checked if the user
-     * wants the PM to be launched with
-     * the option {@link ITLAPMOptions#PARANOID}.
-     */
-    private Button paranoid;
-    /**
      * The widget for entering the number of threads.
      */
     // private Text numThreadsText;
@@ -110,7 +104,6 @@ public class LaunchProverDialog extends Dialog
     public static final String STATUS_CHECK_KEY = "status_check";
     public static final String ISACHECK_KEY = "isacheck";
     public static final String NOISA_KEY = "noisa";
-    public static final String PARANOID_KEY = "paranoid";
     // public static final String NUM_THREADS_KEY = "num_threads";
     public static final String FP_NORMAL_KEY = "fpnormal";
     public static final String FP_FORGET_ALL_KEY = "fpforgetall";
@@ -264,31 +257,6 @@ public class LaunchProverDialog extends Dialog
         fpForgetCurrent.setSelection(store.getBoolean(FP_FORGET_CURRENT_KEY));
 
         /*
-         * Add a listener that disables the paranoid button
-         * whenever the no proving button is selected.  Unfortunately,
-         * this doesn't disable when the dialog is first created and
-         * "no proving" is selected.
-         */
-        noProving.addSelectionListener(new SelectionListener() {
-
-            public void widgetSelected(SelectionEvent e)
-            {
-                if (paranoid != null)
-                {
-                    paranoid.setEnabled(!noProving.getSelection());
-                }
-            }
-
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-                if (paranoid != null)
-                {
-                    paranoid.setEnabled(!noProving.getSelection());
-                }
-            }
-        });
-
-        /*
          * Now we create the composite for the right column
          * and fill it with widgets.
          */
@@ -296,15 +264,6 @@ public class LaunchProverDialog extends Dialog
         gd = new GridData();
         right.setLayoutData(gd);
         right.setLayout(new GridLayout(1, true));
-
-        /*
-         * Create a check button for paranoid proving.
-         * These two widgets are contained within a composite.
-         */
-        paranoid = new Button(right, SWT.CHECK);
-        paranoid.setText("Paranoid checking");
-        paranoid.setSelection(store.getBoolean(PARANOID_KEY));
-        paranoid.setEnabled(!noProving.getSelection());
 
         /*
          * Create the widget for entering the number of threads.
@@ -360,7 +319,6 @@ public class LaunchProverDialog extends Dialog
         store.setValue(STATUS_CHECK_KEY, noProving.getSelection());
         store.setValue(ISACHECK_KEY, isacheck.getSelection());
         store.setValue(NOISA_KEY, noisa.getSelection());
-        store.setValue(PARANOID_KEY, paranoid.getSelection());
         // store.setValue(NUM_THREADS_KEY, numThreadsText.getText());
         store.setValue(FP_NORMAL_KEY, fpNormal.getSelection());
         store.setValue(FP_FORGET_ALL_KEY, fpForgetAll.getSelection());
@@ -404,10 +362,6 @@ public class LaunchProverDialog extends Dialog
         } else if (fpForgetCurrent.getSelection())
         {
             command.add(ITLAPMOptions.FORGET_CURRENT);
-        }
-        if (paranoid.isEnabled() && paranoid.getSelection())
-        {
-            command.add(ITLAPMOptions.PARANOID);
         }
 
         /*

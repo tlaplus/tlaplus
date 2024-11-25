@@ -25,10 +25,6 @@ will be considered.
 
 --solver        which smt solver to use
 
---paranoid      asks isabelle to check trivial obligations
-                Experimentation suggests that this is a no-op if --noproving
-                is chosen.
-
 --isaprove      sends obligations to isabelle to be proved as soon as zenon fails 
 		or when isabelle is called by a pragma.
 
