@@ -48,6 +48,7 @@ public class RecordValue extends Value implements FunctionValue {
   private static final UniqueString NAME = UniqueString.of("name");
   private static final UniqueString LOC = UniqueString.of("location");
   private static final UniqueString CTXT = UniqueString.of("context");
+  private static final UniqueString PARAMS = UniqueString.of("parameters");
   private static final UniqueString ACTION = UniqueString.of("_action");
 
   public final UniqueString[] names;   // the field names
@@ -162,11 +163,14 @@ public class RecordValue extends Value implements FunctionValue {
 	    	this.names = new UniqueString[2];
 	    	this.values = new Value[this.names.length];
 	    } else {
-	    	this.names = new UniqueString[3];	    	
+	    	this.names = new UniqueString[4];	    	
 	    	this.values = new Value[this.names.length];
 	    	
-	    	this.names[2] = CTXT;
-	    	this.values[2] = new RecordValue(parameters);
+			this.names[2] = CTXT;
+			this.values[2] = new RecordValue(parameters);
+
+			this.names[3] = PARAMS;
+			this.values[3] = new TupleValue(action.getSignature().stream().map(StringValue::new).toArray(Value[]::new));
 	    }
 
 		this.names[0] = NAME;
@@ -180,7 +184,7 @@ public class RecordValue extends Value implements FunctionValue {
 
   public RecordValue(final Action action, final UniqueString u, final Value v) {
 		final Map<UniqueString, Value> parameters = action.getParameters();
-		this.names = new UniqueString[parameters.isEmpty() ? 3 : 4];
+		this.names = new UniqueString[parameters.isEmpty() ? 3 : 5];
 		this.values = new Value[this.names.length];
 
 		this.names[0] = NAME;
@@ -195,6 +199,9 @@ public class RecordValue extends Value implements FunctionValue {
 		if (!parameters.isEmpty()) {
 			this.names[3] = CTXT;
 			this.values[3] = new RecordValue(parameters);
+
+			this.names[4] = PARAMS;
+			this.values[4] = new TupleValue(action.getSignature().stream().map(StringValue::new).toArray(Value[]::new));
 		}
 		
 		this.isNorm = false;
