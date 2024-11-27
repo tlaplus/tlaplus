@@ -642,6 +642,11 @@ public class TLC {
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
 						pcs.add(new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]));
+					} else if ("tlcaction".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+						pcs.add(new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
 					} else if ("dot".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
