@@ -32,6 +32,7 @@ public interface IDataInputStream {
 
 	int readInt() throws IOException, EOFException;
 
+	/** Reads a length-prefixed UTF-16 string **/
 	String readString() throws IOException;
 
 }

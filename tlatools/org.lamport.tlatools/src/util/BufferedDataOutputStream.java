@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 /** A <code>BufferedDataOutputStream</code> is an optimized
     combination of a <code>java.io.BufferedOutputStream</code>
@@ -185,25 +184,14 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
 	    this.writeLong(Double.doubleToLongBits(d));
     }
 
-    /** Write the characters of the string <code>s</code> to this
-        stream as a sequence of bytes. */
     public final void writeString(String s) throws IOException {
         final int strLen = s.length();
-        // If the string is valid ASCII, we can use 50% storage capacity
-        // by casting the chars directly to bytes.
-        if (StandardCharsets.US_ASCII.newEncoder().canEncode(s)) {
-            writeInt(strLen);
-            for (int i = 0; i < strLen; i++) {
-                this.writeByte((byte) s.charAt(i));
-            }
-        } else {
-            writeInt(-strLen);
-            for (int i = 0; i < strLen; i++) {
-                final char ch = s.charAt(i);
-                this.temp[0] = (byte) ((ch >> 8) & 0xff);
-                this.temp[1] = (byte) (ch & 0xff);
-                this.write(this.temp, 0, 2);
-            }
+        writeInt(strLen);
+        for (int i = 0; i < strLen; i++) {
+            final char ch = s.charAt(i);
+            this.temp[0] = (byte) ((ch >> 8) & 0xff);
+            this.temp[1] = (byte) (ch & 0xff);
+            this.write(this.temp, 0, 2);
         }
     }
 }

@@ -224,26 +224,18 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
         final int strLen = readInt();
         if (strLen == 0) {
             return "";
-        } else if (strLen < 0) {
-            final char[] outChars = new char[-strLen];
-            for (int outIdx = 0; outIdx < -strLen; outIdx++) {
-                this.readFully(this.temp, 0, 2);
-                char ch = 0;
-                ch |= this.temp[0];
-                ch <<= 8;
-                ch |= (this.temp[1] & 0xff);
-                outChars[outIdx] = ch;
-            }
-            return new String(outChars);
-        } else {
-            // If we know all the chars are ASCII
-            assert strLen > 0;
-            final char[] outChars = new char[strLen];
-            for (int outIdx = 0; outIdx < strLen; outIdx++) {
-                outChars[outIdx] = (char) this.readByte();
-            }
-            return new String(outChars);
         }
+        assert strLen > 0;
+        final char[] outChars = new char[strLen];
+        for (int outIdx = 0; outIdx < strLen; outIdx++) {
+            this.readFully(this.temp, 0, 2);
+            char ch = 0;
+            ch |= this.temp[0];
+            ch <<= 8;
+            ch |= (this.temp[1] & 0xff);
+            outChars[outIdx] = ch;
+        }
+        return new String(outChars);
     }
   
     /** REQUIRES LL = SELF */

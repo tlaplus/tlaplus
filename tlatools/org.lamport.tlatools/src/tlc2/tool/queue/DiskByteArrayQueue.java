@@ -739,25 +739,15 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 */
 		@Override
 		public final void writeString(String str) throws IOException {
-			if(StandardCharsets.US_ASCII.newEncoder().canEncode(str)) {
-				// Save 50% space if we can losslessly encode as ASCII.
-				this.writeInt(str.length());
-				ensureCapacity(this.idx + str.length());
-				for(int i = 0; i < str.length(); i++) {
-					this.bytes[this.idx + i] = (byte)str.charAt(i);
-				}
-				this.idx += str.length();
-			} else {
-				this.writeInt(-str.length());
-				ensureCapacity(this.idx + str.length() * 2);
-				for(int i = 0; i < str.length(); i++) {
-					final char ch = str.charAt(i);
-					// big-endian
-					this.bytes[this.idx + i * 2] = (byte)((ch >> 8) & 0xff);
-					this.bytes[this.idx + i * 2 + 1] = (byte)(ch & 0xff);
-				}
-				this.idx += str.length() * 2;
+			this.writeInt(str.length());
+			ensureCapacity(this.idx + str.length() * 2);
+			for(int i = 0; i < str.length(); i++) {
+				final char ch = str.charAt(i);
+				// big-endian
+				this.bytes[this.idx + i * 2] = (byte)((ch >> 8) & 0xff);
+				this.bytes[this.idx + i * 2 + 1] = (byte)(ch & 0xff);
 			}
+			this.idx += str.length() * 2;
 		}
 	}
 	
@@ -940,19 +930,13 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 			final int length = readInt();
 			if(length == 0) {
 				return "";
-			} else if(length < 0) {
-				// UTF-16 unicode
-				final int lengthInBytes = -length * 2;
-				final String result = new String(this.bytes, this.idx, lengthInBytes, StandardCharsets.UTF_16);
-				this.idx += lengthInBytes;
-				return result;
-			} else {
-				// Just ASCII
-				assert length > 0;
-				final String result = new String(this.bytes, this.idx, length, StandardCharsets.US_ASCII);
-				this.idx += length;
-				return result;
 			}
+			assert length > 0;
+			// UTF-16 unicode
+			final int lengthInBytes = length * 2;
+			final String result = new String(this.bytes, this.idx, lengthInBytes, StandardCharsets.UTF_16);
+			this.idx += lengthInBytes;
+			return result;
 		}
 		
 		@Override

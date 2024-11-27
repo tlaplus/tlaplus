@@ -147,8 +147,8 @@ public class ValueInputOutputStreamTest {
 				"",
 				"foo",
 				"ü",
-				// <Null> character
-				"\0",
+				// <Null> character (surrounded by other chars to check it doesn't break things)
+				"x\0x",
 				// A really long repeating alphabet (good for debugging)
 				str16kBuilder.toString(),
 				// Short emoji sequence
