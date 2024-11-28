@@ -255,10 +255,10 @@ public class Assignment extends Formula {
 	}
 
     /**
-     * @return true, if the set of model values is symmetrical 
+     * @return true, if the set of model values is symmetrical and "nosymmetry" java property is false
      */
 	public boolean isSymmetricalSet() {
-		return symmetry;
+		return !Boolean.getBoolean("nosymmetry") && symmetry;
     }
 
     /**
