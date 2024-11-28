@@ -45,7 +45,11 @@ public class AliasTLCStateInfo extends TLCStateInfo {
 
 	@Override
 	public Action getAction() {
-		return originalState.getAction();
+		if (originalState.hasAction()) {
+			// originalState could be a TLCStateMut, which has no action.
+			return originalState.getAction();
+		}
+		return super.getAction();
 	}
 
 	@Override
