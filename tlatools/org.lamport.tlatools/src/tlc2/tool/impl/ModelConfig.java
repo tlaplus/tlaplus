@@ -723,7 +723,7 @@ public class ModelConfig implements ValueConstants, Serializable {
 
     public synchronized final String getSymmetry()
     {
-        return (String) this.configTbl.get(Symmetry);
+        return Boolean.getBoolean("nosymmetry") ? "" : (String) this.configTbl.get(Symmetry);
     }
 
     public synchronized final Vect getInvariants()
