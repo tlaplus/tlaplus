@@ -51,7 +51,7 @@ import tlc2.output.EC.ExitStatus;
 public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCase {
 
 	public CodePlexBug08EWD840FL2FromCheckpointTest() {
-		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-recover", BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"}, ExitStatus.VIOLATION_LIVENESS);
+		super("EWD840MC2", "CodePlexBug08", new String[] {"-gzip", "-workers", "1", "-recover", BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator + "checkpoint"}, ExitStatus.VIOLATION_LIVENESS);
 	}
 	
 	
@@ -66,6 +66,13 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 			 * 4) Locate the directory with the checkpoint data
 			 * 5) Replace the content of checkpoint.zip with the content of 4)
 			 * 6) Update the number below on states found...
+			 * 
+			 * Note from last updater:
+			 * To get a checkpoint, it may be more reliable to hardcode TLCGlobals.forceChkpt = true.
+			 * 
+			 * Worker count may also vary; if TLC fails with a missing file error, it means the worker count
+			 * is different between checkpoint and recover. You can adjust using -workers, like above.
+			 * As a result, a detail or two of the counter-example may change.
 			 */
 			String prefix = BASE_DIR + File.separator + TEST_MODEL + "CodePlexBug08" + File.separator;
 			ZipFile zipFile = new ZipFile(prefix + "checkpoint.zip");
@@ -105,11 +112,11 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_START));
-		// Recovery completed. 1032 states examined. 996 states on queue.
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1510", "39"));
+		// Recovery completed. 1035 states examined. 961 states on queue.
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, "1035", "961"));
 		// ModelChecker has finished and generated the expected amount of states
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2334", "1566","0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "15797", "1566", "0"));
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertNoTESpec();
@@ -118,7 +125,7 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
-		assertNodeAndPtrSizes(54038132L, 831296L);
+		assertNodeAndPtrSizes(54041596L, 831296L);
 		
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
@@ -159,8 +166,8 @@ public class CodePlexBug08EWD840FL2FromCheckpointTest extends ModelCheckerTestCa
 		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 		                + "/\\ tcolor = \"black\"\n"
 		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
-		expectedTrace.add("/\\ tpos = 1\n"
-		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE)\n"
+		expectedTrace.add("/\\ tpos = 0\n"
+		                + "/\\ active = (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE)\n"
 		                + "/\\ tcolor = \"black\"\n"
 		                + "/\\ color = (0 :> \"white\" @@ 1 :> \"white\" @@ 2 :> \"white\" @@ 3 :> \"white\")");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
