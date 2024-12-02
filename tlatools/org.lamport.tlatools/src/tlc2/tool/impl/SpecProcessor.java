@@ -283,8 +283,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             	// constant definitions when necessary:
             	//
             	//    R == TLCEval(RandomElement({1,2,3}))
-            	// 
-//            	consts[i].setToolObject(toolId, defVal);
+            	//
+            	// Alternatively, she may use -Dtlc2.tool.impl.SpecProcessor.aggressiveConstantPropagation=true
+            	// to force TLC to cache and reuse the result of evaluating any expression that redefines a
+            	// constant during startup.
+            	if (Boolean.getBoolean(SpecProcessor.class.getName() + ".aggressiveConstantCaching")) {
+            		consts[i].setToolObject(toolId, defVal);
+            	}
 
             	constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
