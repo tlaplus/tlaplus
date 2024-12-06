@@ -170,7 +170,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		super.init(numThreads, aMetadir, filename);
 		this.numThreads = numThreads;
 		
-		array.zeroMemory(numThreads);
 		return this;
 	}
 	

@@ -36,8 +36,7 @@ Export-Package: pcal,
  tlc2.value,
  util
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
-Bundle-RequiredExecutionEnvironment: JavaSE-11,
- JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-22
 Eclipse-BundleShape: dir
 Require-Bundle: org.junit;bundle-version="4.12.0";resolution:=optional;x-installation:=greedy,
  javax.mail;bundle-version="1.4.0";resolution:=optional,
