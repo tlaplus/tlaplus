@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import tlc2.output.EC;
 
@@ -226,16 +227,9 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
             return "";
         }
         assert strLen > 0;
-        final char[] outChars = new char[strLen];
-        for (int outIdx = 0; outIdx < strLen; outIdx++) {
-            this.readFully(this.temp, 0, 2);
-            char ch = 0;
-            ch |= this.temp[0];
-            ch <<= 8;
-            ch |= (this.temp[1] & 0xff);
-            outChars[outIdx] = ch;
-        }
-        return new String(outChars);
+        final byte[] strBytes = new byte[strLen];
+        this.readFully(strBytes, 0, strBytes.length);
+        return new String(strBytes, StandardCharsets.UTF_8);
     }
   
     /** REQUIRES LL = SELF */

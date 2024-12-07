@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /** A <code>BufferedDataOutputStream</code> is an optimized
     combination of a <code>java.io.BufferedOutputStream</code>
@@ -185,13 +186,8 @@ public final class BufferedDataOutputStream extends FilterOutputStream implement
     }
 
     public final void writeString(String s) throws IOException {
-        final int strLen = s.length();
-        writeInt(strLen);
-        for (int i = 0; i < strLen; i++) {
-            final char ch = s.charAt(i);
-            this.temp[0] = (byte) ((ch >> 8) & 0xff);
-            this.temp[1] = (byte) (ch & 0xff);
-            this.write(this.temp, 0, 2);
-        }
+        final byte[] strBytes = s.getBytes(StandardCharsets.UTF_8);
+        writeInt(strBytes.length);
+        this.write(strBytes, 0, strBytes.length);
     }
 }

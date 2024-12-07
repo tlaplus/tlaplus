@@ -739,15 +739,11 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 */
 		@Override
 		public final void writeString(String str) throws IOException {
-			this.writeInt(str.length());
-			ensureCapacity(this.idx + str.length() * 2);
-			for(int i = 0; i < str.length(); i++) {
-				final char ch = str.charAt(i);
-				// big-endian
-				this.bytes[this.idx + i * 2] = (byte)((ch >> 8) & 0xff);
-				this.bytes[this.idx + i * 2 + 1] = (byte)(ch & 0xff);
-			}
-			this.idx += str.length() * 2;
+			final byte[] strBytes = str.getBytes(StandardCharsets.UTF_8);
+			this.writeInt(strBytes.length);
+			ensureCapacity(this.idx + strBytes.length);
+			System.arraycopy(strBytes, 0, this.bytes, this.idx, strBytes.length);
+			this.idx += strBytes.length;
 		}
 	}
 	
@@ -932,10 +928,9 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 				return "";
 			}
 			assert length > 0;
-			// UTF-16 unicode
-			final int lengthInBytes = length * 2;
-			final String result = new String(this.bytes, this.idx, lengthInBytes, StandardCharsets.UTF_16);
-			this.idx += lengthInBytes;
+			// UTF-8 unicode
+			final String result = new String(this.bytes, this.idx, length, StandardCharsets.UTF_8);
+			this.idx += length;
 			return result;
 		}
 		
