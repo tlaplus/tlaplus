@@ -2036,7 +2036,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				checkIfInRecursiveSection(definitions[lvi], "A MODULE ");
 				SymbolTable oldSt = symbolTable;
 				symbolTable = new SymbolTable(moduleTable, errors, oldSt);
-				context = new Context(moduleTable, errors);
+				context = new Context(moduleTable);
 				symbolTable.pushContext(context);
 				ModuleNode mn = generateModule(definitions[lvi], currentModule);
 				symbolTable.popContext();
@@ -2153,7 +2153,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				Context context = this.getContext(extendeeID);
 				if (context != null) {
-					symbolTable.getContext().mergeExtendContext(context);
+					symbolTable.getContext().mergeExtendContext(context, errors);
 				} else {
 					errors.addError(treeNodes[lvi].getLocation(),
 							"Couldn't find context for module `" + extendeeID + "'.");
@@ -2274,7 +2274,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		TreeNode[] children = syntaxTreeNode.one();
 		TreeNode[] ss = children[0].heirs();
 		FormalParamNode[] params = null;
-		Context ctxt = new Context(moduleTable, errors);
+		Context ctxt = new Context(moduleTable);
 		boolean isRecursive = false;
 		/*********************************************************************
 		 * Will be set to true if this operator was declared in a RECURSIVE * statement.
@@ -2544,7 +2544,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		boolean[] tuples = new boolean[ql];
 		ExprNode[] domains = new ExprNode[ql];
 		ExprNode[] lhs = new ExprNode[1];
-		Context newContext = new Context(moduleTable, errors);
+		Context newContext = new Context(moduleTable);
 		boolean isRecursive = false;
 		/*********************************************************************
 		 * Will be set to true if this operator was declared in a RECURSIVE * statement.
@@ -2715,7 +2715,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		Vector defVec = new Vector(4);
 		Vector instVec = new Vector(1);
 
-		Context letCtxt = new Context(moduleTable, errors);
+		Context letCtxt = new Context(moduleTable);
 		symbolTable.pushContext(letCtxt);
 		/*********************************************************************
 		 * Create a new sub-Context for the IN expression, containing the * LET
@@ -3376,7 +3376,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * The context is pushed by the top-level caller of * generateAssumeProve, which
 			 * is processTheorem. *
 			 ******************************************************************/
-			symbolTable.pushContext(new Context(moduleTable, errors));
+			symbolTable.pushContext(new Context(moduleTable));
 			/******************************************************************
 			 * I don't understand exactly what's going on here, but this * seems to be the
 			 * magic incantation for starting a new context * into which declarations among
@@ -3521,7 +3521,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		TreeNode[] syntaxTreeNode = children[2].heirs();
 		OpApplNode result;
 
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 
 		if (syntaxTreeNode == null || syntaxTreeNode.length == 0) {
 			// unbounded case
@@ -3595,7 +3595,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		ExprNode[] ea = new ExprNode[length];
 
 		// then process parameters
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 		processQuantBoundArgs(children, 1, odna, bt, ea, cm);
 
 		// process expression
@@ -3656,7 +3656,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// Process all identifiers bound by thus quantifier
 		int length = (children.length - 2) / 2;
 		FormalParamNode odn[] = new FormalParamNode[length];
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 
 		for (int lvi = 0; lvi < length; lvi++) {
 			odn[lvi] = new FormalParamNode(children[2 * lvi + 1].getUS(), 0, children[2 * lvi + 1], symbolTable, cm);
@@ -3705,7 +3705,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		exprs[0] = generateExpression(children[3], cm);
 
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 
 		if (children[1].isKind(N_IdentifierTuple)) {
 			TreeNode[] ss = children[1].heirs();
@@ -3740,7 +3740,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		boolean[] tuples = new boolean[length];
 		ExprNode[] exprs = new ExprNode[length];
 
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 		processQuantBoundArgs(children, 3, odna, tuples, exprs, cm);
 
 		pushFormalParams(flattenParams(odna));
@@ -3764,7 +3764,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		boolean[] tuples = new boolean[length];
 		ExprNode[] exprs = new ExprNode[length];
 
-		symbolTable.pushContext(new Context(moduleTable, errors));
+		symbolTable.pushContext(new Context(moduleTable));
 		processQuantBoundArgs(children, 1, odna, tuples, exprs, cm);
 
 		pushFormalParams(flattenParams(odna));
@@ -4233,7 +4233,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * children.length = 3 + arity + arity-1 * so arity = (children.length - 2) / 2.
 		 * *
 		 *********************************************************************/
-		Context ctxt = new Context(moduleTable, errors);
+		Context ctxt = new Context(moduleTable);
 		symbolTable.pushContext(ctxt);
 		/*********************************************************************
 		 * The context ctxt will hold the parameters of the lambda * expression, which
@@ -4432,7 +4432,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			args = new FormalParamNode[children.length / 2 - 1];
 
 			// Push a new context in current module's SymbolTable
-			parmCtxt = new Context(moduleTable, errors);
+			parmCtxt = new Context(moduleTable);
 			symbolTable.pushContext(parmCtxt);
 
 			// For each formal parameter declared for the op being defined
@@ -5277,7 +5277,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * clause to be visible in the proof. Therefore, we do the * context push for
 			 * the top-level AssumeProveNode here instead of * in generateAssumeProve. *
 			 *******************************************************************/
-			symbolTable.pushContext(new Context(moduleTable, errors));
+			symbolTable.pushContext(new Context(moduleTable));
 			body = generateAssumeProve(stn.heirs()[bodyIndex], cm);
 			currentGoal = null;
 		} else { /****************************************************************
@@ -5394,7 +5394,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 		;
 
-		Context pfCtxt = new Context(moduleTable, errors);
+		Context pfCtxt = new Context(moduleTable);
 		symbolTable.pushContext(pfCtxt);
 		/*********************************************************************
 		 * Create a new sub-Context for the proof. *
@@ -5675,7 +5675,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * proof for * an ordinary ASSUME/PROVE, and only after the statement's * proof
 						 * for a SUFFICES ASSUME/PROVE. *
 						 ************************************************************/
-						symbolTable.pushContext(new Context(moduleTable, errors));
+						symbolTable.pushContext(new Context(moduleTable));
 
 						currentGoal = tadn;
 						/**********************************************************
@@ -5813,7 +5813,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * Push a new context onto the symbolTable stack to get the * declarations of
 						 * the PICK symbols. *
 						 ************************************************************/
-						symbolTable.pushContext(new Context(moduleTable, errors));
+						symbolTable.pushContext(new Context(moduleTable));
 					}
 					;
 
@@ -6313,7 +6313,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 *****************************************************************/
 				isAssumeProve = true;
 				if (!isSuffices) {
-					symbolTable.pushContext(new Context(moduleTable, errors));
+					symbolTable.pushContext(new Context(moduleTable));
 // System.out.println("here") ;
 				}
 				;

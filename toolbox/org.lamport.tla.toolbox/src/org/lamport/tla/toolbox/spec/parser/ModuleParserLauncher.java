@@ -25,7 +25,6 @@ import org.lamport.tla.toolbox.util.ResourceHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerHelper;
 import org.lamport.tla.toolbox.util.TLAMarkerInformationHolder;
 
-import tla2sany.drivers.InitException;
 import tla2sany.drivers.SANY;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.ParseUnit;
@@ -153,7 +152,7 @@ public class ModuleParserLauncher
         {
             // should cancel?
             checkCancel(monitor);
-            SANY.frontEndInitialize(moduleSpec, outputStr);
+            SANY.frontEndInitialize();
             // should cancel?
             checkCancel(monitor);
             SANY.frontEndParse(moduleSpec, outputStr, false);
@@ -162,12 +161,6 @@ public class ModuleParserLauncher
             SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
             // should cancel?
             checkCancel(monitor);
-        } catch (InitException e)
-        {
-            // set spec status
-            specStatus = IParseConstants.UNKNOWN_ERROR;
-            return new ParseResult(specStatus, null, parseResource, parseErrors, semanticErrors, parserCallTime);
-
         } catch (ParseException e)
         {
             // I believe that this exception is thrown iff there is a parsing
@@ -189,39 +182,6 @@ public class ModuleParserLauncher
             semanticErrors = moduleSpec.semanticErrors;
             if (semanticErrors != null)
             {
-                // add global context errors to semantic errors because they should
-                // be treated the same way by the toolbox
-                // these errors include defining the same operator
-                // in two different modules that are extended
-                Errors globalContextErrors = moduleSpec.getGlobalContextErrors();
-
-                // globalContextErrors contains errors, aborts, and warnings
-                // each should be added to semanticErrors
-                String[] errors = globalContextErrors.getErrors();
-                for (int i = 0; i < errors.length; i++)
-                {
-                    semanticErrors.addError(null, errors[i]);
-                }
-
-                String[] aborts = globalContextErrors.getAborts();
-                for (int i = 0; i < aborts.length; i++)
-                {
-                    try
-                    {
-                        semanticErrors.addAbort(aborts[i], false);
-                    } catch (AbortException e)
-                    {
-                        Activator.getDefault().logDebug("Abort exception thrown in ModuleParserLauncher."
-                                + "This is a bug. There should not be an AbortException thrown here.");
-                    }
-                }
-
-                String[] warnings = globalContextErrors.getWarnings();
-                for (int i = 0; i < warnings.length; i++)
-                {
-                    semanticErrors.addWarning(null, warnings[i]);
-                }
-
                 if (semanticErrors.getNumMessages() > 0)
                 {
                     if (semanticErrors.isSuccess())

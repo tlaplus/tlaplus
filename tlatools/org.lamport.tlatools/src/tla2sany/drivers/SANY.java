@@ -121,7 +121,7 @@ public class SANY {
                              PrintStream syserr) throws FrontEndException {
     try {
       // **** Initialize the global environment
-      frontEndInitialize(spec, syserr);
+      frontEndInitialize();
     
       // **** Parsing 
       if (doParsing) frontEndParse(spec, syserr);
@@ -129,9 +129,6 @@ public class SANY {
       // **** Semantic analysis and level checking
       if (doSemanticAnalysis) 
             {frontEndSemanticAnalysis(spec, syserr, doLevelChecking);} ;
-    }
-    catch (InitException ie) {
-      return -1;
     }
     catch (ParseException pe) {
       return -1;
@@ -154,38 +151,8 @@ public class SANY {
   /** 
    * Initialize the all parts of the FrontEnd to handle a new specification.
    */
-  public static void frontEndInitialize(SpecObj spec, PrintStream syserr ) 
-  throws InitException {
-    String fileName   = spec.getFileName();
-    Errors initErrors = spec.initErrors;
-    try {
-      // (Re)create the built-in operators Context object
-      Context.reInit();
-
-      // Print any errors from parsing during initialization phase
-      if (! initErrors.isSuccess()) {
-        syserr.println("*** Errors during initialization of SANY:\n");
-        syserr.print( initErrors );
-
-        // indicate fatal error during first phase
-        spec.errorLevel = 1;  
-        throw new InitException();
-      }
-    }
-    catch (Exception e) {
-      syserr.println("Unexpected exception during SANY initialization " +
-                     fileName + "\n" + e);
-      // syserr.println("\nStack trace for exception:\n"); 
-      // e.printStackTrace(syserr);
-      syserr.println("Initialization errors detected before " + 
-                     "the unexpected exception:\n");
-      syserr.print( initErrors );
-
-      // indicate fatal error during first phase
-      spec.errorLevel = 1;  
-      throw new InitException();
-    }
-    return;
+  public static void frontEndInitialize() {
+    Context.reInit();
   } // frontEndInitialize
 
   // Parse all of the files referred to by the top-level file in specification
@@ -253,7 +220,6 @@ public class SANY {
     ParseUnit   parseUnit;
     ModuleNode  moduleNode = null;
     Errors      semanticErrors = spec.semanticErrors;
-    Errors      globalContextErrors = tla2sany.semantic.Context.getGlobalContext().getErrors();
 
     try {
       SemanticNode.setError(semanticErrors);
@@ -317,22 +283,6 @@ public class SANY {
             externalModuleTable.setRootModule( moduleNode ); 
           }
     
-          // Print error and warning messages for this module
-          if (globalContextErrors.getNumMessages() > 0) {
-            syserr.println("Semantic errors in global context:\n");
-            syserr.print( "\n" + globalContextErrors );
-            // indicate fatal error parsing builtin operator tables
-            spec.errorLevel = 3;
-          /** 
-           *  We believe that globalContextErrors is pointing to a global list
-           *  of context errors 
-           *  that keeps being added to.  By setting spec.globalContextErrors
-           *  to its value, we ensure that when we finish, spec.globalContextErrors
-           *  contains the vector of all the globalContextErrors.
-           */
-            spec.setGlobalContextErrors(globalContextErrors);
-          }
-
           if (semanticErrors.getNumMessages() > 0) {
             syserr.println("Semantic errors:\n\n" + semanticErrors);
             // indicate fatal error during semantic analysis or level-checking
@@ -351,16 +301,6 @@ public class SANY {
         e.printStackTrace(syserr);
       }
   
-      if (globalContextErrors.getNumMessages() > 0) {
-        if (syserr != null) {
-          syserr.println("Semantic errors in global context detected before the unexpected exception:\n");
-          syserr.print("\n" + globalContextErrors);
-        }
-
-        // indicate fatal error parsing builtin operator tables
-        spec.errorLevel = 3;
-      }
-    
       if (semanticErrors.getNumMessages() > 0) {
         if ( syserr != null ) {
           syserr.println("Semantic errors detected before the unexpected exception:\n");
