@@ -5,6 +5,7 @@ package tlc2.tool;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
@@ -165,6 +166,11 @@ public final class Action implements ToolGlobals, Serializable {
 				.filter(p -> con.lookup(p) instanceof Value)
 				.collect(Collectors.toMap(FormalParamNode::getName, p -> (Value) con.lookup(p)));
     }
+	
+	public final List<UniqueString> getSignature() {
+		return Arrays.stream(opDef != null ? opDef.getParams() : new FormalParamNode[0]).map(FormalParamNode::getName)
+				.collect(Collectors.toList());
+	}
 
 	public void setId(int id) {
 		this.id = id;

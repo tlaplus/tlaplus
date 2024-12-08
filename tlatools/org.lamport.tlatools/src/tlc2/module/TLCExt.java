@@ -65,6 +65,8 @@ import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.UserObj;
+import tlc2.value.impl.UserValue;
 import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
@@ -409,5 +411,54 @@ public class TLCExt {
 			return res;
 		}
 		return defVal;
+	}
+	
+	@TLAPlusOperator(identifier = "TLCLiteral", module = "TLCExt", warn = false)
+	public static Value toLiteral(final Value val) {
+		if (!(val instanceof StringValue)) {
+			throw new EvalException(EC.TLC_MODULE_ONE_ARGUMENT_ERROR,
+					new String[] { "TLCLiteral", "StringValue", Values.ppr(val.toString()) });
+		}
+		final String literal = ((StringValue) val).val.toString();
+		return new UserValue(new LiteralUserObj(literal));
+	}
+	
+	private static class LiteralUserObj extends UserObj {
+
+		private final String literal;
+
+		public LiteralUserObj(String literal) {
+			this.literal = literal;
+		}
+
+		@Override
+		public int compareTo(Value val) {
+			if (val instanceof UserValue) {
+				final UserValue uv = (UserValue) val;
+				if (uv.userObj instanceof LiteralUserObj) {
+					final LiteralUserObj other = (LiteralUserObj) uv.userObj;
+					return this.literal.compareTo(other.literal);
+				}
+			}
+			if (val instanceof ModelValue) {
+				return 1;
+			}
+	        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "LiteralUserObj", Values.ppr(literal) });
+		}
+
+		@Override
+		public boolean member(Value val) {
+	        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "LiteralUserObj", Values.ppr(literal) });
+		}
+
+		@Override
+		public boolean isFinite() {
+	        throw new EvalException(EC.TLC_MODULE_COMPARE_VALUE, new String[] { "LiteralUserObj", Values.ppr(literal) });
+		}
+
+		@Override
+		public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
+			return sb.append(literal);
+		}
 	}
 }
