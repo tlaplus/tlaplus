@@ -30,7 +30,6 @@ public class ProverPreferenceInitializer extends AbstractPreferenceInitializer
          */
         store.setDefault(LaunchProverDialog.TOOLBOX_MODE_KEY, true);
         store.setDefault(LaunchProverDialog.EXTRA_OPTIONS_KEY, "");
-        store.setDefault(LaunchProverDialog.PARANOID_KEY, false);
         store.setDefault(LaunchProverDialog.ISATOOL_KEY, true);
         store.setDefault(LaunchProverDialog.STATUS_CHECK_KEY, false);
         store.setDefault(LaunchProverDialog.ISACHECK_KEY, false);

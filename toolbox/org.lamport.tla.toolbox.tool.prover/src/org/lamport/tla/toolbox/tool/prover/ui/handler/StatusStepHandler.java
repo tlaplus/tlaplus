@@ -9,14 +9,14 @@ import org.lamport.tla.toolbox.tool.prover.ui.util.ProverHelper;
  * Runs the prover to simply get the status of the step containing
  * the current selection in the active TLA Editor.
  * 
- * See {@link ProverHelper#runProverForActiveSelection(boolean, boolean)}
+ * See {@link ProverHelper#runProverForActiveSelection(boolean)}
  * for more information.
  * 
  * @author Daniel Ricketts
  */
 public class StatusStepHandler extends AbstractProverHandler implements IHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ProverHelper.runProverForActiveSelection(true, false);
+		ProverHelper.runProverForActiveSelection(true);
 
 		return null;
 	}
