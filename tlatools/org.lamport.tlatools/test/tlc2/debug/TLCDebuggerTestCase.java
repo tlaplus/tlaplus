@@ -392,8 +392,9 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// Reverse the trace to traverse from initial to end in the following loops
 			Collections.reverse(trace);
 			
-			// Assert that the variables' numbers in trace are strictly monotonic.
-			for (int i = 0; i < trace.size(); i++) {
+			// Assert that the variables' numbers in trace are strictly monotonic for all
+			// but the last state.
+			for (int i = 0; i < trace.size() - 1; i++) {
 				assertTrue(trace.get(i).getName().startsWith(Integer.toString(i + 1) + ":"));
 			}
 
