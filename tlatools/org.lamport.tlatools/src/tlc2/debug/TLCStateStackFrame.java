@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
@@ -160,7 +161,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 
 					final TLCStateInfo[] prefix;
 					if (TLCGlobals.simulator != null) {
-						prefix = TLCGlobals.simulator.getTraceInfo(t.getLevel() - 1);
+						// Filtering allAssigned is expected to remove only the final state from the
+						// trace, which is the state equal to 't'. If other states are also removed, it
+						// indicates an issue, but it is likely preferable to crashing.
+						prefix = TLCGlobals.simulator.getTrace(t).stream().filter(s -> s.allAssigned())
+								.map(s -> new TLCStateInfo(s)).collect(Collectors.toList())
+								.toArray(TLCStateInfo[]::new);
 					} else {
 						// B) Suffix from s_f to either an initial state or a state whose predecessor
 						// has to be looked up from disk (s_d).

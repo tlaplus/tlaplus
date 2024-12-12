@@ -5,7 +5,9 @@
 
 package tlc2.tool;
 
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.stream.Stream;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -211,5 +213,9 @@ public final class StateVec implements IStateFunctor, INextStateFunctor {
   
   public final boolean hasStates() {
 	  return !isEmpty();
+  }
+  
+  public Stream<TLCState> stream() {
+	return Arrays.stream(this.v, 0, this.size);
   }
 }
