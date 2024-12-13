@@ -27,14 +27,20 @@ package tlc2.debug;
 
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
+import tlc2.tool.impl.SpecProcessor;
 
 public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	private final int hits;
 	private final Location location;
+	// Use Getter
+	public final OpDefNode condition;
 	
-	public TLCSourceBreakpoint(final String module, final SourceBreakpoint s) {
+	public TLCSourceBreakpoint(final SpecProcessor processor, final String module, final SourceBreakpoint s,
+			final ModuleNode semanticRoot) {
 		setColumn(s.getColumn());
 		setLine(s.getLine());
 		// Create a location that's not a point.
@@ -55,8 +61,23 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 			}
 		}
 		hits = h;
+
+		// TODO Move condition handling into new subclass of TLCSourceBreakpoint or make
+		// ODN = TRUE to not check for null everywhere.
+		if (s.getCondition() != null && !s.getCondition().isBlank()) {
+			// Use existing definition.
+			// TODO Check if level of odn matches level of expression at location.
+			final OpDefNode odn = semanticRoot.getOpDef(s.getCondition());
+			if (odn != null) {
+				condition = odn;
+			} else {
+				condition = TLCBreakpointExpression.process(processor, semanticRoot, s.getCondition());
+			}
+		} else {
+			condition = null;
+		}
 	}
-	
+
 	public int getHits() {
 		return hits;
 	}
