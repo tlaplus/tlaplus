@@ -163,6 +163,12 @@ public class ModuleNode extends SymbolNode {
 *    an ExprNode[] array.                                                  *
 ***************************************************************************/
 
+  /**
+   * The {@link Generator} instance that performed the semantic analysis
+   * creating this {@link ModuleNode} instance.
+   */
+  public final Generator semanticChecker;
+
   private final Context      ctxt;
     // The (flat) context with all names known in this module, including
     // builtin ops, and ops declared as CONSTANT or VARIABLE, ops
@@ -325,8 +331,9 @@ public class ModuleNode extends SymbolNode {
     ***********************************************************************/
 
   // Invoked only in Generator
-  public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
+  public ModuleNode(UniqueString us, Context ct, TreeNode stn, Generator gen) {
     super(ModuleKind, stn, us);
+    this.semanticChecker = gen;
     this.ctxt = ct;
   }
 
@@ -1100,11 +1107,12 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       if (children != null) {
           return children;
       }
+      OpDefNode[] opDefs = this.getOpDefs();
       children =
-         new SemanticNode[this.opDefs.length + this.topLevel.length];
+         new SemanticNode[opDefs.length + this.topLevel.length];
       int i;
-      for (i = 0; i < this.opDefs.length; i++) {
-          children[i] = this.opDefs[i];
+      for (i = 0; i < opDefs.length; i++) {
+          children[i] = opDefs[i];
       }
       for (int j = 0; j < this.topLevel.length; j++) {
           children[i+j] = this.topLevel[j];
