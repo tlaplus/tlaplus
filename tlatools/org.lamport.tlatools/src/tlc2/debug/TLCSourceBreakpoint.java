@@ -27,14 +27,17 @@ package tlc2.debug;
 
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 
+import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 
 public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	private final int hits;
 	private final Location location;
+	public final OpDefNode condition;
 	
-	public TLCSourceBreakpoint(final String module, final SourceBreakpoint s) {
+	public TLCSourceBreakpoint(final String module, final SourceBreakpoint s, final ModuleNode semanticRoot) {
 		setColumn(s.getColumn());
 		setLine(s.getLine());
 		// Create a location that's not a point.
@@ -55,8 +58,9 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 			}
 		}
 		hits = h;
+		this.condition = TLCBreakpointExpression.process(semanticRoot, s.getCondition());
 	}
-	
+
 	public int getHits() {
 		return hits;
 	}
