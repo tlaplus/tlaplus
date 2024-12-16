@@ -83,11 +83,11 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
   /* Level checking */
   int levelChecked = 0 ;
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
-    boolean res = this.assumeExpr.levelCheck(iter);
-    if (this.def != null) {res = this.def.levelCheck(iter) && res;};
+    boolean res = this.assumeExpr.levelCheck(iter, errors);
+    if (this.def != null) {res = this.def.levelCheck(iter, errors) && res;};
 
     // Verify that the assumption is constant level
     if (this.assumeExpr.getLevel() != ConstantLevel) {

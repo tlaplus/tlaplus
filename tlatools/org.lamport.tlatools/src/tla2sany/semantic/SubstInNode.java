@@ -312,7 +312,7 @@ public class SubstInNode extends ExprNode {
 
   @Override
   @SuppressWarnings("unchecked")
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     this.levelChecked = itr ;
 
@@ -321,11 +321,11 @@ public class SubstInNode extends ExprNode {
     * equals substs[i].getExpr().                                          *
     ***********************************************************************/
     this.levelCorrect = true;
-    if (!this.body.levelCheck(itr)) {
+    if (!this.body.levelCheck(itr, errors)) {
       this.levelCorrect = false;
     }
     for (int i = 0; i < this.substs.length; i++) {
-      if (!this.getSubWith(i).levelCheck(itr)) {
+      if (!this.getSubWith(i).levelCheck(itr, errors)) {
 	this.levelCorrect = false;
       }
     }
@@ -438,13 +438,13 @@ public class SubstInNode extends ExprNode {
       * isConstant.                                                        *
       *********************************************************************/
     this.levelConstraints = Subst.getSubLCSet(this.body, this.substs,
-                                              isConstant, itr);
+                                              isConstant, itr, errors);
       /*********************************************************************
       * levelCheck(itr) has been called on body and the                   *
       * substs[i].getExpr(), as required.                                  *
       *********************************************************************/
     this.argLevelConstraints =
-        Subst.getSubALCSet(this.body, this.substs, itr);
+        Subst.getSubALCSet(this.body, this.substs, itr, errors);
     this.argLevelParams = Subst.getSubALPSet(this.body, this.substs);
       /*********************************************************************
       * levelCheck(itr) has been called on body and the                   *

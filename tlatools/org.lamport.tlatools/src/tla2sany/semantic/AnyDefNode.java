@@ -32,7 +32,7 @@ import util.UniqueString;
  *
  */
 public interface AnyDefNode {
-    public boolean levelCheck(int itr) ;
+    public boolean levelCheck(int itr, Errors errors) ;
     public int getMaxLevel(int i) ;
     public UniqueString getName() ;
     public int getMinMaxLevel(int i, int j) ;

@@ -88,7 +88,7 @@ public class NewSymbNode extends LevelNode {
   * information comes from the `set' expression.                           *
   *************************************************************************/
   @Override
-  public boolean levelCheck(int iter)       {
+  public boolean levelCheck(int iter, Errors errors)       {
 
     if (levelChecked < iter) {
       /*********************************************************************
@@ -99,10 +99,10 @@ public class NewSymbNode extends LevelNode {
       * class is changed to make levelCheck do something.                  *
       *********************************************************************/
       levelChecked = iter ;
-      boolean opDeclLevelCheck = opDeclNode.levelCheck(iter) ;
+      boolean opDeclLevelCheck = opDeclNode.levelCheck(iter, errors) ;
       level = opDeclNode.getLevel() ;
       if (set != null) {
-        levelCorrect = set.levelCheck(iter) ;
+        levelCorrect = set.levelCheck(iter, errors) ;
         level = Math.max(set.getLevel(), level);
         if (level == TemporalLevel) {
           levelCorrect = false;

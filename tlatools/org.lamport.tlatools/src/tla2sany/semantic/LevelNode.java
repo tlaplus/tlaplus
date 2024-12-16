@@ -96,13 +96,22 @@ public int levelChecked   = 0 ;
   * recursively defined operators or functions.                            *
   *************************************************************************/
 
+  /**
+   * Run the level-checking algorithm on this node and all its children.
+   * @param errors A log in which to record any errors which occurred.
+   * @return Whether the level-checking process succeeded.
+   */
+  public boolean levelCheck(Errors errors) {
+    return this.levelCheck(this.levelChecked + 1, errors);
+  }
 
   /**
    * Check whether an expr or opArg is level correct, and if so,
    * calculates the level information for the expression. Returns
    * true iff this is level correct.
+ * @param errors TODO
    */
-  public boolean levelCheck(int iter) {
+  public boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
     * This is called for a node n to calculate the level information for   *
     * n and all its descendants.  It should be overridden by each          *
@@ -156,7 +165,7 @@ public int levelChecked   = 0 ;
         *    This method is called for such a node only when               *
         *    level-checking a proof.                                       *
         *******************************************************************/
-        this.levelCorrect = sub[i].levelCheck(iter) && this.levelCorrect ;
+        this.levelCorrect = sub[i].levelCheck(iter, errors) && this.levelCorrect ;
         if (this.level < sub[i].getLevel()) {this.level = sub[i].getLevel();};
         this.levelParams.addAll(sub[i].getLevelParams());
         this.levelConstraints.putAll(sub[i].getLevelConstraints());

@@ -124,7 +124,7 @@ public class InstanceNode extends LevelNode {
 //  private SetOfArgLevelConstraints argLevelConstraints;
 //  private HashSet argLevelParams;
 
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
     /***********************************************************************
     * I believe this should only be called once, with itr = 1.            *
     ***********************************************************************/
@@ -141,11 +141,11 @@ public class InstanceNode extends LevelNode {
     * Level check the components this.module and this.substs[i].getExpr(). *
     ***********************************************************************/
     this.levelCorrect = true;
-    if (!this.module.levelCheck(itr)) {
+    if (!this.module.levelCheck(itr, errors)) {
       this.levelCorrect = false;
     }
     for (int i = 0; i < this.substs.length; i++ ) {
-      if (!this.substs[i].getExpr().levelCheck(itr)) {
+      if (!this.substs[i].getExpr().levelCheck(itr, errors)) {
         this.levelCorrect = false;
       }
     }
@@ -154,8 +154,8 @@ public class InstanceNode extends LevelNode {
     for (int i = 0; i < this.substs.length; i++ ) {
       SymbolNode mparam = substs[i].getOp();
       ExprOrOpArgNode mexp = substs[i].getExpr();
-      mexp.levelCheck(itr) ;
-      mparam.levelCheck(itr);
+      mexp.levelCheck(itr, errors) ;
+      mparam.levelCheck(itr, errors);
         /*****************************************************************
         * Have to call levelCheck on these objects before calling        *
         * getLevel.                                                      *
@@ -165,7 +165,7 @@ public class InstanceNode extends LevelNode {
       *********************************************************************/
       if (!this.module.isConstant()) {
         if (mexp.getLevel() > mparam.getLevel()) {
-          if (mexp.levelCheck(itr) && mparam.levelCheck(itr)) {
+          if (mexp.levelCheck(itr, errors) && mparam.levelCheck(itr, errors)) {
             errors.addError(
                this.stn.getLocation(),
                "Level error in instantiating module '" + module.getName() +
@@ -206,7 +206,7 @@ public class InstanceNode extends LevelNode {
       Integer plevel = (Integer)lcSet.get(mparam);
       if (plevel != null &&
           mexp.getLevel() > plevel.intValue()) {
-        if (mexp.levelCheck(itr)) {
+        if (mexp.levelCheck(itr, errors)) {
           errors.addError(this.stn.getLocation(),
             "Level error in instantiating module '" + module.getName() +
             "':\nThe level of the expression or operator substituted for '" +
@@ -221,7 +221,7 @@ public class InstanceNode extends LevelNode {
         for (int j = 0; j < alen; j++) {
           ParamAndPosition pap = new ParamAndPosition(mparam, j);
           Integer alevel = (Integer)alcSet.get(pap);
-          boolean opDefLevelCheck = opDef.levelCheck(itr) ;
+          boolean opDefLevelCheck = opDef.levelCheck(itr, errors) ;
             /***************************************************************
             * Need to call opDef.levelCheck before calling                 *
             * opDef.getMaxLevel.                                           *
@@ -254,7 +254,7 @@ public class InstanceNode extends LevelNode {
           if (alp.op == pi &&
               alp.param == this.substs[j].getOp()) {
             SymbolNode op = ((OpArgNode)this.substs[i].getExpr()).getOp();
-            boolean opLevelCheck = op.levelCheck(itr) ;
+            boolean opLevelCheck = op.levelCheck(itr, errors) ;
                /************************************************************
                * Need to level check before calling op.getMaxLevel.        *
                ************************************************************/
@@ -262,7 +262,7 @@ public class InstanceNode extends LevelNode {
                 this.substs[j].getExpr().getLevel() >
                    ((OpDefNode)op).getMaxLevel(alp.i)) {
               if (opLevelCheck &&
-                  this.substs[j].getExpr().levelCheck(itr)) {
+                  this.substs[j].getExpr().levelCheck(itr, errors)) {
                 errors.addError(
                    this.stn.getLocation(),
                    "Level error when instantiating module '" +
@@ -281,7 +281,7 @@ public class InstanceNode extends LevelNode {
     // Calculate level information.
 //    this.levelConstraints = new SetOfLevelConstraints();
     lcSet = Subst.getSubLCSet(this.module, this.substs,
-                              this.module.isConstant(), itr);
+                              this.module.isConstant(), itr, errors);
       /*********************************************************************
       * At this point, levelCheck(itr) has been called on this.module and  *
       * on all nodes substs[i].getExpr(), which is a precondition for      *
@@ -306,7 +306,7 @@ public class InstanceNode extends LevelNode {
     }
 
 //    this.argLevelConstraints = new SetOfArgLevelConstraints();
-    alcSet = Subst.getSubALCSet(this.module, this.substs, itr);
+    alcSet = Subst.getSubALCSet(this.module, this.substs, itr, errors);
     iter = alcSet.keySet().iterator();
     while (iter.hasNext()) {
       ParamAndPosition pap = (ParamAndPosition)iter.next();

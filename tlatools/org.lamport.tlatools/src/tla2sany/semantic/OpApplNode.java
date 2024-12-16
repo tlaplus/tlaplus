@@ -442,7 +442,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 // }
 
   @Override
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     this.levelChecked = itr ;
 
@@ -457,7 +457,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         * Below, this.operands[i] is dereferenced without first checking   *
         * it for null, so I presume it can't be null.                      *
         *******************************************************************/
-          !this.operands[i].levelCheck(itr)) {
+          !this.operands[i].levelCheck(itr, errors)) {
         this.levelCorrect = false;
       }
     }
@@ -468,7 +468,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         * several places below where this.ranges[i] is dereferenced        *
         * without first checking if it's null.                             *
         *******************************************************************/
-          !this.ranges[i].levelCheck(itr)) {
+          !this.ranges[i].levelCheck(itr, errors)) {
 
         this.levelCorrect = false;
       }
@@ -509,7 +509,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       *    VariableLevel seems to have no practical effect.                *
       *********************************************************************/
       AnyDefNode opDef = (AnyDefNode)this.operator;
-      boolean opDefLevelCheck = opDef.levelCheck(itr) ;
+      boolean opDefLevelCheck = opDef.levelCheck(itr, errors) ;
         /*******************************************************************
         * Need to call levelCheck before obtaining its level params.       *
         *******************************************************************/
@@ -520,7 +520,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           *****************************************************************/
         if (opd != null) {
           if (opd.getLevel() > opDef.getMaxLevel(i)) {
-            if (opDefLevelCheck && opd.levelCheck(itr)) {
+            if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
               errors.addError(
                  this.stn.getLocation(),
                  "Level error in applying operator " + opDef.getName() +
@@ -537,7 +537,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
               ((OpArgNode)opd).getOp() instanceof AnyDefNode) {
             AnyDefNode opdDef = (AnyDefNode)((OpArgNode)opd).getOp();
             @SuppressWarnings("unused")  // See below comment block
-            boolean opdDefLevelCheck = opdDef.levelCheck(itr) ;
+            boolean opdDefLevelCheck = opdDef.levelCheck(itr, errors) ;
               /*************************************************************
               * Need to call opdDef.levelCheck before using its level      *
               * parameters.                                                *
@@ -545,7 +545,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             int alen = opdDef.getArity();
             for (int j = 0; j < alen; j++) {
               if (opdDef.getMaxLevel(j) < opDef.getMinMaxLevel(i, j)) {
-                if (opDefLevelCheck && opd.levelCheck(itr)) {
+                if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
                   errors.addError(this.stn.getLocation(),
                                   "Level error in applying operator "
                                         + opDef.getName() + ":\n" +
@@ -561,8 +561,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
               for (int k = 0; k < alen; k++) {
                 if (opDef.getOpLevelCond(i, j, k) &&
                     this.operands[j].getLevel() > opdDef.getMaxLevel(k)) {
-                  if (opd.levelCheck(itr) &&
-                      this.operands[j].levelCheck(itr)) {
+                  if (opd.levelCheck(itr, errors) &&
+                      this.operands[j].levelCheck(itr, errors)) {
                     errors.addError(
                        this.stn.getLocation(),
                        "Level error in applying operator " + opDef.getName() +
@@ -580,7 +580,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       for (int i = 0; i < this.ranges.length; i++) {
         ExprNode range = this.ranges[i];
         if (range != null) {
-          boolean rangeLevelCheck = range.levelCheck(itr) ;
+          boolean rangeLevelCheck = range.levelCheck(itr, errors) ;
           if (range.getLevel() > ActionLevel) {
             if (rangeLevelCheck) {
               errors.addError(
@@ -732,7 +732,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             opdi instanceof OpArgNode &&
             ((OpArgNode)opdi).getOp() instanceof AnyDefNode) {
           AnyDefNode argDef = (AnyDefNode)((OpArgNode)opdi).getOp();
-          argDef.levelCheck(itr) ;
+          argDef.levelCheck(itr, errors) ;
             /***************************************************************
             * Need to invoke levelCheck before invoking getMaxLevel.       *
             ***************************************************************/
@@ -781,7 +781,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             arg instanceof OpArgNode &&
             ((OpArgNode)arg).getOp() instanceof AnyDefNode) {
           AnyDefNode argDef = (AnyDefNode)((OpArgNode)arg).getOp();
-          argDef.levelCheck(itr) ;
+          argDef.levelCheck(itr, errors) ;
             /***************************************************************
             * Need to invoke levelCheck before invoking getMaxLevel.       *
             ***************************************************************/
@@ -832,7 +832,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ArgLevelParam alp = iter.next();
         ExprOrOpArgNode arg = this.getArg(alp.op);
         if (arg != null) {
-          arg.levelCheck(itr) ;
+          arg.levelCheck(itr, errors) ;
             /***************************************************************
             * Have to invoke levelCheck before invoking getLevel.          *
             ***************************************************************/
@@ -881,7 +881,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             this.argLevelParams.add(alp);
           }
           else {
-            arg.levelCheck(itr) ;
+            arg.levelCheck(itr, errors) ;
               /*************************************************************
               * Need to invoke levelCheck before invoking getLevelParams.  *
               *************************************************************/
@@ -927,13 +927,13 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     } // if (this.operator instanceof OpDefNode)
     else {
       // Application of a declared operator
-      this.operator.levelCheck(itr) ;
+      this.operator.levelCheck(itr, errors) ;
         /*******************************************************************
         * Need to invoke levelCheck before invoking getLevel.              *
         *******************************************************************/
       this.level = this.operator.getLevel();
       for (int i = 0; i < this.operands.length; i++) {
-        this.operands[i].levelCheck(itr) ;
+        this.operands[i].levelCheck(itr, errors) ;
         this.level = Math.max(this.level, this.operands[i].getLevel());
       } // for
 

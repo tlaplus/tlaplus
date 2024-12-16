@@ -725,7 +725,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //  private HashSet argLevelParams;
 
   @Override
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
 
     if (levelChecked >= itr) return this.levelCorrect;
     levelChecked = itr ;
@@ -822,7 +822,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
         curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 0 ;} ;
-        curNode.levelCheck(1) ;
+        curNode.levelCheck(1, errors) ;
 
         if (curNode.inRecursive) {
           /*****************************************************************
@@ -862,7 +862,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
       for (int i = firstInSectIdx ; i < curNodeIdx ; i++) {
         curNode = opDefsInRecursiveSection.elementAt(i) ;
         if (curNode.inRecursive) {curNode.levelChecked = 1;} ;
-        curNode.levelCheck(2) ;
+        curNode.levelCheck(2, errors) ;
        }; // for i
 
       firstInSectIdx = curNodeIdx ;
@@ -876,7 +876,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     this.levelCorrect = true;
     ModuleNode[] mods = this.getInnerModules();
     for (int i = 0; i < mods.length; i++) {
-      if (!mods[i].levelCheck(1)) {
+      if (!mods[i].levelCheck(1, errors)) {
         this.levelCorrect = false;
       }
     }
@@ -890,7 +890,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     for (int i = 0; i < opDefs.length; i++) {
 // System.out.println("opDef, module " + this.getName() + ": "
 // + opDefs[i].getName());
-      if (!opDefs[i].levelCheck(1)) {
+      if (!opDefs[i].levelCheck(1, errors)) {
         this.levelCorrect = false;
       }
     }
@@ -898,7 +898,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     for (int i = 0; i < thmOrAssDefs.length; i++) {
 // System.out.println("opDef, module " + this.getName() + ": "
 // + opDefs[i].getName());
-      if (!thmOrAssDefs[i].levelCheck(1)) {
+      if (!thmOrAssDefs[i].levelCheck(1, errors)) {
         this.levelCorrect = false;
       }
     }
@@ -909,7 +909,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     ***********************************************************************/
     LevelNode[] tpLev = this.getTopLevel() ;
     for (int i = 0; i < tpLev.length; i++) {
-      if (!tpLev[i].levelCheck(1)) {
+      if (!tpLev[i].levelCheck(1, errors)) {
         this.levelCorrect = false;
       }
     } ;
@@ -1037,7 +1037,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     // object rather than using the opDefs array, because we must
     // include all operators not only defined in this module, but also
     // inherited through extention and instantiation
-    this.levelCheck(1) ;
+    this.levelCheck(1, errors) ;
       /*********************************************************************
       * isConstant() can be called from other modules.  We had better be   *
       * sure that it has already been level checked before checking the    *

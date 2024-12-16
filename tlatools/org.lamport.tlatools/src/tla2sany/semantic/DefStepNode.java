@@ -51,7 +51,7 @@ public class DefStepNode extends LevelNode {
   public OpDefNode[] getDefs() {return defs;}
 
   @Override
-  public boolean levelCheck(int iter) {
+  public boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
     * Level check the steps and the instantiated modules coming from       *
     * module definitions.                                                  *

@@ -71,7 +71,7 @@ public class FormalParamNode extends SymbolNode {
 //  private HashSet levelParams;
 
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (levelChecked == 0) {
       /*********************************************************************
       * There's never any need to do this more than once.                  *

@@ -308,7 +308,7 @@ public class SANY {
   
           // Level check if semantic analysis succeeded and levelCheck is true.
           if (moduleNode != null && semanticErrors.isSuccess() && levelCheck ) {
-            moduleNode.levelCheck(1);
+            moduleNode.levelCheck(semanticErrors);
           }
 
           // Indicate in the externalModuleTable that the last module

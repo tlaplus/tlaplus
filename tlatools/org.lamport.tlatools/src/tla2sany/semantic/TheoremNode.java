@@ -116,7 +116,7 @@ public class TheoremNode extends LevelNode {
  * @see tla2sany.semantic.LevelNode#levelCheck(int)
  */
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
     LevelNode sub[] ;
