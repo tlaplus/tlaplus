@@ -50,7 +50,7 @@ public class StringNode extends ExprNode implements ExploreNode {
 
   /* Level Checking */
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     levelChecked = iter;
       /*********************************************************************
       * Set it just to show that levelCHeck was called.                    *

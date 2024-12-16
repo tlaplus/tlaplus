@@ -195,7 +195,7 @@ public class AssumeProveNode extends LevelNode {
   * reasonable, but I don't know if it's really correct.  -   LL           *
   *************************************************************************/
   @Override
-  public boolean levelCheck(int iter) {
+  public boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
     * Return immediately if this this.levelCheck(i) has already been       *
     * invoked for i >= iter.                                               *
@@ -209,21 +209,21 @@ public class AssumeProveNode extends LevelNode {
     * Level check assumptions.                                             *
     ***********************************************************************/
     for (int i = 0; i < this.assumes.length; i++) {
-      if (this.assumes[i] != null && !this.assumes[i].levelCheck(iter))
+      if (this.assumes[i] != null && !this.assumes[i].levelCheck(iter, errors))
        {this.levelCorrect = false;};
       }; // end for
 
     /***********************************************************************
     * Level check prove expression                                         *
     ***********************************************************************/
-    this.prove.levelCheck(iter) ;
+    this.prove.levelCheck(iter, errors) ;
 
     /***********************************************************************
     * Calculate level.                                                     *
     ***********************************************************************/
     this.level = this.prove.getLevel() ;
     for (int i = 0; i < this.assumes.length; i++) {
-      this.assumes[i].levelCheck(iter) ;
+      this.assumes[i].levelCheck(iter, errors) ;
         /*******************************************************************
         * Must call levelCheck before calling getLevel.                    *
         *******************************************************************/

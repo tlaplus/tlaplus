@@ -110,7 +110,7 @@ implements ExploreNode, LevelConstants {
 
   @Override
   @SuppressWarnings("unchecked")
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
     if (this.levelChecked >= itr) return this.levelCorrect;
     levelChecked = itr ;
 
@@ -123,15 +123,15 @@ implements ExploreNode, LevelConstants {
     * check.)                                                              *
     ***********************************************************************/
       if (   (this.opDefs[i].getKind() != ModuleInstanceKind)
-          && !this.opDefs[i].levelCheck(itr)) {
+          && !this.opDefs[i].levelCheck(itr, errors)) {
         this.levelCorrect = false;
       }
     }
-    if (!this.body.levelCheck(itr)) {
+    if (!this.body.levelCheck(itr, errors)) {
       this.levelCorrect = false;
     }
     for (int i = 0; i < this.insts.length; i++) {
-      if (!this.insts[i].levelCheck(itr)) {
+      if (!this.insts[i].levelCheck(itr, errors)) {
         this.levelCorrect = false;
       }
     }

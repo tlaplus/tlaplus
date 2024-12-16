@@ -420,7 +420,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * of opArg.                                                            *
     ***********************************************************************/
   @Override
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
       if (this.levelChecked >= itr) { return this.levelCorrect; }
       this.levelChecked = itr ;
 
@@ -440,7 +440,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
 
 
    // Level check the body:
-      this.levelCorrect = this.body.levelCheck(itr);
+      this.levelCorrect = this.body.levelCheck(itr, errors);
       this.level = this.body.getLevel();
 
       SetOfLevelConstraints lcSet = this.body.getLevelConstraints();

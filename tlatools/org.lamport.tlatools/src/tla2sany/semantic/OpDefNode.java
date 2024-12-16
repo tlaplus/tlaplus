@@ -1016,7 +1016,7 @@ public class OpDefNode extends OpDefOrDeclNode
   }
 
   @Override
-  public final boolean levelCheck(int itr) {
+  public final boolean levelCheck(int itr, Errors errors) {
     if (   (this.levelChecked >= itr)
         || (    (! inRecursiveSection)
              && (this.levelChecked > 0))) return this.levelCorrect;
@@ -1034,12 +1034,12 @@ public class OpDefNode extends OpDefOrDeclNode
       *********************************************************************/
       LevelNode[] subs = new LevelNode[1] ;
       subs[0] = stepNode ;
-      this.levelCorrect = this.stepNode.levelCheck(itr);
+      this.levelCorrect = this.stepNode.levelCheck(itr, errors);
       return this.levelCheckSubnodes(itr, subs) ;
      }
 
     // Level check the body:
-      this.levelCorrect = this.body.levelCheck(itr);
+      this.levelCorrect = this.body.levelCheck(itr, errors);
     /***********************************************************************
     * Modified for recursive checking so the level never decreases with    *
     * repeated computation.                                                *

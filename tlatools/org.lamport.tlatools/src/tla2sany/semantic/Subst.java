@@ -110,10 +110,13 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     return res;
   }
 
-  public static SetOfLevelConstraints getSubLCSet(LevelNode body,
-						  Subst[] subs,
-						  boolean isConstant,
-                                                  int itr) {
+  public static SetOfLevelConstraints getSubLCSet(
+      LevelNode body,
+      Subst[] subs,
+      boolean isConstant,
+      int itr,
+      Errors errors
+    ) {
     /***********************************************************************
     * This should only be called after level checking has been called on   *
     * body and on all subs[i].getExpr().  The itr argument is the          *
@@ -146,7 +149,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
       if (sub != null &&
 	  sub.getOp() instanceof OpDefNode) {
 	OpDefNode subDef = (OpDefNode)sub.getOp();
-        subDef.levelCheck(itr);
+        subDef.levelCheck(itr, errors);
           /*****************************************************************
           * The call of getMaxLevel should be made only to a node that     *
           * has been level checked.  But this node has come from looking   *
@@ -166,7 +169,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
   }
 
   public static SetOfArgLevelConstraints getSubALCSet(
-                  LevelNode body, Subst[] subs, int itr) {
+                  LevelNode body, Subst[] subs, int itr, Errors errors) {
     /***********************************************************************
     * Can be called only after levelCheck has been called on body.  The    *
     * argument itr is the argument for calling levelCheck.                 *
@@ -199,7 +202,7 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
 	SymbolNode op = (subOp == null) ? alp.op : ((OpArgNode)subOp).getOp();
 	if (op.isParam()) {
 	  ParamAndPosition pap = new ParamAndPosition(op, alp.i);
-          subParam.levelCheck(itr) ;
+          subParam.levelCheck(itr, errors) ;
             /***************************************************************
             * Must invoke levelCheck before invoking getLevel              *
             ***************************************************************/

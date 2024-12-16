@@ -91,7 +91,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
 //  private HashSet levelParams;
 
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
     * Level information set by constructor.                                *
     ***********************************************************************/

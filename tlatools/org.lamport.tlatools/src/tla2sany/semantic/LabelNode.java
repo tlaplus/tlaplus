@@ -217,14 +217,14 @@ public class LabelNode extends ExprNode
   * Level-Checking.                                                        *
   *************************************************************************/
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (levelChecked >= iter) {return true ;} ;
     levelChecked = iter;
     boolean retVal = true ;
     for (int i=0; i < params.length; i++) {
-      if (params[i] != null) {params[i].levelCheck(iter);} ;
+      if (params[i] != null) {params[i].levelCheck(iter, errors);} ;
      } ;
-    return this.body.levelCheck(iter) && retVal ;
+    return this.body.levelCheck(iter, errors) && retVal ;
   }
 
   @Override

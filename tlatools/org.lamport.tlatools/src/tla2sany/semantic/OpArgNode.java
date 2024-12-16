@@ -69,10 +69,10 @@ public class OpArgNode extends ExprOrOpArgNode {
 
   /* Level check */
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (levelChecked >= iter) {return this.levelCorrect; } ;
     levelChecked = iter ;
-    levelCorrect        = op.levelCheck(iter) ;
+    levelCorrect        = op.levelCheck(iter, errors) ;
     level               = op.getLevel();
     levelParams         = op.getLevelParams();
     allParams           = op.getAllParams();

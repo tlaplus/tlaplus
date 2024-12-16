@@ -76,15 +76,15 @@ public class AtNode extends ExprNode {
 //  private HashSet argLevelParams;
 
   @Override
-  public final boolean levelCheck(int iter) {
+  public final boolean levelCheck(int iter, Errors errors) {
     if (this.levelChecked >= iter) return true;
     this.levelChecked = iter;
 
     ExprOrOpArgNode[] args = this.exceptRef.getArgs();
-    args[0].levelCheck(iter) ;
+    args[0].levelCheck(iter, errors) ;
     this.level = args[0].getLevel();
     for (int i = 1; i < args.length; i++) {
-      args[i].levelCheck(iter) ;
+      args[i].levelCheck(iter, errors) ;
       if (args[i] == this.exceptComponentRef) break;
       this.level = Math.max(this.level, args[i].getLevel());
     }

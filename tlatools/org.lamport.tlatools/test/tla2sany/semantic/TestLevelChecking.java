@@ -200,27 +200,20 @@ public class TestLevelChecking {
   }
 
   /**
-   * Runs the level-checking algorithm on a semantic tree.
-   *
-   * @param semanticTree The semantic tree to level-check.
-   * @return Whether level checking succeeded.
-   */
-  private static boolean checkLevel(ModuleNode semanticTree) {
-    return semanticTree.levelCheck(1);
-  }
-
-  /**
    * Runs all level-checker tests in the corpus.
    */
   @Test
   public void testAll() {
     for (LevelCheckingTestCase testCase : TestLevelChecking.TestCases) {
-      Errors log = new Errors();
       TreeNode parseTree = checkSyntax(testCase.Input);
-      ModuleNode semanticTree = checkSemantic(parseTree, log);
-      boolean actualLevelCheckingResult = checkLevel(semanticTree);
-      Assert.assertEquals(testCase.summarize(log), log.isSuccess(), actualLevelCheckingResult);
-      Assert.assertEquals(testCase.summarize(log), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);
+      Errors semanticLog = new Errors();
+      ModuleNode semanticTree = checkSemantic(parseTree, semanticLog);
+      Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
+      Errors levelCheckingLog = new Errors();
+      boolean actualLevelCheckingResult = semanticTree.levelCheck(levelCheckingLog);
+      Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
+      Assert.assertEquals(testCase.summarize(levelCheckingLog), levelCheckingLog.isSuccess(), actualLevelCheckingResult);
+      Assert.assertEquals(testCase.summarize(levelCheckingLog), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);
     }
   }
 }

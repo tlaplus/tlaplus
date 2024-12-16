@@ -74,7 +74,7 @@ public class LeafProofNode extends ProofNode {
   public boolean getOnlyFlag() {return isOnly ;} ;
 
   @Override
-  public boolean levelCheck(int iter) {
+  public boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
     * Level checking is performed by level-checking the facts.  Since the  *
     * defs should be defined operators, they have already been level       *
