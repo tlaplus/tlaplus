@@ -163,7 +163,7 @@ public class InstanceNode extends LevelNode {
       /*********************************************************************
       * Check level constraints for a constant module.                     *
       *********************************************************************/
-      if (!this.module.isConstant()) {
+      if (!this.module.isConstant(errors)) {
         if (mexp.getLevel() > mparam.getLevel()) {
           if (mexp.levelCheck(itr, errors) && mparam.levelCheck(itr, errors)) {
             errors.addError(
@@ -281,7 +281,7 @@ public class InstanceNode extends LevelNode {
     // Calculate level information.
 //    this.levelConstraints = new SetOfLevelConstraints();
     lcSet = Subst.getSubLCSet(this.module, this.substs,
-                              this.module.isConstant(), itr, errors);
+                              this.module.isConstant(errors), itr, errors);
       /*********************************************************************
       * At this point, levelCheck(itr) has been called on this.module and  *
       * on all nodes substs[i].getExpr(), which is a precondition for      *

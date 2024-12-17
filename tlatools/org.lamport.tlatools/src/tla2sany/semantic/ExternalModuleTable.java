@@ -32,10 +32,10 @@ public class ExternalModuleTable implements ExploreNode {
 
     public ModuleNode getModuleNode() { return moduleNode; }
 
-    public void printMTE(int depth, boolean b) {
+    public void printMTE(int depth, boolean b, Errors errors) {
       if (moduleNode != null) {
         System.out.print(Strings.indent(2, "\nModule: ")); 
-        moduleNode.print(2,depth,b);
+        moduleNode.print(2,depth,b, errors);
       }
       else {
         System.out.print(Strings.indent(2, "\nModule: " + 
@@ -158,7 +158,7 @@ public class ExternalModuleTable implements ExploreNode {
     return "\nModule Table:" + Strings.indent(2,ret);
   }
 
-  public void printExternalModuleTable(int depth, boolean b) {
+  public void printExternalModuleTable(int depth, boolean b, Errors errors) {
     System.out.print("\nExternal Module Table:");
 
     for (int i = 0; i < moduleNodeVector.size(); i++) {
@@ -166,7 +166,7 @@ public class ExternalModuleTable implements ExploreNode {
 
       if (mn != null) {
         System.out.print(Strings.indent(2, "\nModule: ")); 
-        mn.print(2,depth,b);
+        mn.print(2,depth,b, errors);
       } else {
         System.out.print(Strings.indent(2, "\nModule: " + 
                          Strings.indent(2, "\n***Null ExternalModuleTable entry; " + 

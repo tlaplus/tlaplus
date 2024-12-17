@@ -138,7 +138,7 @@ public int levelChecked   = 0 ;
                  " node not implemented.");
    }
 
-  public boolean levelCheckSubnodes(int iter, LevelNode[] sub) {
+  public boolean levelCheckSubnodes(int iter, LevelNode[] sub, Errors errors) {
     /***********************************************************************
     * Performs levelCheck(iter) for a node whose level information is      *
     * computed by combining the level information from the array sub of    *
