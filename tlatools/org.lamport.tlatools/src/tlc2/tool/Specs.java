@@ -28,6 +28,7 @@ package tlc2.tool;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.OpDefNode;
@@ -85,7 +86,7 @@ public abstract class Specs {
 	    while (!subs.isEmpty())
 	    {
 	        SubstInNode sn = (SubstInNode) subs.car();
-	        res = new SubstInNode(sn, res);
+	        res = new SubstInNode(sn, res, new Errors());
 	        subs = subs.cdr();
 	    }
 	    return res;

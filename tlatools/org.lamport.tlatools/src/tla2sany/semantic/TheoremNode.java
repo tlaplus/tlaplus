@@ -127,7 +127,7 @@ public class TheoremNode extends LevelNode {
     else { sub = new LevelNode[1];} ;
     if (this.def != null) {sub[0] = this.def;}
     else {sub[0] = this.theoremExprOrAssumeProve;} ;
-    boolean retVal = levelCheckSubnodes(iter, sub);
+    boolean retVal = levelCheckSubnodes(iter, sub, errors);
 
     if  (this.theoremExprOrAssumeProve == null) { return retVal; } ;
       /*********************************************************************
@@ -210,7 +210,7 @@ public class TheoremNode extends LevelNode {
    * Added 3 Mar 2009.                                                     *
    ************************************************************************/
    if (this.theoremExprOrAssumeProve.level == TemporalLevel){
-       LevelCheckTemporal(this.proof);
+       LevelCheckTemporal(this.proof, errors);
    };
    return retVal;
   }
@@ -230,7 +230,7 @@ public class TheoremNode extends LevelNode {
   * the CASE statement.                                                    *
   * Added 4 Mar 2009.                                                      *
   *************************************************************************/
-  private final static void LevelCheckTemporal(ProofNode pn) {
+  private final static void LevelCheckTemporal(ProofNode pn, Errors errors) {
      /**********************************************************************
      * Return if this is not a NonLeafProof.                               *
      **********************************************************************/
@@ -277,10 +277,10 @@ public class TheoremNode extends LevelNode {
                  oanode.stn.getLocation(),
                  "Non-constant CASE for temporal goal.") ;
              };
-           LevelCheckTemporal(tnode.getProof()) ;
+           LevelCheckTemporal(tnode.getProof(), errors) ;
          } else
          if (name == OP_qed) {
-           LevelCheckTemporal(tnode.getProof()) ;
+           LevelCheckTemporal(tnode.getProof(), errors) ;
          }
        }; // if (oanode != null)
 

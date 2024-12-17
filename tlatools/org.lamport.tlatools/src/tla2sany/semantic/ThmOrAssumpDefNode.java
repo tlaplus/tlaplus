@@ -277,7 +277,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
 
 //  public final ModuleNode getModuleNode() { return this.moduleNode; }
 
-  public final boolean match( OpApplNode test, ModuleNode mn ) {
+  public final boolean match( OpApplNode test, ModuleNode mn, Errors errors ) {
     /***********************************************************************
     * True iff the current object has the same arity as the node operator  *
     * of the OpApplNode test.                                              *
