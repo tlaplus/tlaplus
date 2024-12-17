@@ -10,12 +10,12 @@ import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
-import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
+import tlc2.tool.impl.SpecProcessor;
 import util.ToolIO;
 
 /**
@@ -26,14 +26,13 @@ public class TLCBreakpointExpression {
 	/**
 	 * Given a spec and an unparsed expression, build an operator that can be
 	 * evaluated within the context of that spec.
-	 * @param semanticRoot The root of the spec's semantic parse tree.
+	 * 
+	 * @param semanticRoot  The root of the spec's semantic parse tree.
 	 * @param conditionExpr The unparsed expression.
 	 * @return A breakpoint expression, or null if parsing failed.
 	 */
-	public static OpDefNode process(
-			final ModuleNode semanticRoot,
-			final String conditionExpr
-	) {
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final String conditionExpr) {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
@@ -89,17 +88,15 @@ public class TLCBreakpointExpression {
 		if (null == bpOp) {
 			ToolIO.err.println("ERROR: unable to find breakpoint expression op " + bpOpName);
 		}
-		
-		if (!(LevelConstants.ConstantLevel == bpOp.level
-			|| LevelConstants.VariableLevel == bpOp.level
-			|| LevelConstants.ActionLevel == bpOp.level)
-		) {
-			ToolIO.err.println(
-				"ERROR: Debug expressions must be action-level or below; actual level: "
-				+ Integer.toString(bpOp.level)
-			);
+
+		if (!(LevelConstants.ConstantLevel == bpOp.level || LevelConstants.VariableLevel == bpOp.level
+				|| LevelConstants.ActionLevel == bpOp.level)) {
+			ToolIO.err.println("ERROR: Debug expressions must be action-level or below; actual level: "
+					+ Integer.toString(bpOp.level));
 			return null;
 		}
+
+		processor.myProcessConstants(bpModule);
 		
 		ToolIO.out.println("BPExpr: integration complete");
 		return bpOp;
