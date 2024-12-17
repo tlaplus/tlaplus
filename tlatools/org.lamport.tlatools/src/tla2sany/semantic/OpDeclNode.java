@@ -75,7 +75,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
 
   public final int getArity() { return this.arity; }
 
-  public final boolean match(OpApplNode oa, ModuleNode mn) {
+  public final boolean match(OpApplNode oa, ModuleNode mn, Errors errors) {
     ExprOrOpArgNode[] args = oa.getArgs();
 
     if (args == null || arity != args.length) {

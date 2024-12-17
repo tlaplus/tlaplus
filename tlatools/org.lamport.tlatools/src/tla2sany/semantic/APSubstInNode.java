@@ -63,7 +63,7 @@ public class APSubstInNode extends LevelNode {
      // The module being instantiated
 
   private APSubstInNode(TreeNode treeNode, Subst[] subs, LevelNode expr,
-		     ModuleNode ingmn, ModuleNode edmn) {
+		     ModuleNode ingmn, ModuleNode edmn, Errors errors) {
     super(APSubstInKind, treeNode);
     this.substs = subs;
     this.body = expr;
@@ -76,8 +76,8 @@ public class APSubstInNode extends LevelNode {
   }
   
   public APSubstInNode(TreeNode treeNode, SubstInNode subst, LevelNode expr,
-		     ModuleNode ingmn, ModuleNode edmn) {
-	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn);
+		     ModuleNode ingmn, ModuleNode edmn, Errors errors) {
+	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn, errors);
   }
 
   /**
@@ -203,7 +203,7 @@ public class APSubstInNode extends LevelNode {
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
   final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
-                                   TreeNode stn, ExprOrOpArgNode sub) {
+                                   TreeNode stn, ExprOrOpArgNode sub, Errors errors) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
       if (lhs == this.substs[index].getOp().getName()) break;
@@ -267,7 +267,7 @@ public class APSubstInNode extends LevelNode {
    * possible, because X is not defined in the instantiating module,
    * then we have an error.
    */
-  final void matchAll(Vector decls) {
+  final void matchAll(Vector decls, Errors errors) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
       UniqueString opName = ((OpDeclNode)decls.elementAt(i)).getName();
@@ -350,7 +350,7 @@ public class APSubstInNode extends LevelNode {
         *******************************************************************/
     }
 
-    boolean isConstant = this.instantiatedModule.isConstant();
+    boolean isConstant = this.instantiatedModule.isConstant(errors);
       /*********************************************************************
       * It is not necessary to invoke levelCheck before invoking           *
       * isConstant.                                                        *

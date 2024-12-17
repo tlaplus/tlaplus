@@ -154,7 +154,7 @@ public class NonLeafProofNode extends ProofNode {
     LevelNode[] ln = new LevelNode[steps.length + insts.length] ;
     System.arraycopy(steps, 0, ln, 0, steps.length) ;
     System.arraycopy(insts, 0, ln, steps.length, insts.length) ;
-    return this.levelCheckSubnodes(iter, ln) ;
+    return this.levelCheckSubnodes(iter, ln, errors) ;
    }
 
   /*

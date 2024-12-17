@@ -60,7 +60,7 @@ public abstract class SymbolNode extends LevelNode {
    * Returns true iff the OpApplNode test has the proper types of
    * arguments for the operator as declared in module mn.
    */
-  public abstract boolean match(OpApplNode test, ModuleNode mn) throws AbortException ;
+  public abstract boolean match(OpApplNode test, ModuleNode mn, Errors errors) throws AbortException ;
 
   public final boolean occur(SymbolNode[] params) {
     for (int i = 0; i < params.length; i++) {

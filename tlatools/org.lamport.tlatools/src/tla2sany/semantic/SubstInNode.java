@@ -66,7 +66,7 @@ public class SubstInNode extends ExprNode {
      // The module being instantiated
 
   private SubstInNode(TreeNode treeNode, Subst[] subs, ExprNode expr,
-		     ModuleNode ingmn, ModuleNode edmn) {
+		     ModuleNode ingmn, ModuleNode edmn, Errors errors) {
     super(SubstInKind, treeNode);
     this.substs = subs;
     this.body = expr;
@@ -78,19 +78,19 @@ public class SubstInNode extends ExprNode {
     }
   }
 
-  public SubstInNode(final SubstInNode subst, final ExprNode expr) {
+  public SubstInNode(final SubstInNode subst, final ExprNode expr, Errors errors) {
 	  this(subst.stn, subst.getSubsts(), expr, subst.getInstantiatingModule(),
-				subst.getInstantiatedModule());
+				subst.getInstantiatedModule(), errors);
   }
   
-  public SubstInNode(final APSubstInNode subst, final ExprNode expr) {
+  public SubstInNode(final APSubstInNode subst, final ExprNode expr, Errors errors) {
 	  this(subst.stn, subst.getSubsts(), expr, subst.getInstantiatingModule(),
-				subst.getInstantiatedModule());
+				subst.getInstantiatedModule(), errors);
   }
   
   public SubstInNode(TreeNode treeNode, SubstInNode subst, ExprNode expr,
-		     ModuleNode ingmn, ModuleNode edmn) {
-	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn);
+		     ModuleNode ingmn, ModuleNode edmn, Errors errors) {
+	  this(treeNode, subst.getSubsts(), expr, ingmn, edmn, errors);
   }
 
   /**
@@ -216,7 +216,7 @@ public class SubstInNode extends ExprNode {
    */
   @SuppressWarnings("unused")	// TODO final else block is dead code 
   final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
-                                   TreeNode stn, ExprOrOpArgNode sub) {
+                                   TreeNode stn, ExprOrOpArgNode sub, Errors errors) {
     int index;
     for (index = 0; index < this.substs.length; index++) {
       if (lhs == this.substs[index].getOp().getName()) break;
@@ -279,8 +279,9 @@ public class SubstInNode extends ExprNode {
    * implicitly subject to the substitution X <- X.  If that is not
    * possible, because X is not defined in the instantiating module,
    * then we have an error.
+   * @param errors Log into which to emit errors.
    */
-  final void matchAll(Vector<OpDeclNode> decls) {
+  final void matchAll(Vector<OpDeclNode> decls, Errors errors) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
       UniqueString opName = decls.elementAt(i).getName();
@@ -432,7 +433,7 @@ public class SubstInNode extends ExprNode {
 //
 //    } // while
 
-    boolean isConstant = this.instantiatedModule.isConstant();
+    boolean isConstant = this.instantiatedModule.isConstant(errors);
       /*********************************************************************
       * It is not necessary to invoke levelCheck before invoking           *
       * isConstant.                                                        *
