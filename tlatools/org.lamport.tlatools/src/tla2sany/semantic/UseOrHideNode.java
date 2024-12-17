@@ -90,7 +90,7 @@ public class UseOrHideNode extends LevelNode {
   * It was modified on 1 Jul 2009 to allow the use of expressions as       *
   * facts in a USE.                                                        *
   *************************************************************************/
-  public void factCheck() {
+  public void factCheck(Errors errors) {
     if (this.facts == null || this.getKind() == UseKind) { return; };
     for (int i = 0; i < this.facts.length; i++) {
       if (    (this.facts[i].getKind() == OpApplKind)
@@ -112,7 +112,7 @@ public class UseOrHideNode extends LevelNode {
     * checked.                                                             *
     ***********************************************************************/
     if (this.levelChecked >= iter) return this.levelCorrect;
-    return this.levelCheckSubnodes(iter, facts) ;
+    return this.levelCheckSubnodes(iter, facts, errors) ;
    }
 
   @Override

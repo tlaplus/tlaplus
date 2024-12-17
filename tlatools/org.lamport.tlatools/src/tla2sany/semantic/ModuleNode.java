@@ -665,7 +665,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    * Just a stub method; one cannot resolve against a ModuleNode.
    * This method is here only to satisfy the SymbolNode interface.
    */
-  public final boolean match( OpApplNode sn, ModuleNode mn ) { return false; }
+  public final boolean match( OpApplNode sn, ModuleNode mn, Errors errors ) { return false; }
 
   /**
    * Returns an array of all the theorems that appear in this module,
@@ -946,7 +946,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 //    this.levelConstraints = new SetOfLevelConstraints();
 //    this.argLevelConstraints = new SetOfArgLevelConstraints();
 //    this.argLevelParams = new HashSet();
-    if (!this.isConstant()) {
+    if (!this.isConstant(errors)) {
       for (int i = 0; i < decls.length; i++) {
         this.levelConstraints.put(decls[i], Levels[ConstantLevel]);
       }
@@ -1025,8 +1025,10 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
    * 3. It extends and instantiates only constant modules.
    *
    * NOTE: Can only be called after calling levelCheck
+   *
+   * @param errors Log into which to emit errors.
    */
-  public final boolean isConstant() {
+  public final boolean isConstant(Errors errors) {
     // if the module contains any VARIABLE declarations, it is not a
     // constant module
     if (this.getVariableDecls().length > 0) return false;
@@ -1136,7 +1138,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     visitor.postVisit(this);
   }
 
-  public final void print(int indent, int depth, boolean b) {
+  public final void print(int indent, int depth, boolean b, Errors errors) {
     if (depth <= 0) return;
 
     System.out.print(
@@ -1159,7 +1161,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 
     String ret =
       "\n*ModuleNode: " + name + "  " + super.toString(depth) +
-      "  constant module: " + this.isConstant() +
+      "  constant module: " + this.isConstant(errors) +
       "  errors: " + (errors == null
                         ? "null"
                         : (errors.getNumErrors() == 0

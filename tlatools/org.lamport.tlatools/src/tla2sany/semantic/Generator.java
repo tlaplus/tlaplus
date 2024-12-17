@@ -1800,10 +1800,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			Object substOb = substInPrefix.elementAt(temp - 1);
 			if (substOb instanceof SubstInNode) {
 				SubstInNode subst = (SubstInNode) substOb;
-				curExprNode = new SubstInNode(subst, curExprNode);
+				curExprNode = new SubstInNode(subst, curExprNode, errors);
 			} else {
 				APSubstInNode subst = (APSubstInNode) substOb;
-				curExprNode = new SubstInNode(subst, curExprNode);
+				curExprNode = new SubstInNode(subst, curExprNode, errors);
 			}
 			temp = temp - 1;
 		}
@@ -2080,7 +2080,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			case N_UseOrHide:
 				checkIfInRecursiveSection(definitions[lvi], "A USE or HIDE");
 				UseOrHideNode uohn = generateUseOrHide(definitions[lvi], currentModule);
-				uohn.factCheck();
+				uohn.factCheck(errors);
 				// Added 4 Mar 2009.
 				if (uohn.facts.length + uohn.defs.length == 0) {
 					errors.addError(definitions[lvi].getLocation(), "Empty USE or HIDE statement.");
@@ -4541,7 +4541,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// above, but with a body from the OpDefNode in the module
 						// being instantiated
 						SubstInNode substInNode = new SubstInNode(treeNode, substIn, odn.getBody(), cm,
-								instanceeModule);
+								instanceeModule, errors);
 
 						// MAK 02/2021: Store the individual segments of the compound id to not rely on
 						// ad-hoc parsing later when a feature such as the debugger needs to know each
@@ -4629,7 +4629,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// above, but with a body from the ThmOrAssumpDefNode in the module
 					// being instantiated
 					APSubstInNode substInNode = new APSubstInNode(treeNode, substIn, taOdn.getBody(), cm,
-							instanceeModule);
+							instanceeModule, errors);
 
 					// Create the ThmOrAssumpDefNode for the new instance of this
 					// definition; because of the new operator name, cm is the
@@ -4903,7 +4903,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 			// Overwrite an implicit substitution if there is one, or add a new one,
 			// checking for duplicate substitutions for the same symbol
-			substIn.addExplicitSubstitute(instanceeCtxt, sc[0].getUS(), sc[2], substRHS);
+			substIn.addExplicitSubstitute(instanceeCtxt, sc[0].getUS(), sc[2], substRHS, errors);
 		}
 
 		// Check that all remaining implicit substitutions have the correct arity.  The
@@ -4916,7 +4916,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Check if substitution is complete, i.e. that all constants and vars
 		// have been substituted for.
-		substIn.matchAll(decls);
+		substIn.matchAll(decls, errors);
 		return substIn;
 	} // end processSubst
 
@@ -5086,7 +5086,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// but with a body from the OpDefNode in the module being
 					// instantiated
 					substInTemplate = new SubstInNode(treeNode, subst, odn.getBody(), cm,
-							instanceeModuleNode);
+							instanceeModuleNode, errors);
 					newOdn = new OpDefNode(odn.getName(), UserDefinedOpKind, odn.getParams(), localness,
 							substInTemplate, cm, symbolTable, treeNode, true, odn.getSource());
 					newOdn.setLabels(odn.getLabelsHT());
@@ -5181,7 +5181,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// but with a body from the ThmOrAssumpDefNode in the module being
 					// instantiated
 					tasubstInTemplate = new APSubstInNode(treeNode, subst, tadn.getBody(), cm,
-							instanceeModuleNode);
+							instanceeModuleNode, errors);
 					newTadn = new ThmOrAssumpDefNode(tadn.getName(), tadn.isTheorem(), tasubstInTemplate, cm,
 							symbolTable, treeNode, tadn.getParams(), instanceeModuleNode, tadn.getSource());
 					// Following if/else added by LL on 30 Oct 2012 to handle locally
@@ -5624,7 +5624,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					errors.addError(stepBodySTN.getLocation(), "Empty USE or HIDE statement.");
 				}
 				;
-				uohn.factCheck();
+				uohn.factCheck(errors);
 				// Added 4 Mar 2009.
 				pfNumNode = uohn;
 				steps[i - offset] = pfNumNode;

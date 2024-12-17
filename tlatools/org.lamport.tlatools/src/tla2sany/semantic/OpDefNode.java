@@ -734,12 +734,6 @@ public class OpDefNode extends OpDefOrDeclNode
    //              params[i].getArity() == ((OpArgNode)arg).getArity());
   }
 
-  /* This method shortens the match() method right after it */
-  private boolean errReport(Location loc, String s) {
-    errors.addError(loc, s);
-    return false;
-  }
-
   /**
    * This method is called at the end of OpApplNode constructors to
    * make sure the OpApplNode is correct by "matching" the argument
@@ -755,7 +749,7 @@ public class OpDefNode extends OpDefOrDeclNode
    * to oan (i.e args[]) match the argument pattern required by THIS
    * OpDefNode in terms of arity, etc.
    */
-  public final boolean match(OpApplNode oanParent, ModuleNode mn) throws AbortException {
+  public final boolean match(OpApplNode oanParent, ModuleNode mn, Errors errors) throws AbortException {
     ExprOrOpArgNode[] args       = oanParent.getArgs();  // arg expr's that THIS operator is being applied to
     boolean           result     = true;                 // Remains true unless an error is detected
     boolean           tempResult = true;
@@ -1035,7 +1029,7 @@ public class OpDefNode extends OpDefOrDeclNode
       LevelNode[] subs = new LevelNode[1] ;
       subs[0] = stepNode ;
       this.levelCorrect = this.stepNode.levelCheck(itr, errors);
-      return this.levelCheckSubnodes(itr, subs) ;
+      return this.levelCheckSubnodes(itr, subs, errors) ;
      }
 
     // Level check the body:

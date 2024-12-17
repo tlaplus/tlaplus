@@ -56,7 +56,7 @@ public class DefStepNode extends LevelNode {
     * Level check the steps and the instantiated modules coming from       *
     * module definitions.                                                  *
     ***********************************************************************/
-    return this.levelCheckSubnodes(iter, defs) ;
+    return this.levelCheckSubnodes(iter, defs, errors) ;
    }
 
   @Override

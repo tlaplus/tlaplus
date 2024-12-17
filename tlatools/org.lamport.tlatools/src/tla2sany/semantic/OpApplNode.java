@@ -159,7 +159,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
     // Call the match method for the operator in this op application,
     // with this OpApplNode as argument
-    op.match( this, mn );
+    op.match( this, mn, errors );
   }
 
   /* constructor 3

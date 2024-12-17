@@ -81,7 +81,7 @@ public class LeafProofNode extends ProofNode {
     * checked.                                                             *
     ***********************************************************************/
     if (this.levelChecked >= iter) return this.levelCorrect;
-    return this.levelCheckSubnodes(iter, facts) ;
+    return this.levelCheckSubnodes(iter, facts, errors) ;
    }
 
   /*

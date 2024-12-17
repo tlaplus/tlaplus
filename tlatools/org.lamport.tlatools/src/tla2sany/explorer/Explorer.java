@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.Generator;
@@ -39,8 +40,6 @@ import util.UniqueString;
 
 public class Explorer {
 
-	public Generator generator;
-
 	// Next three vars used in reading commands from keyboard
 	private final InputStreamReader inStream = new InputStreamReader(System.in);
 	private final int inCapacity = 100;
@@ -59,11 +58,13 @@ public class Explorer {
 	private ExploreNode obj;
 
 	private ExternalModuleTable mt;
+	private final Errors errors;
 
 	// Constructor
-	public Explorer(ExternalModuleTable mtarg) {
+	public Explorer(ExternalModuleTable mtarg, Errors errors) {
 
 		mt = mtarg;
+		this.errors = errors;
 
 	}
 
@@ -237,9 +238,9 @@ public class Explorer {
 				// Print the semantic graph, rooted in the Module Table
 				// excluding built-ins and ops defined in module Naturals
 				if (icmd2 != null) {
-					mt.printExternalModuleTable(icmd2.intValue(), false);
+					mt.printExternalModuleTable(icmd2.intValue(), false, errors);
 				} else {
-					mt.printExternalModuleTable(2, false);
+					mt.printExternalModuleTable(2, false, errors);
 				}
 
 			} else if (firstToken.toLowerCase().equals("mt*")) {
@@ -247,9 +248,9 @@ public class Explorer {
 				// Print the semantic graph, rooted in the Module Table
 				// including builtins and ops defined in Naturals
 				if (icmd2 != null) {
-					mt.printExternalModuleTable(icmd2.intValue(), true);
+					mt.printExternalModuleTable(icmd2.intValue(), true, errors);
 				} else {
-					mt.printExternalModuleTable(2, true);
+					mt.printExternalModuleTable(2, true, errors);
 				}
 
 			} else if (firstToken.equalsIgnoreCase("dot")) {
