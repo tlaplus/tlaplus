@@ -250,7 +250,7 @@ public abstract class SemanticNode
 
 					@Override
 					public void preVisit(final SemanticNode node) {
-						if (location.equals(node.getLocation())) {
+						if (location.equals(node.getLocation()) || (0 == node.getChildren().length && node.getLocation().includes(location))) {
 							// node will be added to pathToLoc in postVisit!
 							pathToLoc = new LinkedList<>();
 						} else if (node instanceof OpDefNode) {
@@ -276,7 +276,8 @@ public abstract class SemanticNode
 					@Override
 					public boolean preempt(SemanticNode node) {
 						return pathToLoc != null
-								|| !node.getLocation().includes(location);
+								|| !node.getLocation()
+									.includes(location);
 					}
 
 					@Override

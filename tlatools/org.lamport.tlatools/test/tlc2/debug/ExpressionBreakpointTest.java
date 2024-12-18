@@ -29,8 +29,7 @@ public class ExpressionBreakpointTest extends TLCDebuggerTestCase {
 
 	@Test
 	public void testSpec() throws Exception {
-		//SetBreakpointsArguments sba = createBreakpointArgument(RM, 8, 7, 1, "(i + l) > (j - k)");
-		SourceBreakpoint bp1 = createBreakpointInfo(8, 7, 1, "(i + 3) > j");
+		SourceBreakpoint bp1 = createBreakpointInfo(8, 7, 1, "(m + l) > (j - k)");
 		SourceBreakpoint bp2 = createBreakpointInfo(9, 1, 1, "i >= 8");
 		SetBreakpointsArguments sba = createBreakpointArgument(RM, bp1, bp2);
 		debugger.setBreakpoints(sba);
