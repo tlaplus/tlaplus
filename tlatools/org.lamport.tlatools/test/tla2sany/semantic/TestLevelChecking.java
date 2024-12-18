@@ -1,14 +1,10 @@
 package tla2sany.semantic;
 
-import java.nio.charset.StandardCharsets;
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
-
 import org.junit.Test;
 import org.junit.Assert;
 
-import tla2sany.parser.TLAplusParser;
-import tla2sany.st.TreeNode;
+import tla2sany.parser.SyntaxTreeNode;
+import util.ParserInterface;
 
 /**
  * Some basic tests for the level-checking process.
@@ -164,53 +160,17 @@ public class TestLevelChecking {
   };
 
   /**
-   * Checks the syntax of the given input and builds a parse tree from it.
-   *
-   * @param input The string input to parse.
-   * @return A parse tree.
-   */
-  private static TreeNode checkSyntax(String input) {
-    byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-    InputStream inputStream = new ByteArrayInputStream(inputBytes);
-    TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
-    Assert.assertTrue(input, parser.parse());
-    return parser.rootNode();
-  }
-
-  /**
-   * Performs semantic checking & reference resolution on a parse tree.
-   *
-   * @param parseTree The parse tree to check.
-   * @param log The error log.
-   * @return A parse tree annotated with semantic information.
-   */
-  private static ModuleNode checkSemantic(TreeNode parseTree, Errors log) {
-    Context.reInit();
-    Generator gen = new Generator(null, log);
-    SemanticNode.setError(log);
-    ModuleNode semanticTree = null;
-    try {
-      semanticTree = gen.generate(parseTree);
-    } catch (AbortException e) {
-      Assert.fail(e.toString() + log.toString());
-    }
-    Assert.assertTrue(log.toString(), log.isSuccess());
-    Assert.assertNotNull(log.toString(), semanticTree);
-    return semanticTree;
-  }
-
-  /**
    * Runs all level-checker tests in the corpus.
    */
   @Test
   public void testAll() {
     for (LevelCheckingTestCase testCase : TestLevelChecking.TestCases) {
-      TreeNode parseTree = checkSyntax(testCase.Input);
+      SyntaxTreeNode parseTree = ParserInterface.processSyntax(testCase.Input);
       Errors semanticLog = new Errors();
-      ModuleNode semanticTree = checkSemantic(parseTree, semanticLog);
+      ModuleNode semanticTree = ParserInterface.processSemantics(parseTree, semanticLog);
       Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
       Errors levelCheckingLog = new Errors();
-      boolean actualLevelCheckingResult = semanticTree.levelCheck(levelCheckingLog);
+      boolean actualLevelCheckingResult = ParserInterface.checkLevel(semanticTree, levelCheckingLog);
       Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
       Assert.assertEquals(testCase.summarize(levelCheckingLog), levelCheckingLog.isSuccess(), actualLevelCheckingResult);
       Assert.assertEquals(testCase.summarize(levelCheckingLog), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);
