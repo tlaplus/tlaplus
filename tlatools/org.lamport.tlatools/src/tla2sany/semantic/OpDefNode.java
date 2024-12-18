@@ -1480,6 +1480,11 @@ public class OpDefNode extends OpDefOrDeclNode
       default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }
   }
+  
+  public String toString() {
+	  final String pattern = "%s (%s)";
+	  return String.format(pattern, this.getName(), this.getLocation());
+  }
 
   protected Element getSymbolElement(Document doc, SymbolContext context) {
     Element ret = null;

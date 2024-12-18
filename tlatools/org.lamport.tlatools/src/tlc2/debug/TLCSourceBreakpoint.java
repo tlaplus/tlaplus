@@ -46,7 +46,7 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 		// Create a location that's not a point.
 		final int column = getColumn() != null ? getColumn() : 1;
 		//TODO: If the location spans lines, getLine() + 1 should be the endline (second line parameter of Location).
-		location = new Location(module, getLine() + 1, column, getLine(), column + 1);
+		location = new Location(module, getLine(), column, getLine(), column + 1);
 		
 		setCondition(s.getCondition());
 		setLogMessage(s.getLogMessage());
@@ -71,7 +71,7 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 			if (odn != null) {
 				condition = odn;
 			} else {
-				condition = TLCBreakpointExpression.process(processor, semanticRoot, s.getCondition());
+				condition = TLCBreakpointExpression.process(processor, semanticRoot, location, s.getCondition());
 			}
 		} else {
 			condition = null;
