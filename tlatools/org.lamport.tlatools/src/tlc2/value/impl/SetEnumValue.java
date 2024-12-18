@@ -9,7 +9,6 @@ package tlc2.value.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import tlc2.tool.FingerprintException;
@@ -514,7 +513,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		return res;
 	}
 
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
+	public static IValue createFromExternal(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		boolean isNorm = true;
 		int len = vos.readInt();
@@ -524,7 +523,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		}
 		final Value[] elems = new Value[len];
 		for (int i = 0; i < len; i++) {
-			elems[i] = (Value) vos.read(tbl);
+			elems[i] = (Value) vos.readExternal();
 		}
 		final Value res = new SetEnumValue(elems, isNorm);
 		vos.assign(res, index);

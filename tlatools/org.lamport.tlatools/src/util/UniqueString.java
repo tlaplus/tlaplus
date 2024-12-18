@@ -333,13 +333,13 @@ public final class UniqueString implements Serializable
         return new UniqueString(str, tok1, loc1);
     }
     
-    public static UniqueString read(IDataInputStream dis, final Map<String, UniqueString> tbl) throws IOException
+    public static UniqueString readExternal(IDataInputStream dis) throws IOException
     {
         dis.readInt(); // skip, because invalid for the given internTbl
         dis.readInt(); // skip, because invalid for the given internTbl
         final int slen = dis.readInt();
         final String str = dis.readString(slen);
-        return tbl.get(str);
+        return UniqueString.uniqueStringOf(str);
     }
 
 

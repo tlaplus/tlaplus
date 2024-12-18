@@ -91,7 +91,31 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 		}
 	}
 	
+	/**
+	 * This used to be readExternal, but the tbl parameter did not end up being useful.
+	 * It was meant to allow using a different string intern table, but as a result
+	 * required all deserialized string values to be known ahead of time (in the map).
+	 * 
+	 * This stub calls readExternal, ignoring tbl and directly loading new strings into
+	 * this TLC's global intern table instead. It is left here to avoid Java method
+	 * errors with community modules, which call this signature in particular.
+	 * 
+	 * TODO:
+	 * - Once all practically deployed TLCs that don't have readExternal are phased out,
+	 *   change community modules to call readExternal.
+	 * - Once all practically deployed community modules that use this method are phased out,
+	 *   delete it.
+	 */
+	@Deprecated
 	public final IValue read(final Map<String, UniqueString> tbl) throws IOException {
+		return readExternal();
+	}
+	
+	/**
+	 * Safely read a value from an external source that may have a different intern table for UniqueStrings.
+	 * By contrast, {@link #read()} assumes that the value was written by this process using the same intern table.
+	 */
+	public final IValue readExternal() throws IOException {
 		final byte kind = this.dis.readByte();
 
 		switch (kind) {
@@ -102,7 +126,7 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 			return IntValue.gen(this.dis.readInt());
 		}
 		case STRINGVALUE: {
-			return StringValue.createFrom(this, tbl);
+			return StringValue.createFromExternal(this);
 		}
 		case MODELVALUE: {
 			return ModelValue.mvs[this.dis.readShort()];
@@ -111,16 +135,16 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 			return new IntervalValue(this.dis.readInt(), this.dis.readInt());
 		}
 		case RECORDVALUE: {
-			return RecordValue.createFrom(this, tbl);
+			return RecordValue.createFromExternal(this);
 		}
 		case FCNRCDVALUE: {
-			return FcnRcdValue.createFrom(this, tbl);
+			return FcnRcdValue.createFromExternal(this);
 		}
 		case SETENUMVALUE: {
-			return SetEnumValue.createFrom(this, tbl);
+			return SetEnumValue.createFromExternal(this);
 		}
 		case TUPLEVALUE: {
-			return TupleValue.createFrom(this, tbl);
+			return TupleValue.createFromExternal(this);
 		}
 		case DUMMYVALUE: {
 			return (IValue) this.handles.getValue(this.readNat());
