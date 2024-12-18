@@ -1,20 +1,54 @@
+/*******************************************************************************
+ * Copyright (c) 2023 Linux Foundation. All rights reserved.
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Andrew Helwer - code interfacing with SANY
+ *   Markus Alexander Kuppe - code interfacing with TLC interpreter
+ ******************************************************************************/
 package tlc2.debug;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.Generator;
+import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelConstants;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.OpArgNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 import tlc2.tool.impl.SpecProcessor;
 import util.ToolIO;
 
@@ -26,13 +60,19 @@ public class TLCBreakpointExpression {
 	/**
 	 * Given a spec and an unparsed expression, build an operator that can be
 	 * evaluated within the context of that spec.
-	 * 
+	 *
+	 * @param processor     Processes expression within the model context.
 	 * @param semanticRoot  The root of the spec's semantic parse tree.
-	 * @param conditionExpr The unparsed expression.
+	 * @param location      The breakpoint location.
+	 * @param conditionExpr The unparsed breakpoint expression.
 	 * @return A breakpoint expression, or null if parsing failed.
 	 */
-	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final String conditionExpr) {
+	public static OpDefNode process(
+			final SpecProcessor processor,
+			final ModuleNode semanticRoot,
+			final Location location,
+			final String conditionExpr
+	) {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
@@ -42,10 +82,13 @@ public class TLCBreakpointExpression {
 		final String bpModName = generateUnusedName(semanticRoot, "__BreakpointModule__%s");
 		ToolIO.out.println("BPExpr: wrapping with module \"" + bpModName + "\"");
 		final String bpOpName = generateUnusedName(semanticRoot, "__BreakpointExpr__%s");
-		ToolIO.out.println("BPExpr: wrapping with op \"" + bpOpName + "\"");
+		final Set<String> paramNames = getScopedIdentifiers(semanticRoot, location);
+		final String params = paramNames.size() > 0 ? "(" + String.join(", ", paramNames) + ")" : "";
+		final String bpOpDef = bpOpName + params;
+		ToolIO.out.println("BPExpr: wrapping with op \"" + bpOpDef + "\"");
 
 		final String wrapper = "---- MODULE %s ----\nEXTENDS %s\n%s == %s\n====";
-		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, bpOpName, conditionExpr);
+		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, bpOpDef, conditionExpr);
 		byte[] wrappedConditionExprBytes = wrappedConditionExpr.getBytes(StandardCharsets.UTF_8);
 		InputStream sourceCode = new ByteArrayInputStream(wrappedConditionExprBytes);
 		TLAplusParser parser = new TLAplusParser(sourceCode, StandardCharsets.UTF_8.name());
@@ -65,7 +108,6 @@ public class TLCBreakpointExpression {
 			bpModule = semanticChecker.generate(syntaxRoot);
 		} catch (AbortException e) {
 			ToolIO.err.print(e.toString());
-			ToolIO.err.print(semanticRoot.semanticChecker.errors.toString());
 			return null;
 		}
 		if (null == bpModule || semanticLog.isFailure()) {
@@ -89,10 +131,10 @@ public class TLCBreakpointExpression {
 			ToolIO.err.println("ERROR: unable to find breakpoint expression op " + bpOpName);
 		}
 
-		if (!(LevelConstants.ConstantLevel == bpOp.level || LevelConstants.VariableLevel == bpOp.level
-				|| LevelConstants.ActionLevel == bpOp.level)) {
+		if (!(LevelConstants.ConstantLevel == bpOp.getLevel() || LevelConstants.VariableLevel == bpOp.getLevel()
+				|| LevelConstants.ActionLevel == bpOp.getLevel())) {
 			ToolIO.err.println("ERROR: Debug expressions must be action-level or below; actual level: "
-					+ Integer.toString(bpOp.level));
+					+ SemanticNode.levelToString(bpOp.getLevel()));
 			return null;
 		}
 
@@ -102,13 +144,19 @@ public class TLCBreakpointExpression {
 		return bpOp;
 	}
 	
+	/**
+	 * Generates a plausible definition name that is not already in use.
+	 *
+	 * @param semanticRoot The module in which to check for name collisions.
+	 * @param pattern A base pattern in which a number can be interpolated.
+	 * @return A name that is unique within the context of the module.
+	 */
 	private static String generateUnusedName(ModuleNode semanticRoot, String pattern) {
 		Context definedNames = semanticRoot.getContext();
 		String unusedName = null;
-		long suffix = 0L;
 		do {
+			long suffix = System.currentTimeMillis();
 			unusedName = String.format(pattern, Long.toString(suffix));
-			suffix++;
 		} while (definedNames.occurSymbol(unusedName));
 		return unusedName;
 	}
@@ -145,14 +193,77 @@ public class TLCBreakpointExpression {
 	 *     F(i, j) (* want to add breakpoint here *)
 	 * VARIABLE i
 	 *
-	 * Since when we add our auto-generated operator to the module it is
+	 * Since when we extend the module so as to define our generated op it is
 	 * implicitly parsed at the end of the file, "__BreakpointExpr__0(i, j)"
 	 * will result in a parse error due to multiple "i" definitions.
 	 * Currently these types of specs are simply not supported. Supporting
-	 * them would probably require changes to the semantic analysis code
-	 * enabling parsing "ghost" definitions at arbitrary points in the tree.
+	 * them would probably require changes to the semantic analysis and
+	 * constants-resolver code enabling parsing "ghost" definitions at
+	 * arbitrary points in the tree.
+	 *
+	 * The way this method works is it first finds the parse tree node where
+	 * the breakpoint was introduced, then traces its parentage up to the
+	 * module root while recording identifiers produced by:
+	 *  - LET/IN blocks
+	 *  - Quantification operators
+	 *  - Operator parameters
+	 *
+	 * There are probably others but we will add to this code as the need is
+	 * discovered. A better solution would be to record this info in the
+	 * semantic nodes during the semantic checking process but that will have
+	 * to wait until we have good test coverage of it. It should be noted
+	 * this information is already sort of recorded in the (private)
+	 * OpApplNode.allParams field, but only if the given expression actually
+	 * references an outside parameter. By the time the semantic analysis
+	 * process has actually reached that stage it's too late to append the
+	 * references to the operator definition node.
+	 *
+	 * @param semanticRoot The root node of the semantic parse tree.
+	 * @param location     The breakpoint location.
+	 * @return A list of local identifiers accessible at the given location.
 	 */
-	static List<String> getScopedIdentifiers() {
-		return null;
+	static Set<String> getScopedIdentifiers(
+			ModuleNode semanticRoot,
+			Location location
+	) {
+		Set<String> identifiers = new HashSet<String>();
+		// pathTo starts at breakpoint location then goes up to module root
+		List<SemanticNode> path = semanticRoot.pathTo(location);
+		for (SemanticNode current : path) {
+			// Extract i from LET i == 5 IN ...
+			if (current instanceof LetInNode) {
+				LetInNode node = (LetInNode)current;
+				for (OpDefNode def : node.getLets()) {
+					identifiers.add(def.getName().toString());
+				}
+			// Extract op, i, j, k from op(i, j, k) == ...
+			// Note: will not extract "op" if is top-level definition
+			} else if (current instanceof OpDefNode) {
+				OpDefNode node = (OpDefNode)current;
+				if (null == semanticRoot.getOpDef(node.getName())) {
+					identifiers.add(node.getName().toString());
+				}
+				for (FormalParamNode param : node.getParams()) {
+					identifiers.add(param.getName().toString());
+				}
+			// Extract i, j from \A i, j \in Nat : ...
+			} else if (current instanceof OpApplNode) {
+				OpApplNode node = (OpApplNode)current;
+				for (FormalParamNode param : node.getQuantSymbolLists()) {
+					identifiers.add(param.getName().toString());
+				}
+			// Extract i, j from LAMBDA i, j : ...
+			} else if (current instanceof OpArgNode) {
+				OpArgNode node = (OpArgNode)current;
+				SymbolNode opSymbol = node.getOp();
+				if (opSymbol instanceof OpDefNode) {
+					OpDefNode op = (OpDefNode)opSymbol;
+					for (FormalParamNode param : op.getParams()) {
+						identifiers.add(param.getName().toString());
+					}
+				}
+			}
+		}
+		return identifiers;
 	}
 }
