@@ -774,7 +774,7 @@ public class RecordValue extends Value implements FunctionValue {
 		return res;
 	}
 
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws EOFException, IOException {
+	public static IValue createFromExternal(final ValueInputStream vos) throws EOFException, IOException {
 		final int index = vos.getIndex();
 		int len = vos.readInt();
 		if (len < 0) {
@@ -789,10 +789,10 @@ public class RecordValue extends Value implements FunctionValue {
 				names[i] = vos.getValue(index1);
 			} else {
 				final int index1 = vos.getIndex();
-				names[i] = UniqueString.read(vos.getInputStream(), tbl);
+				names[i] = UniqueString.readExternal(vos.getInputStream());
 				vos.assign(names[i], index1);
 			}
-			vals[i] = (Value) vos.read(tbl);
+			vals[i] = (Value) vos.readExternal();
 		}
 		// If a RecordValue is de-serialized with a potentially different UniqueString
 		// table, the RecordValue is not guaranteed to be normalized.
