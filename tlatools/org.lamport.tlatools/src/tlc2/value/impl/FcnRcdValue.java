@@ -983,7 +983,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 		return res;
 	}
 
-	public static IValue createFrom(final ValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
+	public static IValue createFromExternal(final ValueInputStream vos) throws IOException {
 		final int index = vos.getIndex();
 		final int len = vos.readNat();
 		final int info = vos.readByte();
@@ -993,15 +993,15 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 			final int low = vos.readInt();
 			final int high = vos.readInt();
 			for (int i = 0; i < len; i++) {
-				rvals[i] = (Value) vos.read(tbl);
+				rvals[i] = (Value) vos.readExternal();
 			}
 			final IntervalValue intv = new IntervalValue(low, high);
 			res = new FcnRcdValue(intv, rvals);
 		} else {
 			final Value[] dvals = new Value[len];
 			for (int i = 0; i < len; i++) {
-				dvals[i] = (Value) vos.read(tbl);
-				rvals[i] = (Value) vos.read(tbl);
+				dvals[i] = (Value) vos.readExternal();
+				rvals[i] = (Value) vos.readExternal();
 			}
 			res = new FcnRcdValue(dvals, rvals, (info == 1));
 		}
