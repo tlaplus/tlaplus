@@ -7,7 +7,6 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Random;
 
 import tlc2.tool.FingerprintException;
@@ -281,8 +280,8 @@ public class StringValue extends Value {
 		return res;
 	}
 	
-	public static IValue createFrom(final IValueInputStream vos, final Map<String, UniqueString> tbl) throws IOException {
-		final UniqueString str = UniqueString.read(vos.getInputStream(), tbl);
+	public static IValue createFromExternal(final IValueInputStream vos) throws IOException {
+		final UniqueString str = UniqueString.readExternal(vos.getInputStream());
 		final IValue res = new StringValue(str);
 		final int index = vos.getIndex();
 		vos.assign(res, index);
