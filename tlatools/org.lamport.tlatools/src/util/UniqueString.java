@@ -339,7 +339,7 @@ public final class UniqueString implements Serializable
         dis.readInt(); // skip, because invalid for the given internTbl
         final int slen = dis.readInt();
         final String str = dis.readString(slen);
-        return tbl.get(str);
+        return UniqueString.uniqueStringOf(str);
     }
 
 
