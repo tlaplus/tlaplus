@@ -491,6 +491,7 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -501,6 +502,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="${threadLimit}"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
 			<!-- Distributed TLC tests must be run sequentially because they bind
 					 exclusively to a port on the system. -->
 			<batchtest fork="yes" todir="${test.reports}">
@@ -551,6 +553,7 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -563,6 +566,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="1"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<!-- Put longer-running tests first -->
@@ -705,6 +709,7 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
+				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
@@ -717,6 +722,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
 
 			<!-- Print all output of the test to the screen. -->
 			<formatter type="plain" usefile="false" />
@@ -914,6 +920,7 @@
 					<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar"/>
 					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
 					<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
+					<pathelement location="lib/CommunityModules.jar"/>
 					<pathelement location="${dist.file}" />
 					<pathelement path="${test.class.dir}" />
 					<pathelement path="test-model/" />
@@ -925,6 +932,7 @@
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
+				<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
 	
 				<batchtest fork="yes" todir="${test.reports}/onJar">
 					<fileset dir="${test.dir}">
