@@ -380,8 +380,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 
 	protected boolean matchesExpression(final TLCSourceBreakpoint bp, boolean fire) {
 		if (bp.getCondition() != null && !bp.getCondition().isEmpty()) {
-			final ModuleNode module = tool.getSpecProcessor().getRootModule();
-			final OpDefNode odn = module.getOpDef(bp.getCondition());
+			final OpDefNode odn = bp.condition; // TODO Use Getter method.
 			// odn == null should be redundant because of check in
 			// tlc2.debug.TLCDebugger.setBreakpoints(SetBreakpointsArguments)
 			if (odn != null) {
@@ -410,6 +409,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					// expression.
 					
 					// Swallow the exception to make TLC continue instead of crash.
+					e.printStackTrace(); //TODO Remove after expression feature has been implemented.
 				}
 //				return false;
 //			});

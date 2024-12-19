@@ -152,8 +152,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		//		return tool.getSpecProcessor().getVariablesNodes();
 	}
 	
-	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column, final int hitCnt, String condition) {
-		final SetBreakpointsArguments arguments = new SetBreakpointsArguments();
+	protected static SourceBreakpoint createBreakpointInfo(final int line, final int column, final int hitCnt, String condition) {
 		final SourceBreakpoint breakpoint = new SourceBreakpoint();
 		breakpoint.setLine(line);
 		breakpoint.setColumn(column);
@@ -163,12 +162,21 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		if (condition != null) {
 			breakpoint.setCondition(condition);
 		}
-		final SourceBreakpoint[] breakpoints = new SourceBreakpoint[] { breakpoint };
+		return breakpoint;
+	}
+
+	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, SourceBreakpoint... breakpoints) {
+		final SetBreakpointsArguments arguments = new SetBreakpointsArguments();
 		arguments.setBreakpoints(breakpoints);
 		final Source source = new Source();
 		source.setName(spec);
 		arguments.setSource(source);
 		return arguments;
+	}
+
+	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column, final int hitCnt, String condition) {
+		final SourceBreakpoint breakpoint = createBreakpointInfo(line, column, hitCnt, condition);
+		return createBreakpointArgument(spec, breakpoint);
 	}
 	
 	protected static SetBreakpointsArguments createBreakpointArgument(final String spec, final int line, final int column, final int hitCnt) {
