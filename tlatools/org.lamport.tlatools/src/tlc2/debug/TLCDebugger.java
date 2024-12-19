@@ -407,7 +407,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			final SourceBreakpoint[] sbps = args.getBreakpoints();
 			final Breakpoint[] bp = new Breakpoint[sbps.length];
 			for (int j = 0; j < sbps.length; j++) {
-				final TLCSourceBreakpoint sbp = new TLCSourceBreakpoint(module, sbps[j]);
+				final TLCSourceBreakpoint sbp = new TLCSourceBreakpoint(tool.getSpecProcessor(), module, sbps[j],
+						moduleNode);
 				breakpoints.get(module).add(sbp);
 				
 				// Create the response that communicates the result of setting the breakpoint.
