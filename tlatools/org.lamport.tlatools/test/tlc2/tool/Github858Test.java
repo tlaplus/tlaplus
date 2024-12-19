@@ -33,11 +33,14 @@ import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
+import util.FileUtil;
 
 public class Github858Test extends ModelCheckerTestCase {
 
 	public Github858Test() {
-		super("EWD998", "EWD998/", new String[] { "-config", "Github858.cfg", "-simulate" },
+		super("EWD998", "EWD998/",
+				new String[] { "-config", "Github858.cfg", "-simulate", "-dumptrace", "tlcaction",
+						"states" + FileUtil.separator + Github858Test.class.getCanonicalName() + ".tla" },
 				EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
