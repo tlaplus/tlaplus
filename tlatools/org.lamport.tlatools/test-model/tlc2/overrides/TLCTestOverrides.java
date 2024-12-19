@@ -27,7 +27,7 @@ package tlc2.overrides;
 
 import tlc2.tool.EvaluatingValueTest;
 
-public class TLCOverrides implements ITLCOverrides {
+public class TLCTestOverrides implements ITLCOverrides {
 
 	/* (non-Javadoc)
 	 * @see tlc2.overrides.ITLCOverrides#get()
