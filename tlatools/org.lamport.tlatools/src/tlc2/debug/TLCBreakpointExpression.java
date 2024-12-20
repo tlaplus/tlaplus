@@ -38,12 +38,19 @@ public class TLCBreakpointExpression {
 	 * @param conditionExpr The unparsed breakpoint expression.
 	 * @return A breakpoint expression, or null if parsing failed.
 	 */
-	public static OpDefNode process(
-			final SpecProcessor processor,
-			final ModuleNode semanticRoot,
-			final Location location,
-			final String conditionExpr
-	) {
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final Location location, final String conditionExpr) {
+		final List<String> paramNames = getScopedIdentifiers(semanticRoot, location);
+		return process(processor, semanticRoot, paramNames, conditionExpr);
+	}
+
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final String conditionExpr) {
+		return process(processor, semanticRoot, new ArrayList<>(), conditionExpr);
+	}
+	
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final List<String> paramNames, final String conditionExpr) {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
@@ -53,7 +60,6 @@ public class TLCBreakpointExpression {
 		final String bpModName = generateUnusedName(semanticRoot, "__BreakpointModule__%s");
 		ToolIO.out.println("BPExpr: wrapping with module \"" + bpModName + "\"");
 		final String bpOpName = generateUnusedName(semanticRoot, "__BreakpointExpr__%s");
-		final List<String> paramNames = getScopedIdentifiers(semanticRoot, location);
 		final String params = paramNames.size() > 0 ? "(" + String.join(", ", paramNames) + ")" : "";
 		final String bpOpDef = bpOpName + params;
 		ToolIO.out.println("BPExpr: wrapping with op \"" + bpOpDef + "\"");
