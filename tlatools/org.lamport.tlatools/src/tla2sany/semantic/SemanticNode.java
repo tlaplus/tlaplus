@@ -179,6 +179,9 @@ public abstract class SemanticNode
       return null;
   }
 
+  	public boolean hasChildren() {
+  		return !getListOfChildren().isEmpty();
+  	}
 	/**
 	 * @return Returns an empty list instead of null compared to getChildren.
 	 */
@@ -250,7 +253,8 @@ public abstract class SemanticNode
 
 					@Override
 					public void preVisit(final SemanticNode node) {
-						if (location.equals(node.getLocation()) || (0 == node.getChildren().length && node.getLocation().includes(location))) {
+						if (location.equals(node.getLocation())
+								|| (!node.hasChildren() && node.getLocation().includes(location))) {
 							// node will be added to pathToLoc in postVisit!
 							pathToLoc = new LinkedList<>();
 						} else if (node instanceof OpDefNode) {
