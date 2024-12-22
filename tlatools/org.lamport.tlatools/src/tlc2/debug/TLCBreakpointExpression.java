@@ -228,7 +228,7 @@ public class TLCBreakpointExpression {
 	) {
 		Set<String> identifiers = new HashSet<String>();
 		// pathTo starts at breakpoint location then goes up to module root
-		List<SemanticNode> path = semanticRoot.pathTo(location);
+		List<SemanticNode> path = semanticRoot.pathTo(location, false);
 		for (SemanticNode current : path) {
 			// Extract i from LET i == 5 IN ...
 			if (current instanceof LetInNode) {

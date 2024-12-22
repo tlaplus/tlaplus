@@ -499,7 +499,7 @@ public class TLCStackFrame extends StackFrame {
 			final String moduleName = Paths.get(u.getPath()).getFileName().toString().replaceAll(".tla$", "");
 
 			final Location location = Location.parseCoordinates(moduleName, u.getFragment());
-			final LinkedList<SemanticNode> path = tool.getModule(location.source()).pathTo(location);
+			final LinkedList<SemanticNode> path = tool.getModule(location.source()).pathTo(location, true);
 			if (path.isEmpty()) {
 				// Can be resolved to something. If not, the user hovered over something like a comment.
 				er.setResult(location.toString());
