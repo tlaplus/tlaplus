@@ -2,17 +2,17 @@
 EXTENDS Naturals
 VARIABLE i
 CONSTANT j
+ASSUME j \in Nat
 op(k) ==
-  \A l \in 0 .. k :
-    LET m == i IN
-      TRUE
-Inv == op(i)
+  \A l \in 0 .. (j - k) :
+    i \in Nat
+Inv == op(5)
 Init == i = 0
 Next == IF i < j THEN i' = i + 1 ELSE UNCHANGED i
 ====
 ---- CONFIG ExpressionBreakpointTest ----
 CONSTANT j = 10
-INVARIANT Inv
+INVARIANTS Inv
 INIT Init
 NEXT Next
 ====
