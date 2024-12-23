@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.junit.Assert;
 
 import tla2sany.semantic.ModuleNode;
@@ -18,6 +22,7 @@ import tla2sany.st.Location;
  * tests, to check that various nested TLA+ syntax constructs have their
  * introduced identifiers appropriately recorded.
  */
+@RunWith(Parameterized.class)
 public class GetScopedIdentifiersTests {
 
   private static class TestCase {
@@ -28,6 +33,9 @@ public class GetScopedIdentifiersTests {
       this.input = input;
       this.terminator = terminator;
       this.expected = new HashSet<String>(List.of(expected));
+    }
+    public String toString() {
+    	return this.input;
     }
   }
 
@@ -57,39 +65,47 @@ public class GetScopedIdentifiersTests {
    * point of the TRUE expression. A terminator to be appended after TRUE is
    * also accepted - for example ⟩ or ) or ] or }.
    */
-  private static final TestCase[] testCases = new TestCase[] {
-    new TestCase("op ≜", ""),
-    new TestCase("op(i, j, k) ≜", "", "j", "i", "k"),
-    new TestCase("op(i) ≜ ∀ j ∈ {} :", "", "i", "j"),
-    new TestCase("op ≜ ∀ i, j ∈ {} :", "", "i", "j"),
-    new TestCase("op ≜ ∀ ⟨i, j, k⟩ ∈ {} :", "", "i", "j", "k"),
-    new TestCase("op(i, j) ≜ LET k == TRUE l == TRUE IN", "", "i", "j", "k", "l"),
-    new TestCase("op ≜ LET i(j, k) == ", " IN TRUE", "i", "j", "k"),
-    new TestCase("op ≜ LET RECURSIVE i i == TRUE IN", "", "i"),
-    new TestCase("op ≜ LET i == TRUE j ==", " IN TRUE", "i", "j"),
-    new TestCase("op(i) ≜ [j, k ∈ {} ↦", "]", "i", "j", "k"),
-    new TestCase("op ≜ [⟨i, j, k⟩ ∈ {} ↦", "]", "i", "j", "k"),
-    new TestCase("op(i, j) ≜ {k ∈ {} :", "}", "i", "j", "k"),
-    new TestCase("RECURSIVE op(_, _) op(f(_,_), i) ≜ op(LAMBDA j, k : ", ", TRUE)", "f", "i", "j", "k"),
-    // This is a bug that needs to be fixed! More likely this will get fixed
-    // when support is added to the semantic checker to introduce "ghost"
-    // expressions at arbitrary points in the semantic tree, rendering all
-    // of this functionality redundant.
-    new TestCase("op(_+_) ≜", "", "+"),
-  };
+  @Parameters(name = "{0}")
+  public static TestCase[] testCases() {
+    return new TestCase[] {
+      new TestCase("op ≜", ""),
+      new TestCase("op(i, j, k) ≜", "", "j", "i", "k"),
+      new TestCase("op(i) ≜ ∀ j ∈ {} :", "", "i", "j"),
+      new TestCase("op ≜ ∀ i, j ∈ {} :", "", "i", "j"),
+      new TestCase("op ≜ ∀ ⟨i, j, k⟩ ∈ {} :", "", "i", "j", "k"),
+      new TestCase("op(i, j) ≜ LET k == TRUE l == TRUE IN", "", "i", "j", "k", "l"),
+      new TestCase("op ≜ LET i(j, k) == ", " IN TRUE", "i", "j", "k"),
+      new TestCase("op ≜ LET RECURSIVE i i == TRUE IN", "", "i"),
+      new TestCase("op ≜ LET i == TRUE j ==", " IN TRUE", "i", "j"),
+      new TestCase("op(i) ≜ [j, k ∈ {} ↦", "]", "i", "j", "k"),
+      new TestCase("op ≜ [⟨i, j, k⟩ ∈ {} ↦", "]", "i", "j", "k"),
+      new TestCase("op(i, j) ≜ {k ∈ {} :", "}", "i", "j", "k"),
+      new TestCase("RECURSIVE op(_, _) op(f(_,_), i) ≜ op(LAMBDA j, k : ", ", TRUE)", "f", "i", "j", "k"),
+      new TestCase("op ≜ {⟨i, j, k⟩ ∈ {} : ", "}", "i", "j", "k"),
+      new TestCase("op(i) ≜ {j ∈ {} : ", "}", "i", "j"),
+      new TestCase("op ≜ {", ": i, j ∈ {}}", "i", "j"),
+      new TestCase("op ≜ {", ": ⟨i, j, k⟩ ∈ {}}", "i", "j", "k"),
+      // This is a bug that needs to be fixed! More likely this will get fixed
+      // when support is added to the semantic checker to introduce "ghost"
+      // expressions at arbitrary points in the semantic tree, rendering all
+      // of this functionality redundant.
+      new TestCase("op(_+_) ≜", "", "+"),
+    };
+  }
+
+  @Parameter
+  public TestCase testCase;
 
   /**
    * Run all the test cases and check the identifiers are found as expected.
    */
   @Test
   public void test() {
-    for (TestCase test : testCases) {
-      String input = String.format(wrapper, test.input, test.terminator);
-      ModuleNode parsed = ParserInterface.parse(input);
-      Assert.assertNotNull(parsed);
-      Assert.assertEquals(1, parsed.getOpDefs().length);
-      Set<String> actual = TLCBreakpointExpression.getScopedIdentifiers(parsed, location);
-      Assert.assertEquals(test.expected, actual);
-    }
+    String input = String.format(wrapper, testCase.input, testCase.terminator);
+    ModuleNode parsed = ParserInterface.parse(input);
+    Assert.assertNotNull(parsed);
+    Assert.assertEquals(1, parsed.getOpDefs().length);
+    Set<String> actual = TLCBreakpointExpression.getScopedIdentifiers(parsed, location);
+    Assert.assertEquals(testCase.expected, actual);
   }
 }
