@@ -435,6 +435,8 @@ public class TLCGetSet implements ValueConstants {
 			} else if (TLCGlobals.simulator != null) {
 				return TLCGlobals.simulator.getAllValues();
 			}
+		} else if (sv.val.startsWith("-D")) {
+			return new StringValue(System.getProperty(sv.val.substring(2), sv.val.toString()));
 		}
 		throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
 	}
