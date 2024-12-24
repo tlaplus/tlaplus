@@ -179,6 +179,9 @@ public abstract class SemanticNode
       return null;
   }
 
+  	public boolean hasChildren() {
+  		return !getListOfChildren().isEmpty();
+  	}
 	/**
 	 * @return Returns an empty list instead of null compared to getChildren.
 	 */
@@ -228,14 +231,20 @@ public abstract class SemanticNode
 	}
 
 	/**
-	 * @return The path in the semantic tree up to the given {@link Location}
-	 *         starting from this node. An empty {@link LinkedList} if no reachable
-	 *         {@link SemanticNode} matches the given {@link Location}.
-	 *         <p>
-	 *         {@link LinkedList#getFirst()} is the {@link SemanticNode} matching
-	 *         {@link Location}.
+	 * Given a location, find the path from some node in this subtree at that
+	 * location up to this node.
+	 *
+	 * @param location Find a node in this subtree matching this location.
+	 * @param requireExactLocationMatch If true, only returns the path if a
+	 *          node spans the exact given location; if false allow paths
+	 *          starting from a leaf node that completely encompasses the
+	 *          given location.
+	 * @return The path in the semantic tree starting at the node matching
+	 *         the location and moving up through parents until reaching this
+	 *         node. An empty list is returned if no node in the subtree
+	 *         matches the given location constraints.
 	 */
-	public LinkedList<SemanticNode> pathTo(final Location location) {
+	public LinkedList<SemanticNode> pathTo(final Location location, boolean requireExactLocationMatch) {
 		final ChildrenVisitor<LinkedList<SemanticNode>> visitor = walkChildren(
 				new ChildrenVisitor<LinkedList<SemanticNode>>() {
 					LinkedList<SemanticNode> pathToLoc;
@@ -250,7 +259,11 @@ public abstract class SemanticNode
 
 					@Override
 					public void preVisit(final SemanticNode node) {
-						if (location.equals(node.getLocation())) {
+						if (location.equals(node.getLocation())
+							|| (!requireExactLocationMatch
+								&& !node.hasChildren()
+								&& node.getLocation().includes(location))
+						) {
 							// node will be added to pathToLoc in postVisit!
 							pathToLoc = new LinkedList<>();
 						} else if (node instanceof OpDefNode) {
@@ -276,7 +289,8 @@ public abstract class SemanticNode
 					@Override
 					public boolean preempt(SemanticNode node) {
 						return pathToLoc != null
-								|| !node.getLocation().includes(location);
+								|| !node.getLocation()
+									.includes(location);
 					}
 
 					@Override

@@ -39,6 +39,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.eclipse.lsp4j.debug.VariablesArguments;
 import org.junit.Test;
 
+import tla2sany.semantic.OpDeclNode;
 import tlc2.output.EC;
 import tlc2.util.Context;
 import tlc2.value.impl.CounterExample;
@@ -303,6 +304,23 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		nested = debugger.variables(args).get().getVariables();
 		assertEquals(1, nested.length);
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
+
+		// Ad-hoc expression-based breakpoint
+		
+		debugger.unsetBreakpoints();
+		sba = createBreakpointArgument(RM, 133, 19, 1, "\\E n \\in Node: inbox[n] = {}"); // Ad-hoc defined expression built from constant and variable value. // TODO Support ctxt, i.e., self!
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(5, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 133, 19, 133, 34, RM, (Context) null, getVars());
+
+		debugger.unsetBreakpoints();
+		sba = createBreakpointArgument(RM, 140, 16, 1, "\\E n \\in Node: inbox'[n] = {}"); // Ad-hoc defined expression built from constant and variable value. // TODO Support ctxt, i.e., self!
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(9, stackFrames.length);
+		final OpDeclNode[] vars = getVars();
+		assertTLCActionFrame(stackFrames[0], 140, 16, 140, 59, RM, (Context) null, vars[1], vars[2], vars[3], vars[4]);
 
 		// POSTCONDITION
 		debugger.unsetBreakpoints();
