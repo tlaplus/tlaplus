@@ -92,6 +92,9 @@ PostCondition ==
 				  
 Constraint == x \in Nat
 ActionConstraint == x' \in Nat
+
+ASSUME TLCGet("-Dfile.separator") \in {"/", "\\"}
+ASSUME TLCGet("-Dasdiftb872w7t4ergvsivc") = "-Dasdiftb872w7t4ergvsivc"
 ==========================================================================
 ---------------------------- CONFIG Github866 ----------------------------
 SPECIFICATION Spec
