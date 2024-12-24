@@ -487,7 +487,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         final Map<String, ModuleNode> modSet = new HashMap<String, ModuleNode>();
         for (int i = 0; i < mods.length; i++)
         {
-            this.processConstants(mods[i]);
+            this.processConstants(mods[i], this.defns);
             modSet.put(mods[i].getName().toString(), mods[i]);
         }
 
@@ -1763,7 +1763,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
      * Yuan claims that this is the only method in TLC that has to find all   *
      * the nodes in such a way.                                               *
      *************************************************************************/
-    private final void processConstants(SemanticNode expr)
+    private final void processConstants(final SemanticNode expr, final Defns d)
     {
         switch (expr.getKind()) {
         case ModuleKind: {
@@ -1776,21 +1776,21 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 if (def instanceof OpDefNode)
                 {
                 	this.processedDefs.add((OpDefNode) def);
-                    this.processConstants(((OpDefNode) def).getBody());
+                    this.processConstants(((OpDefNode) def).getBody(), d);
                 }
-                this.processConstants(opDefs[i].getBody());
+                this.processConstants(opDefs[i].getBody(), d);
             }
             // Process all the inner modules:
             ModuleNode[] imods = expr1.getInnerModules();
             for (int i = 0; i < imods.length; i++)
             {
-                this.processConstants(imods[i]);
+                this.processConstants(imods[i], d);
             }
             // Process all the assumptions:
             AssumeNode[] assumps = expr1.getAssumptions();
             for (int i = 0; i < assumps.length; i++)
             {
-                this.processConstants(assumps[i]);
+                this.processConstants(assumps[i], d);
             }
             // On 13 Nov 2009, Yuan Yu added the following
             // processing of all TheoremNodes, which was needed to
@@ -1799,7 +1799,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // Process all the theorems:
             TheoremNode[] thms = expr1.getTheorems();
             for (int i = 0; i < thms.length; i++) {
-              this.processConstants(thms[i]);
+              this.processConstants(thms[i], d);
             }
 
             return;
@@ -1807,7 +1807,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         case OpApplKind: {
             OpApplNode expr1 = (OpApplNode) expr;
             SymbolNode opNode = expr1.getOperator();
-            Object val = this.defns.get(opNode.getName());
+            Object val = d.get(opNode.getName());
             if (val != null)
             {
                 opNode.setToolObject(toolId, val);
@@ -1818,13 +1818,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     if (args[i] != null)
                     {
-                        this.processConstants(args[i]);
+                        this.processConstants(args[i], d);
                     }
                 }
                 ExprNode[] bnds = expr1.getBdedQuantBounds();
                 for (int i = 0; i < bnds.length; i++)
                 {
-                    this.processConstants(bnds[i]);
+                    this.processConstants(bnds[i], d);
                 }
             }
             return;
@@ -1834,9 +1834,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             OpDefNode[] letDefs = expr1.getLets();
             for (int i = 0; i < letDefs.length; i++)
             {
-                this.processConstants(letDefs[i].getBody());
+                this.processConstants(letDefs[i].getBody(), d);
             }
-            this.processConstants(expr1.getBody());
+            this.processConstants(expr1.getBody(), d);
             return;
         }
         case SubstInKind: {
@@ -1844,9 +1844,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             Subst[] subs = expr1.getSubsts();
             for (int i = 0; i < subs.length; i++)
             {
-                this.processConstants(subs[i].getExpr());
+                this.processConstants(subs[i].getExpr(), d);
             }
-            this.processConstants(expr1.getBody());
+            this.processConstants(expr1.getBody(), d);
             return;
         }
 
@@ -1856,9 +1856,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             Subst[] subs = expr1.getSubsts();
             for (int i = 0; i < subs.length; i++)
             {
-                this.processConstants(subs[i].getExpr());
+                this.processConstants(subs[i].getExpr(), d);
             }
-            this.processConstants(expr1.getBody());
+            this.processConstants(expr1.getBody(), d);
             return;
         }
 
@@ -1889,7 +1889,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
         case AssumeKind: {
             AssumeNode expr1 = (AssumeNode) expr;
-            this.processConstants(expr1.getAssume());
+            this.processConstants(expr1.getAssume(), d);
             return;
         }
         // On 13 Nov 2009, Yuan Yu added the following case, which was
@@ -1899,7 +1899,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         case TheoremKind:
           {
         TheoremNode expr1 = (TheoremNode)expr;
-        this.processConstants(expr1.getTheorem());
+        this.processConstants(expr1.getTheorem(), d);
         return;
           }
         case OpArgKind: {
@@ -1908,7 +1908,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             {   OpDefNode opdef = (OpDefNode) opArgNode ;
                 if (! processedDefs.contains(opdef)) {
                 	processedDefs.add(opdef) ;
-                	this.processConstants(opdef.getBody());
+                	this.processConstants(opdef.getBody(), d);
                 }
             }
             return;
@@ -1918,7 +1918,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
              ***********************************************************************/
         case LabelKind: {
             LabelNode expr1 = (LabelNode) expr;
-            this.processConstants(expr1.getBody());
+            this.processConstants(expr1.getBody(), d);
         }
         }
     }
