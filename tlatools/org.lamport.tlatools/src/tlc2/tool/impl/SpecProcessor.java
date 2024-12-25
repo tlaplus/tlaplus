@@ -124,6 +124,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private Set<OpDefNode> processedDefs;
     private SpecObj specObj;
     private Defns snapshot;
+    private Defns preConstantSnapshot;
 
     private Vect<Action> initPredVec; // The initial state predicate.
     private Action nextPred; // The next state predicate.
@@ -482,8 +483,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
         // Process all the constants in the spec. Note that this must be done
         // here since we use defns. Things added into defns later will make it
-        // wrong to use it in the method processConstants.
-        ModuleNode[] mods = this.moduleTbl.getModuleNodes();
+        // wrong to use it in the method processConstants.  Thus, we first take
+        // a snapshot of defns.
+        this.preConstantSnapshot = this.defns.snapshot();
+        final ModuleNode[] mods = this.moduleTbl.getModuleNodes();
         final Map<String, ModuleNode> modSet = new HashMap<String, ModuleNode>();
         for (int i = 0; i < mods.length; i++)
         {
@@ -1923,6 +1926,27 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
 
+	/**
+	 * Processes the constants of a dynamically generated TLA+ module `S`.
+	 * 
+	 * <p>
+	 * The submodule `S` is a runtime-generated TLA+ module that (transitively)
+	 * EXTENDS the root module `R` of the `SpecProcessor` singleton. The root module
+	 * `R` can be accessed using {@link #getRootModule()}.
+	 * 
+	 * <p>
+	 * This method is responsible for processing the constants declared and defined
+	 * in `S`.
+	 * 
+	 * <p>
+	 * Note: This method does not support processing the constants of a
+	 * runtime-generated module `T` if `T` extends another previously processed
+	 * runtime module `S`, forming a chain such as `T > S > ... > R`.
+	 */
+    public final void processConstantsDynamicExtendee(final ModuleNode submodule) {
+    	processConstants(submodule, this.preConstantSnapshot.snapshot());
+    }
+    
     private final Hashtable<String, Serializable> makeConstantTable(Vect<Vect<String>> consts)
     {
         Hashtable<String, Serializable> constTbl = new Hashtable<>();
