@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
+import java.lang.IndexOutOfBoundsException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -45,15 +45,14 @@ public class LongArrayTest {
 	
 	@Before
 	public void setup() {
-		Assume.assumeTrue(TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86_64);
+		Assume.assumeTrue(LongArray.isSupported());
 	}
 
 	@Test
-	public void testGetAndSet() throws IOException {
+	public void testGetAndSet() {
 		final int elements = 100;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory();
 		
 		for (long i = 0L; i < elements; i++) {
 			assertEquals(0L, array.get(i));
@@ -85,33 +84,32 @@ public class LongArrayTest {
 	}
 	
 	@Test
-	public void testOutOfRangePositive() throws IOException {
+	public void testOutOfRangePositive() {
 		final LongArray array = new LongArray(1);
 		try {
 			array.get(1);
-		} catch (AssertionError e) {
+		} catch (IndexOutOfBoundsException e) {
 			return;
 		}
 		fail();
 	}
 	
 	@Test
-	public void testOutOfRangeNegative() throws IOException {
+	public void testOutOfRangeNegative() {
 		final LongArray array = new LongArray(1);
 		try {
 			array.get(-1);
-		} catch (AssertionError e) {
+		} catch (IllegalArgumentException e) {
 			return;
 		}
 		fail();
 	}
 	
 	@Test
-	public void testGetAndTrySet() throws IOException {
+	public void testGetAndTrySet() {
 		final int elements = 100;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory();
 		
 		// Assert zero successful
 		for (long i = 0L; i < elements; i++) {
@@ -145,27 +143,20 @@ public class LongArrayTest {
 	}
 	
 	@Test
-	public void testZeroMemory() throws IOException {
-		for (int k = 1; k < 8; k++) {
-			for (int i = 1; i < 128; i++) {
-				final LongArray array = new LongArray(i);
-				array.zeroMemory(k);
-				for (int j = 0; i < j; i++) {
-					assertEquals(0L, array.get(j));
-				}
-				for (int j = 0; i < j; i++) {
-					array.set(j, -1L);
-				}
+	public void testZeroMemory() {
+		for (int i = 1; i < 128; i++) {
+			final LongArray array = new LongArray(i);
+			for (int j = 0; j < i; j++) {
+				assertEquals(0L, array.get(j));
 			}
 		}
 	}
 	
 	@Test
-	public void testSwap() throws IOException {
+	public void testSwap() {
 		final int elements = 10321;
 
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory();
 		
 		for (long i = 0L; i < elements; i++) {
 			long value = Long.MAX_VALUE - i;
@@ -173,7 +164,7 @@ public class LongArrayTest {
 		}
 		
 		for (int i = 0; i < (elements / 2); i++) {
-			array.swapCopy(i, (elements - 1) - i);
+			array.swap(i, (elements - 1) - i);
 		}
 		
 		for (long i = 0L; i < elements; i++) {
@@ -182,7 +173,7 @@ public class LongArrayTest {
 	}
 	
 	@Test
-	public void testSwapRandom() throws IOException {
+	public void testSwapRandom() {
 		final int elements = 21383;
 		
 		final List<Long> vals = new ArrayList<Long>();
@@ -193,14 +184,13 @@ public class LongArrayTest {
 		}
 		
 		final LongArray array = new LongArray(elements);
-		array.zeroMemory();
 		
 		for (int i = 0; i < elements; i++) {
 			array.set(i, vals.get(i));
 		}
 		
 		for (int i = 0; i < (elements / 2); i++) {
-			array.swapCopy(i, (elements - 1) - i);
+			array.swap(i, (elements - 1) - i);
 		}
 		
 		Collections.reverse(vals);
