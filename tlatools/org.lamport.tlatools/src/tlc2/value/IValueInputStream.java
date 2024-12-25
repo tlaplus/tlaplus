@@ -58,4 +58,9 @@ public interface IValueInputStream {
 	IDataInputStream getInputStream();
 
 	UniqueString getValue(int idx);
+	
+	/**
+	 * @return whether the underlying data source is exhausted
+	 */
+	boolean atEOF();
 }
