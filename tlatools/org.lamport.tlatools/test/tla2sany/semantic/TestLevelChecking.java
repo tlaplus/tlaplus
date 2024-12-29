@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.Assert;
 
 import tla2sany.parser.SyntaxTreeNode;
-import util.ParserInterface;
+import util.ParserAPI;
 
 /**
  * Some basic tests for the level-checking process.
@@ -165,12 +165,12 @@ public class TestLevelChecking {
   @Test
   public void testAll() {
     for (LevelCheckingTestCase testCase : TestLevelChecking.TestCases) {
-      SyntaxTreeNode parseTree = ParserInterface.processSyntax(testCase.Input);
+      SyntaxTreeNode parseTree = ParserAPI.processSyntax(testCase.Input);
       Errors semanticLog = new Errors();
-      ModuleNode semanticTree = ParserInterface.processSemantics(parseTree, semanticLog);
+      ModuleNode semanticTree = ParserAPI.processSemantics(parseTree, semanticLog);
       Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
       Errors levelCheckingLog = new Errors();
-      boolean actualLevelCheckingResult = ParserInterface.checkLevel(semanticTree, levelCheckingLog);
+      boolean actualLevelCheckingResult = ParserAPI.checkLevel(semanticTree, levelCheckingLog);
       Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
       Assert.assertEquals(testCase.summarize(levelCheckingLog), levelCheckingLog.isSuccess(), actualLevelCheckingResult);
       Assert.assertEquals(testCase.summarize(levelCheckingLog), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);

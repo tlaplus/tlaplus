@@ -1,6 +1,6 @@
 package tlc2.debug;
 
-import util.ParserInterface;
+import util.ParserAPI;
 import util.UniqueString;
 
 import java.util.HashSet;
@@ -102,7 +102,7 @@ public class GetScopedIdentifiersTests {
   @Test
   public void test() {
     String input = String.format(wrapper, testCase.input, testCase.terminator);
-    ModuleNode parsed = ParserInterface.parse(input);
+    ModuleNode parsed = ParserAPI.parse(input);
     Assert.assertNotNull(parsed);
     Assert.assertEquals(1, parsed.getOpDefs().length);
     Set<String> actual = TLCBreakpointExpression.getScopedIdentifiers(parsed, location);

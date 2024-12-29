@@ -163,12 +163,6 @@ public class ModuleNode extends SymbolNode {
 *    an ExprNode[] array.                                                  *
 ***************************************************************************/
 
-  /**
-   * The {@link Generator} instance that performed the semantic analysis
-   * creating this {@link ModuleNode} instance.
-   */
-  public final Generator semanticChecker;
-
   private final Context      ctxt;
     // The (flat) context with all names known in this module, including
     // builtin ops, and ops declared as CONSTANT or VARIABLE, ops
@@ -331,9 +325,8 @@ public class ModuleNode extends SymbolNode {
     ***********************************************************************/
 
   // Invoked only in Generator
-  public ModuleNode(UniqueString us, Context ct, TreeNode stn, Generator gen) {
+  public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
     super(ModuleKind, stn, us);
-    this.semanticChecker = gen;
     this.ctxt = ct;
   }
 
@@ -544,6 +537,22 @@ public class ModuleNode extends SymbolNode {
     return topLevel;
   }
 
+  /**
+   * Generates a plausible definition name that is not already in use in the
+   * context viewable from this module root.
+   *
+   * @param pattern A base pattern in which a number can be interpolated.
+   * @return A name that is unique within the context of the module.
+   */
+  public String generateUnusedName(String pattern) {
+    Context definedNames = this.getContext();
+    String unusedName = null;
+    do {
+      long suffix = System.currentTimeMillis();
+      unusedName = String.format(pattern, Long.toString(suffix));
+    } while (definedNames.occurSymbol(unusedName));
+    return unusedName;
+  }
 
   /**
  * @return the isInstantiated

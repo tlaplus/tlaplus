@@ -76,7 +76,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * constructor. *
 	 ***********************************************************************/
 
-	public final ExternalModuleTable moduleTable;
+	private ExternalModuleTable moduleTable;
 	public Errors errors;
 	private Stack excStack; // Holds stack of OpApplNodes for $Except
 							// operators; used for @
@@ -1984,7 +1984,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		TreeNode[] ss = children[0].heirs(); // Array of heirs of the module header
 												// ss[1] is always the module name
 		String moduleName = ss[1].getImage(); // the module name
-		ModuleNode currentModule = new ModuleNode(ss[1].getUS(), context, treeNode, this);
+		ModuleNode currentModule = new ModuleNode(ss[1].getUS(), context, treeNode);
 		currentModule.nestingLevel = moduleNestingLevel;
 		// if this is an internal module, add its ModuleNode to the end of
 		// the list of definitions for the parent
