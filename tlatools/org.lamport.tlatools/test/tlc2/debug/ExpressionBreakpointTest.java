@@ -1,26 +1,14 @@
 package tlc2.debug;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
-import org.eclipse.lsp4j.debug.StackFrame;
-import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 import org.junit.Assert;
 
-import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
-import tlc2.util.Context;
-import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import util.UniqueString;
-
 
 public class ExpressionBreakpointTest extends TLCDebuggerTestCase {
 

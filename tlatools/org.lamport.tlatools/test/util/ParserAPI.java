@@ -18,7 +18,7 @@ import tla2sany.semantic.SemanticNode;
  * tests. This class can be viewed as a prototype of a future API to be
  * integrated into SANY itself.
  */
-public class ParserInterface {
+public class ParserAPI {
 
   /**
    * Fully parses and checks the given source code input.
@@ -28,7 +28,9 @@ public class ParserInterface {
    */
   public static ModuleNode parse(String input) {
     SyntaxTreeNode syntaxRoot = processSyntax(input);
-    if (null == syntaxRoot) return null;
+    if (null == syntaxRoot) {
+      return null;
+    }
     Errors log = new Errors();
     ModuleNode semanticRoot = processSemantics(syntaxRoot, log);
     if (log.isFailure() || null == semanticRoot) {

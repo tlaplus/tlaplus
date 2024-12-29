@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 Linux Foundation. All rights reserved.
+ * Copyright (c) 2024 Linux Foundation. All rights reserved.
  *
  * The MIT License (MIT)
  *
@@ -36,7 +36,6 @@ import java.util.Set;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
-import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.Generator;
@@ -76,16 +75,13 @@ public class TLCBreakpointExpression {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
-		ToolIO.out.println("BPExpr: processing expression \"" + conditionExpr + "\"");
 
 		final String rootModName = semanticRoot.getName().toString();
-		final String bpModName = generateUnusedName(semanticRoot, "__BreakpointModule__%s");
-		ToolIO.out.println("BPExpr: wrapping with module \"" + bpModName + "\"");
-		final String bpOpName = generateUnusedName(semanticRoot, "__BreakpointExpr__%s");
+		final String bpModName = semanticRoot.generateUnusedName("__BreakpointModule__%s");
+		final String bpOpName = semanticRoot.generateUnusedName("__BreakpointExpr__%s");
 		final Set<String> paramNames = getScopedIdentifiers(semanticRoot, location);
 		final String params = paramNames.size() > 0 ? "(" + String.join(", ", paramNames) + ")" : "";
 		final String bpOpDef = bpOpName + params;
-		ToolIO.out.println("BPExpr: wrapping with op \"" + bpOpDef + "\"");
 
 		final String wrapper = "---- MODULE %s ----\nEXTENDS %s\n%s == %s\n====";
 		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, bpOpDef, conditionExpr);
@@ -98,11 +94,10 @@ public class TLCBreakpointExpression {
 			// Parse error is output to ToolIO.out
 			return null;
 		}
-		ToolIO.out.println("BPExpr: success [syntactic analysis]");
 
 		Errors semanticLog = new Errors();
 		SemanticNode.setError(semanticLog); // Annoyingly static
-		Generator semanticChecker = new Generator(semanticRoot.semanticChecker.moduleTable, semanticLog);
+		Generator semanticChecker = new Generator(processor.getModuleTbl(), semanticLog);
 		ModuleNode bpModule = null;
 		try {
 			bpModule = semanticChecker.generate(syntaxRoot);
@@ -114,21 +109,19 @@ public class TLCBreakpointExpression {
 			ToolIO.err.print(semanticLog.toString());
 			return null;
 		}
-		ToolIO.out.println("BPExpr: success [semantic analysis]");
 
 		// Run level-checking. The operator should be restricted to
 		// action-level or below.
 		Errors levelCheckingErrors = new Errors();
 		boolean levelCheckingSuccess = bpModule.levelCheck(levelCheckingErrors);
 		if (!levelCheckingSuccess || levelCheckingErrors.isFailure() || !bpModule.levelCorrect) {
-			ToolIO.err.println(levelCheckingErrors.toString());
 			return null;
 		}
-		ToolIO.out.println("BPExpr: success [level analysis]");
 		
 		OpDefNode bpOp = bpModule.getOpDef(bpOpName);
 		if (null == bpOp) {
 			ToolIO.err.println("ERROR: unable to find breakpoint expression op " + bpOpName);
+			return null;
 		}
 
 		if (!(LevelConstants.ConstantLevel == bpOp.getLevel() || LevelConstants.VariableLevel == bpOp.getLevel()
@@ -140,25 +133,8 @@ public class TLCBreakpointExpression {
 
 		processor.processConstantsDynamicExtendee(bpModule);
 		
-		ToolIO.out.println("BPExpr: integration complete");
+		ToolIO.out.println("Processed breakpoint expression \"" + conditionExpr + "\"");
 		return bpOp;
-	}
-	
-	/**
-	 * Generates a plausible definition name that is not already in use.
-	 *
-	 * @param semanticRoot The module in which to check for name collisions.
-	 * @param pattern A base pattern in which a number can be interpolated.
-	 * @return A name that is unique within the context of the module.
-	 */
-	private static String generateUnusedName(ModuleNode semanticRoot, String pattern) {
-		Context definedNames = semanticRoot.getContext();
-		String unusedName = null;
-		do {
-			long suffix = System.currentTimeMillis();
-			unusedName = String.format(pattern, Long.toString(suffix));
-		} while (definedNames.occurSymbol(unusedName));
-		return unusedName;
 	}
 	
 	/**
