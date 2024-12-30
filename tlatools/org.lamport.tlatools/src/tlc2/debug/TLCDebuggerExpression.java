@@ -51,10 +51,7 @@ import tla2sany.st.Location;
 import tlc2.tool.impl.SpecProcessor;
 import util.ToolIO;
 
-/**
- * An expression for conditionally triggering a breakpoint.
- */
-public class TLCBreakpointExpression {
+public class TLCDebuggerExpression {
 
 	/**
 	 * Given a spec and an unparsed expression, build an operator that can be
@@ -63,23 +60,38 @@ public class TLCBreakpointExpression {
 	 * @param processor     Processes expression within the model context.
 	 * @param semanticRoot  The root of the spec's semantic parse tree.
 	 * @param location      The breakpoint location.
-	 * @param conditionExpr The unparsed breakpoint expression.
-	 * @return A breakpoint expression, or null if parsing failed.
+	 * @param conditionExpr The unparsed  expression.
+	 * @return An expression, or null if parsing failed.
 	 */
-	public static OpDefNode process(
-			final SpecProcessor processor,
-			final ModuleNode semanticRoot,
-			final Location location,
-			final String conditionExpr
-	) {
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final Location location, final String conditionExpr) {
+		final Set<String> paramNames = getScopedIdentifiers(semanticRoot, location);
+		return process(processor, semanticRoot, paramNames, conditionExpr);
+	}
+
+	/**
+	 * Given a spec and an unparsed expression, build an operator that can be
+	 * evaluated within the context of that spec.
+	 *
+	 * @param processor     Processes expression within the model context.
+	 * @param semanticRoot  The root of the spec's semantic parse tree.
+	 * @param conditionExpr The unparsed  expression.
+	 * @return An expression, or null if parsing failed.
+	 */
+	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final String conditionExpr) {
+		return process(processor, semanticRoot, new HashSet<>(), conditionExpr);
+	}
+
+	private static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
+			final Set<String> paramNames, final String conditionExpr) {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
 
 		final String rootModName = semanticRoot.getName().toString();
-		final String bpModName = semanticRoot.generateUnusedName("__BreakpointModule__%s");
-		final String bpOpName = semanticRoot.generateUnusedName("__BreakpointExpr__%s");
-		final Set<String> paramNames = getScopedIdentifiers(semanticRoot, location);
+		final String bpModName = semanticRoot.generateUnusedName("__DebuggerModule__%s");
+		final String bpOpName = semanticRoot.generateUnusedName("__DebuggerExpr__%s");
 		final String params = paramNames.size() > 0 ? "(" + String.join(", ", paramNames) + ")" : "";
 		final String bpOpDef = bpOpName + params;
 
@@ -126,7 +138,7 @@ public class TLCBreakpointExpression {
 		
 		OpDefNode bpOp = bpModule.getOpDef(bpOpName);
 		if (null == bpOp) {
-			ToolIO.err.println("ERROR: unable to find breakpoint expression op " + bpOpName);
+			ToolIO.err.println("ERROR: unable to find debugger expression op " + bpOpName);
 			return null;
 		}
 
@@ -139,7 +151,7 @@ public class TLCBreakpointExpression {
 
 		processor.processConstantsDynamicExtendee(bpModule);
 		
-		ToolIO.out.println("Processed breakpoint expression \"" + conditionExpr + "\"");
+		ToolIO.out.println("Processed ebugger expression \"" + conditionExpr + "\"");
 		return bpOp;
 	}
 	

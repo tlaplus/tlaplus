@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -496,6 +497,11 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("SendMsg", frob[4].getName());
 		assertEquals("TRUE", frob[4].getValue());
 
+		// Dynamic watch expressions		
+		assertNull(stackFrame.getWatch("").getResult());
+		assertEquals("<<FALSE, FALSE>>", stackFrame.getWatch("[i \\in Nodes \\ {0} |-> PassToken(i)]").getResult());
+		assertEquals("<<FALSE, TRUE>>", stackFrame.getWatch("[i \\in Nodes \\ {0} |-> ENABLED PassToken(i)]").getResult());
+		
 		// POSTCONDITION
 		debugger.unsetBreakpoints();
 		sba = createBreakpointArgument(MDL, 212);

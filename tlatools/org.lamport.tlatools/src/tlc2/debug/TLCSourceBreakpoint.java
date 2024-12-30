@@ -71,7 +71,7 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 			if (odn != null) {
 				condition = odn;
 			} else {
-				condition = TLCBreakpointExpression.process(processor, semanticRoot, location, s.getCondition());
+				condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s.getCondition());
 			}
 		} else {
 			condition = null;
