@@ -128,7 +128,7 @@ public class GetScopedIdentifiersTests {
     ModuleNode parsed = ParserAPI.parse(input);
     Assert.assertNotNull(parsed);
     Assert.assertEquals(1, parsed.getOpDefs().length);
-    Set<String> actual = TLCBreakpointExpression.getScopedIdentifiers(parsed, location);
+    Set<String> actual = TLCDebuggerExpression.getScopedIdentifiers(parsed, location);
     Assert.assertEquals(testCase.expected, actual);
   }
 }
