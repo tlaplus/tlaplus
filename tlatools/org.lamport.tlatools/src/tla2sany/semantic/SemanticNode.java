@@ -231,6 +231,13 @@ public abstract class SemanticNode
 	}
 
 	/**
+	 * @see #pathTo(Location, Boolean)
+	 */
+	public LinkedList<SemanticNode> pathTo(final Location location) {
+		return pathTo(location, true);
+	}
+
+	/**
 	 * Given a location, find the path from some node in this subtree at that
 	 * location up to this node.
 	 *

@@ -1,4 +1,30 @@
+/*******************************************************************************
+ * Copyright (c) 2024 Linux Foundation. All rights reserved.
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ ******************************************************************************/
+
 package tlc2.debug;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
@@ -6,6 +32,7 @@ import org.junit.Test;
 import org.junit.Assert;
 
 import tlc2.output.EC;
+import tlc2.tool.EvalControl;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.LazyValue;
 import util.UniqueString;
@@ -19,28 +46,6 @@ public class ExpressionBreakpointTest extends TLCDebuggerTestCase {
 		super(RM, FOLDER, new String[] { "-config", RM + ".tla" }, EC.ExitStatus.SUCCESS);
 	}
 	
-	private static int getContextVal(TLCStackFrame frame, String var) {
-		Object result = frame.getContext().lookup(s -> s.getName().equals(var));
-		if (result instanceof IntValue) {
-			return ((IntValue)result).val;
-		} else if (result instanceof LazyValue) {
-			// Evade cache guard by guessing value from small range.
-			LazyValue lazy = (LazyValue)result;
-			for (int i = 0; i < 20; i++) {
-				if (lazy.equals(IntValue.gen(i))) {
-					return i;
-				}
-			}
-			throw new IllegalArgumentException();
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
-	
-	private static int getStateVal(TLCStackFrame frame, String var) {
-		return ((IntValue)frame.getT().getVals().get(UniqueString.of(var))).val;
-	}
-
 	@Test
 	public void testSpec() throws Exception {
 		// Set breakpoint
@@ -52,12 +57,12 @@ public class ExpressionBreakpointTest extends TLCDebuggerTestCase {
 		debugger.continue_();
 		
 		// Break at bp
-		TLCStackFrame current = (TLCStackFrame)debugger.continue_()[0];
-		final int i = getStateVal(current, "i");
-		final int j = 10;
-		final int k = getContextVal(current, "k");
-		final int l = getContextVal(current, "l");
-		Assert.assertEquals(j + 1, i + l + k);
+		final TLCStateStackFrame current = (TLCStateStackFrame) debugger.continue_()[0];
+		Assert.assertEquals(2, ((IntValue) current.getT().getVals().get(UniqueString.of("i"))).val);
+		final Map<String, String> allVariables = new HashMap<>();
+		allVariables.put("k", "5");
+		allVariables.put("l", "4");
+		assertTLCStateFrame(current, 8, 8, RM, allVariables);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

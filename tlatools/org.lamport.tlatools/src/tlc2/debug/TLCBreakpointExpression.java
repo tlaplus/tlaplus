@@ -92,29 +92,35 @@ public class TLCBreakpointExpression {
 		SyntaxTreeNode syntaxRoot = parser.ParseTree;
 		if (!syntaxParseSuccess || null == syntaxRoot) {
 			// Parse error is output to ToolIO.out
+			ToolIO.err.println("Syntax error while parsing breakpoint expression \"" + conditionExpr + "\"");
 			return null;
 		}
 
 		Errors semanticLog = new Errors();
-		SemanticNode.setError(semanticLog); // Annoyingly static
+		SemanticNode.setError(semanticLog);
 		Generator semanticChecker = new Generator(processor.getModuleTbl(), semanticLog);
 		ModuleNode bpModule = null;
 		try {
 			bpModule = semanticChecker.generate(syntaxRoot);
 		} catch (AbortException e) {
 			ToolIO.err.print(e.toString());
+			ToolIO.err.println("Semantic error while parsing breakpoint expression \"" + conditionExpr + "\"");
 			return null;
 		}
 		if (null == bpModule || semanticLog.isFailure()) {
 			ToolIO.err.print(semanticLog.toString());
+			ToolIO.err.println("Semantic error while parsing breakpoint expression \"" + conditionExpr + "\"");
 			return null;
 		}
 
 		// Run level-checking. The operator should be restricted to
 		// action-level or below.
 		Errors levelCheckingErrors = new Errors();
+		SemanticNode.setError(levelCheckingErrors);
 		boolean levelCheckingSuccess = bpModule.levelCheck(levelCheckingErrors);
 		if (!levelCheckingSuccess || levelCheckingErrors.isFailure() || !bpModule.levelCorrect) {
+			ToolIO.err.println(levelCheckingErrors.toString());
+			ToolIO.err.println("Level-checking error while parsing breakpoint expression \"" + conditionExpr + "\"");
 			return null;
 		}
 		
