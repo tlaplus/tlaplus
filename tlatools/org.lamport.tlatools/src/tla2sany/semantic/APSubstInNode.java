@@ -85,12 +85,12 @@ public class APSubstInNode extends LevelNode {
    * substitutions is to be produced.
    */
   public APSubstInNode(TreeNode treeNode, SymbolTable instancerST,
-		     Vector instanceeDecls, ModuleNode ingmn, ModuleNode edmn)
+		     Vector instanceeDecls, ModuleNode ingmn, ModuleNode edmn, Errors errors)
   throws AbortException {
     super(APSubstInKind, treeNode);
     this.instantiatingModule = ingmn;
     this.instantiatedModule = edmn;
-    constructSubst(instanceeDecls, instancerST, treeNode);
+    constructSubst(instanceeDecls, instancerST, treeNode, errors);
     this.body = null;
   }
 
@@ -136,7 +136,7 @@ public class APSubstInNode extends LevelNode {
    * VARIABLE OpDeclNode in vector v.
    */
   final void constructSubst(Vector instanceeDecls, SymbolTable instancerST,
-			    TreeNode treeNode)
+			    TreeNode treeNode, Errors errors)
   throws AbortException {
     Vector vtemp = new Vector();
 
@@ -173,7 +173,7 @@ public class APSubstInNode extends LevelNode {
 	  // an OpApplNode with zero arguments
           vtemp.addElement(
              new Subst(decl,
-		       new OpApplNode(symb, new ExprOrOpArgNode[0], treeNode, instantiatingModule),
+		       new OpApplNode(symb, new ExprOrOpArgNode[0], treeNode, instantiatingModule, errors),
 		       null, true));
         }
 	else {

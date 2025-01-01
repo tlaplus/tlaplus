@@ -222,8 +222,6 @@ public class SANY {
     Errors      semanticErrors = spec.semanticErrors;
 
     try {
-      SemanticNode.setError(semanticErrors);
-      
       // Go through the semanticAnalysisVector, and generate the
       // semantic graph for each external module in it, adding at each
       // iteration what was generated (i.e. <context, node>) to

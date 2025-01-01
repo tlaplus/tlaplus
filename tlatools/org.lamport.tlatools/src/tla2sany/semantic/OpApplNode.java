@@ -147,7 +147,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * Generator.
    */
   public OpApplNode(SymbolNode op, ExprOrOpArgNode[] oprands, TreeNode stn,
-                    ModuleNode mn) throws AbortException {
+                    ModuleNode mn, Errors errors) throws AbortException {
     super(OpApplKind, stn);
     this.operator = op;
     this.operands = oprands;

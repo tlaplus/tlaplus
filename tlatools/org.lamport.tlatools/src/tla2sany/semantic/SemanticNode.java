@@ -41,8 +41,6 @@ public abstract class SemanticNode
 
   private static final AtomicInteger uid = new AtomicInteger();  // the next unique ID for any semantic node
 
-  protected static Errors errors;
-
   public    final int      myUID;    // the unique ID of THIS semantic node
   public    TreeNode stn;      // the concrete syntax tree node associated with THIS semantic node
   private   Object[] tools;    // each tool has a location in this array where
@@ -56,8 +54,6 @@ public abstract class SemanticNode
     this.stn = stn;
     this.tools = EmptyArr;
   }
-
-  public static void setError(Errors errs) { errors = errs; }
 
   public static String levelToString(int level) {
     switch (level) {

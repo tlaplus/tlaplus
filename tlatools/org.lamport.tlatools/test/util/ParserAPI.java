@@ -33,7 +33,6 @@ import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.SemanticNode;
 
 /**
  * A simple API for parsing self-contained TLA+ modules, for use in tests. This
@@ -107,7 +106,6 @@ public abstract class ParserAPI {
     // These two lines are annoying incantations to set global static state
     // that will hopefully be made unnecessary in the future.
     Context.reInit();
-    SemanticNode.setError(log);
     // The null parameter here is the {@link ExternalModuleTable}, which will
     // need to be resolved & populated if this API is to one day support TLA+
     // modules that EXTEND or INSTANCE other TLA+ modules.
@@ -130,7 +128,6 @@ public abstract class ParserAPI {
    * @return Whether levels in parse tree are correct.
    */
   public static boolean checkLevel(ModuleNode semanticRoot, Errors log) {
-    SemanticNode.setError(log);
     boolean levelOk = semanticRoot.levelCheck(log);
     return levelOk && log.isSuccess();
   }
