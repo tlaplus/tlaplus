@@ -113,7 +113,6 @@ public abstract class TLCDebuggerExpression {
 		}
 
 		Errors semanticLog = new Errors();
-		SemanticNode.setError(semanticLog);
 		Generator semanticChecker = new Generator(processor.getModuleTbl(), semanticLog);
 		ModuleNode bpModule = null;
 		try {
@@ -132,7 +131,6 @@ public abstract class TLCDebuggerExpression {
 		// Run level-checking. The operator should be restricted to
 		// action-level or below.
 		Errors levelCheckingErrors = new Errors();
-		SemanticNode.setError(levelCheckingErrors);
 		boolean levelCheckingSuccess = bpModule.levelCheck(levelCheckingErrors);
 		if (!levelCheckingSuccess || levelCheckingErrors.isFailure() || !bpModule.levelCorrect) {
 			ToolIO.err.println(levelCheckingErrors.toString());
