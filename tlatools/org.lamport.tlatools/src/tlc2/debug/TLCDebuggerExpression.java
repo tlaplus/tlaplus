@@ -220,10 +220,7 @@ public abstract class TLCDebuggerExpression {
 	 * @param location     The breakpoint location.
 	 * @return A list of local identifiers accessible at the given location.
 	 */
-	static Set<String> getScopedIdentifiers(
-			ModuleNode semanticRoot,
-			Location location
-	) {
+	static Set<String> getScopedIdentifiers(ModuleNode semanticRoot, Location location) {
 		Set<String> identifiers = new HashSet<String>();
 		// pathTo starts at breakpoint location then goes up to module root
 		List<SemanticNode> path = semanticRoot.pathTo(location, false);

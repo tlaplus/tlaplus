@@ -20,7 +20,6 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-
 package util;
 
 import java.io.ByteArrayInputStream;
@@ -37,9 +36,9 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.SemanticNode;
 
 /**
- * A simple interface for parsing self-contained TLA+ modules, for use in
- * tests. This class can be viewed as a prototype of a future API to be
- * integrated into SANY itself.
+ * A simple API for parsing self-contained TLA+ modules, for use in tests. This
+ * class can be viewed as a prototype of a future API to be integrated into SANY
+ * itself.
  */
 public abstract class ParserAPI {
 
