@@ -246,7 +246,7 @@ public class SymbolTable implements ASTConstants {
 
     for (int c = contextStack.size()-1; c >= 0; c--) {
       Context ct = (Context) contextStack.elementAt(c);
-      Vector v = ct.getContextEntryStringVector(1,true);
+      Vector v = ct.getContextEntryStringVector(1,true, errors);
 
       for (int i = 0; i < v.size(); i++) {
         ret += (String)v.elementAt(i);

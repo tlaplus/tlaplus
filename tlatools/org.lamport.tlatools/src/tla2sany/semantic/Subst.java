@@ -250,10 +250,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
     visitor.postVisit(this);
   }
 
-  public final String toString(int depth) {
-    return "\nOp: " + Strings.indent(2,(op!=null ? op.toString(depth-1) :
+  public final String toString(int depth, Errors errors) {
+    return "\nOp: " + Strings.indent(2,(op!=null ? op.toString(depth-1, errors) :
                                            "<null>" )) +
-           "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1) : "<null>"));
+           "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1, errors) : "<null>"));
   }
 
   public Element export(Document doc, SymbolContext context) {

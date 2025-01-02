@@ -81,13 +81,13 @@ public class DefStepNode extends LevelNode {
    }
   
   @Override
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String ret = "\n*DefStepNode:\n"
-                  + super.toString(depth)
+                  + super.toString(depth, errors)
                   + Strings.indent(2, "\ndefs:") ;
     for (int i = 0 ; i < this.defs.length; i++) {
-        ret += Strings.indent(4, this.defs[i].toString(depth-1)) ;
+        ret += Strings.indent(4, this.defs[i].toString(depth-1, errors)) ;
       } ;
     return ret;
    }

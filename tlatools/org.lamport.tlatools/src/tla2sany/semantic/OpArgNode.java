@@ -133,11 +133,11 @@ public class OpArgNode extends ExprOrOpArgNode {
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
     return "\n*OpArgNode: " + ( name != null ? name.toString() : "null") +
-      "  " + super.toString(depth) +
+      "  " + super.toString(depth, errors) +
       "  arity: " + arity +
       "  op: " + (op != null ? "" + ((SemanticNode)op).getUid() : "null" );
   }

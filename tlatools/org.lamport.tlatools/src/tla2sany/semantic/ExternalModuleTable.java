@@ -55,11 +55,11 @@ public class ExternalModuleTable implements ExploreNode {
       if (ctxt != null)      ctxt.walkGraph(moduleNodesTable, visitor);
     } // end walkGraph()
 
-    public String toString(int depth) {
+    public String toString(int depth, Errors errors) {
       if (depth <= 0) return "";
       
       if (moduleNode != null) {
-	return Strings.indent(2, "\nModule: " + Strings.indent(2,moduleNode.toString(depth)) );
+	return Strings.indent(2, "\nModule: " + Strings.indent(2,moduleNode.toString(depth, errors)) );
       } else {
 	return Strings.indent(2, "\nModule: " + Strings.indent(2, "\n***Null ExternalModuleTable entry; " + 
 							       "module contained error and was not created."));
@@ -180,14 +180,14 @@ public class ExternalModuleTable implements ExploreNode {
    */
   public String levelDataToString() { return "Dummy level string"; }
 
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
     String ret = "";
     for (int i = 0; i < moduleNodeVector.size(); i++) {
       ModuleNode mn = (ModuleNode)moduleNodeVector.elementAt(i);
       if (mn != null) {
-        ret += Strings.indent(2, "\nModule: " + Strings.indent(2, mn.toString(depth)) );
+        ret += Strings.indent(2, "\nModule: " + Strings.indent(2, mn.toString(depth, errors)) );
       } else {
 	String str = "\n***Null ExternalModuleTable entry; module contained error and was not created.";
 	ret += Strings.indent(2, "\nModule: " + Strings.indent(2, str));

@@ -592,11 +592,11 @@ public class ThmOrAssumpDefNode extends SymbolNode
    }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String ret =
           "\n*ThmOrAssumpDefNode: " + this.getName().toString() +
-            "  " + super.toString(depth) +
+            "  " + super.toString(depth, errors) +
             " arity: " + this.arity +
             " module: " + (originallyDefinedInModule != null
                              ? originallyDefinedInModule.getName().toString()
@@ -607,7 +607,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
       String tempString = "\nFormal params: " + params.length;
       for (int i = 0; i < params.length; i++) {
         tempString += Strings.indent(2, ((params[i] != null)
-                                        ? params[i].toString(depth-1)
+                                        ? params[i].toString(depth-1, errors)
                                          : "\nnull"));
         } ;
       ret += Strings.indent(2,tempString);
@@ -616,7 +616,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
         ret += Strings.indent(2,
                              "\nisTheorem(): " + theorem +
                              "\nBody:" +
-                              Strings.indent(2, this.body.toString(depth-1)) +
+                              Strings.indent(2, this.body.toString(depth-1, errors)) +
                              "\nsuffices: " + this.isSuffices());
       } // if
     /***********************************************************************

@@ -1159,25 +1159,25 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     if (depth <= 0) return;
 
     System.out.print(
-      "*ModuleNode: " + name + "  " + super.toString(depth)
+      "*ModuleNode: " + name + "  " + super.toString(depth, errors)
       + "  errors: " + (errors == null
                            ? "null"
                            : (errors.getNumErrors() == 0
                                  ? "none"
                                  : "" +errors.getNumErrors())));
 
-    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1, b);
+    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1, b, errors);
     for (int i = 0; i < contextEntries.size(); i++) {
       System.out.print(Strings.indent(2+indent, (String)contextEntries.elementAt(i)) );
     }
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
     String ret =
-      "\n*ModuleNode: " + name + "  " + super.toString(depth) +
+      "\n*ModuleNode: " + name + "  " + super.toString(depth, errors) +
       "  constant module: " + this.isConstant(errors) +
       "  errors: " + (errors == null
                         ? "null"
@@ -1185,7 +1185,7 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
                               ? "none"
                               : "" + errors.getNumErrors()));
 
-    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1,false);
+    Vector contextEntries = ctxt.getContextEntryStringVector(depth-1,false, errors);
     if (contextEntries != null) {
       for (int i = 0; i < contextEntries.size(); i++) {
         if (contextEntries.elementAt(i) != null) {
@@ -1204,28 +1204,28 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     if ( instanceVec.size() > 0 ) {
       ret += Strings.indent(2, "\nInstantiations:");
       for (int i = 0; i < instanceVec.size(); i++) {
-        ret += Strings.indent(4, ((InstanceNode)(instanceVec.elementAt(i))).toString(1));
+        ret += Strings.indent(4, ((InstanceNode)(instanceVec.elementAt(i))).toString(1, errors));
       }
     }
 
     if ( assumptionVec.size() > 0 ) {
       ret += Strings.indent(2, "\nAssumptions:");
       for (int i = 0; i < assumptionVec.size(); i++) {
-        ret += Strings.indent(4, ((AssumeNode)(assumptionVec.elementAt(i))).toString(1));
+        ret += Strings.indent(4, ((AssumeNode)(assumptionVec.elementAt(i))).toString(1, errors));
       }
     }
 
     if ( theoremVec.size() > 0 ) {
       ret += Strings.indent(2, "\nTheorems:");
       for (int i = 0; i < theoremVec.size(); i++) {
-        ret += Strings.indent(4, ((TheoremNode)(theoremVec.elementAt(i))).toString(1));
+        ret += Strings.indent(4, ((TheoremNode)(theoremVec.elementAt(i))).toString(1, errors));
       }
     }
 
     if ( topLevelVec.size() > 0 ) {
       ret += Strings.indent(2, "\ntopLevelVec: ");
       for (int i = 0; i < topLevelVec.size(); i++) {
-        ret += Strings.indent(4, ((LevelNode) topLevelVec.elementAt(i)).toString(1));
+        ret += Strings.indent(4, ((LevelNode) topLevelVec.elementAt(i)).toString(1, errors));
         }
       };
     return ret;

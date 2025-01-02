@@ -132,10 +132,10 @@ public class NumeralNode extends ExprNode {
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
-    return("\n*NumeralNode: " + super.toString(depth) + " Value: " + value +
+    return("\n*NumeralNode: " + super.toString(depth, errors) + " Value: " + value +
 	   (bigValue != null ? ("; big value: " + bigValue.toString()) : "") +
 	   "; image: " + image);
   }

@@ -296,19 +296,19 @@ public class LabelNode extends ExprNode
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
-    String ret = "\n*LabelNode: " + super.toString(depth);
+    String ret = "\n*LabelNode: " + super.toString(depth, errors);
     ret += Strings.indent(2, "\nname: " + name.toString()) ;
     for (int i = 0; i < params.length; i++) {
       ret += Strings.indent(2,
                             "\nparam[" + i + "]:" +
                                  Strings.indent(2,
-                                                params[i].toString(depth-1)));
+                                                params[i].toString(depth-1, errors)));
      } ;
     ret += Strings.indent(2, "\nisAssumeProve: " + isAssumeProve) ;
     ret += Strings.indent(2, "\nBody:" +
-                               Strings.indent(2, body.toString(depth-1)));
+                               Strings.indent(2, body.toString(depth-1, errors)));
 
     /***********************************************************************
     * The following is the same for all classes that implement the         *
@@ -324,10 +324,10 @@ public class LabelNode extends ExprNode
     else {ret += "\n  Labels: null";} ;
     if (this.subExpressionOf != null) {
        ret += Strings.indent(2, "\nsubExpressionOf: " +
-                  Strings.indent(2, this.subExpressionOf.toString(1))) ;} ;
+                  Strings.indent(2, this.subExpressionOf.toString(1, errors))) ;} ;
 
     if (goal != null) {
-      ret += "\n goal: " + Strings.indent(4, this.goal.toString(1)) +
+      ret += "\n goal: " + Strings.indent(4, this.goal.toString(1, errors)) +
              "\n goalClause: " + goalClause ;
      } ;
     return ret;

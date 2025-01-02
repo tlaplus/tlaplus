@@ -380,7 +380,7 @@ public abstract class SemanticNode
    * of SemanticNode for implementing ExploreNode interface; the depth
    * parameter is a bound on the depth of the tree that is converted to String.
    */
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     return ("  uid: " + myUID +
 	    "  kind: " + (kind == -1 ? "<none>" : kinds[kind])
@@ -505,7 +505,7 @@ public abstract class SemanticNode
      */
 
   protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
-      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
+      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass());
     }
 
     /**

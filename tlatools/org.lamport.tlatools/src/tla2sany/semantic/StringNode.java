@@ -125,9 +125,9 @@ public class StringNode extends ExprNode implements ExploreNode {
    }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
-    return "\n*StringNode: " + super.toString(depth)
+    return "\n*StringNode: " + super.toString(depth, errors)
                              + "Value: '" + PrintVersion(value.toString()) +
                              "'" + " Length: " + value.length();
   }

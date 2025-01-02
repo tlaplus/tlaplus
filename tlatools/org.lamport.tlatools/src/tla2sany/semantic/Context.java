@@ -472,7 +472,7 @@ public class Context implements ExploreNode {
    */
   public String levelDataToString() { return "Dummy level string"; }
 
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     return "Please use Context.getContextEntryStringVector()" +
       " instead of Context.toString()";
   }
@@ -483,9 +483,9 @@ public class Context implements ExploreNode {
   * When trying to use SANY's -d (debug) option, this method throws a      *
   * NullPointerException if the spec has an inner module.  See the         *
   * comment in the walkGraph method of this file for a bit more            *
-  * information.                                                           *
+  * information.                                                           
   *************************************************************************/
-  public Vector<String> getContextEntryStringVector(int depth, boolean b) {
+  public Vector<String> getContextEntryStringVector(int depth, boolean b, Errors errors) {
     Vector<String> ctxtEntries = new Vector<>(100);  // vector of Strings
     Context naturalsContext =
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
@@ -504,7 +504,7 @@ public class Context implements ExploreNode {
         SymbolNode symbNode  = ((Pair)(table.get(key))).info;
 	ctxtEntries.addElement("\nContext Entry: " + key.toString() + "  "
                     + String.valueOf(((SemanticNode)symbNode).myUID).toString() + " "
-                    + Strings.indentSB(2,(symbNode.toString(depth-1))));
+                    + Strings.indentSB(2,(symbNode.toString(depth-1, errors))));
       }
       p = p.link;
     }

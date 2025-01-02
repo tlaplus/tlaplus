@@ -130,9 +130,9 @@ public class DecimalNode extends ExprNode {
    * of the tree that is displayed.
    */
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
-    return( "\n*DecimalNode" + super.toString(depth) + "Mantissa: "
+    return( "\n*DecimalNode" + super.toString(depth, errors) + "Mantissa: "
             + mantissa + "; exponent: " + exponent
             + "; big value: " + (bigVal != null ? bigVal.toString() : "<null>")
             + "\n; image = " + image

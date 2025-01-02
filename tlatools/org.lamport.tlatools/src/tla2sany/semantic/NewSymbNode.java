@@ -181,18 +181,18 @@ public class NewSymbNode extends LevelNode {
    }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String setString = "" ;
     if (this.set != null) {
       setString = Strings.indent(2,
-                   "\nSet:" + Strings.indent(2, this.set.toString(depth-1)));
+                   "\nSet:" + Strings.indent(2, this.set.toString(depth-1, errors)));
      }
     return "\n*NewSymbNode: " +
-	    "  " + super.toString(depth) +
+	    "  " + super.toString(depth, errors) +
              Strings.indent(2, "\nKind: " + this.getKind() +
                           "\nopDeclNode:" + Strings.indent(2,
-                                this.opDeclNode.toString(depth-1)) +
+                                this.opDeclNode.toString(depth-1, errors)) +
              setString);
    }
 

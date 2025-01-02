@@ -19,7 +19,6 @@ import java.util.StringTokenizer;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
-import tla2sany.semantic.Generator;
 import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -102,7 +101,7 @@ public class Explorer {
 		// See if the object requested is already in the table
 		if ((obj = (ExploreNode) semNodesTable.get(icmd)) != null) {
 			// Print tree to depth of icmd2
-			System.out.println(((ExploreNode) obj).toString(depth));
+			System.out.println(((ExploreNode) obj).toString(depth, errors));
 			System.out.print("\n" + ((ExploreNode) obj).levelDataToString());
 		} else {
 			// object requested is not in semNodesTable
@@ -170,8 +169,7 @@ public class Explorer {
 			} else if (sym instanceof FormalParamNode) {
 				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName());
 			}
-			System.out.println(((ExploreNode) (symbolVect.elementAt(i))).toString(100));
-			System.out.println();
+			System.out.println(((ExploreNode) (symbolVect.elementAt(i))).toString(100, errors) + "\n");
 		}
 
 	}

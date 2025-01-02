@@ -401,11 +401,11 @@ public class APSubstInNode extends LevelNode {
 //  }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
     String ret = "\n*APSubstInNode: "
-                 + super.toString(depth)
+                 + super.toString(depth, errors)
 	         + "\n  instantiating module: " + instantiatingModule.getName()
                  + ", instantiated module: " + instantiatedModule.getName()
                  + Strings.indent(2, "\nSubstitutions:");
@@ -414,7 +414,7 @@ public class APSubstInNode extends LevelNode {
         ret += Strings.indent(2,
                       Strings.indent(2, "\nSubst:" +
                         (this.substs[i] != null ?
-                         Strings.indent(2, this.substs[i].toString(depth-1)) :
+                         Strings.indent(2, this.substs[i].toString(depth-1, errors)) :
                          "<null>")));
       }
     }
@@ -422,7 +422,7 @@ public class APSubstInNode extends LevelNode {
       ret += Strings.indent(2, "<null>");
     }
     ret += Strings.indent(2, "\nBody:"
-			  + Strings.indent(2, (body == null ? "<null>" : body.toString(depth-1))));
+			  + Strings.indent(2, (body == null ? "<null>" : body.toString(depth-1, errors))));
     return ret;
   }
 
