@@ -162,9 +162,9 @@ public class OpDeclNode extends OpDefOrDeclNode {
 	}
 
   @Override
-  public final String toString (int depth) {
+  public final String toString (int depth, Errors errors) {
     if (depth <= 0) return "";
-    return "\n*OpDeclNode: " + this.getName() + "  " + super.toString(depth)
+    return "\n*OpDeclNode: " + this.getName() + "  " + super.toString(depth, errors)
            + "\n  originallyDefinedInModule: " +
                             (originallyDefinedInModule != null
                              ? originallyDefinedInModule.getName().toString()

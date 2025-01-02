@@ -195,20 +195,20 @@ public class NonLeafProofNode extends ProofNode {
    }
 
   @Override
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String ret = "\n*ProofNode:\n"
-                  + super.toString(depth)
+                  + super.toString(depth, errors)
                   + Strings.indent(2, "\nsteps:") ;
     for (int i = 0 ; i < this.steps.length; i++) {
-        ret += Strings.indent(4, this.steps[i].toString(depth-1)) ;
+        ret += Strings.indent(4, this.steps[i].toString(depth-1, errors)) ;
       } ;
 
     /***********************************************************************
     * The following code for printing the context field copied without     *
     * understanding from ModuleNode.java.                                  *
     ***********************************************************************/
-    Vector contextEntries = context.getContextEntryStringVector(depth-1,false);
+    Vector contextEntries = context.getContextEntryStringVector(depth-1,false, errors);
     if (contextEntries != null) {
       for (int i = 0; i < contextEntries.size(); i++) {
         if (contextEntries.elementAt(i) != null) {

@@ -1212,7 +1212,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
   }
 
   // Used in implementation of toString() below
-  private String toStringBody(int depth) {
+  private String toStringBody(int depth, Errors errors) {
     if (depth <= 1) return "";
 
     String ret;
@@ -1227,7 +1227,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     if (unboundedBoundSymbols!=null && unboundedBoundSymbols.length > 0) {
       ret += "\nUnbounded bound symbols:  ";
       for (int i = 0; i < unboundedBoundSymbols.length; i++) {
-        ret += Strings.indent(2,unboundedBoundSymbols[i].toString(depth-1));
+        ret += Strings.indent(2,unboundedBoundSymbols[i].toString(depth-1, errors));
       }
     }
 
@@ -1237,7 +1237,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (boundedBoundSymbols[i] != null && boundedBoundSymbols[i].length > 0) {
           for (int j = 0; j < boundedBoundSymbols[i].length; j++) {
             ret += Strings.indent(2, "\n[" + i + "," + j + "]" +
-                      Strings.indent(2,boundedBoundSymbols[i][j].toString(depth-1)));
+                      Strings.indent(2,boundedBoundSymbols[i][j].toString(depth-1, errors)));
           }
         }
       }
@@ -1247,7 +1247,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       ret += "\nRanges: ";
       for (int i = 0; i < ranges.length; i++)
         ret += Strings.indent(2,(ranges[i] != null ?
-                                     ranges[i].toString(depth-1) : "null" ));
+                                     ranges[i].toString(depth-1, errors) : "null" ));
     }
 
     if (tupleOrs != null && tupleOrs.length > 0 /* && tupleOrs[0] */) {
@@ -1262,7 +1262,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ret += "\nOperands: " + operands.length;
         for (int i = 0; i < operands.length; i++) {
           ret += Strings.indent(2,
-                    (operands[i] == null ? "\nnull" : operands[i].toString(depth-1)));
+                    (operands[i] == null ? "\nnull" : operands[i].toString(depth-1, errors)));
         }
       }
     }
@@ -1277,16 +1277,16 @@ public class OpApplNode extends ExprNode implements ExploreNode {
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
   @Override
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String sEO = "" ;
     if (this.subExpressionOf != null) {
      sEO = Strings.indent(2,
               "\nsubExpressionOf: " +
-              Strings.indent(2, this.subExpressionOf.toString(1))) ;} ;
-    return "\n*OpApplNode: " + operator.getName() + "  " + super.toString(depth+1)
+              Strings.indent(2, this.subExpressionOf.toString(1, errors))) ;} ;
+    return "\n*OpApplNode: " + operator.getName() + "  " + super.toString(depth+1, errors)
            + "  errors: " + (errors != null ? "non-null" : "null")
-           + toStringBody(depth) + sEO ;
+           + toStringBody(depth, errors) + sEO ;
   }
 
     @Override

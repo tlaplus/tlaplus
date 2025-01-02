@@ -372,21 +372,21 @@ public class AssumeProveNode extends LevelNode {
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String assumeStr = "" ;
     int i = 0 ;
     while (i < assumes.length) {
-      assumeStr = assumeStr + Strings.indent(4, assumes[i].toString(depth-1)) ;
+      assumeStr = assumeStr + Strings.indent(4, assumes[i].toString(depth-1, errors)) ;
       i = i+1;
      } ;
     String goalStr = "null" ;
-    if (goal != null) {goalStr = Strings.indent(4, goal.toString(1));};
+    if (goal != null) {goalStr = Strings.indent(4, goal.toString(1, errors));};
     return "\n*AssumeProveNode: "
-             + super.toString(depth)  // Seems to print stn.getLocation() where stn is the
+             + super.toString(depth, errors)  // Seems to print stn.getLocation() where stn is the
                                       // corresponding syntax tree node.
              + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Assumes: " + assumeStr
-             + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Prove: " + Strings.indent(4, prove.toString(depth-1))
+             + "\n  " + (isBoxAssumeProve ? "[]" : "") + "Prove: " + Strings.indent(4, prove.toString(depth-1, errors))
              + "\n  Goal: "  + goalStr
              + ((suffices) ? "\n  SUFFICES" : "") ;
   }

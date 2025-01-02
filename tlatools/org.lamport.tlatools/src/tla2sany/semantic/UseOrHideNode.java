@@ -148,18 +148,18 @@ public class UseOrHideNode extends LevelNode {
    }
 
   @Override
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String ret = "\n*UseOrHideNode:\n"
-                  + super.toString(depth)
+                  + super.toString(depth, errors)
                   + Strings.indent(2, "\nisOnly: " + this.isOnly)
                   + Strings.indent(2, "\nfacts:") ;
     for (int i = 0 ; i < this.facts.length; i++) {
-        ret += Strings.indent(4, this.facts[i].toString(1)) ;
+        ret += Strings.indent(4, this.facts[i].toString(1, errors)) ;
       } ;
     ret += Strings.indent(2, "\ndefs:") ;
     for (int i = 0 ; i < this.defs.length; i++) {
-        ret += Strings.indent(4, this.defs[i].toString(1)) ;
+        ret += Strings.indent(4, this.defs[i].toString(1, errors)) ;
       } ;
     return ret;
    }

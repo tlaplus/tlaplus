@@ -2,6 +2,8 @@
 package tla2sany.explorer;
 import java.util.Hashtable;
 
+import tla2sany.semantic.Errors;
+
 /**
  * implemented by the following classes (as well as various abstract and  superclasses):
  *
@@ -11,7 +13,7 @@ import java.util.Hashtable;
 
 public interface ExploreNode {
 
-  public String toString(int depth);
+  public String toString(int depth, Errors errors);
     /***********************************************************************
     * This displays the node as a string.  Apparently, the string should   *
     * begin with "\n" to start a new line.  The depth parameter is         *

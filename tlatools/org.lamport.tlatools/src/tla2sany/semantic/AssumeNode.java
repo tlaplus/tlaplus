@@ -153,20 +153,20 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
    * of the tree that is displayed.
    */
   @Override
-  public final String toString (int depth) {
+  public final String toString (int depth, Errors errors) {
     if (depth <= 0) return "";
     String res =
        Strings.indent(
          2,
-         "\n*AssumeNode " + super.toString( depth ) +
+         "\n*AssumeNode " + super.toString( depth, errors ) +
 //                        "   local: " + localness +
          ((assumeExpr != null)  ?
-             Strings.indent(2,assumeExpr.toString(depth-1)) : "" ));
+             Strings.indent(2,assumeExpr.toString(depth-1, errors)) : "" ));
    if (def != null) {
       res = res + Strings.indent(
                       4,
                       "\n def: " +
-                      Strings.indent(2, this.def.toString(depth-1)));
+                      Strings.indent(2, this.def.toString(depth-1, errors)));
      } ;
     return res ;
   }

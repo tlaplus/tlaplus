@@ -290,7 +290,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		public final String toString(int n) {
 			String ret = "compound ID: " + compoundID.toString() + "\nargs: " + args.length + "\n";
 			for (int i = 0; i < args.length; i++) {
-				ret += Strings.indent(2, args[i].toString(n));
+				ret += Strings.indent(2, args[i].toString(n, errors));
 			}
 			return ret;
 		}

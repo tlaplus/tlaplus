@@ -109,7 +109,6 @@ public int levelChecked   = 0 ;
    * Check whether an expr or opArg is level correct, and if so,
    * calculates the level information for the expression. Returns
    * true iff this is level correct.
- * @param errors TODO
    */
   public boolean levelCheck(int iter, Errors errors) {
     /***********************************************************************
@@ -354,7 +353,7 @@ public int levelChecked   = 0 ;
      * Abstract method for subclasses of LevelNode to add their information
      * */
   protected Element getLevelElement(Document doc, SymbolContext context) {
-      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass() + " with toString: " + toString(100));
+      throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass());
     }
 
 }

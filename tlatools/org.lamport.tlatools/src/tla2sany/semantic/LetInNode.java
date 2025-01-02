@@ -263,14 +263,14 @@ implements ExploreNode, LevelConstants {
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
-    String ret = "\n*LetInNode: " + super.toString(depth);
+    String ret = "\n*LetInNode: " + super.toString(depth, errors);
     /***********************************************************************
     * Print context.                                                       *
     ***********************************************************************/
-    Vector contextEntries = context.getContextEntryStringVector(1,false);
+    Vector contextEntries = context.getContextEntryStringVector(1,false, errors);
       /*********************************************************************
       * The depth argument 1 of getContextEntryStringVector causes only    *
       * the name and node uid of the entry and not the node itself to be   *
@@ -292,7 +292,7 @@ implements ExploreNode, LevelConstants {
 //    for (int i = 0; i < opDefs.length; i++) {
 //      ret += Strings.indent(2,"\nDef:" + Strings.indent(2, opDefs[i].toString(depth-1)));
 //    }
-    ret += Strings.indent(2, "\nBody:" + Strings.indent(2, body.toString(depth-1)));
+    ret += Strings.indent(2, "\nBody:" + Strings.indent(2, body.toString(depth-1, errors)));
     return ret;
   }
 

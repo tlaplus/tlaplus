@@ -126,10 +126,10 @@ public class FormalParamNode extends SymbolNode {
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     return ("\n*FormalParamNode: " + this.getName().toString() +
-	    "  " + super.toString(depth) + "  arity: " + arity);
+	    "  " + super.toString(depth, errors) + "  arity: " + arity);
   }
 
   protected String getNodeRef() {

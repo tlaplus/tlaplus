@@ -332,18 +332,18 @@ public class TheoremNode extends LevelNode {
   }
 
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
     String res =
-             "\n*TheoremNode " + super.toString( depth ) +
+             "\n*TheoremNode " + super.toString( depth, errors ) +
             ((theoremExprOrAssumeProve != null)  ?
-              Strings.indent(2, theoremExprOrAssumeProve.toString(depth-1))
+              Strings.indent(2, theoremExprOrAssumeProve.toString(depth-1, errors))
                : "");
     if (def != null) {
       res = res + Strings.indent(
                       2,
                       "\n def: " +
-                      Strings.indent(2, this.def.toString(depth-1)));
+                      Strings.indent(2, this.def.toString(depth-1, errors)));
      } ;
     if (suffices) {
       res = res + Strings.indent(
@@ -355,7 +355,7 @@ public class TheoremNode extends LevelNode {
       res = res + Strings.indent(
                       2,
                       "\n proof: " +
-                      Strings.indent(2, this.proof.toString(depth-1)));
+                      Strings.indent(2, this.proof.toString(depth-1, errors)));
      } ;
     return res ;
   }

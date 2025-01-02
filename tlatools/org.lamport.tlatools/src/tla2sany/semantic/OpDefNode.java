@@ -1365,12 +1365,12 @@ public class OpDefNode extends OpDefOrDeclNode
    * of the tree that is displayed.
    */
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
 
     String ret = "\n*OpDefNode: " + this.getName().toString()
                 + "\n  "
-                + super.toString(depth)
+                + super.toString(depth, errors)
                 + "\n  local: " + local
                 + "\n  letInLevel: " + letInLevel
                 + "\n  inRecursive: " + inRecursive
@@ -1387,7 +1387,7 @@ public class OpDefNode extends OpDefOrDeclNode
                           " (uid: " + originallyDefinedInModule.myUID + ")"))
                 + ((stepNode == null) ? "" :
                         ("\n  stepNode: " +
-                          Strings.indent(4,stepNode.toString(depth-3))))
+                          Strings.indent(4,stepNode.toString(depth-3, errors))))
                                                    ;
 
 //  nextDependency has been removed.
@@ -1398,7 +1398,7 @@ public class OpDefNode extends OpDefOrDeclNode
       String tempString = "\n  Formal params: " + params.length;
       for (int i = 0; i < params.length; i++) {
         tempString += Strings.indent(4, ((params[i] != null)
-                                         ? params[i].toString(depth-1)
+                                         ? params[i].toString(depth-1, errors)
                                          : "\nnull"));
       }
       ret += tempString;
@@ -1417,7 +1417,7 @@ public class OpDefNode extends OpDefOrDeclNode
       }
     }
     if (body != null) {
-      ret += Strings.indent(2,"\nBody:" + Strings.indent(2,body.toString(depth-1)));
+      ret += Strings.indent(2,"\nBody:" + Strings.indent(2,body.toString(depth-1, errors)));
     }
     else {
       ret += Strings.indent(2,"\nBody: null");

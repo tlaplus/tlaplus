@@ -73,9 +73,9 @@ public abstract class OpDefOrDeclNode extends SymbolNode {
    * toString() method; part of implementation of ExploreNode
    * interface
    */
-  public String toString(int depth) {
+  public String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
-    return super.toString(depth) 
+    return super.toString(depth, errors) 
            + "  arity: " + arity 
            + "  orgDefInModule: " + (originallyDefinedInModule != null 
                              ? originallyDefinedInModule.getName().toString() 

@@ -165,9 +165,9 @@ public class AtNode extends ExprNode {
    * parameter is a bound on the depth of the portion of the tree that is displayed.
    */
   @Override
-  public final String toString(int depth) {
+  public final String toString(int depth, Errors errors) {
     if (depth <= 0) return "";
-    return "\n*AtNode: " + super.toString(depth) +
+    return "\n*AtNode: " + super.toString(depth, errors) +
            Strings.indent(2, "\nExceptRef: " + exceptRef.getUid() +
                              "\nExceptComponent: " + exceptComponentRef.getUid());
   }
