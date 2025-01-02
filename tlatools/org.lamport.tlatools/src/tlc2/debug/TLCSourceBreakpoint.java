@@ -27,17 +27,26 @@ package tlc2.debug;
 
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
+import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
+import tlc2.tool.FingerprintException;
+import tlc2.tool.TLCState;
 import tlc2.tool.impl.SpecProcessor;
+import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
+import tlc2.value.IValue;
+import tlc2.value.impl.BoolValue;
+import util.Assert.TLCRuntimeException;
 
 public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	private final int hits;
 	private final Location location;
-	// Use Getter
-	public final OpDefNode condition;
+	private final OpDefNode condition;
 	
 	public TLCSourceBreakpoint(final SpecProcessor processor, final String module, final SourceBreakpoint s,
 			final ModuleNode semanticRoot) {
@@ -62,13 +71,11 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 		}
 		hits = h;
 
-		// TODO Move condition handling into new subclass of TLCSourceBreakpoint or make
-		// ODN = TRUE to not check for null everywhere.
 		if (s.getCondition() != null && !s.getCondition().isBlank()) {
-			// Use existing definition.
 			// TODO Check if level of odn matches level of expression at location.
 			final OpDefNode odn = semanticRoot.getOpDef(s.getCondition());
 			if (odn != null) {
+				// Use existing definition.
 				condition = odn;
 			} else {
 				condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s.getCondition());
@@ -95,5 +102,39 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	public Location getLocation() {
 		return location;
+	}
+	
+	protected boolean matchesExpression(final Tool tool, final TLCState s, final TLCState t, final Context c,
+			boolean fire) {
+		if (condition != null) {
+			// Wrap in tool.eval(() -> to evaluate the debug expression *outside* of the
+			// debugger. In that case, we would have to handle the exceptions below.
+//			fire = tool.eval(() -> {
+				try {					
+					// Create the debug expression's context from the stack frame's context.
+					// Best effort as lookup is purely syntactic on UniqueString!
+					Context ctxt = Context.Empty;
+					for (FormalParamNode p : condition.getParams()) {
+						ctxt = ctxt.cons(p, c.lookup(sn -> sn.getName().equals(p.getName())));
+					}
+					
+					final IValue eval = tool.noDebug().eval(condition.getBody(), ctxt, s, t, EvalControl.Clear);
+					if (eval instanceof BoolValue) {
+//						return 
+								fire &= ((BoolValue) eval).val;
+					}
+				} catch (TLCRuntimeException | EvalException | FingerprintException e) {
+					// TODO DAP spec not clear on how to handle an evaluation failure of a debug
+					// expression. Given our limitation that debug expressions have to be defined in
+					// the spec, the same error will be raised like for any other broken expression
+					// in the spec. In other words, a user may use the debugger to debug a debug
+					// expression.
+					
+					// Swallow the exception to make TLC continue instead of crash.
+				}
+//				return false;
+//			});
+		}
+		return fire;
 	}
 }

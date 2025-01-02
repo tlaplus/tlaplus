@@ -39,14 +39,10 @@ import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.ASTConstants;
-import tla2sany.semantic.FormalParamNode;
-import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
-import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
-import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
@@ -56,7 +52,6 @@ import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
-import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
@@ -379,42 +374,6 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	protected boolean matchesExpression(final TLCSourceBreakpoint bp, boolean fire) {
-		if (bp.getCondition() != null && !bp.getCondition().isEmpty()) {
-			final OpDefNode odn = bp.condition; // TODO Use Getter method.
-			// odn == null should be redundant because of check in
-			// tlc2.debug.TLCDebugger.setBreakpoints(SetBreakpointsArguments)
-			if (odn != null) {
-				
-			// Wrap in tool.eval(() -> to evaluate the debug expression *outside* of the
-			// debugger. In that case, we would have to handle the exceptions below.
-//			fire = tool.eval(() -> {
-				try {					
-					// Create the debug expression's context from the stack frame's context.
-					// Best effort as lookup is purely syntactic on UniqueString!
-					Context ctxt = Context.Empty;
-					for (FormalParamNode p : odn.getParams()) {
-						ctxt = ctxt.cons(p, getContext().lookup(s -> s.getName().equals(p.getName())));
-					}
-					
-					final IValue eval = tool.noDebug().eval(odn.getBody(), ctxt, getS(), getT(), EvalControl.Clear);
-					if (eval instanceof BoolValue) {
-//						return 
-								fire &= ((BoolValue) eval).val;
-					}
-				} catch (TLCRuntimeException | EvalException | FingerprintException e) {
-					// TODO DAP spec not clear on how to handle an evaluation failure of a debug
-					// expression. Given our limitation that debug expressions have to be defined in
-					// the spec, the same error will be raised like for any other broken expression
-					// in the spec. In other words, a user may use the debugger to debug a debug
-					// expression.
-					
-					// Swallow the exception to make TLC continue instead of crash.
-					e.printStackTrace(); //TODO Remove after expression feature has been implemented.
-				}
-//				return false;
-//			});
-			}
-		}
-		return fire;
+		return bp.matchesExpression(tool, getS(), getT(), getContext(), fire);
 	}
 }
