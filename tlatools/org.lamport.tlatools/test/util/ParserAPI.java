@@ -41,8 +41,12 @@ import tla2sany.semantic.SemanticNode;
  * tests. This class can be viewed as a prototype of a future API to be
  * integrated into SANY itself.
  */
-public class ParserAPI {
+public abstract class ParserAPI {
 
+	private ParserAPI() {
+		// no instantiation.
+	}
+	
   /**
    * Fully parses and checks the given source code input.
    *

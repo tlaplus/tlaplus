@@ -51,7 +51,11 @@ import tla2sany.st.Location;
 import tlc2.tool.impl.SpecProcessor;
 import util.ToolIO;
 
-public class TLCDebuggerExpression {
+public abstract class TLCDebuggerExpression {
+	
+	private TLCDebuggerExpression() {
+		// no instantiation.
+	}
 
 	/**
 	 * Given a spec and an unparsed expression, build an operator that can be
