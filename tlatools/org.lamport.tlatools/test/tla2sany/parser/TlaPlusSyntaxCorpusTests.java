@@ -1,19 +1,20 @@
 package tla2sany.parser;
 
 import util.AstNode;
+import util.ParserAPI;
 import util.SyntaxCorpusFileParser;
-import util.SyntaxCorpusFileParser.CorpusTestFile;
+import util.SyntaxCorpusFileParser.CorpusTest;
 import util.SyntaxCorpusRunner;
 import tlc2.tool.CommonTestCase;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.junit.Test;
 
-import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -23,26 +24,21 @@ import java.util.List;
 /**
  * Runs all corpus tests through SANY, checking its syntax parsing.
  */
+@RunWith(Parameterized.class)
 public class TlaPlusSyntaxCorpusTests {
-	
+
 	/**
-	 * The parsed corpus test files.
-	 */
-	private static List<CorpusTestFile> corpus;
-	
-	/**
-	 * Loads all corpus test files and performs static initialization of SANY.
-	 * 
+	 * Loads all corpus test files.
+	 *
 	 * @throws IOException If corpus test file cannot be found or read.
 	 * @throws ParseException If corpus test file fails to parse.
 	 */
-	@BeforeClass
-	public static void setup() throws IOException, ParseException {
-		// Load corpus test files.
+	@Parameters(name = "{index}: {0}")
+	public static List<CorpusTest> getTests() throws IOException, ParseException {
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/tla2sany/corpus");
-		TlaPlusSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);
+		return SyntaxCorpusFileParser.getAllTestsUnder(corpusDir);
 	}
-	
+
 	/**
 	 * Implements a parser test target interface for SANY.
 	 */
@@ -52,26 +48,26 @@ public class TlaPlusSyntaxCorpusTests {
 		 * {@inheritDoc}
 		 */
 		public AstNode parse(String input) throws ParseException {
-			byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
-			InputStream inputStream = new ByteArrayInputStream(inputBytes);
-			TLAplusParser parser = new TLAplusParser(inputStream, StandardCharsets.UTF_8.name());
-			return parser.parse() ? TlaPlusParserOutputTranslator.toAst(parser) : null;
+			SyntaxTreeNode root = ParserAPI.processSyntax(input);
+			return null == root ? null : TlaPlusParserOutputTranslator.toAst(root);
 		}
 	}
-	
+
+	@Parameter
+	public CorpusTest test;
+
 	/**
-	 * Iterates through each corpus test in each corpus test file, feeds the
-	 * raw TLA+ input into SANY, translates SANY's output to the format
-	 * expected by the test, then compares this translated output to the
-	 * expected parse tree associated with that test.
-	 * 
+	 * Feeds the raw TLA+ test input into SANY, translates SANY's output to
+	 * the format expected by the test, then compares this translated output
+	 * to the expected parse tree associated with that test.
+	 *
 	 * @throws ParseException If translating SANY's output fails.
 	 */
 	@Test
 	public void testAll() throws ParseException {
 		SanyParserTestTarget parser = new SanyParserTestTarget();
 		SyntaxCorpusRunner.run(
-			corpus,
+			test,
 			parser,
 			SyntaxCorpusRunner::runAllTests,
 			SyntaxCorpusRunner.expectFailures(
@@ -87,10 +83,10 @@ public class TlaPlusSyntaxCorpusTests {
 				// https://github.com/tlaplus/tlaplus/issues/487
 				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
 				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
-				
+
 				// https://github.com/tlaplus/tlaplus/issues/596
 				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
-				
+
 				// https://github.com/tlaplus/tlaplus/issues/616
 				"Invalid Use of LOCAL in LET/IN",
 				"Invalid Use of LOCAL in Proof",
@@ -103,7 +99,7 @@ public class TlaPlusSyntaxCorpusTests {
 
 				// https://github.com/tlaplus/tlaplus/issues/812
 				"String with comment start",
-				
+
 				// https://github.com/tlaplus/tlaplus/issues/884
 				"Nonfix Minus (GH tlaplus/tlaplus #GH884)",
 				"Nonfix Submodule Excl (GH tlaplus/tlaplus #GH884)",
@@ -111,13 +107,13 @@ public class TlaPlusSyntaxCorpusTests {
 
 				// https://github.com/tlaplus/tlaplus/issues/885
 				"Label with Subexpression Prefix (GH tlaplus/tlaplus #885)",
-				
+
 				// https://github.com/tlaplus/tlaplus/issues/888
 				"Empty Tuple Quantification (GH tlaplus/tlaplus #888)",
 
 				// https://github.com/tlaplus/tlaplus/issues/893
 				"Negative Prefix Op on RHS of Infix (GH tlaplus/tlaplus #893)",
-				
+
 				// https://github.com/tlaplus/tlaplus/issues/1021
 				"Mistaken Set Filter Tuples Test"
 			)
