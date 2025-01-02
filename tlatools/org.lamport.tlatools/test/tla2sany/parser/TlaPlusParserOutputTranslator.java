@@ -1670,13 +1670,13 @@ public class TlaPlusParserOutputTranslator {
 	 * Converts the SANY parse tree to a normalized form comparable to the
 	 * AST DSL.
 	 * 
-	 * @param sany The SANY parser, having completed parsing a TLA+ file.
+	 * @param root The root node of the syntax tree produced by SANY.
 	 * @return The root node of the translated AST.
 	 * @throws ParseException If unable to convert the SANY parse tree.
 	 */
-	public static AstNode toAst(TLAplusParser sany) throws ParseException {
+	public static AstNode toAst(SyntaxTreeNode root) throws ParseException {
 		AstNode sourceFile = Kind.SOURCE_FILE.asNode();
-		sourceFile.addChild(translate(sany.ParseTree));
+		sourceFile.addChild(translate(root));
 		return sourceFile;
 	}
 

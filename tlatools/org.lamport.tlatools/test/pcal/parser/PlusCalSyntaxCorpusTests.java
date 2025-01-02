@@ -9,7 +9,7 @@ import java.text.ParseException;
 
 import util.AstNode;
 import util.SyntaxCorpusFileParser;
-import util.SyntaxCorpusFileParser.CorpusTestFile;
+import util.SyntaxCorpusFileParser.CorpusTest;
 import util.SyntaxCorpusRunner;
 
 import pcal.exception.ParseAlgorithmException;
@@ -17,32 +17,31 @@ import tlc2.tool.CommonTestCase;
 import pcal.AST;
 
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.junit.Test;
 import org.junit.Ignore;
 
 /**
  * Runs all corpus tests through the PlusCal parser, checking its syntax parsing.
  */
+@RunWith(Parameterized.class)
 public class PlusCalSyntaxCorpusTests {
 
 	/**
-	 * The parsed corpus test files.
-	 */
-	private static List<CorpusTestFile> corpus;
-	
-	/**
 	 * Loads all corpus test files.
-	 * 
+	 *
 	 * @throws IOException If corpus test file cannot be found or read.
 	 * @throws ParseException If corpus test file fails to parse.
 	 */
-	@BeforeClass
-	public static void setup() throws IOException, ParseException {
+	@Parameters(name = "{index}: {0}")
+	public static List<CorpusTest> getTests() throws IOException, ParseException {
 		Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve("test/pcal/parser/corpus");
-		PlusCalSyntaxCorpusTests.corpus = SyntaxCorpusFileParser.getAllUnder(corpusDir);
+		return SyntaxCorpusFileParser.getAllTestsUnder(corpusDir);
 	}
-	
+
 	/**
 	 * Implements a parser test target interface for the PlusCal parser.
 	 */
@@ -61,19 +60,25 @@ public class PlusCalSyntaxCorpusTests {
 		}
 	}
 
+	@Parameter
+	public CorpusTest test;
+
 	/**
 	 * Iterates through each corpus test in each corpus test file, feeds the
 	 * raw input into the PlusCal parser, translates the output to the format
 	 * expected by the test, then compares this translated output to the
 	 * expected parse tree associated with that test.
-	 * 
+	 * Feeds the raw PlusCal test input into the parser, translates the
+	 * parser's output to the format expected by the test, then compares this
+	 * translated output to the expected parse tree associated with the test.
+	 *
 	 * @throws ParseException If translating PlusCal's output fails.
 	 */
 	@Test
 	public void testAll() throws ParseException {
 		PlusCalParserTestTarget parser = new PlusCalParserTestTarget();
 		SyntaxCorpusRunner.run(
-			corpus,
+			test,
 			parser,
 			SyntaxCorpusRunner::runAllTests,
 			SyntaxCorpusRunner::expectNoFailures
@@ -84,7 +89,7 @@ public class PlusCalSyntaxCorpusTests {
 	 * After parsing all the corpus tests, ensures that every single node
 	 * kind enum has been used - this gives us good confidence that the tests
 	 * exercise nearly all valid PlusCal syntax rules.
-	 * 
+	 *
 	 * TODO: This will fail until a full PlusCal syntax test corpus has been
 	 * created; thus it is marked ignore.
 	 */

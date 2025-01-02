@@ -260,6 +260,11 @@ public class SyntaxCorpusFileParser {
 		}
 		
 		/**
+		 * The path to the corpus file containing this test.
+		 */
+		public final Path file;
+		
+		/**
 		 * The name of the corpus test.
 		 */
 		public final String name;
@@ -283,11 +288,13 @@ public class SyntaxCorpusFileParser {
 		/**
 		 * Initializes corpus test info by parsing the expected syntax tree.
 		 * 
+		 * @param file The path to the file containing this test.
 		 * @param header The header text of the corpus test.
 		 * @param tlaplusInput The unparsed TLA+ code.
 		 * @param expectedAst The expected syntax tree, as an unparsed S-expression.
 		 */
-		public CorpusTest(String header, String tlaplusInput, String expectedAst) throws ParseException {
+		public CorpusTest(Path file, String header, String tlaplusInput, String expectedAst) throws ParseException {
+			this.file = file;
 			this.name = getTestName(header);
 			this.attributes = getTestAttributes(header);
 			this.tlaplusInput = tlaplusInput;
@@ -295,7 +302,12 @@ public class SyntaxCorpusFileParser {
 				this.attributes.contains(Attribute.ERROR)
 				? null : parseAst(expectedAst);
 		}
-		
+	
+		@Override
+		public String toString() {
+			return this.name;
+		}
+	
 		/**
 		 * Gets the test name from the test header.
 		 * @param header The header to parse.
@@ -340,89 +352,73 @@ public class SyntaxCorpusFileParser {
 	}
 	
 	/**
-	 * Class holding info about all corpus tests within a single file.
+	 * Regex for identifying test headers.
 	 */
-	public static class CorpusTestFile {
-		
-		/**
-		 * Regex for identifying test headers.
-		 */
-		private static final Pattern headerRegex =
-			Pattern.compile(
-				"^===+\\|\\|\\|\r?\n"
-				+ "(?<testName>.*?(?=\r?\n===+\\|\\|\\|))\r?\n"
-				+ "===+\\|\\|\\|\r?\n",
-				Pattern.MULTILINE | Pattern.DOTALL
-			);
+	private static final Pattern headerRegex =
+		Pattern.compile(
+			"^===+\\|\\|\\|\r?\n"
+			+ "(?<testName>.*?(?=\r?\n===+\\|\\|\\|))\r?\n"
+			+ "===+\\|\\|\\|\r?\n",
+			Pattern.MULTILINE | Pattern.DOTALL
+		);
 
-		/**
-		 * Regex for identifying test separators.
-		 */
-		private static final Pattern separatorRegex =
-			Pattern.compile(
-				"^---+\\|\\|\\|\r?\n",
-				Pattern.MULTILINE
-			);
+	/**
+	 * Regex for identifying test separators.
+	 */
+	private static final Pattern separatorRegex =
+		Pattern.compile(
+			"^---+\\|\\|\\|\r?\n",
+			Pattern.MULTILINE
+		);
 
-		/**
-		 * The path to the corpus test file.
-		 */
-		public final Path path;
-		
-		/**
-		 * Ordered list of corpus tests found in the file.
-		 */
-		public final List<CorpusTest> tests;
-		
-		/**
-		 * Parses the contents of a corpus test file into a list of corpus tests.
-		 * 
-		 * @param path The path to the corpus test file.
-		 * @param content The string content of the test file.
-		 * @throws ParseException If the content contains invalid test file syntax.
-		 */
-		public CorpusTestFile(Path path, String content) throws ParseException {
-			this.path = path;
-			ArrayList<CorpusTest> tests = new ArrayList<CorpusTest>();
-			Matcher headerMatcher = headerRegex.matcher(content);
-			Matcher separatorMatcher = separatorRegex.matcher(content);
-			boolean hasNext = headerMatcher.find();
-			while (hasNext) {
-				String testName = headerMatcher.group("testName");
-				if (!separatorMatcher.find()) {
-					throw new ParseException(String.format("%s: Test %s does not have separator", path, testName), 0);
-				}
-				String tlaplusInput = content.substring(headerMatcher.end(), separatorMatcher.start());
-				hasNext = headerMatcher.find();
-				String expectedAst =
-						hasNext
-						? content.substring(separatorMatcher.end(), headerMatcher.start())
-						: content.substring(separatorMatcher.end());
-				tests.add(new CorpusTest(testName, tlaplusInput, expectedAst));
+	/**
+	 * Parses the contents of a corpus test file into a list of corpus tests.
+	 *
+	 * @param path The path to the corpus test file.
+	 * @param content The string content of the test file.
+	 * @throws ParseException If the content contains invalid test file syntax.
+	 */
+	private static List<CorpusTest> getCorpusTests(Path path, String content) throws ParseException {
+		List<CorpusTest> tests = new ArrayList<CorpusTest>();
+		Matcher headerMatcher = headerRegex.matcher(content);
+		Matcher separatorMatcher = separatorRegex.matcher(content);
+		boolean hasNext = headerMatcher.find();
+		while (hasNext) {
+			String testName = headerMatcher.group("testName");
+			if (!separatorMatcher.find()) {
+				throw new ParseException(String.format("%s: Test %s does not have separator", path, testName), 0);
 			}
-			
-			if (tests.isEmpty()) {
-				throw new ParseException(String.format("%s: Failed to find any tests", path), 0);
-			}
-			
-			this.tests = tests;
+			String tlaplusInput = content.substring(headerMatcher.end(), separatorMatcher.start());
+			hasNext = headerMatcher.find();
+			String expectedAst =
+					hasNext
+					? content.substring(separatorMatcher.end(), headerMatcher.start())
+					: content.substring(separatorMatcher.end());
+			tests.add(new CorpusTest(path, testName, tlaplusInput, expectedAst));
 		}
+
+		if (tests.isEmpty()) {
+			throw new ParseException(String.format("%s: Failed to find any tests", path), 0);
+		}
+
+		return tests;
 	}
 	
 	/**
-	 * Gets all .txt files in the corpus tests directory then parses their contents.
+	 * Gets all .txt files in the corpus tests directory then parses their
+	 * contents into a list of tests.
 	 * 
 	 * @param corpusDir Directory in which to look for test files.
 	 * @return A list of all corpus tests.
 	 * @throws IOException If a file could not be found or opened or read.
 	 * @throws ParseException If a file contains invalid test syntax.
 	 */
-	public static List<CorpusTestFile> getAllUnder(Path corpusDir) throws IOException, ParseException {
+	public static List<CorpusTest> getAllTestsUnder(Path corpusDir) throws IOException, ParseException {
 		PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.txt");
-		ArrayList<CorpusTestFile> corpus = new ArrayList<CorpusTestFile>();
+		ArrayList<CorpusTest> corpus = new ArrayList<CorpusTest>();
 		for (Path path : Files.walk(corpusDir).filter(matcher::matches).collect(Collectors.toList())) {
 			String content = Files.readString(path);
-			corpus.add(new CorpusTestFile(path, content));
+			corpus.addAll(getCorpusTests(path, content));
 		}
 	
 		return corpus;

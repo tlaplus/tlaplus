@@ -2,11 +2,9 @@ package util;
 
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Function;
 
 import util.SyntaxCorpusFileParser.CorpusTest;
-import util.SyntaxCorpusFileParser.CorpusTestFile;
 
 import org.junit.Assert;
 
@@ -95,72 +93,53 @@ public class SyntaxCorpusRunner {
 	}
 
 	/**
-	 * Subjects the given parser to the given corpus of syntax tests,
-	 * filtering both the tests and their results according to some
-	 * predicates.
+	 * Subjects the given parser to the given syntax test, filtering both the
+	 * test execution and its result according to some predicates.
 	 *
-	 * @param corpus The corpus of syntax tests.
+	 * @param corpusTest The test to run.
 	 * @param parser The parser test target.
 	 * @param shouldRun Predicate determining whether to run a test.
 	 * @param expectFailure Predicate identifying known-failing tests.
-	 * @throws ParseException
+	 * @throws ParseException If AST normalization process failed.
 	 */
 	public static void run(
-		List<CorpusTestFile> corpus,
+		CorpusTest corpusTest,
 		IParserTestTarget parser,
 		Function<CorpusTest, Boolean> shouldRun,
 		Function<CorpusTest, Boolean> expectFailure
 	) throws ParseException {
-		int testCount = 0;
-		for (CorpusTestFile corpusTestFile : corpus) {
-			System.out.println(corpusTestFile.path);
-			for (CorpusTest corpusTest : corpusTestFile.tests) {
-				if (!shouldRun.apply(corpusTest)) {
-					continue;
-				}
-
-				System.out.println(corpusTest.name);
-
-				if (corpusTest.attributes.contains(CorpusTest.Attribute.SKIP)) {
-					System.out.println("Skipped.");
-					continue;
-				}
-
-				testCount++;
-
-				boolean isErrorTest = corpusTest.attributes.contains(CorpusTest.Attribute.ERROR);
-				String testSummary = String.format(
-						"%s/%s\nExpecting: %s\n%s",
-						corpusTestFile.path,
-						corpusTest.name,
-						isErrorTest ? "Error" : "Success",
-						corpusTest.tlaplusInput);
-
-				if (expectFailure.apply(corpusTest)) {
-					System.out.println("Expecting failure.");
-					try {
-						AstNode actual = parser.parse(corpusTest.tlaplusInput);
-						Assert.assertNotEquals(testSummary, isErrorTest, null == actual);
-					} catch (ParseException e) {
-						// Success
-					}
-				} else {
-					if (isErrorTest) {
-						System.out.println("Expecting parser rejection.");
-						AstNode actual = parser.parse(corpusTest.tlaplusInput);
-						Assert.assertNull(testSummary, actual);
-					} else {
-						AstNode actual = parser.parse(corpusTest.tlaplusInput);
-						Assert.assertNotNull(testSummary, actual);
-						System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
-						System.out.println(String.format("Actual: %s", actual));
-						corpusTest.expectedAst.testEquality(actual);
-					}
-				}
-			}
+		if (!shouldRun.apply(corpusTest) || corpusTest.attributes.contains(CorpusTest.Attribute.SKIP)) {
+			return;
 		}
 
-		Assert.assertTrue(testCount > 0);
-		System.out.println(String.format("Total corpus test count: %d", testCount));
+		boolean isErrorTest = corpusTest.attributes.contains(CorpusTest.Attribute.ERROR);
+		String testSummary = String.format(
+				"%s/%s\nExpecting: %s\n%s",
+				corpusTest.file,
+				corpusTest.name,
+				isErrorTest ? "Error" : "Success",
+				corpusTest.tlaplusInput);
+
+		if (expectFailure.apply(corpusTest)) {
+			System.out.println("Expecting failure.");
+			try {
+				AstNode actual = parser.parse(corpusTest.tlaplusInput);
+				Assert.assertNotEquals(testSummary, isErrorTest, null == actual);
+			} catch (ParseException e) {
+				// Success
+			}
+		} else {
+			if (isErrorTest) {
+				System.out.println("Expecting parser rejection.");
+				AstNode actual = parser.parse(corpusTest.tlaplusInput);
+				Assert.assertNull(testSummary, actual);
+			} else {
+				AstNode actual = parser.parse(corpusTest.tlaplusInput);
+				Assert.assertNotNull(testSummary, actual);
+				System.out.println(String.format("Expect: %s", corpusTest.expectedAst));
+				System.out.println(String.format("Actual: %s", actual));
+				corpusTest.expectedAst.testEquality(actual);
+			}
+		}
 	}
 }
