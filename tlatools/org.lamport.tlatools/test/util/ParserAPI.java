@@ -113,8 +113,9 @@ public class ParserAPI {
       ModuleNode semanticRoot = gen.generate(parseTree);
       return log.isSuccess() ? semanticRoot : null;
     } catch (AbortException e) {
+      //TODO Figure error handling of this utility class.
       Assert.fail(e.toString() + log.toString());
-      return null;
+      return null; // make compiler happy
     }
   }
 
