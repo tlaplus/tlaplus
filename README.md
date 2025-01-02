@@ -1,6 +1,6 @@
 Overview
 --------
-[![](https://github.com/tlaplus/tlaplus/workflows/CI/badge.svg?branch=master)](https://github.com/tlaplus/tlaplus/actions?query=workflow%3ACI)
+[![](https://github.com/tlaplus/tlaplus/workflows/CI/badge.svg)](https://github.com/tlaplus/tlaplus/actions?query=workflow%3ACI)
 [![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.lamport/tla2tools?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/lamport/tla2tools/)
 
 This repository hosts the core TLA⁺ command line interface (CLI) Tools and the Toolbox integrated development environment (IDE).
