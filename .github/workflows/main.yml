@@ -17,6 +17,10 @@ jobs:
 
   build:
     runs-on: ${{ matrix.operating-system }}
+    permissions:
+      contents: write # Required by git tag (below), which changes the content of the git repository
+      checks: write # Required by mikepenz/action-junit-report@v4
+      packages: read
     strategy: 
       matrix:
         operating-system: [ubuntu-latest, macos-latest]
