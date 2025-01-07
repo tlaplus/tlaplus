@@ -36,10 +36,10 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class Github1045FP23Test extends ModelCheckerTestCase {
-//98af38cd6582510fa4b42802583bae3f  23.tla.tmp
-	public Github1045FP23Test() {
-		super("Github1045", new String[] { "-config", "Github1045.tla", "-lncheck", "final" },
+public class Github1045FP15Test extends ModelCheckerTestCase {
+//8900da757ed1646710339a398a026496  15.tla.tmp
+	public Github1045FP15Test() {
+		super("Github1045", new String[] { "-config", "Github1045.tla", "-lncheck", "final", "-fp", "15" },
 				ExitStatus.VIOLATION_LIVENESS);
 	}
 
@@ -60,11 +60,6 @@ public class Github1045FP23Test extends ModelCheckerTestCase {
 	@Override
 	protected boolean doDumpTrace() {
 		return false;
-	}
-
-	protected boolean noRandomFPandSeed() {
-		// Causes TLC to find the same counterexample every time.
-		return true;
 	}
 
 	@Test
@@ -91,25 +86,25 @@ public class Github1045FP23Test extends ModelCheckerTestCase {
 		expectedActions.add("<Initial predicate>");
 		expectedTrace.add("counter = (n1 :> (n1 :> 0 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 0))");
 
-		expectedActions.add("<Increment(n1) line 17, col 3 to line 17, col 45 of module Github1045>");
-		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 0))");
-		
 		expectedActions.add("<Increment(n2) line 17, col 3 to line 17, col 45 of module Github1045>");
+		expectedTrace.add("counter = (n1 :> (n1 :> 0 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 1))");
+		
+		expectedActions.add("<Increment(n1) line 17, col 3 to line 17, col 45 of module Github1045>");
 		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 1))");
 		
-		expectedActions.add("<Gossip(n1,n2) line 20, col 3 to line 25, col 5 of module Github1045>");
-		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 0) @@ n2 :> (n1 :> 1 @@ n2 :> 1))");
+		expectedActions.add("<Gossip(n2,n1) line 20, col 3 to line 25, col 5 of module Github1045>");
+		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 1) @@ n2 :> (n1 :> 0 @@ n2 :> 1))");
 		
-		expectedActions.add("<Increment(n1) line 17, col 3 to line 17, col 45 of module Github1045>");
-		expectedTrace.add("counter = (n1 :> (n1 :> 2 @@ n2 :> 0) @@ n2 :> (n1 :> 1 @@ n2 :> 1))");
+		expectedActions.add("<Increment(n2) line 17, col 3 to line 17, col 45 of module Github1045>");
+		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 1) @@ n2 :> (n1 :> 0 @@ n2 :> 2))");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
 		// The BackToState step is weird but correct; it is the combination of a
 		// Gossip(n2,n1) action and a VIEW reduction. The t in the s -Gossip(n2,n1)-> t
 		// action is equal to: 
-		//   counter=(n1 :> (n1 :> 2 @@ n2 :> 1) @@ n2 :> (n1 :> 1 @@ n2 :> 1)
+		//   counter=(n1 :> (n1 :> 1 @@ n2 :> 1) @@ n2 :> (n1 :> 1 @@ n2 :> 2)
 		// This value is reduced to:
-		//   counter=(n1 :> (n1 :> 1 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 0))
-		assertBackToState(2, "<Gossip(n2,n1) line 20, col 3 to line 25, col 5 of module Github1045>");
+		//   counter=(n1 :> (n1 :> 0 @@ n2 :> 0) @@ n2 :> (n1 :> 0 @@ n2 :> 1))
+		assertBackToState(2, "<Gossip(n1,n2) line 20, col 3 to line 25, col 5 of module Github1045>");
 	}
 }
