@@ -305,9 +305,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
             	constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);
             } catch (Assert.TLCRuntimeException | EvalException e) {
-              final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
-              Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
-                  new String[] { consts[i].getName().toString(), opDef.getName().toString(), addendum });
+              // https://github.com/tlaplus/tlaplus/issues/1109
+              // Only report a non-constant substitution error if the operator is
+              // genuinely non-constant (e.g., references a variable). If the operator
+              // IS constant-level but evaluation fails (e.g., Seq(S) cannot be
+              // enumerated), swallow the exception and let the error surface during
+              // model checking (calling getLevelBound is safe here because processSpec
+              // has already run).
+              if (symbolNodeValueLookupProvider.getLevelBound(opDef.getBody(), Context.Empty,
+                     toolId) > LevelConstants.ConstantLevel) {
+                final String addendum = (e instanceof EvalException) ? "" : (" - specifically: " + e.getMessage());
+                Assert.fail(EC.TLC_CONFIG_SUBSTITUTION_NON_CONSTANT,
+                    new String[] { consts[i].getName().toString(), opDef.getName().toString(), addendum });
+              }
             }
           }
         }
