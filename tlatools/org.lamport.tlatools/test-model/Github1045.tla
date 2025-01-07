@@ -45,6 +45,12 @@ View ==
     ]
   ]
 
+--------------------------------
+
+IncrementHardCode(n) ==
+  /\ counter[n][n] < 2   \* Hardcoded state constraint
+  /\ counter' = [counter EXCEPT ![n][n] = @ + 1]
+
 ==============================
 ------ CONFIG Github1045 -----
 SPECIFICATION Spec
