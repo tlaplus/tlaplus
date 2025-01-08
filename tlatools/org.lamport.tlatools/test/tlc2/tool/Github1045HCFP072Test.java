@@ -35,6 +35,7 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.output.EC.ExitStatus;
+import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
 public class Github1045HCFP072Test extends ModelCheckerTestCase {
@@ -43,6 +44,7 @@ public class Github1045HCFP072Test extends ModelCheckerTestCase {
 		super("Github1045", new String[] { "-config", "Github1045HC.cfg", "-lncheck", "final", "-fp", "72" },
 				ExitStatus.VIOLATION_LIVENESS);
 		System.setProperty(MP.class.getName()+ ".noDebug", Boolean.TRUE.toString());
+		System.setProperty(Tool.CDOT_KEY, Boolean.TRUE.toString());
 	}
 
 	// Deactivate a couple of unrelated features and their code paths.
@@ -74,8 +76,8 @@ public class Github1045HCFP072Test extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "139", "27", "0"));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "6"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "541", "36", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "7"));
 
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
@@ -102,14 +104,14 @@ public class Github1045HCFP072Test extends ModelCheckerTestCase {
 		expectedActions.add("<IncrementHardCode(n2) line 51, col 3 to line 52, col 48 of module Github1045>");
 		expectedTrace.add("counter = (n1 :> (n1 :> 2 @@ n2 :> 1) @@ n2 :> (n1 :> 0 @@ n2 :> 2))");
 
-		expectedActions.add("<Gossip(n?,n?) line 20, col 3 to line 25, col 5 of module Github1045>");
-		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 1) @@ n2 :> (n1 :> 0 @@ n2 :> 1))");
+		expectedActions.add("<GossipAndReduction(n1,n2) line 67, col 5 to line 67, col 32 of module Github1045>");
+		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 0) @@ n2 :> (n1 :> 1 @@ n2 :> 1))");
 
-		expectedActions.add("IncrementHardCode(n?) line 51, col 3 to line 52, col 48 of module Github1045>");
-		expectedTrace.add("counter = (n1 :> (n1 :> 1 @@ n2 :> 1) @@ n2 :> (n1 :> 0 @@ n2 :> 2))");
+		expectedActions.add("<IncrementHardCode(n1) line 51, col 3 to line 52, col 48 of module Github1045>");
+		expectedTrace.add("counter = (n1 :> (n1 :> 2 @@ n2 :> 0) @@ n2 :> (n1 :> 1 @@ n2 :> 1))");
 		
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 
-		assertBackToState(2, "<Gossip(n?,n?) line 20, col 3 to line 25, col 5 of module Github1045>");	
+		assertBackToState(2, "<GossipAndReduction(n2,n1) line 67, col 5 to line 67, col 32 of module Github1045>");
 	}
 }
