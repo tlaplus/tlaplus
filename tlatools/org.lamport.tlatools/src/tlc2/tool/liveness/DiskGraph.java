@@ -5,6 +5,7 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.Map;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -176,7 +177,7 @@ public class DiskGraph extends AbstractDiskGraph {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.AbstractDiskGraph#toDotViz(tlc2.tool.liveness.OrderOfSolution)
 	 */
-	public final String toDotViz(final OrderOfSolution oos) {
+	public final String toDotViz(final OrderOfSolution oos, final Map<Long, String> labels) {
 		final int slen = oos.getCheckState().length;
 		final int alen = oos.getCheckAction().length;
 		// The following code relies on gnodes not being null, thus safeguard
@@ -205,7 +206,7 @@ public class DiskGraph extends AbstractDiskGraph {
 				int tidx = nodePtrRAF.readInt();
 				long loc = nodePtrRAF.readLongNat();
 				GraphNode gnode = this.getNode(fp, tidx, loc);
-				sb.append(gnode.toDotViz(isInitState(gnode), false, slen, alen, oos));
+				sb.append(gnode.toDotViz(isInitState(gnode), false, slen, alen, oos, labels));
 			}
 			sb.append("}}");
 			this.nodeRAF.seek(nodePtr);

@@ -120,16 +120,50 @@ public class LiveCheck implements ILiveCheck {
 			for (int sidx = 0; sidx < nextStates.size(); sidx++) {
 				final TLCState s1 = nextStates.next();
 				oos.checkAction(tool, s0, s1, checkActionResults, alen * sidx);
+//				LABELS.computeIfAbsent(s1.fingerPrint(), k -> new java.util.TreeSet<>(COMP)).add(s1);
 			}
 			nextStates.resetNext();
 			check.addNextState(tool, s0, fp0, nextStates, checkActionResults, oos.checkState(tool, s0));
 			
 			// Write the content of the current graph to a file in GraphViz
 			// format. Useful when debugging!
-//			check.getDiskGraph().writeDotViz(oos, new java.io.File(
-//					metadir + java.io.File.separator + "dgraph_" + i + "_" + System.currentTimeMillis() + ".dot"));
+//			LABELS.computeIfAbsent(fp0, k -> new java.util.TreeSet<>(COMP)).add(s0);
+//			check.getDiskGraph().writeDotViz(oos,
+//					new java.io.File(metadir + java.io.File.separator + "dgraph_" + i + "_" + System.currentTimeMillis()
+//							+ ".dot"),
+//					LABELS.entrySet().stream().collect(
+//							java.util.stream.Collectors.toMap(java.util.Map.Entry::getKey, entry -> entry.getValue()
+//									.stream().map(Object::toString).collect(java.util.stream.Collectors.joining()))));
 		}
 	}
+	
+//	// WARNING: Data-racy with multiple workers.
+//	private static final java.util.Map<Long, java.util.Set<TLCState>> LABELS = new java.util.HashMap<>();
+//	private static final java.util.Comparator<TLCState> COMP = new java.util.Comparator<TLCState>() {
+//		@Override
+//		public int compare(TLCState t1, TLCState t2) {
+//			// Do not compare based on fingerprints because a VIEW might be in place s.t.
+//			// different states hash to the same fingerprint.
+//			final java.util.Map<util.UniqueString, tlc2.value.IValue> m1 = t1.getVals();
+//			final java.util.Map<util.UniqueString, tlc2.value.IValue> m2 = t2.getVals();
+//			if (m1.size() != m2.size()) {
+//				return -1;
+//			}
+//			for (java.util.Map.Entry<util.UniqueString, tlc2.value.IValue> entry : m1.entrySet()) {
+//				final util.UniqueString key = entry.getKey();
+//				final tlc2.value.IValue v1 = entry.getValue();
+//
+//				// Check if the key exists in the other map
+//				if (!m2.containsKey(key)) {
+//					return -1;
+//				}
+//				if (!v1.equals(m2.get(key))) {
+//					return -1;
+//				}
+//			}
+//			return 0;
+//		}
+//	};
 
 	/* (non-Javadoc)
 	 * @see tlc2.tool.liveness.ILiveCheck#doLiveCheck()

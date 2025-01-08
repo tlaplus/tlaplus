@@ -440,7 +440,7 @@ public abstract class AbstractDiskGraph {
 	 * and call something similar to: 'dot -T svg graphviz.txt -o
 	 * "Graphviz.svg"'. It obviously needs Graphviz (http://www.graphviz.org).
 	 */
-	public abstract String toDotViz(final OrderOfSolution oos);
+	public abstract String toDotViz(final OrderOfSolution oos, final Map<Long, String> labels);
 
 	protected String toDotVizLegend(final OrderOfSolution oos) {
 		final StringBuffer sb = new StringBuffer();
@@ -493,13 +493,17 @@ public abstract class AbstractDiskGraph {
 	 *            Destination
 	 */
 	public final void writeDotViz(final OrderOfSolution oos, final File file) {
+		writeDotViz(oos, file, new HashMap<>());
+	}
+
+	public final void writeDotViz(final OrderOfSolution oos, final File file, final Map<Long, String> labels) {
 		this.createCache();
 
 		try {
 			final BufferedWriter bwr = new BufferedWriter(new FileWriter(file));
 
 			// write contents of StringBuffer to a file
-			bwr.write(toDotViz(oos));
+			bwr.write(toDotViz(oos, labels));
 
 			// flush the stream
 			bwr.flush();

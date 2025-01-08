@@ -6,7 +6,9 @@
 package tlc2.tool.liveness;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import tlc2.util.BitVector;
@@ -416,11 +418,15 @@ public class GraphNode extends AbstractGraphNode {
 		return buf.substring(0, buf.length() - ", ".length()); // chop off dangling ", "
 	}
 
-	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, final OrderOfSolution oos) {
-		return toDotViz(isInitState, hasTableau, slen, alen, null, oos);
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, final OrderOfSolution oos, final Map<Long, String> labels) {
+		return toDotViz(isInitState, hasTableau, slen, alen, null, oos, labels);
 	}
 
 	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter, final OrderOfSolution oos) {
+		return toDotViz(isInitState, hasTableau, slen, alen, oos, new HashMap<>());
+	}
+
+	public String toDotViz(final boolean isInitState, final boolean hasTableau, final int slen, final int alen, TableauNodePtrTable filter, final OrderOfSolution oos, final Map<Long, String> labels) {
 		// The node's id including its tidx if any. It uses the complete
 		// fingerprint.
 		String id = Long.toString(this.stateFP);
@@ -434,7 +440,8 @@ public class GraphNode extends AbstractGraphNode {
 		// label iff the first 6 (+2) chars of their fingerprint match. However
 		// the graph will still contain all nodes regardless of the label
 		// collision due to id.
-		String label = Long.toString(this.stateFP).substring(0, 6) + (hasTableau ? "." + this.tindex : "");
+		String label = labels.getOrDefault(this.stateFP, "") + Long.toString(this.stateFP).substring(0, 6)
+				+ (hasTableau ? "." + this.tindex : "");
 		if (slen > 0) {
 			label += "\n";
 			for (int i = 0; i < slen; i++) {
