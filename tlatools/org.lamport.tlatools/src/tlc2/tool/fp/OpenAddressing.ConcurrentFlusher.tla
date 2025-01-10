@@ -110,15 +110,15 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
 }
 
 ***     this ends the comment containg the pluscal code      **********)
-\* BEGIN TRANSLATION
-VARIABLES history, a, aLength, A, b, bLength, B, O, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "727f78c7")
+VARIABLES pc, history, a, aLength, A, b, bLength, B, O
 
 (* define statement *)
 Inv == /\ Image(O) \subseteq history
        /\ IsOrdered(O)
 
 
-vars == << history, a, aLength, A, b, bLength, B, O, pc >>
+vars == << pc, history, a, aLength, A, b, bLength, B, O >>
 
 Init == (* Global variables *)
         /\ history = {}
@@ -208,16 +208,18 @@ mrg4 == /\ pc = "mrg4"
         /\ pc' = "Done"
         /\ UNCHANGED << history, a, aLength, A, b, bLength, B, O >>
 
+(* Allow infinite stuttering to prevent deadlock on termination. *)
+Terminating == pc = "Done" /\ UNCHANGED vars
+
 Next == init \/ hstry \/ mrg1 \/ mrg2 \/ mrg2b \/ mrg3 \/ mrg4
-           \/ (* Disjunct to prevent deadlock on termination *)
-              (pc = "Done" /\ UNCHANGED vars)
+           \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
         /\ WF_vars(Next)
 
 Termination == <>(pc = "Done")
 
-\* END TRANSLATION
+\* END TRANSLATION 
 
 =============================================================================
 \* Modification History
