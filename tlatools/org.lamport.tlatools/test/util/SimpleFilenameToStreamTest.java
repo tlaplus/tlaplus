@@ -1,10 +1,11 @@
-// Copyright (c) 2023, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2025, Oracle and/or its affiliates.
 
 package util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,13 +25,7 @@ public class SimpleFilenameToStreamTest {
 		File file = resolver.resolve(path, isModule);
 		assertNotNull("resolve(" + path + ", " + isModule + ") should not be null", file);
 		assertTrue("resolve(" + path + ", " + isModule + ") = " + file.getAbsolutePath() + " does not exist!", file.exists());
-
-		// NOTE 2023/11/8: Ideally this next check would be valid.  Indeed, it passes in some cases, but unfortunately
-		// it fails when the tests are running out of a JAR.  The implementation of isStandardModule requires that the
-		// final resolved path starts with the standard library path---but when a standard module is resolved out of a
-		// JAR file, its resolved path with be some arbitrary temporary directory.
-		//
-		// assertTrue("resolve(" + path + ", " + isModule + ") = " + file + " should be a standard module but isn't!", resolver.isStandardModule(path));
+		assertTrue("resolve(" + path + ", " + isModule + ") = " + file + " should be a standard module but isn't!", resolver.isStandardModule(path));
 	}
 
 	/**
@@ -51,6 +46,42 @@ public class SimpleFilenameToStreamTest {
 			// subdirectory of the current working directory).  The problem is worse on case-insensitive filesystems
 			// like the MacOS default.  We should re-enable this check once the implementation is more robust.
 			// assertFalse("Resolution with isModule=false should fail", sfts.resolve(name, false).exists());
+		}
+	}
+
+	/**
+	 * Try various ways of resolving a few of the community modules.
+	 * For historical reasons these are considered standard modules as well.
+	 */
+	@Test
+	public void testResolveCommunityModules() {
+		final SimpleFilenameToStream sfts = new SimpleFilenameToStream();
+		for (String name : new String[] { "Bitwise", "CSV", "IOUtils", "VectorClocks" }) {
+			checkResolveStandardModule(sfts, name, true);
+			checkResolveStandardModule(sfts, name + ".tla", true);
+			checkResolveStandardModule(sfts, name + ".tla", false);
+
+			// See NOTE 2023/11/1 above.
+			// assertFalse("Resolution with isModule=false should fail", sfts.resolve(name, false).exists());
+		}
+	}
+
+	/**
+	 * Test if we can resolve files by absolute path
+	 */
+	@Test
+	public void testResolveByAbsolutePath() throws IOException {
+		Path tmpdir = null;
+		try {
+			tmpdir = Files.createTempDirectory(null);
+			Path modulePath = tmpdir.resolve("MyModule.tla");
+			Files.writeString(modulePath, "", StandardCharsets.US_ASCII);
+			assertTrue("Resolver should be able to find modules by absolute path, even when it isn't a library path",
+					new SimpleFilenameToStream().resolve(modulePath.toAbsolutePath().toString(), true).exists());
+		} finally {
+			if (tmpdir != null) {
+				FileUtil.deleteDir(tmpdir.toFile(), true);
+			}
 		}
 	}
 
@@ -138,6 +169,7 @@ public class SimpleFilenameToStreamTest {
 
 			File f1 = resolver.resolve("Integers", true);
 			assertTrue("Resolver should still find Integers when library path is empty", f1.exists());
+			assertTrue("Integers is a standard module", resolver.isStandardModule("Integers"));
 
 			Files.writeString(d1.resolve("MyModule.tla"), "", StandardCharsets.US_ASCII);
 			Files.writeString(d2.resolve("MyModule.tla"), "", StandardCharsets.US_ASCII);
@@ -145,6 +177,7 @@ public class SimpleFilenameToStreamTest {
 			File f2 = resolver.resolve("MyModule", true);
 			assertTrue("Resolver should find modules in explicit library dir", f2.exists());
 			assertFalse("Modules in explicit library dir are not library modules", resolver.isStandardModule("MyModule"));
+			assertTrue("Integers is a standard module, even a custom library path", resolver.isStandardModule("Integers"));
 
 			ToolIO.setUserDir(d2.toString());
 
@@ -186,6 +219,7 @@ public class SimpleFilenameToStreamTest {
 			System.setProperty(SimpleFilenameToStream.TLA_LIBRARY, d1.toString());
 			File f1 = resolver.resolve("Integers", true);
 			assertTrue("Resolver should still find Integers when library path is empty", f1.exists());
+			assertTrue("Integers is a standard module, even with TLA_LIBRARY set", resolver.isStandardModule("Integers"));
 
 			Files.writeString(d1.resolve("MyModule.tla"), "", StandardCharsets.US_ASCII);
 
@@ -234,6 +268,47 @@ public class SimpleFilenameToStreamTest {
 			
 			assertTrue("There should be 1 drive letter in the child's absolute path, but there are " + driveLetterCount,
 					   (1 == driveLetterCount));
+		}
+	}
+
+	/**
+	 * Test whether the fix for <a href="https://github.com/tlaplus/tlaplus/issues/545">#545</a> still works
+	 */
+	@Test
+	public void testBizarreWorkingDirectorySearchBehavior() throws IOException {
+		String oldCWD = System.getProperty("user.dir");
+		String oldUserDir = ToolIO.getUserDir();
+
+		Path tmpdir = null;
+		try {
+			tmpdir = Files.createTempDirectory(null);
+
+			// NOTE: Java does not have chdir() (https://bugs.openjdk.org/browse/JDK-4045688), but
+			// we can fake it because SimpleFilenameToStream uses the user.dir system property.
+			System.setProperty("user.dir", tmpdir.toString());
+
+			Files.writeString(tmpdir.resolve("Test.tla"), "", StandardCharsets.US_ASCII);
+			Files.writeString(tmpdir.resolve("Test.cfg"), "", StandardCharsets.US_ASCII);
+
+			Path subdir = tmpdir.resolve("test");
+			Files.createDirectory(subdir);
+			Files.writeString(subdir.resolve("Test.tla"), "", StandardCharsets.US_ASCII);
+			Files.writeString(subdir.resolve("Test.cfg"), "", StandardCharsets.US_ASCII);
+
+			FilenameToStream resolver = new SimpleFilenameToStream();
+			assertEquals("Resolver should not find modules in CWD ahead of named subdirectories",
+					resolver.resolve("test" + File.separator + "Test.tla", true).getAbsolutePath(),
+					tmpdir.resolve("test" + File.separator + "Test.tla").toAbsolutePath().toString());
+		} finally {
+			ToolIO.setUserDir(oldUserDir);
+			if (oldCWD != null) {
+				System.setProperty(SimpleFilenameToStream.TLA_LIBRARY, oldCWD);
+			} else {
+				System.clearProperty(SimpleFilenameToStream.TLA_LIBRARY);
+			}
+			if (tmpdir != null) {
+				FileUtil.deleteDir(tmpdir.toFile(), true);
+			}
 		}
 	}
 	

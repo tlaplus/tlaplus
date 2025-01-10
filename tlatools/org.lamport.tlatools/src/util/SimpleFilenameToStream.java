@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2023, 2024, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2025, Oracle and/or its affiliates.
 // Last modified on Sat 28 June 2008 at  0:23:49 PST by lamport
 
 package util;
@@ -9,10 +9,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -41,16 +41,20 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	private static final String STANDARD_MODULES = "tla2sany"
 			+ '/' + STANDARD_MODULES_FOLDER + '/';
 
-  /**
-   * path of directories to be searched in order for the named file.  The setting of
-   * a module's isStandard field depends on the path to the standard modules directory
-   * being the last element of this array.
-   */
-  private String[] libraryPaths;
   protected final Path tmpDir = FilenameToStream.getTempDirectory();
 
+  /**
+   * Locates user (i.e. non-library) files and modules.
+   */
+  private final ResourceLocator userFileResourceLocator;
+
+  /**
+   * Locates standard library files and modules.
+   */
+  private final ResourceLocator standardLibraryResourceLocator;
+
   public SimpleFilenameToStream() {
-	  libraryPaths = getLibraryPaths(getInstallationBasePath(), null);
+    this((String[])null);
   }
 
   public SimpleFilenameToStream(final String libraryPath) {
@@ -65,56 +69,30 @@ public class SimpleFilenameToStream implements FilenameToStream {
  * (which is being used in the default constructor).
  */
   public SimpleFilenameToStream(String[] anLibraryPaths) {
-	  libraryPaths = getLibraryPaths(getInstallationBasePath(), anLibraryPaths);
+    userFileResourceLocator = getLibraryPaths(anLibraryPaths);
+    standardLibraryResourceLocator = getInstallationBasePath();
   }
 
   /**
-   * Find the absolute path in the file system to the directory
-   * containing the TLA+ standard modules; this path
-   * must have separators appropriate to the Unix ('/') or Windows ('\') world.
+   * Find the TLA+ standard modules.
    *
-   * @return the location of the TLA+ standard modules as an absolute path or as a "jar:" URL
+   * @return a locator for finding the TLA+ standard modules
    */
-  private String getInstallationBasePath() {
-
-    // get a "file:" URL for the base directory for package tla2sany
-    final URL         url = cl.getResource(STANDARD_MODULES);
-
-    // jar expanded to the fs (make sure to handle whitespaces correctly
-    final String path = url.toString();
-	try {
-    	// convert to URI which handles paths correctly (even OS dependently)
-    	if(!FilenameToStream.isInJar(path)) {
-    	final URI uri = new URI(path);
-    		return new File(uri).getAbsolutePath();
-    	}
-    } catch (URISyntaxException e) {
-    	System.err.println(path);
-    	// may never happen
-    	e.printStackTrace();
-    } catch (IllegalArgumentException e) {
-    	System.err.println(path);
-    	// may never happen
-    	e.printStackTrace();
-    }
-    return path;
-   }
+  private static ResourceLocator getInstallationBasePath() {
+    // First search the standard modules installation location, then search the
+    // bare classpath.  For historical reasons, modules discovered in both of these
+    // locations are considered "library" modules.
+    return new SequentialResourceLocator(List.of(
+            new ClasspathResourceLocator(cl, STANDARD_MODULES),
+            new ClasspathResourceLocator(cl, "")));
+  }
 
   /**
    * August 2014 - TL
    * added an informative method for returning the actual path used by this resolver
    */
   public String getFullPath() {
-    StringBuffer buf = new StringBuffer();
-    String[] ar = libraryPaths;
-    for (int i=0; i<ar.length; i++)
-    {
-      buf.append(ar[i]);
-      if (i <ar.length-1) {
-        buf.append(", ");
-      }
-    }
-    return buf.toString();
+    return userFileResourceLocator.describeSearchLocations() + ", " + standardLibraryResourceLocator.describeSearchLocations();
   }
 
   /**
@@ -122,9 +100,22 @@ public class SimpleFilenameToStream implements FilenameToStream {
    * added functionality for supplying additional libraries.
    * All usage of this except the one added by TL is supplying libraries  = null
    */
-  private String[] getLibraryPaths(final String installationBasePath, String[] libraries) {
-    String[] res;
-    String path = null;
+  private static ResourceLocator getLibraryPaths(String[] libraries) {
+    List<ResourceLocator> res = new ArrayList<>();
+
+    // First, if userDir is set, search there, otherwise search the current working directory.
+    String userDir = ToolIO.getUserDir();
+    if (userDir != null) {
+      res.add(new FilesystemResourceLocator(Path.of(userDir)));
+    } else {
+      String cwd = System.getProperty("user.dir");
+      if (cwd != null) {
+        res.add(new FilesystemResourceLocator(Path.of(cwd)));
+      }
+    }
+
+    // Next, search the given `libraries` (or the TLA_LIBRARY system property if `libraries` is null).
+    String path; // actually a list of paths separated by FileUtil.pathSeparator
     if (libraries == null) path = System.getProperty(TLA_LIBRARY);
     else {
       StringBuffer buf = new StringBuffer();
@@ -136,112 +127,95 @@ public class SimpleFilenameToStream implements FilenameToStream {
       }
       path = buf.toString();
     }
-    if (path == null) {
-      res = new String[1];
-      res[0] = installationBasePath + FileUtil.separator;
-    }
-    else {
+    if (path != null) {
       String[] paths = path.split(FileUtil.pathSeparator);
-      res = new String[paths.length+1];
-      for(int i=0;i<paths.length;i++){
-	res[i] = paths[i];
-	if (!res[i].endsWith(FileUtil.separator)){
-	  res[i] = res[i] + FileUtil.separator;
-	}
+      for (String s : paths) {
+        res.add(new FilesystemResourceLocator(Path.of(s)));
       }
-      res[paths.length] = installationBasePath + FileUtil.separator;
     }
-    return res;
+
+    return new SequentialResourceLocator(res);
   }
 
   /**
-   *  From name, prepend path elements to try to find the actual
-   *  file intended, and use the resulting fully-qualified name to initialize
-   *  the File.  The first fully-qualified name that refers to a file that actually
-   *  exists is the File returned; but if none exists, the last one tried is returned
+   *  From name, try to find the actual file intended.  If the file is not a normal
+   *  file (for instance, if it is an entry in a JAR file), then copy it to the
+   *  filesystem and return the copied file.
+   *
+   *  <p>The name is treated as a filename, not a TLA+ module name; if you are looking
+   *  for the Integers module, pass <code>"Integers.tla"</code>.
+   *
+   *  <p>The first fully-qualified name that refers to a file that actually
+   *  exists is the File returned; but if none exists, a non-existent file is returned
    *  anyway.  Hence, the File object returned does not necessarily represent a file
    *  that actually exists in the file system.
    *
-   *  @param  module name, used as basis of path name to the file that should contain it
+   *  @param name the name of the file to look for
    */
-  private final File locate(String name)
+  private final TLAFile locate(String name)
   {
-
-    String prefix      = "";                // directory to be prepended to file name before lookup
-
-    File   sourceFile  = null;              // File object from fully-qualified name of file found by
-                                            //   searching "libraryPath" for "name", as is done for PATHs and CLASSPATHs
-
-    // The TLA standard modules are presumed to be in a directory tla2sany/StandardModules
-    // i.e. a toplevel subdirectory of the main installation directory for SANY
-    // We append the StandardModules director to the library path, so the user does
-    // not have to do anything special and the standard modules are automatically accessible
-
-    // Debug
-    /*
-    System.err.println("Installation base path = " + installationBasePath);
-    for (int i=0;i<libraryPaths.length;i++)
-    {
-        System.err.println("libraryPaths = '" + libraryPaths[i] + "'");
+    TLAFile userModule = locateAndCopyToFilesystemIfNecessary(userFileResourceLocator, name, false);
+    if (userModule != null) {
+        return userModule;
     }
-    */
 
-    // This code ALWAYS looks in the current directory first for a file (and its capitalization
-    // variants), regardless of what the TLA-Library property says the search path should be.
-    /***********************************************************************
-    * This was modified by LL on 14 May 2008 to change the way sourceFile  *
-    * is obtained from sourceFileName.  See the comments for the userDir   *
-    * field in util/ToolIO.                                                *
-    ***********************************************************************/
-    int idx = 0;
-    InputStream is;
-    while (true)
-    {
-        if ((idx == 0) && (ToolIO.getUserDir() != null)) {
-            sourceFile = new TLAFile(ToolIO.getUserDir(), name, this );
-        }
-        else
-        {
-        	// StandardModules contained in jar
-        	// need to load files into temp location
-        	// from the resource stream
-        	//
-        	// This would be a lot simpler if TLC would not depend on
-        	// File but on InputStream instead
-        	if(FilenameToStream.isInJar(prefix)) {
-				is = cl.getResourceAsStream(STANDARD_MODULES + name);
-				if(is != null) {
-					sourceFile = read(name, cl.getResource(STANDARD_MODULES + name), is);
-				}
-        	} else {
-        		sourceFile = new TLAFile( prefix + name, true, this );
-        	}
-        }
-        // Debug
-        // System.out.println("Looking for file " + sourceFile);
-        if ( sourceFile.exists() )  break;
-        if (idx >= libraryPaths.length) {
-			// As a last resort, try to load resource from the Java classpath. Give up, if it
-			// fails.
-			// The use case for this strategy is to load additional TLA+ module collections
-			// - e.g. community-driven ones - which ship a single jar containing the .tla
-			// operator definitions as well as Java module overwrites as .class files.
-        	is = cl.getResourceAsStream(name);
-        	if(is != null) {
-				return read(name, cl.getResource(name), is);
-			} else {
-				break;
-			}
-        }
-        prefix = libraryPaths[idx++];
-    } // end while
+    TLAFile libraryModule = locateAndCopyToFilesystemIfNecessary(standardLibraryResourceLocator, name, true);
+    if (libraryModule != null) {
+        return libraryModule;
+    }
 
-    return sourceFile;
-
+    // Small bit of awkwardness here: to preserve the historical FilenameToStream API, this method must return a
+    // nonexistent file if the requested one could not be located.  The file we return will be used in error messages
+    // about the missing file, so we should return one that looks plausible, but we can't return one that MIGHT exist,
+    // because the result will be read if it does!  The approach below correctly synthesizes a non-existent
+    // believable-looking path, but relies on the fact that ToolIO.getUserDir() is in the search paths used by
+    // userFileResourceLocator---this file does not exist because it has certainly already been searched.
+    //
+    // In the future, we might improve this pattern by deprecating FilenameToStream and replacing it with a better
+    // interface that returns a null/empty result.
+    String userDir = ToolIO.getUserDir();
+    String parent = userDir == null ? "." : userDir;
+    return new TLAFile(parent, name, this);
   } // end locate()
 
-  private File read(String name, URL location, InputStream is) {
-    final File sourceFile = new TLAFile(tmpDir.resolve(name), location, true, this);
+  /**
+   * Use the given locator to locate the given file, copying it to the filesystem if necessary.
+   *
+   * @param locator the locator
+   * @param name the file name
+   * @param isLibraryModule whether this file should be marked as a standard library module
+   * @return the file, or <code>null</code> if it could not be located
+   */
+  private TLAFile locateAndCopyToFilesystemIfNecessary(ResourceLocator locator, String name, boolean isLibraryModule) {
+    try {
+      URL location = locator.locate(name);
+
+      if (location == null) {
+        return null;
+      }
+
+      // Reminder: URL schemes (or "protocols") are supposed to be lower-case, but we are encouraged to be flexible:
+      //  > Scheme names consist of a sequence of characters. The lower case
+      //  > letters "a"--"z", digits, and the characters plus ("+"), period
+      //  > ("."), and hyphen ("-") are allowed. For resiliency, programs
+      //  > interpreting URLs should treat upper case letters as equivalent to
+      //  > lower case in scheme names (e.g., allow "HTTP" as well as "http").
+      // Ref: https://www.ietf.org/rfc/rfc1738.txt
+      if ("file".equalsIgnoreCase(location.getProtocol())) {
+        Path locationOnFilesystem = Path.of(location.getPath());
+        return new TLAFile(locationOnFilesystem, isLibraryModule, this);
+      } else {
+        try (InputStream in = location.openStream()) {
+          return read(name, location, in, isLibraryModule);
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private TLAFile read(String name, URL location, InputStream is, boolean isLibraryModule) {
+	final TLAFile sourceFile = new TLAFile(tmpDir.resolve(name), location, isLibraryModule, this);
 	sourceFile.deleteOnExit();
 	try {
 
@@ -268,7 +242,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
    *
    * Returns null if the file does not exist
    */
-  public File resolve(String name, boolean isModule)
+  public TLAFile resolve(String name, boolean isModule)
   {
       // Strip off one NEWLINE and anything after it, if it is there
       int n;
@@ -309,9 +283,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	}
 
 	/**
-	 * Returns true iff moduleName is the name of a standard module.  It
-	 * assumes the empirically determined fact that libraryPaths is set to
-	 * have the path of the standard modules as the last element of the array.
+	 * Returns true iff moduleName is the name of a standard module.
 	 * This method is used to set the isStandard field of the module's ModuleNode.
 	 * I don't know if this is every called with a module that
 	 * Added by LL on 24 July 2013.
@@ -319,14 +291,7 @@ public class SimpleFilenameToStream implements FilenameToStream {
 	 * @see StandardModules.isDefinedInStandardModule()
 	 */
 	public boolean isStandardModule(String moduleName) {
-		 File file = this.resolve(moduleName, true) ;
-		 if (file == null) {
-			 return false ;
-			 }
-		 String path = file.getAbsolutePath() ;
-		 if (path == null) {
-			 return false ;
-		 }
-	     return path.startsWith(this.libraryPaths[this.libraryPaths.length - 1] ) ;
+		TLAFile file = this.resolve(moduleName, true);
+		return file.exists() && file.isLibraryModule();
 	}
 } // end class

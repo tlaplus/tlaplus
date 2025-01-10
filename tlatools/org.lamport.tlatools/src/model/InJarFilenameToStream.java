@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2025, Oracle and/or its affiliates.
 
 package model;
 
@@ -20,11 +20,11 @@ public class InJarFilenameToStream extends SimpleFilenameToStream implements
 	}
 
 	@Override
-	public File resolve(String name, boolean isModule) {
+	public TLAFile resolve(String name, boolean isModule) {
 		InputStream is = InJarFilenameToStream.class.getResourceAsStream(prefix + name);
 		if(is != null) {
 			try {
-				File sourceFile = new TLAFile(tmpDir.resolve(name), InJarFilenameToStream.class.getResource(prefix + name), false, this);
+				TLAFile sourceFile = new TLAFile(tmpDir.resolve(name), InJarFilenameToStream.class.getResource(prefix + name), false, this);
 				sourceFile.deleteOnExit();
 				
 				FileOutputStream fos = new FileOutputStream(sourceFile);
