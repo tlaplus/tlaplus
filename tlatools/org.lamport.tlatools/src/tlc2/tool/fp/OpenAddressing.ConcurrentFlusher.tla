@@ -43,6 +43,7 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
     define {
        Inv == /\ Image(O) \subseteq history
               /\ IsOrdered(O)
+       NoDuplicates == Image(A) \cap Image(B) = {}
     }
     
     macro Consume(var, seq) {
@@ -51,10 +52,10 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
     }
   {
 
-  (* Initialize a and b with all possible combination of sorted sequences. *)
+  (* Initialize A and B with all possible combination of sorted sequences. *)
   init:           
     with (r \in SUBSET Nat \ {{}}) {
-       with (s \in ((SUBSET (Nat \ r)) \ {{}})) {
+       with (s \in ((SUBSET (Nat)) \ {{}})) {
            with (t \in OrderedSequences(s) \cup {<<>>}) {
                B := t;
                bLength := Len(B);
@@ -110,12 +111,13 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
 }
 
 ***     this ends the comment containg the pluscal code      **********)
-\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "727f78c7")
+\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "cf7e0f27")
 VARIABLES pc, history, a, aLength, A, b, bLength, B, O
 
 (* define statement *)
 Inv == /\ Image(O) \subseteq history
        /\ IsOrdered(O)
+NoDuplicates == Image(A) \cap Image(B) = {}
 
 
 vars == << pc, history, a, aLength, A, b, bLength, B, O >>
@@ -133,7 +135,7 @@ Init == (* Global variables *)
 
 init == /\ pc = "init"
         /\ \E r \in SUBSET Nat \ {{}}:
-             \E s \in ((SUBSET (Nat \ r)) \ {{}}):
+             \E s \in ((SUBSET (Nat)) \ {{}}):
                \E t \in OrderedSequences(s) \cup {<<>>}:
                  /\ B' = t
                  /\ bLength' = Len(B')
@@ -223,5 +225,20 @@ Termination == <>(pc = "Done")
 
 =============================================================================
 \* Modification History
-\* Last modified Tue Jun 06 20:39:04 CEST 2017 by markus
+\* Last modified Fri Jan 10 20:39:04 CEST 2025 by markus
 \* Created Mon Jun 05 23:14:05 CEST 2017 by markus
+
+----- CONFIG Merge -----
+SPECIFICATION
+    Spec
+
+INVARIANT
+    Inv
+    \* NoDuplicates
+
+PROPERTIES 
+    Termination
+
+CONSTANT
+    Nat = {1,2,3,4,5}
+======
