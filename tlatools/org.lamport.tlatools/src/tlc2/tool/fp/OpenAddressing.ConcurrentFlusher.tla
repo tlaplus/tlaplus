@@ -84,6 +84,18 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
      };
      
   mrg2:
+        if (a = b) {
+           O := Append(O, a);
+           aLength := aLength - 1;
+           if (aLength > 0) {
+             Consume(a, A);
+           };
+           bLength := bLength - 1;
+           if (bLength > 0) {
+             Consume(b, B);
+           };
+        };
+  mrg2a:
         if (aLength > 0 /\ (a < b \/ bLength = 0)) {
            O := Append(O, a);
            aLength := aLength - 1;
@@ -111,7 +123,7 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
 }
 
 ***     this ends the comment containg the pluscal code      **********)
-\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "cf7e0f27")
+\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "8099c642")
 VARIABLES pc, history, a, aLength, A, b, bLength, B, O
 
 (* define statement *)
@@ -167,7 +179,7 @@ mrg1 == /\ pc = "mrg1"
         /\ UNCHANGED << history, aLength, bLength, O >>
 
 mrg2 == /\ pc = "mrg2"
-        /\ IF aLength > 0 /\ (a < b \/ bLength = 0)
+        /\ IF a = b
               THEN /\ O' = Append(O, a)
                    /\ aLength' = aLength - 1
                    /\ IF aLength' > 0
@@ -175,10 +187,30 @@ mrg2 == /\ pc = "mrg2"
                               /\ A' = Tail(A)
                          ELSE /\ TRUE
                               /\ UNCHANGED << a, A >>
+                   /\ bLength' = bLength - 1
+                   /\ IF bLength' > 0
+                         THEN /\ b' = Head(B)
+                              /\ B' = Tail(B)
+                         ELSE /\ TRUE
+                              /\ UNCHANGED << b, B >>
               ELSE /\ TRUE
-                   /\ UNCHANGED << a, aLength, A, O >>
-        /\ pc' = "mrg2b"
-        /\ UNCHANGED << history, b, bLength, B >>
+                   /\ UNCHANGED << a, aLength, A, b, bLength, B, O >>
+        /\ pc' = "mrg2a"
+        /\ UNCHANGED history
+
+mrg2a == /\ pc = "mrg2a"
+         /\ IF aLength > 0 /\ (a < b \/ bLength = 0)
+               THEN /\ O' = Append(O, a)
+                    /\ aLength' = aLength - 1
+                    /\ IF aLength' > 0
+                          THEN /\ a' = Head(A)
+                               /\ A' = Tail(A)
+                          ELSE /\ TRUE
+                               /\ UNCHANGED << a, A >>
+               ELSE /\ TRUE
+                    /\ UNCHANGED << a, aLength, A, O >>
+         /\ pc' = "mrg2b"
+         /\ UNCHANGED << history, b, bLength, B >>
 
 mrg2b == /\ pc = "mrg2b"
          /\ IF bLength > 0 /\ (b < a \/ aLength = 0)
@@ -202,18 +234,18 @@ mrg3 == /\ pc = "mrg3"
 
 mrg4 == /\ pc = "mrg4"
         /\ Assert(bLength = 0 /\ aLength = 0, 
-                  "Failure of assertion at line 106, column 8.")
+                  "Failure of assertion at line 119, column 8.")
         /\ Assert(Len(O) = Cardinality(history), 
-                  "Failure of assertion at line 107, column 8.")
+                  "Failure of assertion at line 120, column 8.")
         /\ Assert(Image(O) = history, 
-                  "Failure of assertion at line 108, column 8.")
+                  "Failure of assertion at line 121, column 8.")
         /\ pc' = "Done"
         /\ UNCHANGED << history, a, aLength, A, b, bLength, B, O >>
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == pc = "Done" /\ UNCHANGED vars
 
-Next == init \/ hstry \/ mrg1 \/ mrg2 \/ mrg2b \/ mrg3 \/ mrg4
+Next == init \/ hstry \/ mrg1 \/ mrg2 \/ mrg2a \/ mrg2b \/ mrg3 \/ mrg4
            \/ Terminating
 
 Spec == /\ Init /\ [][Next]_vars
