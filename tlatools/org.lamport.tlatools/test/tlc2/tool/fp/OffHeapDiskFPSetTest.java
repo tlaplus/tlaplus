@@ -36,19 +36,28 @@ import static tlc2.tool.fp.OffHeapDiskFPSet.EMPTY;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import tlc2.TestMPRecorder;
+import tlc2.output.EC;
+import tlc2.output.MP;
+import tlc2.tool.fp.OffHeapDiskFPSet.Iterator;
+import tlc2.util.BufferedRandomAccessFile;
 import util.TLCRuntime;
 
 public class OffHeapDiskFPSetTest {
@@ -317,6 +326,138 @@ public class OffHeapDiskFPSetTest {
 		}
 	}
 
+	@Test
+	public void testMergeDuplicate() throws RemoteException, IOException, NoSuchFieldException, IllegalAccessException,
+			NoSuchMethodException, SecurityException {
+		final TestMPRecorder recorder = new TestMPRecorder();
+		MP.setRecorder(recorder);
+		
+		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setMemoryInFingerprintCnt(1);
+
+		final OffHeapDiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
+		final Method method = OffHeapDiskFPSet.OffHeapMSBFlusher.class.getDeclaredMethod("mergeNewEntries",
+				new Class[] { tlc2.util.BufferedRandomAccessFile.class, java.io.RandomAccessFile.class,
+						tlc2.tool.fp.OffHeapDiskFPSet.Iterator.class, long.class });
+		method.setAccessible(true);
+
+		final File tempFile = File.createTempFile("OffHeapDiskFPSetTest_test", ".bin");
+		RandomAccessFile inRAF = new BufferedRandomAccessFile(tempFile, "rw");
+		inRAF.setLength(8L * Long.BYTES);
+		inRAF.writeLong(1);
+		inRAF.writeLong(2);
+		inRAF.writeLong(4);
+		inRAF.writeLong(6);
+		inRAF.writeLong(7);
+		inRAF.writeLong(8);
+		inRAF.writeLong(10);
+		inRAF.writeLong(11);
+		inRAF.seek(0l);
+		final long diskReads = 8l;
+
+		final RandomAccessFile outRAF = new RandomAccessFile(
+				File.createTempFile("OffHeapDiskFPSetTest_test", "out"), "rw");
+		final Iterator itr = new DummyIterator(8);
+
+		try {
+			method.invoke(fpSet.flusher, inRAF, outRAF, itr, diskReads);
+		} catch (InvocationTargetException e) {
+			Throwable targetException = e.getTargetException();
+			fail(targetException.getMessage());
+		}
+		
+		assertEquals(10 * FPSet.LongSize, outRAF.length());
+
+		outRAF.seek(0);
+		assertEquals(1, outRAF.readLong());
+		assertEquals(2, outRAF.readLong());
+		assertEquals(3, outRAF.readLong());
+		assertEquals(4, outRAF.readLong());
+		assertEquals(5, outRAF.readLong());
+		assertEquals(6, outRAF.readLong());
+		assertEquals(7, outRAF.readLong());
+		assertEquals(8, outRAF.readLong());
+		assertEquals(10, outRAF.readLong());
+		assertEquals(11, outRAF.readLong());
+		
+		final List<Object> r = recorder.getRecords(EC.TLC_FP_VALUE_ALREADY_ON_DISK);
+		assertEquals(6, r.size());
+		assertEquals(Set.of(1, 2, 4, 6, 7, 8),
+				r.stream().map(o -> Integer.parseInt(((String[]) o)[0])).collect(Collectors.toSet()));
+	}
+
+	@Test
+	public void testMergeDistinct() throws RemoteException, IOException, NoSuchFieldException, IllegalAccessException,
+			NoSuchMethodException, SecurityException {
+		final DummyFPSetConfiguration fpSetConfig = new DummyFPSetConfiguration();
+		fpSetConfig.setMemoryInFingerprintCnt(1);
+
+		final OffHeapDiskFPSet fpSet = new OffHeapDiskFPSet(fpSetConfig);
+		final Method method = OffHeapDiskFPSet.OffHeapMSBFlusher.class.getDeclaredMethod("mergeNewEntries",
+				new Class[] { tlc2.util.BufferedRandomAccessFile.class, java.io.RandomAccessFile.class,
+						tlc2.tool.fp.OffHeapDiskFPSet.Iterator.class, long.class });
+		method.setAccessible(true);
+
+		final File tempFile = File.createTempFile("OffHeapDiskFPSetTest_test", ".bin");
+		RandomAccessFile inRAF = new BufferedRandomAccessFile(tempFile, "rw");
+		inRAF.setLength(8L * Long.BYTES);
+		inRAF.writeLong(3);
+		inRAF.writeLong(4);
+		inRAF.writeLong(5);
+		inRAF.writeLong(6);
+		inRAF.writeLong(7);
+		inRAF.writeLong(8);
+		inRAF.writeLong(10);
+		inRAF.writeLong(11);
+		inRAF.seek(0l);
+		final long diskReads = 8l;
+
+		final RandomAccessFile outRAF = new RandomAccessFile(
+				File.createTempFile("OffHeapDiskFPSetTest_test", "out"), "rw");
+		final Iterator itr = new DummyIterator(2);
+
+		try {
+			method.invoke(fpSet.flusher, inRAF, outRAF, itr, diskReads);
+		} catch (InvocationTargetException e) {
+			Throwable targetException = e.getTargetException();
+			fail(targetException.getMessage());
+		}
+		
+		assertEquals(10 * FPSet.LongSize, outRAF.length());
+
+		outRAF.seek(0);
+		assertEquals(1, outRAF.readLong());
+		assertEquals(2, outRAF.readLong());
+		assertEquals(3, outRAF.readLong());
+		assertEquals(4, outRAF.readLong());
+		assertEquals(5, outRAF.readLong());
+		assertEquals(6, outRAF.readLong());
+		assertEquals(7, outRAF.readLong());
+		assertEquals(8, outRAF.readLong());
+		assertEquals(10, outRAF.readLong());
+		assertEquals(11, outRAF.readLong());
+	}
+
+
+	private static class DummyIterator extends Iterator {
+
+		private int i = 1;
+
+		public DummyIterator(long elements) {
+			super(null, elements, null);
+		}
+
+		@Override
+		public long markNext() {
+			return i++;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+	}
+	
 	private static class DummyRandomAccessFile extends java.io.RandomAccessFile {
 
 		public DummyRandomAccessFile(File file, String mode) throws FileNotFoundException {

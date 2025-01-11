@@ -1122,7 +1122,33 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			
 			do {
 				if (value == fp) {
+					// A data corruption (either in memory or on disk) or a bug in the fingerprint
+					// set implementation caused a fingerprints stored on disk to match one in
+					// memory. Despite this issue, model checking can continue without any
+					// compromise to the soundness or completeness of the safety checks. At worst,
+					// TLC ends up checking the same state multiple times due to the duplicate
+					// fingerprints.
 					MP.printWarning(EC.TLC_FP_VALUE_ALREADY_ON_DISK, String.valueOf(value));
+					
+					// Contrary to the two if blocks below, this writes to disk once but decrements
+					// both counters.
+					tableReads--;
+					diskReads--;
+
+					outRAF.writeLong(fp);
+					diskWriteCnt.increment();
+		            
+					if (tableReads > 0) {
+						final long nextFP = itr.markNext();
+						assert nextFP > fp : nextFP + " > " + fp + " from table at pos " + itr.pos + " "
+								+ a.toString(itr.pos - 10L, itr.pos + 10L);
+						fp = nextFP;
+					}
+					if (diskReads > 0) {
+						final long nextValue = inRAF.readLong();
+						assert value < nextValue;
+						value = nextValue;
+					}
 				}
 				assert fp > EMPTY : "Wrote an invalid fingerprint to disk.";
 				
