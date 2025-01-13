@@ -153,7 +153,7 @@ public abstract class TLCDebuggerExpression {
 
 		processor.processConstantsDynamicExtendee(bpModule);
 		
-		ToolIO.out.println("Processed ebugger expression \"" + conditionExpr + "\"");
+		ToolIO.out.println("Processed debugger expression \"" + conditionExpr + "\"");
 		return bpOp;
 	}
 	
