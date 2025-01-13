@@ -133,6 +133,23 @@ public abstract class AbstractHeapBasedDiskFPSetTest {
 			fpSet.recoverFP(fp);
 		}
 	}
+	
+	@Test
+	public void testFPSetRecoveryDuplicate() throws IOException {
+		final String metadir = System.getProperty("java.io.tmpdir");
+		final String filename = this.getClass().getCanonicalName() + "testFPSetRecoveryDuplicate";
+		
+		final DiskFPSet fpSet = getDiskFPSet(new FPSetConfiguration());
+		fpSet.init(1, metadir, filename);
+
+		// Make sure the FPSet tries to flush to disk.
+		fpSet.forceFlush();
+		
+		System.setProperty("tlc2.tool.fp.DiskFPSet.error2warning", Boolean.TRUE.toString());
+		
+		fpSet.recoverFP(1);
+		fpSet.recoverFP(1);
+	}
 
 	/* Helper */
 

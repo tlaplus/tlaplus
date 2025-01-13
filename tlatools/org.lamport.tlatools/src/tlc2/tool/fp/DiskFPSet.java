@@ -772,9 +772,17 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		// statistics code to speed up recovery. Thus, recovery relys on
 		// exclusive access to the fingerprint set, which it has during
 		// recovery.
-		long fp0 = fp & FLUSHED_MASK;
-		boolean unique = !this.memInsert(fp0);
-		Assert.check(unique, EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, "");
+		final long fp0 = fp & FLUSHED_MASK;
+		final boolean unique = !this.memInsert(fp0);
+		if (!unique) {
+			if (!Boolean.getBoolean(DiskFPSet.class.getName() + ".error2warning")) {
+				Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, "");
+			}
+			// Report the duplicate fingerprint but continue recovery because fingerprint
+			// duplication doesn't affect soundness and completeness of safety checking.
+			MP.printWarning(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT,
+					String.format("Encountered duplicate fingerprint value %s", Long.toString(fp0)));
+		}
 		if (needsDiskFlush()) {
 			this.flusher.flushTable();
 		}
