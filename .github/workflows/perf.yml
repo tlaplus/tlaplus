@@ -11,7 +11,9 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on:
+        - runs-on=${{ github.run_id }}
+        - runner=16cpu-linux-x64
     timeout-minutes: 720
     steps:
 
