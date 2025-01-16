@@ -610,7 +610,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		public Indexer(final long positions, final int fpBits, final long maxFingerprint) {
 			this.positions = positions;
 			// (position-1L) because array is zero indexed.
-			this.tblScalingFactor = (positions - 1L) / ((maxFingerprint - minFingerprint) * 1f);
+			this.tblScalingFactor = (positions - 1L) / ((maxFingerprint - minFingerprint) * 1d);
 		}
 		
 		protected long getIdx(final long fp) {
