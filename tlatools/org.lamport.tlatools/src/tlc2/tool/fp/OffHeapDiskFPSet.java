@@ -216,8 +216,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		flushTime += l;
 		LOGGER.log(Level.FINE,
 				"Finished eviction of disk {0} the {1}. time at {2}, in {3} sec after {4} insertions, load factor {5} and reprobe of {6}.",
-				new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(), l,
-						System.currentTimeMillis(), insertions, lf, PROBE_LIMIT });
+				new Object[] { ((DiskFPSetMXWrapper) diskFPSetMXWrapper).getObjectName(), getGrowDiskMark(),
+						System.currentTimeMillis(), l, insertions, lf, PROBE_LIMIT });
 	}
 
 	private Flusher getFlusher(final int numThreads, final long insertions) {
