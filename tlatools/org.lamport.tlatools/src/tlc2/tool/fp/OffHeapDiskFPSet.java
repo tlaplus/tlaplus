@@ -604,6 +604,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		public Indexer(final long positions, final int fpBits) {
 			this(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
+			Assert.check(positions < Integer.MAX_VALUE, EC.SYSTEM_FINGERPRINT_OVERFLOW_ERROR);
 			assert fpBits > 0;
 		}
 
@@ -628,7 +629,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		private final int rShift;
 
 		public BitshiftingIndexer(final long positions, final int fpBits) throws RemoteException {
-			super(positions, fpBits);
+			super(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
 			
 			this.prefixMask = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
 			

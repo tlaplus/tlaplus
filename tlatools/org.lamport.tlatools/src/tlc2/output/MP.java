@@ -430,6 +430,13 @@ public class MP
         case EC.SYSTEM_METADIR_CREATION_ERROR:
             b.append("TLC could not make a directory %1% for the disk files it needs to write.");
             break;
+		case EC.SYSTEM_FINGERPRINT_OVERFLOW_ERROR:
+			b.append(
+					"The requested fingerprint set size is too large, which could result in precision "
+					+ "or overflow errors. To resolve this, either increase the fingerprint size to "
+					+ "the next power of two (ensuring safe bit-shifting) or adjust the fpbits "
+					+ "parameter to a higher value.");
+			break;
         /* ----------------------------------------------------------------- */
         case EC.WRONG_COMMANDLINE_PARAMS_TLC:
             b.append("%1%\nUsage: java tlc2.TLC [-help] [-option] inputfile");
