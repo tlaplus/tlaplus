@@ -20,7 +20,7 @@ The `tla2tools.jar` file contains multiple TLA⁺ tools.
 They can be used as follows:
 ```bash
 java -cp tla2tools.jar tla2sany.SANY -help  # The TLA⁺ parser
-java -cp tla2tools.jar tlc2.TLC -help       # The TLA⁺ finite model checker
+java -cp tla2tools.jar tlc2.TLC -help       # The TLA⁺ model checker
 java -cp tla2tools.jar tlc2.REPL            # Enter the TLA⁺ REPL
 java -cp tla2tools.jar pcal.trans -help     # The PlusCal-to-TLA⁺ translator
 java -cp tla2tools.jar tla2tex.TLA -help    # The TLA⁺-to-LaTeX translator
