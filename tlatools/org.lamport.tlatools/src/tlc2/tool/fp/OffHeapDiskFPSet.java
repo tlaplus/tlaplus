@@ -125,7 +125,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	private final transient LongArray array;
 	
 	/**
-	 * The indexer maps a fingerprint to a in-memory bucket and the associated lock
+	 * The indexer maps a fingerprint to a in-memory bucket.
 	 */
 	private final transient Indexer indexer;
 
