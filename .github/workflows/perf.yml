@@ -12,8 +12,11 @@ on:
 jobs:
   build:
     runs-on:
-        - runs-on=${{ github.run_id }}
-        - runner=16cpu-linux-x64
+        - runs-on # required so that RunsOn knows it needs to process the workflow
+        - cpu=16
+        - ram=32
+        - family=c6gd
+        - image=ubuntu24-full-x64
     timeout-minutes: 720
     steps:
 
