@@ -15,7 +15,7 @@ jobs:
         - runs-on # required so that RunsOn knows it needs to process the workflow
         - cpu=16
         - ram=32
-        - family=c6gd
+        - family=c7gd
         - image=ubuntu24-full-x64
     timeout-minutes: 720
     steps:
