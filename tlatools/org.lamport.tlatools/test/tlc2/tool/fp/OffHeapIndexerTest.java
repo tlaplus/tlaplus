@@ -32,6 +32,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
+import util.Assert.TLCRuntimeException;
 
 public class OffHeapIndexerTest {
 
@@ -233,5 +234,24 @@ public class OffHeapIndexerTest {
 			Assert.assertEquals(l, indexer.getIdx(fpNext));
 		}
 		Assert.assertEquals(0, indexer.getIdx(positions << (Long.SIZE - logPos)));
+	}
+	
+	@Test
+	public void testOverflowErrorArithmetic() {
+		try {
+			new OffHeapDiskFPSet.Indexer(Integer.MAX_VALUE + 1L, 1);
+		} catch (TLCRuntimeException e) {
+			return;
+		}
+		Assert.fail("Creation of Indexer didn't throw an exception");
+	}
+	
+	@Test
+	public void testNoOverflowErrorBitShifting() throws RemoteException {
+		try {
+			new OffHeapDiskFPSet.BitshiftingIndexer(Integer.MAX_VALUE + 1L, 1);
+		} catch (TLCRuntimeException e) {
+			Assert.fail("Creation of BitshiftingIndexer threw an exception: " + e.getMessage());
+		}
 	}
 }
