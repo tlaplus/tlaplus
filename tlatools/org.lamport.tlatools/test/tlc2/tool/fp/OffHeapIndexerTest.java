@@ -28,6 +28,7 @@ package tlc2.tool.fp;
 import java.rmi.RemoteException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
@@ -122,6 +123,80 @@ public class OffHeapIndexerTest {
 		Assert.assertEquals(0, indexer.getIdx((0xFFFFFFFFFFFFFFFFL >>> fpBits), (int)positions+1));
 	}
 
+	@Test
+	@Ignore("This test takes approximately 10 seconds on my machine, which I consider acceptable. However, it takes our Github CI 90 seconds, which is definitely too long; disabled.")
+	public void testRescaleMany() throws RemoteException {
+		for (int fpBits = 1; fpBits < 3; fpBits++) {
+			final long maxFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
+			for (long p = 1L; p < Integer.MAX_VALUE; p++) {
+				final Indexer indexer = new OffHeapDiskFPSet.Indexer(p, fpBits);
+
+				// indexer spreads over all positions
+				Assert.assertEquals(0, indexer.getIdx(1));
+				Assert.assertEquals(p - 1, indexer.getIdx(maxFP));
+
+				// Correctly wraps around when end of array is reached
+				Assert.assertEquals(0, indexer.getIdx(maxFP, 1));
+				// Correctly wraps around when end of array is reached twice
+				Assert.assertEquals(0, indexer.getIdx(maxFP, (int) p + 1));
+			}
+		}
+	}
+	
+	@Test
+	public void testRescale1_2013265920() throws RemoteException {
+		final int fpBits = 1;
+		final long positions = 2013265920L; // -XX:MaxDirectMemorySize=30720M as in Github issue #1112
+
+		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+
+		// indexer spreads over all positions
+		Assert.assertEquals(0, indexer.getIdx(1));
+		final long maxFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
+		Assert.assertEquals(positions - 1, indexer.getIdx(maxFP));
+		
+		// Correctly wraps around when end of array is reached
+		Assert.assertEquals(0, indexer.getIdx(maxFP, 1));
+		// Correctly wraps around when end of array is reached twice
+		Assert.assertEquals(0, indexer.getIdx(maxFP, (int) positions + 1));
+	}
+
+	@Test
+	public void testRescale1_1207959552() throws RemoteException {
+		final int fpBits = 1;
+		final long positions = 1207959552L;
+
+		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+
+		// indexer spreads over all positions
+		Assert.assertEquals(0, indexer.getIdx(1));
+		final long maxFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
+		Assert.assertEquals(positions - 1, indexer.getIdx(maxFP));
+		
+		// Correctly wraps around when end of array is reached
+		Assert.assertEquals(0, indexer.getIdx(maxFP, 1));
+		// Correctly wraps around when end of array is reached twice
+		Assert.assertEquals(0, indexer.getIdx(maxFP, (int) positions + 1));
+	}
+
+	@Test
+	public void testShift1_268435456() throws RemoteException {
+		final int fpBits = 1;
+		final long positions = 268435456L;
+
+		final Indexer indexer = new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
+
+		// indexer spreads over all positions
+		Assert.assertEquals(0, indexer.getIdx(1));
+		long maxFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
+		Assert.assertEquals(positions - 1, indexer.getIdx(maxFP));
+
+		// Correctly wraps around when end of array is reached
+		Assert.assertEquals(0, indexer.getIdx(maxFP, 1));
+		// Correctly wraps around when end of array is reached twice
+		Assert.assertEquals(0, indexer.getIdx(maxFP, (int) positions + 1));
+	}
+	
 	@Test
 	public void testRescaleMaximum() throws RemoteException {
 		final int fpBits = 1;
