@@ -600,7 +600,6 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		private static final long minFingerprint = 1L; //Minimum possible fingerprint (0L marks an empty position)
 
 		private final double tblScalingFactor;
-		private final long maxFingerprint;
 		protected final long positions;
 		
 		public Indexer(final long positions, final int fpBits) {
@@ -608,9 +607,8 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			assert fpBits > 0;
 		}
 
-		public Indexer(final long positions, final int fpBits, final long maxValue) {
+		public Indexer(final long positions, final int fpBits, final long maxFingerprint) {
 			this.positions = positions;
-			this.maxFingerprint = maxValue;
 			// (position-1L) because array is zero indexed.
 			this.tblScalingFactor = (positions - 1L) / ((maxFingerprint - minFingerprint) * 1f);
 		}
