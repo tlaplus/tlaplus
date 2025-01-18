@@ -605,7 +605,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		public Indexer(final long positions, final int fpBits) {
 			this(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
 			Assert.check(positions < Integer.MAX_VALUE, EC.SYSTEM_FINGERPRINT_OVERFLOW_ERROR);
-			assert fpBits > 0;
+			assert positions >= 0 && fpBits > 0 && fpBits < 64;
 		}
 
 		public Indexer(final long positions, final int fpBits, final long maxFingerprint) {
@@ -628,10 +628,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		private final long prefixMask;
 		private final int rShift;
 
-		public BitshiftingIndexer(final long positions, final int fpBits) throws RemoteException {
+		public BitshiftingIndexer(final long positions, final int fpBits) {
 			super(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
+			assert positions >= 0 && fpBits > 0 && fpBits < 64;
 			
 			this.prefixMask = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
+			assert prefixMask > positions : "fingerprint equals index if positions exceeds fingerprint space.";
+
 			
 			long n = (0xFFFFFFFFFFFFFFFFL >>> fpBits) - (positions - 1);
 			int moveBy = 0;

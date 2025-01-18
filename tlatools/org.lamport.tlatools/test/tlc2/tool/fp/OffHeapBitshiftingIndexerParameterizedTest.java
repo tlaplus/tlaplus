@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -61,25 +60,25 @@ public class OffHeapBitshiftingIndexerParameterizedTest {
 	}
 
 	@Test
-	public void testZero() throws RemoteException {
+	public void testZero() {
 		final Indexer indexer = new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
 		Assert.assertEquals(0, indexer.getIdx(0L));
 		Assert.assertEquals(0, indexer.getIdx(1L));
 	}
 
 	@Test
-	public void testOne() throws RemoteException {
+	public void testOne() {
 		Assert.assertEquals(0, new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits).getIdx(1L));
 	}
 
 	@Test
-	public void testLongMin() throws RemoteException {
+	public void testLongMin() {
 		final long highFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
 		Assert.assertEquals(positions - 1L, new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits).getIdx(highFP));
 	}
 
 	@Test
-	public void testLongMax() throws RemoteException {
+	public void testLongMax() {
 		final long highFP = Long.MAX_VALUE >>> fpBits;
 		Assert.assertEquals((positions / 2L) - 1L, new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits).getIdx(highFP));
 	}

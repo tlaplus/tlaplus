@@ -25,8 +25,6 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
-import java.rmi.RemoteException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +34,7 @@ import util.Assert.TLCRuntimeException;
 public class OffHeapBitshiftingIndexerTest {
 
 	@Test
-	public void testBitshifting() throws RemoteException {
+	public void testBitshifting() {
 		final int fpBits = 1;
 		final long positions = 128L;
 		final int logPos = 8;
@@ -44,7 +42,7 @@ public class OffHeapBitshiftingIndexerTest {
 	}
 
 	@Test
-	public void testBitshifting2() throws RemoteException {
+	public void testBitshifting2() {
 		final int fpBits = 2;
 		final long positions = 128L;
 		final int logPos = 9;
@@ -52,7 +50,7 @@ public class OffHeapBitshiftingIndexerTest {
 	}
 
 	@Test
-	public void testShift1_268435456() throws RemoteException {
+	public void testShift1_268435456() {
 		final int fpBits = 1;
 		final long positions = 268435456L;
 
@@ -70,7 +68,7 @@ public class OffHeapBitshiftingIndexerTest {
 	}
 	
 	@Test
-	public void testBitshiftOvershoot() throws RemoteException {
+	public void testBitshiftOvershoot() {
 		final int fpBits = 1;
 		final long positions = 536870912L;
 		
@@ -93,7 +91,7 @@ public class OffHeapBitshiftingIndexerTest {
 	}
 	
 	@Test
-	public void testNoOverflowErrorBitShifting() throws RemoteException {
+	public void testNoOverflowErrorBitShifting() {
 		try {
 			new OffHeapDiskFPSet.BitshiftingIndexer(Integer.MAX_VALUE + 1L, 1);
 		} catch (TLCRuntimeException e) {
