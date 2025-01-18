@@ -4,6 +4,7 @@ package util;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Converts abstract filenames (e.g. <code>"Integers.tla"</code>) to concrete locations
@@ -13,6 +14,11 @@ import java.net.URL;
  * using {@link SequentialResourceLocator}.
  */
 interface ResourceLocator {
+
+    /**
+     * Searches no locations; fails to locate all files.
+     */
+    public static final ResourceLocator EMPTY = new SequentialResourceLocator(List.of());
 
     /**
      * Locate the given file.  The name is treated as a filename, not a TLA+ module name;

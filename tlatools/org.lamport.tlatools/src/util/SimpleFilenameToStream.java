@@ -12,8 +12,9 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -70,7 +71,13 @@ public class SimpleFilenameToStream implements FilenameToStream {
  * (which is being used in the default constructor).
  */
   public SimpleFilenameToStream(String[] anLibraryPaths) {
-    userFileResourceLocator = getLibraryPaths(anLibraryPaths);
+    if (anLibraryPaths == null) {
+      anLibraryPaths = parsePaths(System.getProperty(TLA_LIBRARY));
+    }
+
+    userFileResourceLocator = new SequentialResourceLocator(List.of(
+            searchUserDirOrCWD(),
+            searchFilesystemPaths(anLibraryPaths)));
     standardLibraryResourceLocator = getInstallationBasePath();
   }
 
@@ -97,45 +104,46 @@ public class SimpleFilenameToStream implements FilenameToStream {
   }
 
   /**
-   * August 2014 - TL
-   * added functionality for supplying additional libraries.
-   * All usage of this except the one added by TL is supplying libraries  = null
+   * Create a locator that searches {@link ToolIO#getUserDir()} if it is non-null, otherwise searches the JVM's current
+   * working directory (CWD).
+   *
+   * @return a locator that searches userDir or CWD
    */
-  private static ResourceLocator getLibraryPaths(String[] libraries) {
-    List<ResourceLocator> res = new ArrayList<>();
-
-    // First, if userDir is set, search there, otherwise search the current working directory.
+  private static ResourceLocator searchUserDirOrCWD() {
     String userDir = ToolIO.getUserDir();
     if (userDir != null) {
-      res.add(new FilesystemResourceLocator(Path.of(userDir)));
+      return new FilesystemResourceLocator(Path.of(userDir));
     } else {
       String cwd = System.getProperty("user.dir");
       if (cwd != null) {
-        res.add(new FilesystemResourceLocator(Path.of(cwd)));
+        return new FilesystemResourceLocator(Path.of(cwd));
       }
     }
+    return ResourceLocator.EMPTY;
+  }
 
-    // Next, search the given `libraries` (or the TLA_LIBRARY system property if `libraries` is null).
-    String path; // actually a list of paths separated by FileUtil.pathSeparator
-    if (libraries == null) path = System.getProperty(TLA_LIBRARY);
-    else {
-      StringBuffer buf = new StringBuffer();
-      for (int i=0; i<libraries.length; i++) {
-        buf.append(libraries[i]);
-        if (i < libraries.length-1) {
-          buf.append(FileUtil.pathSeparator);
-        }
-      }
-      path = buf.toString();
-    }
-    if (path != null) {
-      String[] paths = path.split(FileUtil.pathSeparator);
-      for (String s : paths) {
-        res.add(new FilesystemResourceLocator(Path.of(s)));
-      }
-    }
+  /**
+   * Create a locator that searches the given filesystem paths.
+   *
+   * @param paths an array of paths
+   * @return a locator that searches the given paths
+   */
+  private static ResourceLocator searchFilesystemPaths(String[] paths) {
+    return new SequentialResourceLocator(Arrays.stream(paths)
+            .map(Path::of)
+            .map(FilesystemResourceLocator::new)
+            .collect(Collectors.toList()));
+  }
 
-    return new SequentialResourceLocator(res);
+  /**
+   * Parse a string as an array of paths separated by {@link FileUtil#pathSeparator}.  Returns an empty array if
+   * <code>pathList == null</code>.
+   *
+   * @param pathList a string containing paths separated by {@link FileUtil#pathSeparator}
+   * @return the array of paths contained in the given <code>pathList</code>
+   */
+  private static String[] parsePaths(String pathList) {
+    return pathList == null ? new String[0] : pathList.split(FileUtil.pathSeparator);
   }
 
   /**
