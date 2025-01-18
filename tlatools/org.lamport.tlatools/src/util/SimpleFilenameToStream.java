@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -202,14 +203,14 @@ public class SimpleFilenameToStream implements FilenameToStream {
       //  > lower case in scheme names (e.g., allow "HTTP" as well as "http").
       // Ref: https://www.ietf.org/rfc/rfc1738.txt
       if ("file".equalsIgnoreCase(location.getProtocol())) {
-        Path locationOnFilesystem = Path.of(location.getPath());
+        Path locationOnFilesystem = Path.of(location.toURI());
         return new TLAFile(locationOnFilesystem, isLibraryModule, this);
       } else {
         try (InputStream in = location.openStream()) {
           return read(name, location, in, isLibraryModule);
         }
       }
-    } catch (IOException e) {
+    } catch (IOException | URISyntaxException e) {
       throw new RuntimeException(e);
     }
   }
