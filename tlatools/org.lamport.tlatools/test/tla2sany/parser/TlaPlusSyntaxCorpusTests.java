@@ -1,10 +1,14 @@
 package tla2sany.parser;
 
 import util.AstNode;
-import util.ParserAPI;
 import util.SyntaxCorpusFileParser;
 import util.SyntaxCorpusFileParser.CorpusTest;
 import util.SyntaxCorpusRunner;
+import tla2sany.api.ModuleSyntaxTree;
+import tla2sany.api.SANYFrontend;
+import tla2sany.api.Resolver;
+import tla2sany.api.StringResolver;
+import tla2sany.api.Frontend;
 import tlc2.tool.CommonTestCase;
 
 import org.junit.Assert;
@@ -48,8 +52,15 @@ public class TlaPlusSyntaxCorpusTests {
 		 * {@inheritDoc}
 		 */
 		public AstNode parse(String input) throws ParseException {
-			SyntaxTreeNode root = ParserAPI.processSyntax(input);
-			return null == root ? null : TlaPlusParserOutputTranslator.toAst(root);
+			Frontend parser = new SANYFrontend();
+			final String moduleName = "Test";
+			Resolver resolver = new StringResolver(moduleName, input);
+			try {
+				final ModuleSyntaxTree syntax = parser.processSyntax(moduleName, resolver);
+				return TlaPlusParserOutputTranslator.toAst(syntax.root);
+			} catch (tla2sany.parser.ParseException | TokenMgrError e) {
+				return null;
+			}
 		}
 	}
 
