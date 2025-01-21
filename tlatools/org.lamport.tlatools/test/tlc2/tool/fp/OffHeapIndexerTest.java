@@ -41,7 +41,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 1;
 		final long positions = 96L;
 		
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1, 0));
@@ -59,7 +59,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 1;
 		final long positions = 99L;
 		
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -77,7 +77,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 2;
 		final long positions = 96L;
 		
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -95,7 +95,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 2;
 		final long positions = 99L;
 		
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -114,7 +114,7 @@ public class OffHeapIndexerTest {
 		for (int fpBits = 1; fpBits < 3; fpBits++) {
 			final long maxFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
 			for (long p = 1L; p < Integer.MAX_VALUE; p++) {
-				final Indexer indexer = new OffHeapDiskFPSet.Indexer(p, fpBits);
+				final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(p, fpBits);
 
 				// indexer spreads over all positions
 				Assert.assertEquals(0, indexer.getIdx(1));
@@ -133,7 +133,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 1;
 		final long positions = 2013265920L; // -XX:MaxDirectMemorySize=30720M as in Github issue #1112
 
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -151,7 +151,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 1;
 		final long positions = 1207959552L;
 
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -169,7 +169,7 @@ public class OffHeapIndexerTest {
 		final int fpBits = 1;
 		final long positions = 11L;
 		
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(positions, fpBits, 11L);
+		final Indexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, fpBits, 11L);
 
 		// indexer spreads over all positions
 		Assert.assertEquals(0, indexer.getIdx(1));
@@ -182,7 +182,7 @@ public class OffHeapIndexerTest {
 	@Test
 	public void testOverflowErrorArithmetic() {
 		try {
-			new OffHeapDiskFPSet.Indexer(Integer.MAX_VALUE + 1L, 1);
+			new OffHeapDiskFPSet.LimitedPrecisionIndexer(Integer.MAX_VALUE + 1L, 1);
 		} catch (TLCRuntimeException e) {
 			return;
 		}

@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import tlc2.tool.fp.LongArrays.LongComparator;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
+import tlc2.tool.fp.OffHeapDiskFPSet.LimitedPrecisionIndexer;
 
 public class LongArraysTest {
 	
@@ -26,7 +27,7 @@ public class LongArraysTest {
 	
 	@Test
 	public void testEmpty1() {
-		doTest(new ArrayList<Long>(0), 1L, 0, new OffHeapDiskFPSet.Indexer(0, 1));
+		doTest(new ArrayList<Long>(0), 1L, 0, new OffHeapDiskFPSet.LimitedPrecisionIndexer(0, 1));
 	}
 	
 	@Test
@@ -37,7 +38,7 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(0L);
 
-		doTest(expected, 1L, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1));
+		doTest(expected, 1L, 2, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1));
 	}
 	
 	@Test
@@ -128,7 +129,7 @@ public class LongArraysTest {
 		expected.add(1644442600000000000L);
 		expected.add(0L);
 
-		doTest(expected, 1L, 3, new OffHeapDiskFPSet.Indexer(expected.size(), 1));
+		doTest(expected, 1L, 3, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1));
 	}
 	
 	@Test
@@ -632,7 +633,7 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(13L);
 		
-		doTest(expected, 1, 0, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+		doTest(expected, 1, 0, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1, 13));
 	}
 	
 	@Test
@@ -650,7 +651,7 @@ public class LongArraysTest {
 		expected.add(10L);
 		expected.add(12L);
 		
-		final OffHeapDiskFPSet.Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1, 12);
+		final OffHeapDiskFPSet.LimitedPrecisionIndexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1, 12);
 		final LongArray array = new LongArray(expected);
 		final LongComparator comparator = getComparator(indexer);
 		LongArrays.sort(array, 0, array.size() - 1L + 3, comparator);
@@ -668,7 +669,7 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(11L);
 		
-		doTest(expected, 1, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+		doTest(expected, 1, 2, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1, 13));
 	}
 	
 	@Test
@@ -681,7 +682,7 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(12L);
 		
-		doTest(expected, 1, 2, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+		doTest(expected, 1, 2, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1, 13));
 	}
 	
 	@Test
@@ -694,11 +695,11 @@ public class LongArraysTest {
 		expected.add(0L);
 		expected.add(11L);
 		
-		doTest(expected, 1, 3, new OffHeapDiskFPSet.Indexer(expected.size(), 1, 13));
+		doTest(expected, 1, 3, new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1, 13));
 	}
 	
 	private void doTest(final List<Long> expected) {
-		final Indexer indexer = new OffHeapDiskFPSet.Indexer(expected.size(), 1);
+		final LimitedPrecisionIndexer indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(expected.size(), 1);
 		for (int i = 1; i < (expected.size() / 2); i++) {
 			doTest(expected, i, 2, indexer);
 		}
