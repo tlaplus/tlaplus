@@ -628,6 +628,7 @@
 					<exclude name="**/SuiteETestCase.java" />
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
+					<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 					<exclude name="**/AbstractCoverageTest.java" />
 					<exclude name="**/InitEvalOrderTest.java" />
 					<exclude name="**/TestMPRecorder.java" />
@@ -964,6 +965,7 @@
 						<exclude name="**/TLCServerTestCase.java" />
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
 						<exclude name="**/AbstractExampleTestCase.java" />
+						<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 						<exclude name="**/AbstractCoverageTest.java" />
 						<exclude name="**/InitEvalOrderTest.java" />
 						<exclude name="**/BidirectionalTransitions1BTest.java" />
