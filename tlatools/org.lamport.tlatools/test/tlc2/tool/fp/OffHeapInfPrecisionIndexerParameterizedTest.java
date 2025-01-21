@@ -31,14 +31,14 @@ import org.junit.runners.Parameterized;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 
 @RunWith(Parameterized.class)
-public class OffHeapBitshiftingIndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
+public class OffHeapInfPrecisionIndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
 
-	public OffHeapBitshiftingIndexerParameterizedTest(final long pBits, final int fpBits) {
+	public OffHeapInfPrecisionIndexerParameterizedTest(final long pBits, final int fpBits) {
 		super(pBits, fpBits);
 	}
 
 	@Override
 	protected Indexer getIndexer() {
-		return new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
+		return new OffHeapDiskFPSet.InfinitePrecisionIndexer(positions, fpBits);
 	}
 }
