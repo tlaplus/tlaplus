@@ -6,6 +6,8 @@ package tlc2.tool.fp;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -631,7 +633,34 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			return idx % positions;
 		}
 	}
-	
+
+	// The use of infinite precision comes with a significant trade-off, resulting
+	// in an approximate 100-fold reduction in performance.
+	public static class InfinitePrecisionIndexer implements Indexer {
+
+		private final BigDecimal factor;
+		private final BigDecimal positions;
+
+		public InfinitePrecisionIndexer(final long positions, final int fpBits) {
+			assert positions >= 0 && fpBits > 0 && fpBits < 64;
+			this.positions = BigDecimal.valueOf(positions);
+			this.factor = BigDecimal.valueOf(positions)
+					.divide(new BigDecimal(BigInteger.valueOf(1L).shiftLeft(64 - fpBits)));
+		}
+		
+		public long getIdx(final long fp) {
+			return getIdx(fp, 0);
+		}
+		
+		@Override
+		public long getIdx(final long fp, final int probe) {
+			final BigDecimal scaled = BigDecimal.valueOf(fp).multiply(factor).add(BigDecimal.valueOf(probe))
+					.remainder(positions);
+			assert 0 <= scaled.longValue() && scaled.longValue() < this.positions.longValue();
+			return scaled.longValue();
+		}
+	}
+
 	public static class BitshiftingIndexer implements Indexer {
 		private final long prefixMask;
 		private final int rShift;

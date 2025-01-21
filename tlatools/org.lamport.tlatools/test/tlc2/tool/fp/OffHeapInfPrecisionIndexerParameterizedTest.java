@@ -25,18 +25,16 @@
  ******************************************************************************/
 package tlc2.tool.fp;
 
-import org.junit.Assume;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 
 @RunWith(Parameterized.class)
-public class OffHeapBitshiftingIndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
+public class OffHeapInfPrecisionIndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
 
 	@Override
 	protected Indexer getIndexer() {
-		Assume.assumeTrue(Long.bitCount((1L << pBits)) == 1);
-		return new OffHeapDiskFPSet.BitshiftingIndexer((1L << pBits), fpBits);
+		return new OffHeapDiskFPSet.InfinitePrecisionIndexer((1L << pBits), fpBits);
 	}
 }
