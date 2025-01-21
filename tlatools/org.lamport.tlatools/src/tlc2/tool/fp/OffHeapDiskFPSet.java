@@ -149,7 +149,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			this.indexer = new BitshiftingIndexer(positions, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
-			this.indexer = new Indexer(positions, fpSetConfig.getFpBits());
+			this.indexer = new LimitedPrecisionIndexer(positions, fpSetConfig.getFpBits());
 		}
 		
 		// Use the non-concurrent flusher as the default. Will be replaced by
@@ -594,43 +594,52 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	}
 
 	//**************************** Indexer ****************************//
-	
-	public static class Indexer {
 
-		private static final long minFingerprint = 1L; //Minimum possible fingerprint (0L marks an empty position)
+	public interface Indexer {
+		static final long minFingerprint = 1L; // Minimum possible fingerprint (0L marks an empty position)
+
+		long getIdx(final long fp);
+
+		long getIdx(final long fp, int probe);
+	}
+
+	public static class LimitedPrecisionIndexer implements Indexer {
 
 		private final double tblScalingFactor;
 		protected final long positions;
 		
-		public Indexer(final long positions, final int fpBits) {
+		public LimitedPrecisionIndexer(final long positions, final int fpBits) {
 			this(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
 			Assert.check(positions < Integer.MAX_VALUE, EC.SYSTEM_FINGERPRINT_OVERFLOW_ERROR);
 			assert positions >= 0 && fpBits > 0 && fpBits < 64;
 		}
 
-		public Indexer(final long positions, final int fpBits, final long maxFingerprint) {
+		public LimitedPrecisionIndexer(final long positions, final int fpBits, final long maxFingerprint) {
 			this.positions = positions;
 			// (position-1L) because array is zero indexed.
 			this.tblScalingFactor = (positions - 1L) / ((maxFingerprint - minFingerprint) * 1d);
 		}
 		
-		protected long getIdx(final long fp) {
+		@Override
+		public long getIdx(final long fp) {
 			return getIdx(fp, 0);
 		}
 		
-		protected long getIdx(final long fp, final int probe) {
+		@Override
+		public long getIdx(final long fp, final int probe) {
 			long idx = Math.round(tblScalingFactor * (fp - minFingerprint)) + probe;
 			return idx % positions;
 		}
 	}
 	
-	public static class BitshiftingIndexer extends Indexer {
+	public static class BitshiftingIndexer implements Indexer {
 		private final long prefixMask;
 		private final int rShift;
+		private final long positions;
 
 		public BitshiftingIndexer(final long positions, final int fpBits) {
-			super(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
 			assert positions >= 0 && fpBits > 0 && fpBits < 64;
+			this.positions = positions;
 			
 			this.prefixMask = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
 			assert prefixMask > positions : "fingerprint equals index if positions exceeds fingerprint space.";
@@ -646,12 +655,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		}
 		
 		@Override
-		protected long getIdx(final long fp) {
+		public long getIdx(final long fp) {
 			return (fp & prefixMask) >>> rShift;
 		}
 		
 		@Override
-		protected long getIdx(final long fp, int probe) {
+		public long getIdx(final long fp, int probe) {
 			// Have to mod positions because probe might cause us to overshoot.
 			return (((fp & prefixMask) >>> rShift) + probe) % positions; 
 		}
