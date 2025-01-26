@@ -17,8 +17,8 @@ CmdTemplate ==
     "-c",
     "java " \o
     "-XX:+UseParallelGC " \o
-    \* "-XX:MaxDirectMemorySize=20g -Xmx8g " \o
-    \* "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet " \o
+    "-XX:MaxDirectMemorySize=20g -Xmx8g " \o
+    "-Dtlc2.tool.fp.FPSet.impl=tlc2.tool.fp.OffHeapDiskFPSet " \o
     \* Give 10 minutes to each run.
     "-Dtlc2.TLC.stopAfter=600 " \o
     "-DTLA-Library=.. " \o
