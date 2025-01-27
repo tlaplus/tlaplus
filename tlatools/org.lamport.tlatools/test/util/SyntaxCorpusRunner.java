@@ -7,6 +7,7 @@ import java.util.function.Function;
 import util.SyntaxCorpusFileParser.CorpusTest;
 
 import org.junit.Assert;
+import org.junit.Assume;
 
 /**
  * Functionality to run a parser against a corpus of syntax tests.
@@ -108,9 +109,8 @@ public class SyntaxCorpusRunner {
 		Function<CorpusTest, Boolean> shouldRun,
 		Function<CorpusTest, Boolean> expectFailure
 	) throws ParseException {
-		if (!shouldRun.apply(corpusTest) || corpusTest.attributes.contains(CorpusTest.Attribute.SKIP)) {
-			return;
-		}
+		Assume.assumeTrue(shouldRun.apply(corpusTest));
+		Assume.assumeFalse(corpusTest.attributes.contains(CorpusTest.Attribute.SKIP));
 
 		boolean isErrorTest = corpusTest.attributes.contains(CorpusTest.Attribute.ERROR);
 		String testSummary = String.format(
