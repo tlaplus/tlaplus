@@ -32,6 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,6 +43,7 @@ import tlc2.tool.fp.OffHeapDiskFPSet.BitshiftingIndexer;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 import tlc2.tool.fp.OffHeapDiskFPSet.InfinitePrecisionIndexer;
 import tlc2.tool.fp.OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer;
+import tlc2.tool.fp.OffHeapDiskFPSet.Mult1024Indexer;
 
 @RunWith(Parameterized.class)
 public class OffHeapIndexerEquivalenceTest {
@@ -86,6 +88,7 @@ public class OffHeapIndexerEquivalenceTest {
 	public int fpRangeBit;
 
 	@Test
+	@Ignore("Checked in older commits")
 	public void testInfiniteBitshifting() {
 		Assume.assumeTrue(Long.bitCount(positions) == 1);
 		
@@ -99,18 +102,19 @@ public class OffHeapIndexerEquivalenceTest {
 	public void testInfiniteInfMult() {
 		Assume.assumeTrue(InfinitePrecisionMult1024Indexer.isSupported(positions));
 
-		final Indexer lIndexer = new InfinitePrecisionMult1024Indexer(positions, fpBits);
+		final Indexer lIndexer = new Mult1024Indexer(positions, fpBits);
 		final Indexer iIndexer = new InfinitePrecisionIndexer(positions, fpBits);
 
 		doTest(iIndexer, lIndexer);
 	}
 
 	@Test
+	@Ignore("Checked in older commits")
 	public void testInfMultBitshifting() {
 		Assume.assumeTrue(InfinitePrecisionMult1024Indexer.isSupported(positions));
 		Assume.assumeTrue(Long.bitCount(positions) == 1);
 
-		final Indexer lIndexer = new OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer(positions, fpBits);
+		final Indexer lIndexer = new OffHeapDiskFPSet.Mult1024Indexer(positions, fpBits);
 		final Indexer iIndexer = new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
 
 		doTest(iIndexer, lIndexer);

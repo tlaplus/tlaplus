@@ -30,15 +30,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
-import tlc2.tool.fp.OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer;
+import tlc2.tool.fp.OffHeapDiskFPSet.Mult1024Indexer;
 
 @RunWith(Parameterized.class)
-public class OffHeapInfPrecisionMult1024IndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
+public class OffHeapMult1024IndexerParameterizedTest extends OffHeapIndexerParameterizedTest {
 
 	@Override
 	protected Indexer getIndexer() {
-		Assume.assumeTrue(InfinitePrecisionMult1024Indexer.isSupported((1L << pBits)));
+		Assume.assumeTrue(Mult1024Indexer.isSupported((1L << pBits)));
 		Assume.assumeTrue(pBits > fpBits);
-		return new OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer((1L << pBits), fpBits);
+		return new OffHeapDiskFPSet.Mult1024Indexer((1L << pBits), fpBits);
 	}
 }

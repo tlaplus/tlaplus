@@ -149,9 +149,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// calculations.
 		if (Long.bitCount(positions) == 1) {
 			this.indexer = new BitshiftingIndexer(positions, fpSetConfig.getFpBits());
-		} else if (InfinitePrecisionMult1024Indexer.isSupported(positions)) {
+		} else if (Mult1024Indexer.isSupported(positions)) {
 			// positions * 8L is a multiple of 1024mb.
-			this.indexer = new InfinitePrecisionMult1024Indexer(positions, fpSetConfig.getFpBits());
+			this.indexer = new Mult1024Indexer(positions, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
 			this.indexer = new InfinitePrecisionIndexer(positions, fpSetConfig.getFpBits());
@@ -698,6 +698,80 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			idx += probe;
 			assert 0 <= idx && idx < this.positions;
 			return idx % positions;
+		}
+	}
+
+	public static class Mult1024Indexer implements Indexer {
+
+		private static final long MASK = 0xFFFFFFFFL;
+
+		public static boolean isSupported(final long positions) {
+			return (positions << 3) % (1L << 30) == 0L;
+		}
+
+		private final long positions;
+	    private final int shift;
+		private final long mLow;
+		private final long mHigh;
+
+		public Mult1024Indexer(final long positions, final int fpBits) {
+			assert fpBits > 0 && fpBits < 64;
+			assert isSupported(positions) : "positions * 8 is not a multiple of 1024MB";
+			assert positions >= 0 && Long.numberOfTrailingZeros(positions) > fpBits
+					: "fingerprint space is smaller than number of positions";
+			// Ensuring that `(positions * 8L)` is a multiple of 1024MB guarantees that the
+			// calculation is well behaved—specifically, that `positions` and `max` share a
+			// large GCD that is also a power of two. This allows us to simplify both values
+			// by dividing them by their GCD. Since `max / gcd` remains a power of two, we
+			// can replace division with bit shifting when computing the index, improving
+			// efficiency.
+			this.positions = positions;
+
+			final BigInteger max = BigInteger.ONE.shiftLeft(64 - fpBits);
+			final BigInteger bPos = BigInteger.valueOf(positions);
+			final BigInteger gcd = max.gcd(bPos);
+			assert gcd.bitCount() == 1;
+
+			final long multiplier = bPos.divide(gcd).longValueExact();
+			this.mLow = multiplier & MASK;
+			this.mHigh = multiplier >>> 32;
+			
+			final BigInteger rMax = max.divide(gcd);
+			assert rMax.bitCount() == 1;
+			this.shift = rMax.getLowestSetBit();
+			assert shift >= 0 && shift < 64 : "Shift value must be valid (0 to 63)";
+		}
+
+		@Override
+		public long getIdx(final long fp) {
+			
+	        // Split into high and low 32-bit parts
+	        final long fpL = fp & MASK;
+	        final long fpH = fp >>> 32;
+
+			// Compute partial products (Since each of these variables represents the
+			// product of two 32-bit numbers, the result is at most 64 bits.)
+	        final long ll = fpL * mLow;
+	        final long lh = fpL * mHigh;
+	        final long hl = fpH * mLow;
+	        final long hh = fpH * mHigh;
+
+	        // Combine four partial products including carry overs.
+	        long l = lh + (ll >>> 32);
+	        long h = hl + (l & MASK);
+	        l = hh + (l >>> 32);
+	        l = l + (h >>> 32);
+	        h = (h << 32) | (ll & MASK);
+
+	        // Bitwise OR these shifted values into the final idx
+	        final long idx = (h >>> shift) | (l << (64 - shift));
+			assert 0 <= idx && idx < this.positions;
+			return idx;
+		}
+
+		@Override
+		public long getIdx(final long fp, final int probe) {
+			return (getIdx(fp) + probe) % positions;
 		}
 	}
 
