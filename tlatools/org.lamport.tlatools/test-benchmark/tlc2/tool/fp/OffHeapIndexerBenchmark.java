@@ -46,7 +46,7 @@ public class OffHeapIndexerBenchmark {
 	long seed = 0;
 
 	private OffHeapDiskFPSet.Indexer infinite = new OffHeapDiskFPSet.InfinitePrecisionIndexer(1L << 30, 1);
-	private OffHeapDiskFPSet.Indexer infMult = new OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer(1L << 30, 1);
+	private OffHeapDiskFPSet.Indexer infMult = new OffHeapDiskFPSet.Mult1024Indexer(1L << 30, 1);
 	private OffHeapDiskFPSet.Indexer bitshift = new OffHeapDiskFPSet.BitshiftingIndexer(1L << 30, 1);
 
 	@Setup
