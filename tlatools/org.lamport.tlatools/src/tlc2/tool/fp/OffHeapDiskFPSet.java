@@ -154,7 +154,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			this.indexer = new InfinitePrecisionMult1024Indexer(positions, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
-			this.indexer = new LimitedPrecisionIndexer(positions, fpSetConfig.getFpBits());
+			this.indexer = new InfinitePrecisionIndexer(positions, fpSetConfig.getFpBits());
 		}
 		
 		// Use the non-concurrent flusher as the default. Will be replaced by
@@ -601,40 +601,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 	//**************************** Indexer ****************************//
 
 	public interface Indexer {
-		static final long minFingerprint = 1L; // Minimum possible fingerprint (0L marks an empty position)
-
 		long getIdx(final long fp);
 
 		long getIdx(final long fp, int probe);
-	}
-
-	public static class LimitedPrecisionIndexer implements Indexer {
-
-		private final double tblScalingFactor;
-		protected final long positions;
-		
-		public LimitedPrecisionIndexer(final long positions, final int fpBits) {
-			this(positions, fpBits, 0xFFFFFFFFFFFFFFFFL >>> fpBits);
-			Assert.check(positions < Integer.MAX_VALUE, EC.SYSTEM_FINGERPRINT_OVERFLOW_ERROR);
-			assert positions >= 0 && fpBits > 0 && fpBits < 64;
-		}
-
-		public LimitedPrecisionIndexer(final long positions, final int fpBits, final long maxFingerprint) {
-			this.positions = positions;
-			// (position-1L) because array is zero indexed.
-			this.tblScalingFactor = (positions - 1L) / ((maxFingerprint - minFingerprint) * 1d);
-		}
-		
-		@Override
-		public long getIdx(final long fp) {
-			return getIdx(fp, 0);
-		}
-		
-		@Override
-		public long getIdx(final long fp, final int probe) {
-			long idx = Math.round(tblScalingFactor * (fp - minFingerprint)) + probe;
-			return idx % positions;
-		}
 	}
 
 	// The use of infinite precision comes with a significant trade-off, resulting
@@ -657,7 +626,14 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			final BigDecimal divisor = new BigDecimal(BigInteger.valueOf(1L).shiftLeft(64 - fpBits));
 			this.factor = BigDecimal.valueOf(positions).divide(divisor);
 		}
-		
+
+		public InfinitePrecisionIndexer(final long positions, final int fpBits, final long maxFingerprint) {
+			assert positions >= 0 && fpBits > 0 && fpBits < 64;
+			this.positions = BigDecimal.valueOf(positions);
+			this.factor = BigDecimal.valueOf(positions).divide(BigDecimal.valueOf(maxFingerprint));
+		}
+	
+		@Override
 		public long getIdx(final long fp) {
 			return getIdx(fp, 0);
 		}

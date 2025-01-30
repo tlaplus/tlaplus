@@ -74,7 +74,7 @@ public class OffHeapDiskFPSetJPFTest extends TestJPF {
 		public DummyOffHeapDiskFPSet(int positions, long max) {
 			this.tblCnt = new AtomicInteger(0);
 			this.array = new DummyLongArray(positions);
-			this.indexer = new OffHeapDiskFPSet.LimitedPrecisionIndexer(positions, 1, max);
+			this.indexer = new OffHeapDiskFPSet.InfinitePrecisionIndexer((long) positions, 1, max);
 		}
 
 		// This is what we want to verify.

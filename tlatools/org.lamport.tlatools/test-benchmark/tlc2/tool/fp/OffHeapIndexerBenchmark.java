@@ -45,7 +45,6 @@ public class OffHeapIndexerBenchmark {
 	RandomGenerator rng = new RandomGenerator(0);
 	long seed = 0;
 
-	private OffHeapDiskFPSet.Indexer limited = new OffHeapDiskFPSet.LimitedPrecisionIndexer(1L << 30, 1);
 	private OffHeapDiskFPSet.Indexer infinite = new OffHeapDiskFPSet.InfinitePrecisionIndexer(1L << 30, 1);
 	private OffHeapDiskFPSet.Indexer infMult = new OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer(1L << 30, 1);
 	private OffHeapDiskFPSet.Indexer bitshift = new OffHeapDiskFPSet.BitshiftingIndexer(1L << 30, 1);
@@ -72,11 +71,6 @@ public class OffHeapIndexerBenchmark {
 		// correspond to a fixed exploration order of the behavior space.
 		rng.setSeed(0);
 		seed = 0;
-	}
-
-	@Benchmark
-	public long Limited() {
-		return limited.getIdx(rng.nextLong() & Long.MAX_VALUE);
 	}
 
 	@Benchmark
