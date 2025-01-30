@@ -41,23 +41,36 @@ import org.junit.runners.Parameterized.Parameters;
 import tlc2.tool.fp.OffHeapDiskFPSet.BitshiftingIndexer;
 import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 import tlc2.tool.fp.OffHeapDiskFPSet.InfinitePrecisionIndexer;
+import tlc2.tool.fp.OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer;
 
 @RunWith(Parameterized.class)
 public class OffHeapIndexerEquivalenceTest {
+	// Round down to the specified number of positions to the nearest multiple that
+	// requires a 1024MB allocation.
+    public static long roundHalfEven(long l) {
+        final long MULTIPLE = 8L * 1024 * 1024 * 1024;
+        return (l / MULTIPLE) * MULTIPLE;
+    }
 
 	@Parameters(name = "positions: {0}, fpBits: {1}, fp: 1L<<{2}")
 	public static Collection<Object[]> data() {
-		final List<Object[]> p = new ArrayList<>();
+		final List<Object[]> p = new ArrayList<>(21762);
 
 		for (int fpBits = 1; fpBits > 0; fpBits--) {
-			for (int k = 50; k > 0; k--) {
-				for (int b = 62; b > 48; b--) {
-					p.add(new Object[] { k * 134_217_728L, fpBits, b });
+			for (int i = 1; i < 8; i++) {
+				for (int b = 62; b > 0; b--) {
+					p.add(new Object[] { roundHalfEven(Long.MAX_VALUE >>> 2) + (i * (1L << 30)), fpBits, b });
 				}
 			}
-			
-			for (int posBits = 63 - fpBits; posBits > 16; posBits--) { 
-				for (int b = 62; b > 42; b--) {
+
+			for (int k = 1 << 6; k > 0; k--) {
+				for (int b = 62; b > 0; b--) {
+					p.add(new Object[] { k * (1L << 27), fpBits, b });
+				}
+			}
+
+			for (int posBits = 63 - fpBits; posBits > 16; posBits--) {
+				for (int b = 62; b > 0; b--) {
 					p.add(new Object[] { 1L << posBits, fpBits, b });
 				}
 			}
@@ -80,6 +93,27 @@ public class OffHeapIndexerEquivalenceTest {
 		final Indexer bIndexer = new BitshiftingIndexer(positions, fpBits);
 
 		doTest(iIndexer, bIndexer);
+	}
+
+	@Test
+	public void testInfiniteInfMult() {
+		Assume.assumeTrue(InfinitePrecisionMult1024Indexer.isSupported(positions));
+
+		final Indexer lIndexer = new InfinitePrecisionMult1024Indexer(positions, fpBits);
+		final Indexer iIndexer = new InfinitePrecisionIndexer(positions, fpBits);
+
+		doTest(iIndexer, lIndexer);
+	}
+
+	@Test
+	public void testInfMultBitshifting() {
+		Assume.assumeTrue(InfinitePrecisionMult1024Indexer.isSupported(positions));
+		Assume.assumeTrue(Long.bitCount(positions) == 1);
+
+		final Indexer lIndexer = new OffHeapDiskFPSet.InfinitePrecisionMult1024Indexer(positions, fpBits);
+		final Indexer iIndexer = new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
+
+		doTest(iIndexer, lIndexer);
 	}
 
 	private void doTest(final Indexer expected, final Indexer actual) {
@@ -120,4 +154,5 @@ public class OffHeapIndexerEquivalenceTest {
 
 		// Check fp given by junit parameter.
 		Assert.assertEquals(expected.getIdx(upperBound), actual.getIdx(upperBound));
+	}
 }
