@@ -24,7 +24,7 @@ public class OffHeapIteratorTest {
 		}
 
 		final Iterator itr = new OffHeapDiskFPSet.Iterator(array, elements,
-				new OffHeapDiskFPSet.LimitedPrecisionIndexer(2L * elements, 1));
+				new OffHeapDiskFPSet.InfinitePrecisionIndexer(2L * elements, 1));
 
 		long actual = 1L;
 		while (itr.hasNext()) {
@@ -48,7 +48,7 @@ public class OffHeapIteratorTest {
 		}
 
 		final Iterator itr = new OffHeapDiskFPSet.Iterator(array, elements,
-				new OffHeapDiskFPSet.LimitedPrecisionIndexer(2L * elements, 1));
+				new OffHeapDiskFPSet.InfinitePrecisionIndexer(2L * elements, 1));
 
 		long actual = 1L;
 		while (itr.hasNext()) {
