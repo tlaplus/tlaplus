@@ -149,6 +149,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// calculations.
 		if (Long.bitCount(positions) == 1) {
 			this.indexer = new BitshiftingIndexer(positions, fpSetConfig.getFpBits());
+		} else if (InfinitePrecisionMult1024Indexer.isSupported(positions)) {
+			// positions * 8L is a multiple of 1024mb.
+			this.indexer = new InfinitePrecisionMult1024Indexer(positions, fpSetConfig.getFpBits());
 		} else {
 			// non 2^n buckets cannot use a bit shifting indexer
 			this.indexer = new LimitedPrecisionIndexer(positions, fpSetConfig.getFpBits());
@@ -644,8 +647,15 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		public InfinitePrecisionIndexer(final long positions, final int fpBits) {
 			assert positions >= 0 && fpBits > 0 && fpBits < 64;
 			this.positions = BigDecimal.valueOf(positions);
-			this.factor = BigDecimal.valueOf(positions)
-					.divide(new BigDecimal(BigInteger.valueOf(1L).shiftLeft(64 - fpBits)));
+			// We intentionally deviate from the standard mathematical approach by not
+			// subtracting the minimum fingerprint from the maximum fingerprint. This
+			// ensures that the divisor is always a power of two. Additionally, since the
+			// number of positions is a multiple of 1 gig, the factor remains representable.
+			// However, this approach has a drawback: the indexer's input lower bound for
+			// its index range is 0, which corresponds to a fingerprint that will never
+			// actually be stored in the fingerprint set. We accept this trade-off.
+			final BigDecimal divisor = new BigDecimal(BigInteger.valueOf(1L).shiftLeft(64 - fpBits));
+			this.factor = BigDecimal.valueOf(positions).divide(divisor);
 		}
 		
 		public long getIdx(final long fp) {
@@ -658,6 +668,60 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 					.remainder(positions);
 			assert 0 <= scaled.longValue() && scaled.longValue() < this.positions.longValue();
 			return scaled.longValue();
+		}
+	}
+
+	public static class InfinitePrecisionMult1024Indexer implements Indexer {
+
+		public static boolean isSupported(final long positions) {
+			return (positions << 3) % (1L << 30) == 0L;
+		}
+
+		private final long positions;
+	    private final int shift;
+		private final BigInteger multiplier;
+
+		public InfinitePrecisionMult1024Indexer(final long positions, final int fpBits) {
+			assert fpBits > 0 && fpBits < 64;
+			assert isSupported(positions) : "positions * 8 is not a multiple of 1024MB";
+			assert positions >= 0 && Long.numberOfTrailingZeros(positions) > fpBits
+					: "fingerprint space is smaller than number of positions";
+			// Ensuring that `(positions * 8L)` is a multiple of 1024MB guarantees that the
+			// calculation is well behaved—specifically, that `positions` and `max` share a
+			// large GCD that is also a power of two. This allows us to simplify both values
+			// by dividing them by their GCD. Since `max / gcd` remains a power of two, we
+			// can replace division with bit shifting when computing the index, improving
+			// efficiency.
+			this.positions = positions;
+
+			final BigInteger max = BigInteger.ONE.shiftLeft(64 - fpBits);
+			final BigInteger bPos = BigInteger.valueOf(positions);
+			final BigInteger gcd = max.gcd(bPos);
+
+			this.multiplier = bPos.divide(gcd);
+
+			final BigInteger rMax = max.divide(gcd);
+			assert rMax.bitCount() == 1;
+			this.shift = rMax.getLowestSetBit();
+		}
+
+		@Override
+		public long getIdx(final long fp) {
+			// Use BigInteger because multiplying the largest fingerprint by multiplier
+			// would certainly overflow.
+			long idx = BigInteger.valueOf(fp).multiply(multiplier).shiftRight(shift).longValue();
+			idx %= positions;
+			assert 0 <= idx && idx < this.positions;
+			return idx;
+		}
+
+		@Override
+		public long getIdx(final long fp, final int probe) {
+			long idx = BigInteger.valueOf(fp).multiply(multiplier).shiftRight(shift).longValue();
+			idx %= positions;
+			idx += probe;
+			assert 0 <= idx && idx < this.positions;
+			return idx % positions;
 		}
 	}
 
