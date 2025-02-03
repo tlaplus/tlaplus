@@ -28,31 +28,66 @@ import tla2sany.st.Location;
 
 public class Errors {
 
-  private List<String> warnings = new ArrayList<String>();
-  private List<String> errors   = new ArrayList<String>();
-  private List<String> aborts   = new ArrayList<String>();
+  public static class ErrorDetails {
+
+    public final Location location;
+
+    public final String message;
+
+    public ErrorDetails(Location location, String message) {
+      this.location = location;
+      this.message = message;
+    }
+
+    @Override
+    public String toString() {
+      return this.location.toString() + "\n\n" + this.message;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof ErrorDetails)) {
+        return false;
+      }
+      final ErrorDetails other = (ErrorDetails)o;
+      return this.location.equals(other.location)
+          && this.message.equals(other.message);
+    }
+  }
+
+  private List<ErrorDetails> warnings = new ArrayList<ErrorDetails>();
+  private List<ErrorDetails> errors   = new ArrayList<ErrorDetails>();
+  private List<ErrorDetails> aborts   = new ArrayList<ErrorDetails>();
 
   /*************************************************************************
   * The following methods to return the warnings, errors, and aborts in a  *
   * sane way were added by LL on 12 May 2008.                              *
   *************************************************************************/
-  public String[] getAborts()   { return this.aborts.toArray(String[]::new); }
-  public String[] getErrors()   { return this.errors.toArray(String[]::new); }
-  public String[] getWarnings() { return this.warnings.toArray(String[]::new); }
+  public String[] getAborts()   { return this.aborts.stream().map(ErrorDetails::toString).toArray(String[]::new); }
+  public String[] getErrors()   { return this.errors.stream().map(ErrorDetails::toString).toArray(String[]::new); }
+  public String[] getWarnings() { return this.warnings.stream().map(ErrorDetails::toString).toArray(String[]::new); }
+
+  public List<ErrorDetails> getAbortDetails()   { return new ArrayList<ErrorDetails>(this.aborts); }
+  public List<ErrorDetails> getErrorDetails()   { return new ArrayList<ErrorDetails>(this.errors); }
+  public List<ErrorDetails> getWarningDetails() { return new ArrayList<ErrorDetails>(this.warnings); }
 
   public final void addWarning( Location loc, String str ) {
-    if (loc == null) loc = Location.nullLoc;
-    final String message = loc.toString() + "\n\n" + str;
-    if (!this.warnings.contains(message)) {
-      this.warnings.add(message);
+    if (loc == null) {
+      loc = Location.nullLoc;
+    }
+    final ErrorDetails error = new ErrorDetails(loc, str);
+    if (!this.warnings.contains(error)) {
+      this.warnings.add(error);
     }
   }
 
   public final void addError(Location loc, String str) {
-    if (loc == null) loc = Location.nullLoc;
-    final String message = loc.toString() + "\n\n" + str;
-    if (!this.errors.contains(message)) {
-      this.errors.add(message);
+    if (loc == null) {
+      loc = Location.nullLoc;
+    }
+    final ErrorDetails error = new ErrorDetails(loc, str);
+    if (!this.errors.contains(error)) {
+      this.errors.add(error);
     }
   }
 
@@ -64,10 +99,12 @@ public class Errors {
    * @throws AbortException
    */
   public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
-    if (loc == null) loc = Location.nullLoc;
-    final String message = loc.toString() + "\n\n" + str;
-    if (!this.aborts.contains(message)) {
-      this.aborts.add(message);
+    if (loc == null) {
+      loc = Location.nullLoc;
+    }
+    final ErrorDetails error = new ErrorDetails(loc, str);
+    if (!this.aborts.contains(error)) {
+      this.aborts.add(error);
     }
 
     if (abort){
@@ -103,18 +140,18 @@ public class Errors {
     StringBuffer ret = new StringBuffer("");
 
     ret.append((this.aborts.size() > 0) ? "*** Abort messages: " + this.aborts.size() + "\n\n" : "");
-    for (final String message : this.aborts)   {
-      ret.append(message + "\n\n\n");
+    for (final ErrorDetails error : this.aborts)   {
+      ret.append(error.toString() + "\n\n\n");
     }
 
     ret.append((this.errors.size() > 0) ? "*** Errors: " + this.errors.size() + "\n\n" : "");
-    for (final String message : this.errors)   {
-      ret.append(message + "\n\n\n");
+    for (final ErrorDetails error : this.errors)   {
+      ret.append(error.toString() + "\n\n\n");
     }
 
     ret.append((this.warnings.size() > 0) ? "*** Warnings: " + this.warnings.size() + "\n\n" : "");
-    for (final String message : this.warnings) {
-      ret.append(message + "\n\n\n");
+    for (final ErrorDetails error : this.warnings) {
+      ret.append(error.toString() + "\n\n\n");
     }
 
     return ret.toString();

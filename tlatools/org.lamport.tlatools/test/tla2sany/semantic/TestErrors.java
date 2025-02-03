@@ -22,9 +22,13 @@
  ******************************************************************************/
 package tla2sany.semantic;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import tla2sany.semantic.Errors.ErrorDetails;
 import tla2sany.st.Location;
 
 /**
@@ -45,21 +49,25 @@ public class TestErrors {
   @Test
   public void testWarningMessages() {
     final Errors log = new Errors();
+    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
     log.addWarning(loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
+    expectedDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test warning message";
     log.addWarning(loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
+    expectedDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test warning message";
     log.addWarning(null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
+    expectedDetails.add(new ErrorDetails(loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getWarnings();
@@ -72,6 +80,11 @@ public class TestErrors {
     Assert.assertEquals(0, log.getErrors().length);
     Assert.assertEquals(0, log.getAborts().length);
 
+    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
+    Assert.assertEquals(expectedDetails, log.getWarningDetails());
+    Assert.assertEquals(blank, log.getErrorDetails());
+    Assert.assertEquals(blank, log.getAbortDetails());
+
     final String actualSummary = log.toString();
     for (final String expectedMessage : expected) {
       Assert.assertTrue(actualSummary.contains(expectedMessage));
@@ -81,21 +94,25 @@ public class TestErrors {
   @Test
   public void testErrorMessages() {
     final Errors log = new Errors();
+    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test error message";
     log.addError(loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
+    expectedDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test error message";
     log.addError(loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
+    expectedDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test error message";
     log.addError(null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
+    expectedDetails.add(new ErrorDetails(loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getErrors();
@@ -108,6 +125,11 @@ public class TestErrors {
     Assert.assertEquals(0, log.getWarnings().length);
     Assert.assertEquals(0, log.getAborts().length);
 
+    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
+    Assert.assertEquals(blank, log.getWarningDetails());
+    Assert.assertEquals(expectedDetails, log.getErrorDetails());
+    Assert.assertEquals(blank, log.getAbortDetails());
+
     final String actualSummary = log.toString();
     for (final String expectedMessage : expected) {
       Assert.assertTrue(actualSummary.contains(expectedMessage));
@@ -117,6 +139,7 @@ public class TestErrors {
   @Test
   public void testAbortMessages() {
     final Errors log = new Errors();
+    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test abort message";
@@ -125,6 +148,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected1 = loc1.toString() + "\n\n" + message1;
+    expectedDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test abort message";
@@ -133,6 +157,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected2 = loc2.toString() + "\n\n" + message2;
+    expectedDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
@@ -141,6 +166,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
+    expectedDetails.add(new ErrorDetails(loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getAborts();
@@ -152,6 +178,11 @@ public class TestErrors {
     Assert.assertEquals(expected.length, log.getNumAbortsAndErrors());
     Assert.assertEquals(0, log.getWarnings().length);
     Assert.assertEquals(expected.length, log.getAborts().length);
+
+    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
+    Assert.assertEquals(blank, log.getWarningDetails());
+    Assert.assertEquals(blank, log.getErrorDetails());
+    Assert.assertEquals(expectedDetails, log.getAbortDetails());
 
     final String actualSummary = log.toString();
     for (final String expectedMessage : expected) {
@@ -162,6 +193,7 @@ public class TestErrors {
   @Test
   public void testAlternativeAbortFunctions() {
     final Errors log = new Errors();
+    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test abort message";
@@ -171,6 +203,7 @@ public class TestErrors {
       Assert.fail();
     }
     final String expected1 = loc1.toString() + "\n\n" + message1;
+    expectedDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = Location.nullLoc;
     final String message2 = "This is another test abort message";
@@ -180,6 +213,7 @@ public class TestErrors {
       Assert.fail();
     }
     final String expected2 = loc2.toString() + "\n\n" + message2;
+    expectedDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
@@ -188,6 +222,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
+    expectedDetails.add(new ErrorDetails(loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getAborts();
@@ -199,6 +234,11 @@ public class TestErrors {
     Assert.assertEquals(expected.length, log.getNumAbortsAndErrors());
     Assert.assertEquals(0, log.getWarnings().length);
     Assert.assertEquals(expected.length, log.getAborts().length);
+
+    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
+    Assert.assertEquals(blank, log.getWarningDetails());
+    Assert.assertEquals(blank, log.getErrorDetails());
+    Assert.assertEquals(expectedDetails, log.getAbortDetails());
 
     final String actualSummary = log.toString();
     for (final String expectedMessage : expected) {
@@ -215,12 +255,16 @@ public class TestErrors {
     log.addWarning(loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
+    final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
+    expectedWarningDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
     log.addError(loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
+    final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
+    expectedErrorDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
@@ -230,6 +274,8 @@ public class TestErrors {
     } catch (AbortException e) { }
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
+    final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
+    expectedAbortDetails.add(new ErrorDetails(loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());
@@ -239,6 +285,10 @@ public class TestErrors {
     Assert.assertEquals(expectedWarnings.length + expectedErrors.length + expectedAborts.length, log.getNumMessages());
     Assert.assertEquals(expectedErrors.length, log.getNumErrors());
     Assert.assertEquals(expectedErrors.length + expectedAborts.length, log.getNumAbortsAndErrors());
+
+    Assert.assertEquals(expectedWarningDetails, log.getWarningDetails());
+    Assert.assertEquals(expectedErrorDetails, log.getErrorDetails());
+    Assert.assertEquals(expectedAbortDetails, log.getAbortDetails());
 
     final String actualSummary = log.toString();
     Assert.assertTrue(actualSummary.contains(expectedWarning));
@@ -257,6 +307,8 @@ public class TestErrors {
     log.addWarning(loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
+    final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
+    expectedWarningDetails.add(new ErrorDetails(loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
@@ -265,6 +317,8 @@ public class TestErrors {
     log.addError(loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
+    final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
+    expectedErrorDetails.add(new ErrorDetails(loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
@@ -277,6 +331,8 @@ public class TestErrors {
     }
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
+    final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
+    expectedAbortDetails.add(new ErrorDetails(loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());
@@ -286,6 +342,10 @@ public class TestErrors {
     Assert.assertEquals(expectedWarnings.length + expectedErrors.length + expectedAborts.length, log.getNumMessages());
     Assert.assertEquals(expectedErrors.length, log.getNumErrors());
     Assert.assertEquals(expectedErrors.length + expectedAborts.length, log.getNumAbortsAndErrors());
+
+    Assert.assertEquals(expectedWarningDetails, log.getWarningDetails());
+    Assert.assertEquals(expectedErrorDetails, log.getErrorDetails());
+    Assert.assertEquals(expectedAbortDetails, log.getAbortDetails());
 
     final String actualSummary = log.toString();
     Assert.assertTrue(actualSummary.contains(expectedWarning));
