@@ -21,69 +21,40 @@
 ***************************************************************************/
 package tla2sany.semantic;
 
-import tla2sany.st.Location;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
+import tla2sany.st.Location;
 
 public class Errors {
 
-  private boolean succeed = true;
-
-  private int    numAborts   = 0;
-  private int    numErrors   = 0;
-  private int    numWarnings = 0;
-
-  private Vector warnings = new Vector();
-  private Vector errors   = new Vector();
-  private Vector aborts   = new Vector();
+  private List<String> warnings = new ArrayList<String>();
+  private List<String> errors   = new ArrayList<String>();
+  private List<String> aborts   = new ArrayList<String>();
 
   /*************************************************************************
   * The following methods to return the warnings, errors, and aborts in a  *
   * sane way were added by LL on 12 May 2008.                              *
   *************************************************************************/
-  public String[] getAborts()   { return StringVectortoStringArray(aborts) ; }
-  public String[] getErrors()   { return StringVectortoStringArray(errors) ; }
-  public String[] getWarnings() { return StringVectortoStringArray(warnings) ; }
+  public String[] getAborts()   { return this.aborts.toArray(String[]::new); }
+  public String[] getErrors()   { return this.errors.toArray(String[]::new); }
+  public String[] getWarnings() { return this.warnings.toArray(String[]::new); }
 
-  private String[] StringVectortoStringArray(Vector vec) {
-    String[] retVal = new String[vec.size()] ;
-    for (int i = 0 ; i < retVal.length; i++) {
-      retVal[i] = (String) vec.elementAt(i) ;
-     } ;
-    return retVal;
-   }
-
-  public final void addWarning( Location loc, String str ) { 
+  public final void addWarning( Location loc, String str ) {
     if (loc == null) loc = Location.nullLoc;
-
-    int i;
-    for (i = warnings.size()-1; i >= 0; i--) {
-      if ( (loc.toString() + "\n\n" + str).equals( warnings.elementAt(i) ) ) break;
-    }
-
-    if ( i < 0) {
-      warnings.addElement( loc.toString() + "\n\n"+ str );
-      numWarnings++;
+    final String message = loc.toString() + "\n\n" + str;
+    if (!this.warnings.contains(message)) {
+      this.warnings.add(message);
     }
   }
-
 
   public final void addError(Location loc, String str) {
     if (loc == null) loc = Location.nullLoc;
-
-    int i;
-    for (i = errors.size()-1; i >= 0; i--) {
-      if ( (loc.toString() + "\n\n" + str).equals( errors.elementAt(i) ) )  break;
+    final String message = loc.toString() + "\n\n" + str;
+    if (!this.errors.contains(message)) {
+      this.errors.add(message);
     }
-
-    if ( i < 0) {
-      errors.addElement( loc.toString() + "\n\n"+ str );
-      numErrors++;
-    }
-    succeed = false;
-
   }
-  
 
   /**
    * 
@@ -94,20 +65,13 @@ public class Errors {
    */
   public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
     if (loc == null) loc = Location.nullLoc;
-    String errMsg = loc.toString() + "\n\n" + str;
-    int i;
-    for (i = aborts.size()-1; i >= 0; i--) {
-      if (errMsg.equals(aborts.elementAt(i))) break;
+    final String message = loc.toString() + "\n\n" + str;
+    if (!this.aborts.contains(message)) {
+      this.aborts.add(message);
     }
-    if (i < 0) {
-      aborts.addElement(errMsg);
-      numAborts++;
-    }
-    succeed = false;
 
     if (abort){
-      // System.out.println(this.toString());
-      throw new AbortException(); 
+      throw new AbortException();
     }
   }
 
@@ -125,35 +89,34 @@ public class Errors {
     addAbort(Location.nullLoc, str, true);
   }
 
-  public final boolean isSuccess()             { return succeed; }
+  public final boolean isSuccess()             { return this.aborts.isEmpty() && this.errors.isEmpty(); }
 
-  public final boolean isFailure()             { return !succeed; }
+  public final boolean isFailure()             { return !this.isSuccess(); }
 
-  public final int     getNumErrors()          { return numErrors; }
+  public final int     getNumErrors()          { return this.errors.size(); }
 
-  public final int     getNumAbortsAndErrors() { return numAborts + numErrors; }
+  public final int     getNumAbortsAndErrors() { return this.aborts.size() + this.errors.size(); }
 
-  public final int     getNumMessages()        { return numAborts + numErrors + numWarnings; }
+  public final int     getNumMessages()        { return this.aborts.size() + this.errors.size() + this.warnings.size(); }
 
-  public final String  toString()  { 
+  public final String  toString()  {
     StringBuffer ret = new StringBuffer("");
 
-    ret.append((numAborts > 0) ? "*** Abort messages: " + numAborts + "\n\n" : "");
-    for (int i = 0; i < aborts.size(); i++)   {
-      ret.append(aborts.elementAt(i) + "\n\n\n");
+    ret.append((this.aborts.size() > 0) ? "*** Abort messages: " + this.aborts.size() + "\n\n" : "");
+    for (final String message : this.aborts)   {
+      ret.append(message + "\n\n\n");
     }
 
-    ret.append((numErrors > 0) ? "*** Errors: " + numErrors + "\n\n" : "");
-    for (int i = 0; i < errors.size(); i++)   {
-      ret.append(errors.elementAt(i) + "\n\n\n");
+    ret.append((this.errors.size() > 0) ? "*** Errors: " + this.errors.size() + "\n\n" : "");
+    for (final String message : this.errors)   {
+      ret.append(message + "\n\n\n");
     }
 
-    ret.append((numWarnings > 0) ? "*** Warnings: " + numWarnings + "\n\n" : "");
-    for (int i = 0; i < warnings.size(); i++) {
-      ret.append(warnings.elementAt(i) + "\n\n\n");
+    ret.append((this.warnings.size() > 0) ? "*** Warnings: " + this.warnings.size() + "\n\n" : "");
+    for (final String message : this.warnings) {
+      ret.append(message + "\n\n\n");
     }
 
     return ret.toString();
   }
-	    
 }
