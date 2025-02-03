@@ -93,6 +93,7 @@ public class Errors {
    * @throws AbortException
    */
   public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
+    if (loc == null) loc = Location.nullLoc;
     String errMsg = loc.toString() + "\n\n" + str;
     int i;
     for (i = aborts.size()-1; i >= 0; i--) {
