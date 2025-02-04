@@ -1,0 +1,183 @@
+/*******************************************************************************
+ * Copyright (c) 2025 Microsoft Research. All rights reserved. 
+ *
+ * The MIT License (MIT)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. 
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Contributors:
+ *   Markus Alexander Kuppe - initial API and implementation
+ ******************************************************************************/
+package tlc2.tool.fp;
+
+import java.math.BigInteger;
+import org.sosy_lab.common.ShutdownNotifier;
+import org.sosy_lab.common.configuration.Configuration;
+import org.sosy_lab.common.log.BasicLogManager;
+import org.sosy_lab.java_smt.SolverContextFactory;
+import org.sosy_lab.java_smt.SolverContextFactory.Solvers;
+import org.sosy_lab.java_smt.api.BitvectorFormula;
+import org.sosy_lab.java_smt.api.BitvectorFormulaManager;
+import org.sosy_lab.java_smt.api.ProverEnvironment;
+import org.sosy_lab.java_smt.api.SolverContext;
+import org.sosy_lab.java_smt.api.SolverContext.ProverOptions;
+import org.sosy_lab.java_smt.api.Model;
+
+public abstract class OffHeapMult1024Indexer {
+
+  public static void main(String[] args) throws Exception {
+
+    final Configuration config = Configuration.defaultConfiguration();
+
+    try (SolverContext context = SolverContextFactory.createSolverContext(
+        config, BasicLogManager.create(config), ShutdownNotifier.createDummy(), Solvers.Z3)) {
+      try (ProverEnvironment prover = context.newProverEnvironment(ProverOptions.GENERATE_MODELS)) {
+
+        final BitvectorFormulaManager bfm = context.getFormulaManager().getBitvectorFormulaManager();
+        final BitvectorFormula zero = bfm.makeBitvector(64, 0L);
+        final BitvectorFormula thirtyTwo = bfm.makeBitvector(64, 32);
+        final BitvectorFormula mask = bfm.makeBitvector(64, new BigInteger("FFFFFFFF", 16));
+        final BitvectorFormula maxLong = bfm.makeBitvector(64, new BigInteger("7FFFFFFFFFFFFFFF", 16));
+
+        // --------- fp -------- //
+
+        final BitvectorFormula fp = bfm.makeVariable(64, "fp");
+        prover.addConstraint(bfm.lessThan(fp, maxLong, false));
+
+        // ---------- max & pos --------- //
+
+        final BitvectorFormula max = bfm.makeBitvector(64, new BigInteger("8000000000000000", 16));
+
+        final BitvectorFormula pos = bfm.makeVariable(64, "pos");
+        prover.addConstraint(bfm.lessThan(pos, maxLong, false));
+        // the lower 30 bit of pos are always zero.
+        prover.addConstraint(bfm.equal(bfm.and(pos, bfm.makeBitvector(64, new BigInteger("3FFFFFFF", 16))), zero));
+
+        // ---------- gdc --------- //
+
+        final BitvectorFormula gcd = bfm.makeVariable(64, "pos");
+        // gcd is a divisor of max and pos.
+        prover.addConstraint(bfm.equal(bfm.remainder(max, gcd, false), zero));
+        prover.addConstraint(bfm.equal(bfm.remainder(pos, gcd, false), zero));
+        // gcd is a power of 2.
+        prover.addConstraint(bfm.equal(bfm.and(gcd, bfm.subtract(gcd, bfm.makeBitvector(64, 1))), zero));
+        // TODO Consider strenghtening gcd to be the *greatest* common divider!!!
+
+        // -------- shift -------- //
+
+        BitvectorFormula rMax = bfm.divide(max, gcd, false);
+        // rMax is a power of 2.
+        prover.addConstraint(bfm.equal(bfm.and(rMax, bfm.subtract(gcd, bfm.makeBitvector(64, 1))), zero));
+
+        // rMax is a power of 2 and shift is the index of rMax's set bit.
+        BitvectorFormula shift = bfm.makeVariable(64, "shift");
+        prover.addConstraint(bfm.equal(bfm.shiftRight(rMax, shift, false), bfm.makeBitvector(64, 1)));
+        prover.addConstraint(bfm.lessThan(shift, bfm.makeBitvector(64, 64), false));
+
+        // -------- mLow & mHigh -------- //
+
+        final BitvectorFormula m = bfm.divide(pos, gcd, false);
+        final BitvectorFormula mLow = bfm.and(m, mask);
+        final BitvectorFormula mHigh = bfm.shiftRight(m, thirtyTwo, false);
+
+        // -------- fpL & fpH -------- //
+
+        // final long fpL = fp & MASK;
+        BitvectorFormula fpL = bfm.and(fp, mask);
+        // final long fpH = fp >>> 32;
+        BitvectorFormula fpH = bfm.shiftRight(fp, thirtyTwo, false);
+
+        // ----------------------- //
+
+        // final long ll = fpL * mLow;
+        BitvectorFormula ll = bfm.multiply(fpL, mLow);
+        // The following constraint is unsat, because the product of fpL and mLow is
+        // less than f01. More importantly, it doesn't overflow 64 bits.
+        // final BitvectorFormula f01 = bfm.makeBitvector(64, new
+        // BigInteger("FFFFFFFE00000001", 16));
+        // prover.addConstraint(bfm.greaterThan(ll, f01, false)); -> UNSAT
+
+        // final long lh = fpL * mHigh;
+        BitvectorFormula lh = bfm.multiply(fpL, mHigh);
+        // final BitvectorFormula _7fe = bfm.makeBitvector(64, new
+        // BigInteger("7FFFFFFE80000001", 16));
+        // prover.addConstraint(bfm.greaterThan(lh, _7fe, false)); -> UNSAT
+
+        // final long hl = fpH * mLow;
+        BitvectorFormula hl = bfm.multiply(fpH, mLow);
+        // prover.addConstraint(bfm.greaterThan(hl, _7fe, false)); -> UNSAT
+
+        // final long hh = fpH * mHigh;
+        BitvectorFormula hh = bfm.multiply(fpH, mHigh);
+        // prover.addConstraint(bfm.greaterThan(hh, _7fe, false)); -> UNSAT
+
+        // ----------------------- //
+
+        // long l = lh + (ll >>> 32);
+        BitvectorFormula l = bfm.add(lh, bfm.shiftRight(ll, thirtyTwo, false));
+        // prover.addConstraint(bfm.greaterThan(l, maxLong, false)); -> UNSAT
+
+        // long h = hl + (l & MASK);
+        BitvectorFormula h = bfm.add(hl, bfm.and(l, mask));
+        // prover.addConstraint(bfm.greaterThan(h, maxLong, false)); -> UNSAT
+
+        // l = hh + (l >>> 32);
+        l = bfm.add(hh, bfm.shiftRight(l, thirtyTwo, false));
+        // prover.addConstraint(bfm.greaterThan(l, maxLong, false)); -> UNSAT
+        // l = l + (h >>> 32);
+        l = bfm.add(l, bfm.shiftRight(h, thirtyTwo, false));
+        // prover.addConstraint(bfm.greaterThan(l, maxLong, false)); -> UNSAT
+        // h = (h << 32) | (ll & MASK);
+        h = bfm.or(bfm.shiftLeft(h, thirtyTwo), bfm.and(ll, mask));
+        // final BitvectorFormula maxULong = bfm.makeBitvector(64, new
+        // BigInteger("FFFFFFFFFFFFFFFF", 16));
+        // prover.addConstraint(bfm.greaterThan(l, maxULong, false)); -> UNSAT but
+        // simply for the reason that 64 bit vector arithmetic is mod 64; not because it
+        // cannot overflow. However, it is obvious that the result of bitwise OR is
+        // within 64 bits.
+
+        // ----------------------- //
+
+        // long idx = (h >>> shift) | (l << (64 - shift));
+        BitvectorFormula left = bfm.shiftRight(h, shift, false);
+        BitvectorFormula right = bfm.shiftLeft(l, bfm.subtract(bfm.makeBitvector(64, 64), shift));
+        BitvectorFormula idx = bfm.or(left, right);
+        // prover.addConstraint(bfm.greaterThan(l, maxULong, false)); -> UNSAT but again
+        // simply for the reason that 64 bit vector arithmetic is mod 64; not because it
+        // cannot overflow. However, it is obvious that the result of bitwise OR is
+        // within 64 bits.
+
+        prover.addConstraint(context.getFormulaManager().getBooleanFormulaManager().or(bfm.lessThan(idx, zero, false),
+            bfm.greaterThan(idx, pos, false)));
+
+        if (prover.isUnsat()) {
+          System.out.printf("\033[0;31mUnsat\033[0m\n");
+        } else {
+          try (Model model = prover.getModel()) {
+            System.out.printf(
+                "SAT with pos= %s, gcd= %s, rMax= %s, shift= %s, fp= %s, fpL= %s, fpH= %s, mLow= %s, mHigh= %s, idx= %s\n",
+                model.evaluate(pos), model.evaluate(gcd), model.evaluate(rMax), model.evaluate(shift),
+                model.evaluate(fp), model.evaluate(fpL), model.evaluate(fpH),
+                model.evaluate(mLow), model.evaluate(mHigh),
+                model.evaluate(idx));
+          }
+        }
+      }
+    }
+  }
+}
