@@ -1512,10 +1512,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				// If pred1 is the application of a non-recursive, non-builtin, non-zero arity
 				// operator definition, the args define the values of the defs (formal)
 				// parameters. Thus, link the def's parameters to the args via the def's context.
-				// Afterwards, recurse on this operator definition.
+				// Afterwards, recurse on this operator definition. However, do not link the
+				// parameters in the scope of substitution, because getOpContext does not
+				// consider the substitution, and, thus, creates an invalid/bogus context.
+				// More concretely, the SM(42)!Spec above points at the Spec below, which is
+				// defined in terms of another instantiation O of module SomeOtherModule.
+				//
+				//  ---- MODULE SomeModule -----
+				//
+				//  CONSTANT foo
+				//  O == INSTANCE SomeOtherModule
+				//  Spec == O!Init(foo) /\ [][O!Next]_vars
+				//
+				//  =====
+				//
 				// (Built-ins have no body, and I do not know how to handle recursive).
 				final OpDefNode odn = (OpDefNode) val;
-				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length) {
+				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length && subs.isEmpty()) {
 					// Link the operator's (formal) parameters to the given args.
 					c = symbolNodeValueLookupProvider.getOpContext(odn, args, c, false, toolId);
 					// Recurse.
