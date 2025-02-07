@@ -1239,7 +1239,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				//    Spec == R(42)
 				// 
 				final OpDefNode odn = (OpDefNode) val;
-				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length) {
+				// It is unclear if checking subs for emptiness is necessary. It has been added
+				// here because it had to be added in processConfigProps. The worst outcome of
+				// checking subs is that TLC will reject some forms of parameterized
+				// instantiation. This is better than checking a spec with a bogus context c.
+				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length && subs.isEmpty()) {
 					c = symbolNodeValueLookupProvider.getOpContext((OpDefNode) val, args, c, false, toolId);
 					this.processConfigSpec(odn.getBody(), c, subs);
 					return;
