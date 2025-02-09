@@ -703,16 +703,13 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 	public static class Mult1024Indexer implements Indexer {
 
-		private static final long MASK = 0xFFFFFFFFL;
-
 		public static boolean isSupported(final long positions) {
 			return (positions << 3) % (1L << 30) == 0L;
 		}
 
 		private final long positions;
-	    private final int shift;
-		private final long mLow;
-		private final long mHigh;
+		private final int shift;
+		private final long multiplier;
 
 		public Mult1024Indexer(final long positions, final int fpBits) {
 			assert fpBits > 0 && fpBits < 64;
@@ -732,9 +729,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 			final BigInteger gcd = max.gcd(bPos);
 			assert gcd.bitCount() == 1;
 
-			final long multiplier = bPos.divide(gcd).longValueExact();
-			this.mLow = multiplier & MASK;
-			this.mHigh = multiplier >>> 32;
+			this.multiplier = bPos.divide(gcd).longValueExact();
 			
 			final BigInteger rMax = max.divide(gcd);
 			assert rMax.bitCount() == 1;
@@ -744,27 +739,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 		@Override
 		public long getIdx(final long fp) {
-			
-	        // Split into high and low 32-bit parts
-	        final long fpL = fp & MASK;
-	        final long fpH = fp >>> 32;
+			assert fp >= 0;
 
-			// Compute partial products (Since each of these variables represents the
-			// product of two 32-bit numbers, the result is at most 64 bits.)
-	        final long ll = fpL * mLow;
-	        final long lh = fpL * mHigh;
-	        final long hl = fpH * mLow;
-	        final long hh = fpH * mHigh;
+			final long h = Math.multiplyHigh(fp, multiplier);
+			final long l = fp * multiplier;
+			final long idx = (h << (64 - shift) | (l >>> shift));
 
-	        // Combine four partial products including carry overs.
-	        long l = lh + (ll >>> 32);
-	        long h = hl + (l & MASK);
-	        l = hh + (l >>> 32);
-	        l = l + (h >>> 32);
-	        h = (h << 32) | (ll & MASK);
-
-	        // Bitwise OR these shifted values into the final idx
-	        final long idx = (h >>> shift) | (l << (64 - shift));
 			assert 0 <= idx && idx < this.positions;
 			return idx;
 		}
