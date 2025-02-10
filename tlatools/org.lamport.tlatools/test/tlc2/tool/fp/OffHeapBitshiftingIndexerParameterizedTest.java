@@ -36,7 +36,7 @@ public class OffHeapBitshiftingIndexerParameterizedTest extends OffHeapIndexerPa
 
 	@Override
 	protected Indexer getIndexer() {
-		Assume.assumeTrue(Long.bitCount((1L << pBits)) == 1);
-		return new OffHeapDiskFPSet.BitshiftingIndexer((1L << pBits), fpBits);
+		Assume.assumeTrue(Long.bitCount(positions) == 1);
+		return new OffHeapDiskFPSet.BitshiftingIndexer(positions, fpBits);
 	}
 }

@@ -41,19 +41,37 @@ import tlc2.tool.fp.OffHeapDiskFPSet.Indexer;
 @RunWith(Parameterized.class)
 public abstract class OffHeapIndexerParameterizedTest {
 
-	@Parameters(name = "pos: {0}, fpBits: {1}")
+	// Round down to the specified number of positions to the nearest multiple that
+	// requires a 1024MB allocation.
+	public static long roundHalfEven(long l) {
+		final long MULTIPLE = 8L * 1024 * 1024 * 1024;
+		return (l / MULTIPLE) * MULTIPLE;
+	}
+
+	@Parameters(name = "positions: {0}, fpBits: {1}")
 	public static Collection<Object[]> data() {
-		final List<Object[]> p = new ArrayList<>();
-		for (int fpBits = 1; fpBits < 64; fpBits++) {
-			for (int pBits = 63 - fpBits; pBits > 0; pBits--) {
-				p.add(new Object[] { pBits, fpBits });
+		final List<Object[]> p = new ArrayList<>(21762);
+
+		for (int fpBits = 1; fpBits > 0; fpBits--) {
+			for (int i = 1; i < 32; i++) {
+				for (int j = 2; j < 32; j++) {
+					p.add(new Object[] { roundHalfEven(Long.MAX_VALUE >>> j) + (i * (1L << 30)), fpBits });
+				}
+			}
+
+			for (int k = 1 << 7; k > 0; k--) {
+				p.add(new Object[] { k * (1L << 27), fpBits });
+			}
+
+			for (int posBits = 63 - fpBits; posBits > 16; posBits--) {
+				p.add(new Object[] { 1L << posBits, fpBits });
 			}
 		}
 		return p;
 	}
 
 	@Parameter(0)
-	public long pBits;
+	public long positions;
 	@Parameter(1)
 	public int fpBits;
 
@@ -73,7 +91,7 @@ public abstract class OffHeapIndexerParameterizedTest {
 	public void testLongMin() {
 		// -1 >>> fpBits
 		final long highFP = 0xFFFFFFFFFFFFFFFFL >>> fpBits;
-		Assert.assertEquals((1L << pBits) - 1L, getIndexer().getIdx(highFP));
+		Assert.assertEquals(positions - 1L, getIndexer().getIdx(highFP));
 	}
 
 	@Test
@@ -81,7 +99,7 @@ public abstract class OffHeapIndexerParameterizedTest {
 		// 0xFFFFFFFFFFFFFFFFL & 0x7FFFFFFFFFFFFFFFL >>> fpBits
 		// -1 & 0x7FFFFFFFFFFFFFFFL >>> fpBits
 		final long highFP = Long.MAX_VALUE >>> fpBits;
-		Assert.assertEquals(((1L << pBits) / 2L) - 1L, getIndexer().getIdx(highFP));
+		Assert.assertEquals((positions / 2L) - 1L, getIndexer().getIdx(highFP));
 	}
 	
 	@Test

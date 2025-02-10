@@ -37,8 +37,8 @@ public class OffHeapMult1024IndexerParameterizedTest extends OffHeapIndexerParam
 
 	@Override
 	protected Indexer getIndexer() {
-		Assume.assumeTrue(Mult1024Indexer.isSupported((1L << pBits)));
-		Assume.assumeTrue(pBits > fpBits);
-		return new OffHeapDiskFPSet.Mult1024Indexer((1L << pBits), fpBits);
+		Assume.assumeTrue(Mult1024Indexer.isSupported(positions));
+		Assume.assumeTrue(Long.numberOfTrailingZeros(positions) > fpBits);
+		return new OffHeapDiskFPSet.Mult1024Indexer(positions, fpBits);
 	}
 }
