@@ -35,6 +35,6 @@ public class OffHeapInfPrecisionIndexerParameterizedTest extends OffHeapIndexerP
 
 	@Override
 	protected Indexer getIndexer() {
-		return new OffHeapDiskFPSet.InfinitePrecisionIndexer((1L << pBits), fpBits);
+		return new OffHeapDiskFPSet.InfinitePrecisionIndexer(positions, fpBits);
 	}
 }
