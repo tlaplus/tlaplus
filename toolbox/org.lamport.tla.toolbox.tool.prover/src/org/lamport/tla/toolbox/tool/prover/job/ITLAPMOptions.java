@@ -14,7 +14,7 @@ public interface ITLAPMOptions
 {
 
     /**
-     * --toolbox <bl> <el> [options] FILE
+     * --toolbox <bl>,<el> [options] FILE
      * 
      * <bl> and <el> are both integers that give the begin line and end line of the part of the 
      * file to be considered by the prover. If the arguments are both equal to 0, the entire module 
@@ -34,19 +34,6 @@ public interface ITLAPMOptions
      * Which smt solver to use.
      */
     public static final String SOLVER = "--solver";
-    /**
-     * --paranoid
-     * 
-     * Asks isabelle to check trivial obligations
-     */
-    public static final String PARANOID = "--paranoid";
-    /**
-     * --isaprove
-     * 
-     * Sends obligations to isabelle to be proved as soon as zenon fails 
-     * or when isabelle is called by a pragma.
-     */
-    public static final String ISAPROVE = "--isaprove";
 
     /**
      * --cleanfp : Erase fingerprint file
@@ -111,19 +98,12 @@ public interface ITLAPMOptions
      */
     public static final String NOFP = "--nofp";
     /**
-     * --nofpl b e
+     * --nofpl b,e
      * 
      * Erase fingerprints of obligations both (considered by the present launch of 
      * the toolbox) and (located between lines b and e). Adds new fingerprints.
      */
     public static final String NOFPL = "--nofpl";
-    /**
-     * --fpdir <dir>
-     * 
-     * Sets to dir the directory from which the fingerprints file is loaded and to 
-     * which it is saved. (accepts both complete and relative pathnames)
-     */
-    public static final String FPDIR = "--fpdir";
     /**
      * --safefp
      * 
@@ -180,12 +160,6 @@ public interface ITLAPMOptions
      * Add <dir> to search path.
      */
     public static final String ADD_DIR = "-I";
-    /**
-     * -d <dir>
-     * 
-     * Send generated output to <dir>.
-     */
-    public static final String SEND_DIR = "-d";
     /**
      * -k
      * 

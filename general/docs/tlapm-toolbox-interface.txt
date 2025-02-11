@@ -2,7 +2,7 @@
 
 ************ What the toolbox sends to TLAPM ************
 
---toolbox <bl> <el> [options] FILE
+--toolbox <bl>,<el> [options] FILE
 
 <bl> and <el> are both integers that give the begin line and end line of the part of the 
 file to be considered by the prover. If the arguments are both equal to 0, the entire module 
@@ -25,13 +25,6 @@ will be considered.
 
 --solver        which smt solver to use
 
---paranoid      asks isabelle to check trivial obligations
-                Experimentation suggests that this is a no-op if --noproving
-                is chosen.
-
---isaprove      sends obligations to isabelle to be proved as soon as zenon fails 
-		or when isabelle is called by a pragma.
-
 --noproving     does not send any obligations to backends. Checks if an obligation is 
 		trivial or not and considers previous results in the fingerprint files. 
 		If an obligation is not trivial and does not appear in the fingerprints 
@@ -44,7 +37,7 @@ will be considered.
 		(if --paranoid is not called), already checked obligations, and obligations 
 		on which isabelle has already failed or succeeded.
 
-NOTE: If neither --isaprove nor --noproving (or -N) nor -C is specified, then tlapm will
+NOTE: If neither --noproving (or -N) nor -C is specified, then tlapm will
       use any prover (such as Zenon or the Cooper algorithm or an SMT solver) except
       Isabelle--even if an Isabelle tactic is explicitly specified by a proof.
 
@@ -63,11 +56,8 @@ NOTE: If neither --isaprove nor --noproving (or -N) nor -C is specified, then tl
 --nofp          erase fingerprints of obligations considered by the present launch of 
 		the toolbox (i.e. located between bl and el). Adds new fingerprints.
 
---nofpl b e     erase fingerprints of obligations both (considered by the present launch of 
+--nofpl b,e     erase fingerprints of obligations both (considered by the present launch of
 		the toolbox) and (located between lines b and e). Adds new fingerprints.
-
---fpdir <dir>   sets to dir the directory from which the fingerprints file is loaded and to 
-		which it is saved. (accepts both complete and relative pathnames)
 
 --safefp        checks isabelle and zenon versions before loading fingerprints. Only uses 
 		fingerprints whose zenon and isabelle versions equal the zenon and isabelle 
@@ -91,7 +81,6 @@ NOTE: If neither --isaprove nor --noproving (or -N) nor -C is specified, then tl
   --timing               show runtime statistics
 
   -I <dir>               add <dir> to search path
-  -d <dir>               send generated output to <dir>
 
   -k                     keep going on backend failures
   -N                     do not run any backend verifiers      
