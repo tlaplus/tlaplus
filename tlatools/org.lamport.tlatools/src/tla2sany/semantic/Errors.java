@@ -30,11 +30,14 @@ public class Errors {
 
   public static class ErrorDetails {
 
+    public final ErrorCode code;
+
     public final Location location;
 
     public final String message;
 
-    public ErrorDetails(Location location, String message) {
+    public ErrorDetails(ErrorCode code, Location location, String message) {
+      this.code = code;
       this.location = location;
       this.message = message;
     }
@@ -50,7 +53,8 @@ public class Errors {
         return false;
       }
       final ErrorDetails other = (ErrorDetails)o;
-      return this.location.equals(other.location)
+      return this.code.equals(other.code)
+          && this.location.equals(other.location)
           && this.message.equals(other.message);
     }
   }
@@ -71,38 +75,44 @@ public class Errors {
   public List<ErrorDetails> getErrorDetails()   { return new ArrayList<ErrorDetails>(this.errors); }
   public List<ErrorDetails> getWarningDetails() { return new ArrayList<ErrorDetails>(this.warnings); }
 
-  public final void addWarning( Location loc, String str ) {
+  public final void addWarning(ErrorCode code, Location loc, String str) {
     if (loc == null) {
       loc = Location.nullLoc;
     }
-    final ErrorDetails error = new ErrorDetails(loc, str);
+    final ErrorDetails error = new ErrorDetails(code, loc, str);
     if (!this.warnings.contains(error)) {
       this.warnings.add(error);
     }
   }
 
-  public final void addError(Location loc, String str) {
+  public final void addWarning(Location loc, String str) {
+    this.addWarning(ErrorCode.UNSPECIFIED, loc, str);
+  }
+
+  public final void addError(ErrorCode code, Location loc, String str) {
     if (loc == null) {
       loc = Location.nullLoc;
     }
-    final ErrorDetails error = new ErrorDetails(loc, str);
+    final ErrorDetails error = new ErrorDetails(code, loc, str);
     if (!this.errors.contains(error)) {
       this.errors.add(error);
     }
   }
 
-  /**
-   * 
-   * @param loc
-   * @param str
-   * @param abort throw an abort exception iff true 
-   * @throws AbortException
-   */
-  public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
+  public final void addError(Location loc, String str) {
+    this.addError(ErrorCode.UNSPECIFIED, loc, str);
+  }
+
+  public final void addAbort(
+      ErrorCode code,
+      Location loc,
+      String str,
+      boolean abort
+  ) throws AbortException {
     if (loc == null) {
       loc = Location.nullLoc;
     }
-    final ErrorDetails error = new ErrorDetails(loc, str);
+    final ErrorDetails error = new ErrorDetails(code, loc, str);
     if (!this.aborts.contains(error)) {
       this.aborts.add(error);
     }
@@ -112,15 +122,17 @@ public class Errors {
     }
   }
 
+  public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
+    this.addAbort(ErrorCode.UNSPECIFIED, loc, str, abort);
+  }
+
   public final void addAbort(Location loc, String str ) throws AbortException {
     addAbort(loc, str, true);
   }
 
-
   public final void addAbort(String str, boolean abort) throws AbortException {
     addAbort(Location.nullLoc, str, abort);
   }
-
 
   public final void addAbort(String str) throws AbortException {
     addAbort(Location.nullLoc, str, true);
