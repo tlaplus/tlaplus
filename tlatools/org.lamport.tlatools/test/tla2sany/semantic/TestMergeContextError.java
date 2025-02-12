@@ -1,5 +1,7 @@
 package tla2sany.semantic;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -7,7 +9,7 @@ import tla2sany.drivers.SANY;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
-import tlc2.tool.CommonTestCase;
+import tla2sany.semantic.Errors.ErrorDetails;
 import util.ToolIO;
 
 /**
@@ -25,7 +27,7 @@ import util.ToolIO;
  */
 public class TestMergeContextError {
 	
-	private static final String MODULE_DIR = CommonTestCase.BASE_PATH + "/tla2sany/semantic/";
+	private static final String MODULE_DIR = "test/tla2sany/semantic/error_corpus/";
 	
 	/**
 	 * Test warning logged when two different extended modules each contain
@@ -40,7 +42,9 @@ public class TestMergeContextError {
 		SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
 		Errors contextErrors = spec.getSemanticErrors();
 		Assert.assertFalse(contextErrors.isFailure());
-		Assert.assertEquals(1, contextErrors.getWarnings().length);
+		List<ErrorDetails> actual = contextErrors.getWarningDetails();
+		Assert.assertEquals(1, actual.size());
+		Assert.assertEquals(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, actual.get(0).code);
 	}
 
 	/**
@@ -57,6 +61,8 @@ public class TestMergeContextError {
 		SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
 		Errors contextErrors = spec.getSemanticErrors();
 		Assert.assertTrue(contextErrors.isFailure());
-		Assert.assertEquals(1, contextErrors.getErrors().length);
+		List<ErrorDetails> actual = contextErrors.getErrorDetails();
+		Assert.assertEquals(1, actual.size());
+		Assert.assertEquals(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_CONFLICT, actual.get(0).code);
 	}
 }

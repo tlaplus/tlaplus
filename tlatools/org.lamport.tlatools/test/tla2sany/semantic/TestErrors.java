@@ -55,19 +55,19 @@ public class TestErrors {
     final String message1 = "This is a test warning message";
     log.addWarning(loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test warning message";
     log.addWarning(loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test warning message";
     log.addWarning(null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getWarnings();
@@ -100,19 +100,19 @@ public class TestErrors {
     final String message1 = "This is a test error message";
     log.addError(loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test error message";
     log.addError(loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test error message";
     log.addError(null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getErrors();
@@ -148,7 +148,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test abort message";
@@ -157,7 +157,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
@@ -166,7 +166,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getAborts();
@@ -203,7 +203,7 @@ public class TestErrors {
       Assert.fail();
     }
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = Location.nullLoc;
     final String message2 = "This is another test abort message";
@@ -213,7 +213,7 @@ public class TestErrors {
       Assert.fail();
     }
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
@@ -222,7 +222,7 @@ public class TestErrors {
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getAborts();
@@ -256,7 +256,7 @@ public class TestErrors {
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
@@ -264,7 +264,7 @@ public class TestErrors {
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
-    expectedErrorDetails.add(new ErrorDetails(loc2, message2));
+    expectedErrorDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
@@ -275,7 +275,7 @@ public class TestErrors {
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
     final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
-    expectedAbortDetails.add(new ErrorDetails(loc3, message3));
+    expectedAbortDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());
@@ -308,7 +308,7 @@ public class TestErrors {
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
@@ -318,7 +318,7 @@ public class TestErrors {
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
-    expectedErrorDetails.add(new ErrorDetails(loc2, message2));
+    expectedErrorDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
@@ -332,7 +332,7 @@ public class TestErrors {
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
     final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
-    expectedAbortDetails.add(new ErrorDetails(loc3, message3));
+    expectedAbortDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());
