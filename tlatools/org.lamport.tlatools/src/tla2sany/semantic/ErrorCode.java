@@ -22,17 +22,48 @@
  ******************************************************************************/
 package tla2sany.semantic;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * An enumeration of standardized codes for errors during semantic checking.
  */
 public enum ErrorCode {
-  UNSPECIFIED (0),
-  EXTENDED_MODULES_SYMBOL_UNIFICATION_CONFLICT (2000),
-  EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (2001);
+
+  UNSPECIFIED (0, ErrorLevel.UNDEFINED),
+  EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (1000, ErrorLevel.WARNING),
+  EXTENDED_MODULES_SYMBOL_UNIFICATION_CONFLICT (2000, ErrorLevel.ERROR);
+
+  public static enum ErrorLevel {
+    UNDEFINED,
+    WARNING,
+    ERROR,
+    ABORT
+  }
 
   public final int value;
 
-  private ErrorCode(int value) {
+  public final ErrorLevel level;
+
+  private ErrorCode(int value, ErrorLevel level) {
     this.value = value;
+    this.level = level;
+  }
+
+  /**
+   * A static map from error code value to enum to avoid linear lookups.
+   */
+  private static final Map<Integer, ErrorCode> codeMap =
+    Arrays
+      .stream(ErrorCode.values())
+      .collect(Collectors.toMap(code -> code.value, code -> code));
+
+  public static ErrorCode fromStandardValue(final int value) {
+    final ErrorCode code = ErrorCode.codeMap.get(value);
+    if (null == code) {
+      throw new IllegalArgumentException(Integer.toString(value));
+    }
+    return code;
   }
 }
