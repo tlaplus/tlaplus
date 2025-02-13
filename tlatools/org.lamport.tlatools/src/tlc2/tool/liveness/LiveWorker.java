@@ -986,7 +986,11 @@ public class LiveWorker implements Callable<Boolean> {
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
-			assert cycleState.state.equals(sinfo.state);
+			// Assert that the fingerprints (fp) always match. Additionally, verify that the
+			// values match unless a view specification (VIEW) is present. When a VIEW is
+			// present, the values may not match (see Github1045.java for details).
+			assert cycleState.fp.equals(sinfo.fp)
+					&& (tool.getViewSpec() != null || cycleState.state.equals(sinfo.state));
 			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
 		
