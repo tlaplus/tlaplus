@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import tla2sany.semantic.AbortException;
+import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.st.Location;
 import tla2sany.st.ParseTree;
@@ -222,8 +223,13 @@ public class ParseUnit {
     // toolbox.util.AdapterFactory.locationToRegion.)  
     if (!mName.equals(fName)) {
     //  was:    if (!mName.equalsIgnoreCase(fName)) {
-      errors.addAbort("File name '" + fName + "' does not match the name '" +
-		      mName + "' of the top level module it contains.");
+      errors.addAbort(
+          ErrorCode.MODULE_NAME_DIFFERENT_FROM_FILE_NAME,
+          Location.nullLoc,
+          "File name '" + fName + "' does not match the name '" +
+          mName + "' of the top level module it contains.",
+          true
+      );
     }
   }
 
@@ -247,7 +253,12 @@ public class ParseUnit {
         // We ignore that possibility.
         if (!nis.sourceFile().exists())
         {
-            errors.addAbort("Error: source file '" + nis.getName() + "' has apparently been deleted.");
+            errors.addAbort(
+                ErrorCode.INTERNAL_ERROR,
+                Location.nullLoc,
+                "Error: source file '" + nis.getName() + "' has apparently been deleted.",
+                true
+            );
         }
 
         // Print user feedback
@@ -330,8 +341,12 @@ public class ParseUnit {
         if (!parseSuccess)
         { // if parsing the contents of "nis" failed...
             // create the abort and throw the exception
-            errors.addAbort(Location.moduleLocation(nis.getModuleName()), "Could not parse module "
-                    + nis.getModuleName() + " from file " + nis.getName(), true);
+            errors.addAbort(
+                ErrorCode.INTERNAL_ERROR,
+                Location.moduleLocation(nis.getModuleName()),
+                "Could not parse module " + nis.getModuleName() + " from file " + nis.getName(),
+                true
+            );
         }
             
         final TreeNode rootNode = parseTree.rootNode();

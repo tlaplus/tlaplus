@@ -136,7 +136,16 @@ public class SymbolTable implements ASTConstants {
       return true;
     }
 
-// System.out.println("*** Was found in symbol table " + symbol.getKind());
+    // If the symbol being redefined is a built-in symbol, this is definitely an error
+    // Note check below this one encapsulates this case so this check should
+    // come first so a more descriptive error can be provided.
+    if (currentBinding.getTreeNode().getLocation().source().equals("--TLA+ BUILTINS--")) {
+      errors.addError(
+        ErrorCode.BUILT_IN_SYMBOL_REDEFINED,
+        symbol.getTreeNode().getLocation(),
+        "Symbol " + name + " is a built-in operator, and cannot be redefined.");  
+      return false;
+    } 
 
     // If the currentBinding is to a different SymbolNode that does
     // not have the same kind or arity as "symbol" then this is
@@ -148,7 +157,8 @@ public class SymbolTable implements ASTConstants {
 	symbol.getKind() == BoundSymbolKind ||
 	currentBinding.getKind() != symbol.getKind() ||
         currentBinding.getArity() != symbol.getArity()) {
-      errors.addError(symbol.getTreeNode().getLocation(),
+      errors.addError(ErrorCode.SYMBOL_REDEFINED,
+		      symbol.getTreeNode().getLocation(),
 		      "Multiply-defined symbol '" + name +
                       "': this definition or declaration conflicts \nwith the one at " +
                       currentBinding.getTreeNode().getLocation().toString() + ".");
@@ -156,13 +166,6 @@ public class SymbolTable implements ASTConstants {
     }
 // System.out.println("*** Was found in symbol table " + symbol.getKind());
  
-    // If the symbol being redefined is a built-in symbol, this is definitely an error
-    if (currentBinding.getTreeNode().getLocation().source().equals("--TLA+ BUILTINS--")) {
-      errors.addError(symbol.getTreeNode().getLocation(),
-		      "Symbol " + name + " is a built-in operator, and cannot be redefined.");  
-      return false;
-    } 
-
 // The following test is misguided. The problem we need to worry about is merging symbols
 // from the same module twice or more through EXTENDS or INSTANCE. Not multiple definitions.
 
@@ -205,7 +208,8 @@ public class SymbolTable implements ASTConstants {
     if (symbol.sameOriginallyDefinedInModule(currentBinding)) {
         return true ;
     }
-    errors.addWarning(symbol.getTreeNode().getLocation(), 
+    errors.addWarning(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY,
+		      symbol.getTreeNode().getLocation(), 
 		      "Multiple declarations or definitions for symbol " + name +
 		      ".  \nThis duplicates the one at " +
 		      currentBinding.getTreeNode().getLocation().toString()
@@ -233,7 +237,8 @@ public class SymbolTable implements ASTConstants {
       return true;
     }
 
-    errors.addError(symbol.getTreeNode().getLocation(),
+    errors.addError(ErrorCode.MODULE_REDEFINED,
+		    symbol.getTreeNode().getLocation(),
 		    "Multiply-defined module '" + name +
 		    "': this definition or declaration conflicts \nwith the one at " +
 		    currentBinding.getTreeNode().getLocation().toString() + ".");

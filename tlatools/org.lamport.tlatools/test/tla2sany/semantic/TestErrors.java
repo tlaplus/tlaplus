@@ -144,7 +144,7 @@ public class TestErrors {
     final Location loc1 = genLocation();
     final String message1 = "This is a test abort message";
     try {
-      log.addAbort(loc1, message1);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc1, message1, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected1 = loc1.toString() + "\n\n" + message1;
@@ -153,7 +153,7 @@ public class TestErrors {
     final Location loc2 = genLocation();
     final String message2 = "This is another test abort message";
     try {
-      log.addAbort(loc2, message2);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc2, message2, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected2 = loc2.toString() + "\n\n" + message2;
@@ -162,63 +162,7 @@ public class TestErrors {
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
     try {
-      log.addAbort(null, message3);
-      Assert.fail();
-    } catch (AbortException e) { }
-    final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
-
-    final String[] expected = new String[] { expected1, expected2, expected3 };
-    final String[] actual = log.getAborts();
-    Assert.assertArrayEquals(expected, actual);
-    Assert.assertTrue(log.isFailure());
-    Assert.assertFalse(log.isSuccess());
-    Assert.assertEquals(expected.length, log.getNumMessages());
-    Assert.assertEquals(0, log.getNumErrors());
-    Assert.assertEquals(expected.length, log.getNumAbortsAndErrors());
-    Assert.assertEquals(0, log.getWarnings().length);
-    Assert.assertEquals(expected.length, log.getAborts().length);
-
-    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
-    Assert.assertEquals(blank, log.getWarningDetails());
-    Assert.assertEquals(blank, log.getErrorDetails());
-    Assert.assertEquals(expectedDetails, log.getAbortDetails());
-
-    final String actualSummary = log.toString();
-    for (final String expectedMessage : expected) {
-      Assert.assertTrue(actualSummary.contains(expectedMessage));
-    }
-  }
-
-  @Test
-  public void testAlternativeAbortFunctions() {
-    final Errors log = new Errors();
-    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
-
-    final Location loc1 = genLocation();
-    final String message1 = "This is a test abort message";
-    try {
-      log.addAbort(loc1, message1, false);
-    } catch (AbortException e) {
-      Assert.fail();
-    }
-    final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
-
-    final Location loc2 = Location.nullLoc;
-    final String message2 = "This is another test abort message";
-    try {
-      log.addAbort(message2, false);
-    } catch (AbortException e) {
-      Assert.fail();
-    }
-    final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
-
-    final Location loc3 = Location.nullLoc;
-    final String message3 = "This is yet another test abort message";
-    try {
-      log.addAbort(message3);
+      log.addAbort(ErrorCode.UNSPECIFIED, null, message3, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
@@ -269,7 +213,7 @@ public class TestErrors {
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
     try {
-      log.addAbort(loc3, message3);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc3, message3, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
@@ -323,9 +267,9 @@ public class TestErrors {
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
     try {
-      log.addAbort(loc3, message3, false);
-      log.addAbort(loc3, message3, false);
-      log.addAbort(loc3, message3, false);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc3, message3, false);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc3, message3, false);
+      log.addAbort(ErrorCode.UNSPECIFIED, loc3, message3, false);
     } catch (AbortException e) {
       Assert.fail();
     }

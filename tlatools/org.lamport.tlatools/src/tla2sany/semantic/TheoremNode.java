@@ -200,6 +200,7 @@ public class TheoremNode extends LevelNode {
      for (int i = 0; i < oan.ranges.length; i++) {
        if (oan.ranges[i].getLevel() != ConstantLevel) {
          errors.addError(
+                   ErrorCode.QUANTIFIED_TEMPORAL_PICK_FORMULA_WITH_NON_CONSTANT_BOUND,
                    oan.ranges[i].stn.getLocation(),
                    "Non-constant bound of temporal PICK.");
        }
@@ -263,6 +264,7 @@ public class TheoremNode extends LevelNode {
                  || (name == OP_have) )
              && (oanode.getLevel() != ConstantLevel)) {
                    errors.addError(
+                     ErrorCode.TEMPORAL_PROOF_GOAL_WITH_NON_CONSTANT_TAKE_WITNESS_HAVE,
                      oanode.stn.getLocation(),
                      "Non-constant TAKE, WITNESS, or HAVE " +
                      "for temporal goal.");
@@ -274,6 +276,7 @@ public class TheoremNode extends LevelNode {
            ****************************************************************/
            if (oanode.getLevel() != ConstantLevel){
                errors.addError(
+                 ErrorCode.TEMPORAL_PROOF_GOAL_WITH_NON_CONSTANT_CASE,
                  oanode.stn.getLocation(),
                  "Non-constant CASE for temporal goal.") ;
              };

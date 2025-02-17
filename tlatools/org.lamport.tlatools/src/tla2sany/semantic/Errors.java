@@ -122,22 +122,6 @@ public class Errors {
     }
   }
 
-  public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
-    this.addAbort(ErrorCode.UNSPECIFIED, loc, str, abort);
-  }
-
-  public final void addAbort(Location loc, String str ) throws AbortException {
-    addAbort(loc, str, true);
-  }
-
-  public final void addAbort(String str, boolean abort) throws AbortException {
-    addAbort(Location.nullLoc, str, abort);
-  }
-
-  public final void addAbort(String str) throws AbortException {
-    addAbort(Location.nullLoc, str, true);
-  }
-
   public final boolean isSuccess()             { return this.aborts.isEmpty() && this.errors.isEmpty(); }
 
   public final boolean isFailure()             { return !this.isSuccess(); }

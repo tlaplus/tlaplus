@@ -167,6 +167,7 @@ public class InstanceNode extends LevelNode {
         if (mexp.getLevel() > mparam.getLevel()) {
           if (mexp.levelCheck(itr, errors) && mparam.levelCheck(itr, errors)) {
             errors.addError(
+               ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
                this.stn.getLocation(),
                "Level error in instantiating module '" + module.getName() +
                "':\nThe level of the expression or operator substituted for '"
