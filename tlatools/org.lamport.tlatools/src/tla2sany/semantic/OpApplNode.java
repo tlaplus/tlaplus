@@ -522,6 +522,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           if (opd.getLevel() > opDef.getMaxLevel(i)) {
             if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
               errors.addError(
+                 ErrorCode.OPERATOR_LEVEL_CONSTRAINTS_EXCEEDED,
                  this.stn.getLocation(),
                  "Level error in applying operator " + opDef.getName() +
                     ":\nThe level of argument " + (i+1) + " exceeds the" +
@@ -546,13 +547,14 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             for (int j = 0; j < alen; j++) {
               if (opdDef.getMaxLevel(j) < opDef.getMinMaxLevel(i, j)) {
                 if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
-                  errors.addError(this.stn.getLocation(),
-                                  "Level error in applying operator "
-                                        + opDef.getName() + ":\n" +
-                                  "The permitted level of argument "
-                                   + (j+1) + " of the operator argument " +
-                                  (i+1) + " \nmust be at least " +
-                                  opDef.getMinMaxLevel(i, j) + ".");
+                  errors.addError(
+                    ErrorCode.HIGHER_ORDER_OPERATOR_PARAMETER_LEVEL_CONSTRAINT_NOT_MET,
+                    this.stn.getLocation(),
+                    "Level error in applying operator " + opDef.getName() + ":\n"
+                    + "The permitted level of argument " + (j+1)
+                    + " of the operator argument " + (i+1)
+                    + " \nmust be at least " + opDef.getMinMaxLevel(i, j) + "."
+                  );
                 }
                 this.levelCorrect = false;
               }
@@ -564,6 +566,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                   if (opd.levelCheck(itr, errors) &&
                       this.operands[j].levelCheck(itr, errors)) {
                     errors.addError(
+                       ErrorCode.HIGHER_ORDER_OPERATOR_COPARAMETER_LEVEL_CONSTRAINTS_EXCEEDED,
                        this.stn.getLocation(),
                        "Level error in applying operator " + opDef.getName() +
                          ":\nThe level of argument " + (j+1) + " exceeds the" +
@@ -584,6 +587,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           if (range.getLevel() > ActionLevel) {
             if (rangeLevelCheck) {
               errors.addError(
+                ErrorCode.QUANTIFICATION_WITH_TEMPORAL_LEVEL_BOUND,
                 this.stn.getLocation(),
                 "Level error in applying operator " + opDef.getName() +
                   ":\nThe level of the range for the bounded variable " +
@@ -1032,6 +1036,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                            "$SquareAct")) {
           errors.addError(
+            ErrorCode.ALWAYS_PROPERTY_SENSITIVE_TO_STUTTERING,
             stn.getLocation(),
             "[] followed by action not of form [A]_v.");
           this.levelCorrect = false;
@@ -1049,6 +1054,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                              "$AngleAct")) {
             errors.addError(
+              ErrorCode.EVENTUALLY_PROPERTY_SENSITIVE_TO_STUTTERING,
               stn.getLocation(),
               "<> followed by action not of form <<A>>_v.");
             this.levelCorrect = false;
@@ -1063,6 +1069,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       if (   (this.getArgs()[0].getLevel() == ActionLevel)
           || (this.getArgs()[1].getLevel() == ActionLevel)) {
           errors.addError(
+             ErrorCode.BINARY_TEMPORAL_OPERATOR_WITH_ACTION_LEVEL_PARAMETER,
              stn.getLocation(),
              "Action used where only temporal formula or " +
              "state predicate allowed.");
@@ -1095,8 +1102,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     			pop = "Disjunction list" ;
     		}
     		errors.addError(
-    	             stn.getLocation(),
-    	             pop + " has both temporal formula and action as arguments.");
+    			ErrorCode.LOGICAL_OPERATOR_WITH_MIXED_ACTION_TEMPORAL_PARAMETERS,
+    			stn.getLocation(),
+    			pop + " has both temporal formula and action as arguments.");
     		this.levelCorrect = false;
     	}
     }
@@ -1110,6 +1118,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       for (int i = 0; i < this.ranges.length; i++) {
           if (this.ranges[i].getLevel() == ActionLevel) {
               errors.addError(
+                 ErrorCode.QUANTIFIED_TEMPORAL_FORMULA_WITH_ACTION_LEVEL_BOUND,
                  this.ranges[i].stn.getLocation(),
                  "Action-level bound of quantified temporal formula.");
               this.levelCorrect = false;

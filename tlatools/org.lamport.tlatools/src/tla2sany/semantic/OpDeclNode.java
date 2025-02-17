@@ -79,7 +79,9 @@ public class OpDeclNode extends OpDefOrDeclNode {
     ExprOrOpArgNode[] args = oa.getArgs();
 
     if (args == null || arity != args.length) {
-      errors.addError(oa.getTreeNode().getLocation(),
+      // One of many duplicate arity checks.
+      errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+		      oa.getTreeNode().getLocation(),
 		      "Operator used with the wrong number of arguments.");
       return false;
     }

@@ -30,16 +30,28 @@ public class Errors {
 
   public static class ErrorDetails {
 
-    public final ErrorCode code;
+    private final ErrorCode code;
 
-    public final Location location;
+    private final Location location;
 
-    public final String message;
+    private final String message;
 
     public ErrorDetails(ErrorCode code, Location location, String message) {
       this.code = code;
       this.location = location;
       this.message = message;
+    }
+
+    public ErrorCode getCode() {
+      return this.code;
+    }
+
+    public Location getLocation() {
+      return this.location;
+    }
+
+    public String getMessage() {
+      return this.message;
     }
 
     @Override
@@ -85,10 +97,6 @@ public class Errors {
     }
   }
 
-  public final void addWarning(Location loc, String str) {
-    this.addWarning(ErrorCode.UNSPECIFIED, loc, str);
-  }
-
   public final void addError(ErrorCode code, Location loc, String str) {
     if (loc == null) {
       loc = Location.nullLoc;
@@ -97,10 +105,6 @@ public class Errors {
     if (!this.errors.contains(error)) {
       this.errors.add(error);
     }
-  }
-
-  public final void addError(Location loc, String str) {
-    this.addError(ErrorCode.UNSPECIFIED, loc, str);
   }
 
   public final void addAbort(
@@ -120,22 +124,6 @@ public class Errors {
     if (abort){
       throw new AbortException();
     }
-  }
-
-  public final void addAbort(Location loc, String str, boolean abort) throws AbortException {
-    this.addAbort(ErrorCode.UNSPECIFIED, loc, str, abort);
-  }
-
-  public final void addAbort(Location loc, String str ) throws AbortException {
-    addAbort(loc, str, true);
-  }
-
-  public final void addAbort(String str, boolean abort) throws AbortException {
-    addAbort(Location.nullLoc, str, abort);
-  }
-
-  public final void addAbort(String str) throws AbortException {
-    addAbort(Location.nullLoc, str, true);
   }
 
   public final boolean isSuccess()             { return this.aborts.isEmpty() && this.errors.isEmpty(); }

@@ -91,7 +91,8 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 
     // Verify that the assumption is constant level
     if (this.assumeExpr.getLevel() != ConstantLevel) {
-      errors.addError(getTreeNode().getLocation(),
+      errors.addError(ErrorCode.ASSUMPTION_IS_NOT_CONSTANT,
+                      getTreeNode().getLocation(),
                       "Level error: assumptions must be level 0 (Constant), " +
                       "\nbut this one has level " + this.getLevel() + "." );
     }

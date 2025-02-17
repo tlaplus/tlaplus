@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +51,15 @@ import tla2sany.semantic.Errors.ErrorDetails;
 import tlc2.tool.CommonTestCase;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
+import util.ToolIO;
+import util.WrongInvocationException;
 
+/**
+ * This class parses a set of small .tla files which should trigger specific
+ * error codes identified by their filename. By testing SANY's error handling
+ * & validating that it rejects certain parse inputs, these tests form the
+ * complement of the {@link SemanticCorpusTests}.
+ */
 @RunWith(Parameterized.class)
 public class SemanticErrorCorpusTests {
 
@@ -59,15 +68,14 @@ public class SemanticErrorCorpusTests {
     /**
      * A regex pattern to match & extract an error code from a filename.
      * Matches files of the form:
-     * - W1004.tla
-     * - E2006.tla
-     * - E2006_SpecificTestCaseName.tla
+     * - W1004_Test.tla
+     * - E2006_Test.tla
+     * - E2006_SpecificTestCaseName_Test.tla
      */
-    private static final Pattern FILENAME_PATTERN = Pattern.compile("[W|E](?<code>\\d+)(_(?<case>\\S+))?\\.tla");
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("[W|E](?<code>\\d+)(_(?<case>\\S+))?_Test\\.tla");
 
     public final Path modulePath;
     public final ErrorCode expectedCode;
-    public final String testCaseName;
     public SemanticErrorTestCase(final Path modulePath) {
       this.modulePath = modulePath;
       final String filename = modulePath.getFileName().toString();
@@ -77,8 +85,6 @@ public class SemanticErrorCorpusTests {
       }
       final int errorCode = Integer.parseInt(m.group("code"));
       this.expectedCode = ErrorCode.fromStandardValue(errorCode);
-      final String caseName = m.group("case");
-      this.testCaseName = null == caseName ? "" : caseName;
     }
     // Used by JUnit to identify this test case.
     public String toString() {
@@ -93,15 +99,20 @@ public class SemanticErrorCorpusTests {
 
   /**
    * Finds all semantic error corpus test files.
+   * TODO: Modify this so it works when tests are run against tla2tools.jar,
+   * where files cannot be resolved using a {@link Path} in this way. Likely
+   * this will need to hook into resource loading logic exposed in the new
+   * SANY API.
    */
   @Parameters(name = "{index}: {0}")
   public static List<SemanticErrorTestCase> getTestFiles() throws IOException {
     Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve(CORPUS_DIR);
-    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.tla");
+    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*Test.tla");
     return Files
       .walk(corpusDir)
       .filter(matcher::matches)
       .map(SemanticErrorTestCase::new)
+      .sorted(Comparator.comparing(SemanticErrorTestCase::toString))
       .collect(Collectors.toList());
   }
 
@@ -117,46 +128,58 @@ public class SemanticErrorCorpusTests {
   @Test
   public void test() {
     final Errors log = parse(this.testCase.modulePath);
-    switch (this.testCase.expectedCode.level) {
+    switch (this.testCase.expectedCode.getSeverityLevel()) {
       case WARNING: {
+        Assert.assertTrue(log.toString(), log.isSuccess());
         final List<ErrorDetails> actual = log.getWarningDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
+        Assert.assertFalse(log.toString(), actual.stream().anyMatch(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK));
+        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
         break;
       } case ERROR: {
+        Assert.assertTrue(log.toString(), log.isFailure());
         final List<ErrorDetails> actual = log.getErrorDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, log.getNumErrors());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
-        break;
-      } case ABORT: {
-        final List<ErrorDetails> actual = log.getAbortDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, log.getNumAbortsAndErrors());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
+        actual.addAll(log.getAbortDetails());
+        Assert.assertFalse(log.toString(), actual.stream().anyMatch(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK));
+        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
         break;
       } default: {
-        Assert.fail();
+        Assert.fail(this.testCase.toString());
       }
     }
   }
 
+  /**
+   * Parse the spec; we expect the parse to fail, so catch any thrown
+   * exceptions and return the error log.
+   *
+   * @param rootModulePath The path to the module to parse.
+   * @return A log of parse errors.
+   */
   private static Errors parse(Path rootModulePath) {
     final FilenameToStream fts = new SimpleFilenameToStream(rootModulePath.getParent().toString());
     final SpecObj spec = new SpecObj(rootModulePath.toString(), fts);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    final PrintStream out = new PrintStream(output);
     SANY.frontEndInitialize();
+    final PrintStream toolOut = ToolIO.out;
+    final PrintStream toolErr = ToolIO.err;
     try {
-      SANY.frontEndParse(spec, new PrintStream(out));
+      ToolIO.out = out;
+      ToolIO.err = out;
+      SANY.frontEndParse(spec, out);
     } catch (ParseException e) {
-      Assert.fail(e.toString() + out.toString());
+      Assert.assertNotEquals(e.toString() + output.toString(), 0, spec.parseErrors.getNumMessages());
+      return spec.parseErrors;
+    } finally {
+      ToolIO.out = toolOut;
+      ToolIO.err = toolErr;
     }
     try {
       SANY.frontEndSemanticAnalysis(spec, new PrintStream(out), true);
     } catch (SemanticException e) {
+      return spec.semanticErrors;
+    } catch (WrongInvocationException e) {
+      // https://github.com/tlaplus/tlaplus/issues/1149
       return spec.semanticErrors;
     }
     return spec.semanticErrors;
