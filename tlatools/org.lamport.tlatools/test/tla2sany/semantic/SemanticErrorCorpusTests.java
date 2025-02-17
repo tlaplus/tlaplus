@@ -30,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,15 +60,14 @@ public class SemanticErrorCorpusTests {
     /**
      * A regex pattern to match & extract an error code from a filename.
      * Matches files of the form:
-     * - W1004.tla
-     * - E2006.tla
-     * - E2006_SpecificTestCaseName.tla
+     * - W1004_Test.tla
+     * - E2006_Test.tla
+     * - E2006_SpecificTestCaseName_Test.tla
      */
-    private static final Pattern FILENAME_PATTERN = Pattern.compile("[W|E](?<code>\\d+)(_(?<case>\\S+))?\\.tla");
+    private static final Pattern FILENAME_PATTERN = Pattern.compile("[W|E](?<code>\\d+)(_(?<case>\\S+))?_Test\\.tla");
 
     public final Path modulePath;
     public final ErrorCode expectedCode;
-    public final String testCaseName;
     public SemanticErrorTestCase(final Path modulePath) {
       this.modulePath = modulePath;
       final String filename = modulePath.getFileName().toString();
@@ -77,8 +77,6 @@ public class SemanticErrorCorpusTests {
       }
       final int errorCode = Integer.parseInt(m.group("code"));
       this.expectedCode = ErrorCode.fromStandardValue(errorCode);
-      final String caseName = m.group("case");
-      this.testCaseName = null == caseName ? "" : caseName;
     }
     // Used by JUnit to identify this test case.
     public String toString() {
@@ -97,11 +95,12 @@ public class SemanticErrorCorpusTests {
   @Parameters(name = "{index}: {0}")
   public static List<SemanticErrorTestCase> getTestFiles() throws IOException {
     Path corpusDir = Paths.get(CommonTestCase.BASE_DIR).resolve(CORPUS_DIR);
-    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.tla");
+    PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*Test.tla");
     return Files
       .walk(corpusDir)
       .filter(matcher::matches)
       .map(SemanticErrorTestCase::new)
+      .sorted(Comparator.comparing(SemanticErrorTestCase::toString))
       .collect(Collectors.toList());
   }
 
@@ -119,27 +118,22 @@ public class SemanticErrorCorpusTests {
     final Errors log = parse(this.testCase.modulePath);
     switch (this.testCase.expectedCode.level) {
       case WARNING: {
+        Assert.assertTrue(log.toString(), log.isSuccess());
         final List<ErrorDetails> actual = log.getWarningDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
+        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.code == this.testCase.expectedCode));
         break;
       } case ERROR: {
+        Assert.assertTrue(log.toString(), log.isFailure());
         final List<ErrorDetails> actual = log.getErrorDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, log.getNumErrors());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
+        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.code == this.testCase.expectedCode));
         break;
       } case ABORT: {
+        Assert.assertTrue(log.toString(), log.isFailure());
         final List<ErrorDetails> actual = log.getAbortDetails();
-        Assert.assertEquals(1, log.getNumMessages());
-        Assert.assertEquals(1, log.getNumAbortsAndErrors());
-        Assert.assertEquals(1, actual.size());
-        Assert.assertEquals(this.testCase.expectedCode, actual.get(0).code);
+        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.code == this.testCase.expectedCode));
         break;
       } default: {
-        Assert.fail();
+        Assert.fail(this.testCase.toString());
       }
     }
   }

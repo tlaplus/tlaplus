@@ -4718,7 +4718,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// illegal substitution target
 
 		if (targetSymbol == null || !(targetSymbol instanceof OpDeclNode)) {
-			errors.addError(substTarget.getLocation(), "Identifier '" + substTarget.getUS() + "' is not a legal"
+			errors.addError(
+					ErrorCode.ILLEGAL_SYMBOL_SUBSTITUTION,
+					substTarget.getLocation(), "Identifier '" + substTarget.getUS() + "' is not a legal"
 					+ " target of a substitution. \nA legal target must be a declared"
 					+ " CONSTANT or VARIABLE in the module being instantiated."
 					+ " \n(Also, check for warnings about multiple declarations of" + " this same identifier.)");
