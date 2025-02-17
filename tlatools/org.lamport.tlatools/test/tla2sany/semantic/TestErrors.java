@@ -53,21 +53,21 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(loc1, message1);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test warning message";
-    log.addWarning(loc2, message2);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test warning message";
-    log.addWarning(null, message3);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getWarnings();
@@ -98,21 +98,21 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test error message";
-    log.addError(loc1, message1);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test error message";
-    log.addError(loc2, message2);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test error message";
-    log.addError(null, message3);
+    log.addError(ErrorCode.INTERNAL_ERROR, null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getErrors();
@@ -144,85 +144,29 @@ public class TestErrors {
     final Location loc1 = genLocation();
     final String message1 = "This is a test abort message";
     try {
-      log.addAbort(loc1, message1);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc1, message1, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test abort message";
     try {
-      log.addAbort(loc2, message2);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc2, message2, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test abort message";
     try {
-      log.addAbort(null, message3);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, null, message3, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
-
-    final String[] expected = new String[] { expected1, expected2, expected3 };
-    final String[] actual = log.getAborts();
-    Assert.assertArrayEquals(expected, actual);
-    Assert.assertTrue(log.isFailure());
-    Assert.assertFalse(log.isSuccess());
-    Assert.assertEquals(expected.length, log.getNumMessages());
-    Assert.assertEquals(0, log.getNumErrors());
-    Assert.assertEquals(expected.length, log.getNumAbortsAndErrors());
-    Assert.assertEquals(0, log.getWarnings().length);
-    Assert.assertEquals(expected.length, log.getAborts().length);
-
-    final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
-    Assert.assertEquals(blank, log.getWarningDetails());
-    Assert.assertEquals(blank, log.getErrorDetails());
-    Assert.assertEquals(expectedDetails, log.getAbortDetails());
-
-    final String actualSummary = log.toString();
-    for (final String expectedMessage : expected) {
-      Assert.assertTrue(actualSummary.contains(expectedMessage));
-    }
-  }
-
-  @Test
-  public void testAlternativeAbortFunctions() {
-    final Errors log = new Errors();
-    final List<ErrorDetails> expectedDetails = new ArrayList<ErrorDetails>();
-
-    final Location loc1 = genLocation();
-    final String message1 = "This is a test abort message";
-    try {
-      log.addAbort(loc1, message1, false);
-    } catch (AbortException e) {
-      Assert.fail();
-    }
-    final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
-
-    final Location loc2 = Location.nullLoc;
-    final String message2 = "This is another test abort message";
-    try {
-      log.addAbort(message2, false);
-    } catch (AbortException e) {
-      Assert.fail();
-    }
-    final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
-
-    final Location loc3 = Location.nullLoc;
-    final String message3 = "This is yet another test abort message";
-    try {
-      log.addAbort(message3);
-      Assert.fail();
-    } catch (AbortException e) { }
-    final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getAborts();
@@ -252,30 +196,30 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(loc1, message1);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
-    log.addError(loc2, message2);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
-    expectedErrorDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
+    expectedErrorDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
     try {
-      log.addAbort(loc3, message3);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc3, message3, true);
       Assert.fail();
     } catch (AbortException e) { }
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
     final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
-    expectedAbortDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
+    expectedAbortDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());
@@ -302,37 +246,37 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(loc1, message1);
-    log.addWarning(loc1, message1);
-    log.addWarning(loc1, message1);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
-    log.addError(loc2, message2);
-    log.addError(loc2, message2);
-    log.addError(loc2, message2);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
-    expectedErrorDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc2, message2));
+    expectedErrorDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = genLocation();
     final String message3 = "This is a test abort message";
     try {
-      log.addAbort(loc3, message3, false);
-      log.addAbort(loc3, message3, false);
-      log.addAbort(loc3, message3, false);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc3, message3, false);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc3, message3, false);
+      log.addAbort(ErrorCode.INTERNAL_ERROR, loc3, message3, false);
     } catch (AbortException e) {
       Assert.fail();
     }
     final String expectedAbort = loc3.toString() + "\n\n" + message3;
     final String[] expectedAborts = new String[] { expectedAbort };
     final List<ErrorDetails> expectedAbortDetails = new ArrayList<ErrorDetails>();
-    expectedAbortDetails.add(new ErrorDetails(ErrorCode.UNSPECIFIED, loc3, message3));
+    expectedAbortDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
     Assert.assertArrayEquals(expectedWarnings, log.getWarnings());
     Assert.assertArrayEquals(expectedErrors, log.getErrors());

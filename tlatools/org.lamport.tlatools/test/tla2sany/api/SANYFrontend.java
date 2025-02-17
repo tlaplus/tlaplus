@@ -33,10 +33,12 @@ import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TokenMgrError;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
+import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.st.Location;
 import util.ToolIO;
 import util.UniqueString;
 
@@ -118,7 +120,12 @@ public class SANYFrontend implements Frontend {
     for (final String dependencyName : dependencies) {
       if (incompleteModules.contains(dependencyName)) {
         // TODO: reconstruct dependency chain for error message
-        log.addAbort("Circular dependency detected");
+        log.addAbort(
+          ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
+          Location.nullLoc,
+          "Circular dependency detected",
+          true
+        );
       }
       if (!dependencyTable.modules.containsKey(dependencyName)) {
         final ModuleSyntaxTree dependency = this.processSyntax(dependencyName, resolver);
