@@ -986,7 +986,10 @@ public class LiveWorker implements Callable<Boolean> {
 			// The print stmts below claim there is a cycle, thus assert that
 			// there is indeed one. Index-based lookup into states array is
 			// reduced by one because cyclePos is human-readable.
-			assert cycleState.state.equals(sinfo.state);
+			// The assertions has been disabled if a VIEW is present because of Github issue
+			// #1045 (https://github.com/tlaplus/tlaplus/issues/1045): "Lasso-Shaped
+			// counterexample fails to reconstruct when VIEW present".
+			assert tool.getViewSpec() != null || cycleState.state.equals(sinfo.state);
 			StatePrinter.printBackToState(sinfo, stateNumber);
 		}
 		
