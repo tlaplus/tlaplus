@@ -669,6 +669,8 @@ public class TLCStackFrame extends StackFrame {
 			// the term "exception" appears in the front-end.
 			eventArguments.setReason(StoppedEventArgumentsReason.EXCEPTION);
 			eventArguments.setText(this.exception.getMessage().replaceAll("(?m)^@!@!@.*", ""));
+		} else {
+			eventArguments.setReason(StoppedEventArgumentsReason.STEP);
 		}
 		return eventArguments;
 	}

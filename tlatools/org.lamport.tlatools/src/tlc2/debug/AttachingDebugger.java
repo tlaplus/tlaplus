@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 
 import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
+import org.eclipse.lsp4j.debug.StoppedEventArgumentsReason;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
 import tlc2.tool.impl.Tool;
@@ -148,6 +149,7 @@ public class AttachingDebugger extends TLCDebugger {
 			
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
+			eventArguments.setReason(StoppedEventArgumentsReason.PAUSE);
 			launcher.getRemoteProxy().stopped(eventArguments);
 		});
 		
