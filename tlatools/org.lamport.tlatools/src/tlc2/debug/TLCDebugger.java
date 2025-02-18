@@ -75,6 +75,7 @@ import org.eclipse.lsp4j.debug.StepBackArguments;
 import org.eclipse.lsp4j.debug.StepInArguments;
 import org.eclipse.lsp4j.debug.StepOutArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
+import org.eclipse.lsp4j.debug.StoppedEventArgumentsReason;
 import org.eclipse.lsp4j.debug.TerminateArguments;
 import org.eclipse.lsp4j.debug.TerminatedEventArguments;
 import org.eclipse.lsp4j.debug.Thread;
@@ -633,7 +634,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			LOGGER.finer("pause -> stopped");
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
-			eventArguments.setReason("pause");
+			eventArguments.setReason(StoppedEventArgumentsReason.PAUSE);
 			launcher.getRemoteProxy().stopped(eventArguments);
 		});
 		return CompletableFuture.completedFuture(null);

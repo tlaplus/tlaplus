@@ -148,6 +148,10 @@ public class AttachingDebugger extends TLCDebugger {
 			
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
+			// DAP mandates non-null reason in StoppedEvent by spec.
+			// Since StoppedEvent created here is to stop the execution voluntarily on launch which
+			// pre-defined reasons doesn't fit, we fill empty-string as default.
+			eventArguments.setReason("");
 			launcher.getRemoteProxy().stopped(eventArguments);
 		});
 		

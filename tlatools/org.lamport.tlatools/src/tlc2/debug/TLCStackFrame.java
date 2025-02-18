@@ -669,6 +669,10 @@ public class TLCStackFrame extends StackFrame {
 			// the term "exception" appears in the front-end.
 			eventArguments.setReason(StoppedEventArgumentsReason.EXCEPTION);
 			eventArguments.setText(this.exception.getMessage().replaceAll("(?m)^@!@!@.*", ""));
+		} else {
+			// DAP mandates non-null reason in StoppedEvent by spec.
+			// Since StoppedEventArguments returned here would be sent in various cases, we just fill empty string as default.
+			eventArguments.setReason("");
 		}
 		return eventArguments;
 	}
