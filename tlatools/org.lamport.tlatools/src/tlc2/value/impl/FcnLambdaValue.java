@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Wed  4 Jul 2007 at 17:31:23 PST by lamport
 //      modified on Thu Dec  6 21:46:34 PST 2001 by yuanyu
@@ -588,14 +589,12 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
   public final Value toTuple() {
       if (this.params.length() != 1) return null;
       Value  dom = this.params.domains[0];
-      SymbolNode var = this.params.formals[0][0];
       if (dom instanceof IntervalValue) {
         IntervalValue intv = (IntervalValue)dom;
         if (intv.low != 1) return null;
         Value [] elems = new Value [intv.high];
         for (int i = 1; i <= intv.high; i++) {
-          Context c1 = this.con.cons(var, IntValue.gen(i));
-          elems[i-1] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+          elems[i-1] = select(IntValue.gen(i));
         }
         if (coverage) {cm.incSecondary(elems.length);}
         return new TupleValue(elems, cm);
@@ -612,8 +611,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
           Value  argVal = eSet.elems.elementAt(i);
           if (!(argVal instanceof IntValue)) return null;
           if (((IntValue)argVal).val != i + 1) return null;
-          Context c1 = this.con.cons(var, argVal);
-          elems[i] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+          elems[i] = select(argVal);
         }
         cm.incSecondary(elems.length);
         return new TupleValue(elems, cm);
