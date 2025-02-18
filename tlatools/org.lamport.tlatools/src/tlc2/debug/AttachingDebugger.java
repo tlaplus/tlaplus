@@ -40,7 +40,6 @@ import java.util.concurrent.Executors;
 
 import org.eclipse.lsp4j.debug.OutputEventArguments;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
-import org.eclipse.lsp4j.debug.StoppedEventArgumentsReason;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
 import tlc2.tool.impl.Tool;
@@ -149,7 +148,10 @@ public class AttachingDebugger extends TLCDebugger {
 			
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
 			eventArguments.setThreadId(0);
-			eventArguments.setReason(StoppedEventArgumentsReason.PAUSE);
+			// DAP mandates non-null reason in StoppedEvent by spec.
+			// Since StoppedEvent created here is to stop the execution voluntarily on launch which
+			// pre-defined reasons doesn't fit, we fill empty-string as default.
+			eventArguments.setReason("");
 			launcher.getRemoteProxy().stopped(eventArguments);
 		});
 		
