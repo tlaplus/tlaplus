@@ -214,7 +214,6 @@ public class SubstInNode extends ExprNode {
    * to this method can contain a mixture of explicit and implicit
    * substitutions
    */
-  @SuppressWarnings("unused")	// TODO final else block is dead code 
   final void addExplicitSubstitute(Context instanceCtxt, UniqueString lhs,
                                    TreeNode stn, ExprOrOpArgNode sub, Errors errors) {
     int index;
@@ -226,8 +225,11 @@ public class SubstInNode extends ExprNode {
       if (!this.substs[index].isImplicit()) {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
-        errors.addError(stn.getLocation(), "Multiple substitutions for symbol '" +
-			lhs.toString() + "' in substitution.");
+        errors.addError(
+          ErrorCode.MULTIPLE_SUBSTITUTIONS_FOR_SAME_SYMBOL,
+          stn.getLocation(),
+          "Multiple substitutions for symbol '" + lhs.toString() + "' in substitution."
+        );
       }
       else {
 	// if it is an implicit subst, then replacing it with an
@@ -248,13 +250,12 @@ public class SubstInNode extends ExprNode {
       // lhs must be an OpDeclNode; if not just return, as this error
       // will have been earlier, though semantic analysis was allowed
       // to continue.
-      if (!(lhsSymbol instanceof OpDeclNode)) { return; }
-
       // if the symbol was found, then create a Subst node for it and
       // append it to the substitutions array (which requires a new
       // array allocation and full copy, unfortunately (should fix
       // this at some point)
-      if (lhsSymbol != null) {
+      // Note if lhsSymbol is null, instanceof returns false.
+      if (lhsSymbol instanceof OpDeclNode) {
         int newlength = this.substs.length + 1;
         Subst[] newSubsts = new Subst[ newlength ];
         Subst   newSubst = new Subst((OpDeclNode)lhsSymbol, sub, stn, false);
@@ -264,10 +265,6 @@ public class SubstInNode extends ExprNode {
 
 	// replace the old array with the new one
         this.substs = newSubsts;
-      }
-      else {
-        errors.addError(stn.getLocation(),
-			"Illegal identifier '" + lhs + "' in LHS of substitution." );
       }
     }
   }

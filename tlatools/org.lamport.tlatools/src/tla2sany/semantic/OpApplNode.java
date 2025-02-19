@@ -1032,6 +1032,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                            "$SquareAct")) {
           errors.addError(
+            ErrorCode.STUTTERING_SENSITIVE_ALWAYS_PROPERTY,
             stn.getLocation(),
             "[] followed by action not of form [A]_v.");
           this.levelCorrect = false;
@@ -1049,6 +1050,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                              "$AngleAct")) {
             errors.addError(
+              ErrorCode.STUTTERING_SENSITIVE_EVENTUALLY_PROPERTY,
               stn.getLocation(),
               "<> followed by action not of form <<A>>_v.");
             this.levelCorrect = false;
@@ -1063,6 +1065,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       if (   (this.getArgs()[0].getLevel() == ActionLevel)
           || (this.getArgs()[1].getLevel() == ActionLevel)) {
           errors.addError(
+             ErrorCode.BINARY_TEMPORAL_OPERATOR_WITH_ACTION_LEVEL_PARAMETER,
              stn.getLocation(),
              "Action used where only temporal formula or " +
              "state predicate allowed.");
@@ -1095,8 +1098,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     			pop = "Disjunction list" ;
     		}
     		errors.addError(
-    	             stn.getLocation(),
-    	             pop + " has both temporal formula and action as arguments.");
+    			ErrorCode.LOGICAL_OPERATOR_WITH_MIXED_ACTION_TEMPORAL_PARAMETERS,
+    			stn.getLocation(),
+    			pop + " has both temporal formula and action as arguments.");
     		this.levelCorrect = false;
     	}
     }
@@ -1110,6 +1114,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       for (int i = 0; i < this.ranges.length; i++) {
           if (this.ranges[i].getLevel() == ActionLevel) {
               errors.addError(
+                 ErrorCode.QUANTIFIED_TEMPORAL_FORMULA_WITH_ACTION_LEVEL_BOUND,
                  this.ranges[i].stn.getLocation(),
                  "Action-level bound of quantified temporal formula.");
               this.levelCorrect = false;
