@@ -22,7 +22,6 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import util.ParserAPI;
 import util.UniqueString;
 
 import java.util.HashSet;
@@ -36,6 +35,14 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.Assert;
 
+import tla2sany.api.SANYFrontend;
+import tla2sany.api.Frontend;
+import tla2sany.api.Resolver;
+import tla2sany.api.StringResolver;
+import tla2sany.parser.ParseException;
+import tla2sany.semantic.AbortException;
+import tla2sany.semantic.Errors;
+import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.Location;
 
@@ -122,12 +129,17 @@ public class GetScopedIdentifiersTests {
    * Run all the test cases and check the identifiers are found as expected.
    */
   @Test
-  public void test() {
-    String input = String.format(wrapper, testCase.input, testCase.terminator);
-    ModuleNode parsed = ParserAPI.parse(input);
-    Assert.assertNotNull(parsed);
-    Assert.assertEquals(1, parsed.getOpDefs().length);
-    Set<String> actual = TLCDebuggerExpression.getScopedIdentifiers(parsed, location);
+  public void test() throws AbortException, ParseException {
+    final String input = String.format(wrapper, testCase.input, testCase.terminator);
+    final Frontend parser = new SANYFrontend();
+    final String moduleName = "Test";
+    final Resolver resolver = new StringResolver(moduleName, input);
+    Errors log = new Errors();
+    ExternalModuleTable modules = parser.parse(moduleName, resolver, log);
+    Assert.assertNotNull(modules);
+    Assert.assertTrue(log.isSuccess());
+    Assert.assertEquals(1, modules.getRootModule().getOpDefs().length);
+    Set<String> actual = TLCDebuggerExpression.getScopedIdentifiers(modules.getRootModule(), location);
     Assert.assertEquals(testCase.expected, actual);
   }
 }

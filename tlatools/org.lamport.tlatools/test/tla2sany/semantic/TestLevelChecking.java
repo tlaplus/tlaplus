@@ -30,8 +30,13 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.Assert;
 
-import tla2sany.parser.SyntaxTreeNode;
-import util.ParserAPI;
+import tla2sany.api.ModuleSyntaxTree;
+import tla2sany.api.SANYFrontend;
+import tla2sany.api.Frontend;
+import tla2sany.api.Resolver;
+import tla2sany.api.StringResolver;
+import tla2sany.parser.ParseException;
+import tla2sany.api.DependencyTable;
 
 /**
  * Some basic tests for the level-checking process.
@@ -212,13 +217,17 @@ public class TestLevelChecking {
    * Runs all level-checker tests in the corpus.
    */
   @Test
-  public void testAll() {
-    SyntaxTreeNode parseTree = ParserAPI.processSyntax(testCase.getParseInput());
-    Errors semanticLog = new Errors();
-    ModuleNode semanticTree = ParserAPI.processSemantics(parseTree, semanticLog);
+  public void testAll() throws ParseException, AbortException {
+    final Frontend parser = new SANYFrontend();
+    final String moduleName = "Test";
+    final Resolver resolver = new StringResolver(moduleName, testCase.getParseInput());
+    final ModuleSyntaxTree parseTree = parser.processSyntax(moduleName, resolver);
+    final Errors semanticLog = new Errors();
+    final DependencyTable dependencies = parser.resolveDependencies(parseTree, null, semanticLog);
+    final ExternalModuleTable semanticTree = parser.processSemantics(dependencies, semanticLog);
     Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
-    Errors levelCheckingLog = new Errors();
-    boolean actualLevelCheckingResult = ParserAPI.checkLevel(semanticTree, levelCheckingLog);
+    final Errors levelCheckingLog = new Errors();
+    final boolean actualLevelCheckingResult = parser.checkLevel(semanticTree, levelCheckingLog);
     Assert.assertTrue(testCase.summarize(semanticLog), semanticLog.isSuccess());
     Assert.assertEquals(testCase.summarize(levelCheckingLog), levelCheckingLog.isSuccess(), actualLevelCheckingResult);
     Assert.assertEquals(testCase.summarize(levelCheckingLog), testCase.ExpectedLevelCheckingResult, actualLevelCheckingResult);
