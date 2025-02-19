@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
- * Copyright (c) 2023, Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2025, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -44,8 +44,8 @@ import tlc2.value.impl.TLCVariable;
  *     <li>Atomic values like {@link BoolValue}, {@link IntValue}, and {@link ModelValue}</li>
  *     <li>Composite values like {@link tlc2.value.impl.SetEnumValue} and {@link tlc2.value.impl.FcnRcdValue} that
  *         build larger structures out of other values</li>
- *     <li>Lazy values like {@link tlc2.value.impl.LazyValue}, {@link tlc2.value.impl.SubsetValue}, and
- *         {@link tlc2.value.impl.FcnLambdaValue} that delay full simplification until the last possible moment</li>
+ *     <li>Lazy values like {@link tlc2.value.impl.SubsetValue} and {@link tlc2.value.impl.FcnLambdaValue} that delay
+ *         full simplification until the last possible moment</li>
  *     <li>Special values like {@link tlc2.value.impl.OpRcdValue} and {@link tlc2.value.impl.UserValue} whose
  *         purposes are highly varied</li>
  * </ul>
@@ -93,10 +93,9 @@ import tlc2.value.impl.TLCVariable;
  * {@link tlc2.value.impl.OpValue#eval} method applies an operator to arguments.
  *
  * <h2>Expression Levels</h2>
- * Some value types like {@link tlc2.value.impl.LazyValue} and {@link tlc2.value.impl.OpLambdaValue} wrap TLA+
- * expressions.  They may even wrap expressions with non-constant level (see {@link tla2sany.semantic.LevelConstants}).
- * As such, the meaning of a value is not necessarily fixed and may depend on the current behavior or whether the value
- * is used inside <code>ENABLED</code>.
+ * Some value types like {@link tlc2.value.impl.OpLambdaValue} wrap TLA+ expressions.  They may even wrap expressions
+ * with non-constant level (see {@link tla2sany.semantic.LevelConstants}).  As such, the meaning of a value is not
+ * necessarily fixed and may depend on the current behavior or whether the value is used inside <code>ENABLED</code>.
  */
 public interface IValue extends Comparable<Object> {
 
