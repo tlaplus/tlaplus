@@ -22,8 +22,12 @@
  ******************************************************************************/
 package tla2sany.parser;
 
+import tla2sany.api.Frontend;
+import tla2sany.api.ModuleSyntaxTree;
+import tla2sany.api.SANYFrontend;
+import tla2sany.api.Resolver;
+import tla2sany.api.StringResolver;
 import tla2sany.st.SyntaxTreeConstants;
-import util.ParserAPI;
 
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -455,11 +459,15 @@ public class OperatorPrecedenceTests {
     final String expr = deriveExpression(op1, op1Symbol, op2, op2Symbol);
     final String inputString = String.format(PATTERN, expr);
     final boolean expectParseSuccess = !op1.conflictsWith(op2);
-    final SyntaxTreeNode parseTree = ParserAPI.processSyntax(inputString);
-    final boolean actualParseSuccess = null != parseTree;
-    Assert.assertEquals(expr, expectParseSuccess, actualParseSuccess);
-    if (expectParseSuccess) {
-      checkParsePrecedence(parseTree, this.op1, this.op1Symbol, this.op2, this.op2Symbol);
+    final Frontend parser = new SANYFrontend();
+    final String moduleName = "Test";
+    final Resolver resolver = new StringResolver(moduleName, inputString);
+    try {
+      final ModuleSyntaxTree parseTree = parser.processSyntax(moduleName, resolver);
+      Assert.assertTrue(expr, expectParseSuccess);
+      checkParsePrecedence(parseTree.root, this.op1, this.op1Symbol, this.op2, this.op2Symbol);
+    } catch (tla2sany.parser.ParseException | TokenMgrError e) {
+      Assert.assertFalse(expr, expectParseSuccess);
     }
   }
 }

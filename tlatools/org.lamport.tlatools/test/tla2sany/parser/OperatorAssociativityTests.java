@@ -31,7 +31,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import util.ParserAPI;
+import tla2sany.api.Frontend;
+import tla2sany.api.SANYFrontend;
+import tla2sany.api.Resolver;
+import tla2sany.api.StringResolver;
 
 import org.junit.Test;
 
@@ -89,7 +92,14 @@ public class OperatorAssociativityTests {
   public void testOperatorAssociativity() {
     final String expr = String.format("A %s B %s C", opSymbol1, opSymbol2);
     final String inputString = String.format(OperatorPrecedenceTests.PATTERN, expr);
-    final boolean parseSuccess = null != ParserAPI.processSyntax(inputString);
-    Assert.assertEquals(expr, op.associative, parseSuccess);
+    final Frontend parser = new SANYFrontend();
+    final String moduleName = "Test";
+    final Resolver resolver = new StringResolver(moduleName, inputString);
+    try {
+      parser.processSyntax(moduleName, resolver);
+      Assert.assertTrue(expr, op.associative);
+    } catch (tla2sany.parser.ParseException | TokenMgrError e) {
+      Assert.assertFalse(expr, op.associative);
+    }
   }
 }
