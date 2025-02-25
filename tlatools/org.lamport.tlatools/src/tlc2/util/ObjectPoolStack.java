@@ -129,7 +129,9 @@ public class ObjectPoolStack {
           }
           catch (Exception e) 
           {
-              MP.printError(EC.SYSTEM_ERROR_READING_POOL, e);
+              final String[] cause = ObjectPoolStack.this.poolFile == null ? new String[] { e.getMessage() }
+				: new String[] { e.getMessage(), ObjectPoolStack.this.poolFile.getName() };
+              MP.printError(EC.SYSTEM_ERROR_READING_POOL, cause, e);
               System.exit(1);
           }
       }

@@ -367,7 +367,11 @@ public class MP
             b.append("Out Of Memory. There are probably too many initial states.");
             break;
         case EC.SYSTEM_ERROR_READING_POOL:
-            b.append("when reading the disk (StatePoolReader.run):\n%1%");
+            if (parameters.length == 2) {
+                b.append("when reading pool file %2% (StatePoolReader.run):\n%1%");
+            } else {
+                b.append("when reading the disk (StatePoolReader.run):\n%1%");
+            }
             break;
 
         case EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT:

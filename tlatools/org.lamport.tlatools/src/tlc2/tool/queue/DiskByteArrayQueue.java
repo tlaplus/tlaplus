@@ -579,7 +579,9 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		    catch (Exception e) 
 		    {
 		      // Assert.printStack(e);
-		      MP.printError(EC.SYSTEM_ERROR_READING_POOL, e.getMessage(), e);
+		      final String[] cause = this.poolFile == null ? new String[] { e.getMessage() }
+				: new String[] { e.getMessage(), this.poolFile.getName() };
+		      MP.printError(EC.SYSTEM_ERROR_READING_POOL, cause, e);
 		      System.exit(1);
 		    }
 		  }
