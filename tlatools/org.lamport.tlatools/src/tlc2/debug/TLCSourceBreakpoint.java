@@ -137,4 +137,10 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 		}
 		return fire;
 	}
+
+	public boolean matchesLocation(final Location loc) {
+		return getLine() == loc.beginLine()
+				//TODO why *smaller* than BEGINcolumn?
+				&& getColumnAsInt() <= loc.beginColumn();
+	}
 }
