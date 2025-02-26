@@ -48,6 +48,22 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 	private final Location location;
 	private final OpDefNode condition;
 	
+	public TLCSourceBreakpoint(final SpecProcessor processor, final String s) {
+		this.location = Location.nullLoc;
+		this.setLine(this.location.beginLine());
+		this.hits = 0;
+		
+		setCondition(s);
+		final ModuleNode semanticRoot = processor.getRootModule();
+		final OpDefNode odn = semanticRoot.getOpDef(s);
+		if (odn != null) {
+			// Use existing definition.
+			condition = odn;
+		} else {
+			condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s);
+		}
+	}
+	
 	public TLCSourceBreakpoint(final SpecProcessor processor, final String module, final SourceBreakpoint s,
 			final ModuleNode semanticRoot) {
 		setColumn(s.getColumn());
@@ -139,6 +155,9 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 	}
 
 	public boolean matchesLocation(final Location loc) {
+		if (location == Location.nullLoc) {
+			return true;
+		}
 		return getLine() == loc.beginLine()
 				//TODO why *smaller* than BEGINcolumn?
 				&& getColumnAsInt() <= loc.beginColumn();
