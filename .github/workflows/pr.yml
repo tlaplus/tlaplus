@@ -156,37 +156,26 @@ jobs:
       run: |
         python $SCRIPT_DIR/translate_pluscal.py         \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"
+          --manifest_path "$EXAMPLES_DIR/manifest.json" \
+          --enable_assertions
     - name: Parse tlaplus/examples modules
       run: |
-        # Need to have a nonempty list to pass as a skip parameter
-        SKIP=("does/not/exist")
-        if [ ${{ matrix.unicode }} ]; then
-          # These redefine Nat, Int, or Real so cannot be shimmed
-          SKIP+=(
-            "specifications/SpecifyingSystems/Standard/Naturals.tla"
-            "specifications/SpecifyingSystems/Standard/Peano.tla"
-            "specifications/SpecifyingSystems/Standard/Integers.tla"
-            "specifications/SpecifyingSystems/Standard/Reals.tla"
-            "specifications/SpecifyingSystems/Standard/ProtoReals.tla"
-            "specifications/SpecifyingSystems/RealTime/MCRealTime.tla"
-            "specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.tla"
-          )
-        fi
         python "$SCRIPT_DIR/parse_modules.py"                             \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
-          --skip "${SKIP[@]}"
+          --enable_assertions
     - name: Model-check small tlaplus/examples models
       run: |
-        # https://github.com/tlaplus/Examples/issues/134
-        SKIP=("specifications/ewd998/EWD998ChanTrace.cfg")
+        SKIP=(
+          # https://github.com/tlaplus/Examples/issues/134
+          "specifications/ewd998/EWD998ChanTrace.cfg"
+          # https://github.com/tlaplus/tlaplus/issues/1045
+          "specifications/FiniteMonotonic/MCDistributedReplicatedLog.cfg"
+        )
         if [ ${{ matrix.unicode }} ]; then
-          # This redefines Real so cannot be shimmed
-          SKIP+=("specifications/SpecifyingSystems/RealTime/MCRealTimeHourClock.cfg")
           # Apalache does not yet support Unicode
           SKIP+=("specifications/EinsteinRiddle/Einstein.cfg")
         fi
@@ -196,6 +185,7 @@ jobs:
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
+          --enable_assertions                                             \
           --skip "${SKIP[@]}"
     - name: Smoke-test large tlaplus/examples models
       run: |
@@ -208,5 +198,6 @@ jobs:
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
+          --enable_assertions                                             \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
 
