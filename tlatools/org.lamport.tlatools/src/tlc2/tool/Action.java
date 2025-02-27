@@ -172,6 +172,11 @@ public final class Action implements ToolGlobals, Serializable {
 						(existing, replacement) -> existing, LinkedHashMap::new));
     }
 
+	public final String getInvocationSignature() {
+		return String.format("%s%s", actionName,
+				getParameters().values().stream().map(Object::toString).collect(PARAMETER_LIST));
+	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
