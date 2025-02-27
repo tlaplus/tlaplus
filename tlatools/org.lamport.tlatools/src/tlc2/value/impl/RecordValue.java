@@ -170,7 +170,8 @@ public class RecordValue extends Value implements FunctionValue {
 			this.values[2] = new RecordValue(parameters);
 
 			this.names[3] = PARAMS;
-			this.values[3] = new TupleValue(action.getSignature().stream().map(StringValue::new).toArray(Value[]::new));
+			this.values[3] = new TupleValue(
+					action.getParameters().keySet().stream().map(StringValue::new).toArray(Value[]::new));
 	    }
 
 		this.names[0] = NAME;
@@ -201,7 +202,8 @@ public class RecordValue extends Value implements FunctionValue {
 			this.values[3] = new RecordValue(parameters);
 
 			this.names[4] = PARAMS;
-			this.values[4] = new TupleValue(action.getSignature().stream().map(StringValue::new).toArray(Value[]::new));
+			this.values[4] = new TupleValue(
+					action.getParameters().keySet().stream().map(StringValue::new).toArray(Value[]::new));
 		}
 		
 		this.isNorm = false;

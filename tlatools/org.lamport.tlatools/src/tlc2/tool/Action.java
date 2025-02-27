@@ -5,7 +5,7 @@ package tlc2.tool;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.stream.Collector;
@@ -161,16 +161,16 @@ public final class Action implements ToolGlobals, Serializable {
 	   return pred.getLocation();
 	}
 	
+	/**
+	 * The order of iteration is the order in which keys were inserted into the map,
+	 * i.e., the order of the action's parameters.
+	 */
 	public final Map<UniqueString, Value> getParameters() {
 		return Arrays.stream(opDef != null ? opDef.getParams() : new FormalParamNode[0])
 				.filter(p -> con.lookup(p) instanceof Value)
-				.collect(Collectors.toMap(FormalParamNode::getName, p -> (Value) con.lookup(p)));
+				.collect(Collectors.toMap(FormalParamNode::getName, p -> (Value) con.lookup(p),
+						(existing, replacement) -> existing, LinkedHashMap::new));
     }
-	
-	public final List<UniqueString> getSignature() {
-		return Arrays.stream(opDef != null ? opDef.getParams() : new FormalParamNode[0]).map(FormalParamNode::getName)
-				.collect(Collectors.toList());
-	}
 
 	public void setId(int id) {
 		this.id = id;
