@@ -336,10 +336,13 @@ public class DotStateWriter extends StateWriter {
 		final String color = colorize ? this.getActionColor(action).toString() : "black" ;
 		
 	    // Only add action label if specified.
-		final String actionName = actionLabels ? action.getName().toString() : "" ;
-		
+		final String actionName = actionLabels
+				? action.getInvocationSignature().replace("\\", "\\\\").replace("\"", "\\\"").trim()
+				: "";
+
 		final String labelFmtStr = " [label=\"%s%s\",color=\"%s\",fontcolor=\"%s\"]";
-		return String.format(labelFmtStr, actionName, pred == null ? "" : "\n" + pred.toString(), color, color);
+		return String.format(labelFmtStr, actionName, pred == null ? "" : "\n" + pred.toString(),
+				color, color);
 	}
 	
 	
