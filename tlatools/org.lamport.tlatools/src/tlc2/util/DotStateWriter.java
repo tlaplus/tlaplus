@@ -388,13 +388,13 @@ public class DotStateWriter extends StateWriter {
 	protected static String states2dot(final TLCState predecessor, final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
 		return state.toString(predecessor).replace("\\", "\\\\").replace("\"", "\\\"").trim()
-				.replace("\n", "\\n"); // Do not remove remaining (i.e. no danling/leading) "\n". 
+				.replace("\n", "\\n"); // Do not remove remaining (i.e. no dangling/leading) "\n". 
 	}
 
 	protected static String states2dot(final TLCState state) {
 		// Replace "\" with "\\" and """ with "\"".	
 		return state.toString().replace("\\", "\\\\").replace("\"", "\\\"").trim()
-				.replace("\n", "\\n"); // Do not remove remaining (i.e. no danling/leading) "\n". 
+				.replace("\n", "\\n"); // Do not remove remaining (i.e. no dangling/leading) "\n". 
 	}
 
 	/* (non-Javadoc)
