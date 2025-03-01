@@ -16,10 +16,12 @@ import java.util.Set;
 import pcal.Validator;
 import pcal.Validator.ValidationResult;
 import tla2sany.semantic.AbortException;
+import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import tlc2.tool.Action;
@@ -281,8 +283,13 @@ public class SpecObj
                 * produces this error.  Hopefully, we can use this to attach a     *
                 * location to the error message.                                   *
                 *******************************************************************/
-                errors.addAbort("Cannot find source file for module " + name +
-                        ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + ".");
+                errors.addAbort(
+                    ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
+                    Location.nullLoc,
+                    "Cannot find source file for module " + name +
+                    ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + ".",
+                    true
+                );
             }
         }
 
@@ -379,8 +386,13 @@ public class SpecObj
             if (referencee == parseUnit)
             {
                 // Circularity detected
-                errors.addAbort("Circular dependency among .tla files; " + "dependency cycle is:\n\n  "
-                        + pathToString(circularPath));
+                errors.addAbort(
+                    ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
+                    Location.nullLoc,
+                    "Circular dependency among .tla files; dependency cycle is:\n\n  "
+                    + pathToString(circularPath),
+                    true
+                );
 
             } else
             {

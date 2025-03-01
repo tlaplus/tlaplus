@@ -848,7 +848,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
           *****************************************************************/
           for (int j = 0 ; j < curNode.getArity() ; j++) {
             if (curNode.maxLevels[j] < ActionLevel) {
-               errors.addError(curNode.getTreeNode().getLocation(),
+               errors.addError(ErrorCode.RECURSIVE_OPERATOR_PRIMES_PARAMETER,
+                             curNode.getTreeNode().getLocation(),
                              "Argument " + (j+1) + " of recursive operator "
                                + curNode.getName() + " is primed") ;
             } ; // if
