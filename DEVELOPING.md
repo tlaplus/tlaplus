@@ -54,7 +54,7 @@ The compiled `tla2tools.jar` will be output to `tlatools/org.lamport.tlatools/di
 Build & Test Toolbox IDE
 ------------------------
 Install the following dependencies to your path:
- * [Java Development Kit](https://adoptium.net/) version 11+
+ * [Java Development Kit](https://adoptium.net/) version 11 (newer versions will [likely cause build failures](https://github.com/tlaplus/tlaplus/issues/1162#issuecomment-2737943830))
  * [Apache Ant](https://ant.apache.org/) version 1.9.8+
  * [Apache Maven](https://maven.apache.org/) version 3.9.7+
 
