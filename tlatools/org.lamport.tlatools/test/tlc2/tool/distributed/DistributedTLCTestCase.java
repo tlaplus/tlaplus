@@ -44,6 +44,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	protected final String[] arguments;
 	protected final int fpSets;
 	
+	@SuppressWarnings("removal")
 	private SecurityManager securityManager;
 	
 	public DistributedTLCTestCase(String spec, String path) {
@@ -64,6 +65,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	}
     
 	@Before
+	@SuppressWarnings("removal")
 	public void setUp() {
 		Assume.assumeTrue("DistributedTLCTestCase broken with OffHeapDiskFPSet.", false);
 		// Remember the original security manager and have it replaced with this
@@ -131,10 +133,12 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	}
 	
 	@After
+	@SuppressWarnings("removal")
 	public void tearDown() {
 		System.setSecurityManager(securityManager);
 	}
 	
+	@SuppressWarnings("removal")
 	private static class NoExitSecurityManager extends SecurityManager {
 		/* (non-Javadoc)
 		 * @see java.lang.SecurityManager#checkPermission(java.security.Permission)
