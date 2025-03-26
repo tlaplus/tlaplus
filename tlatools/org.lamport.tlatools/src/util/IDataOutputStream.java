@@ -31,6 +31,7 @@ public interface IDataOutputStream {
 
 	void writeInt(int varLoc) throws IOException;
 
+	/** Write the string as length-prefixed UTF-8 **/
 	void writeString(String s) throws IOException;
 
 }
