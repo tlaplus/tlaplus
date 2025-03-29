@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import pcal.ValidationCallBack.Generate;
 import pcal.exception.FileToStringVectorException;
@@ -295,6 +296,8 @@ class trans {
     private static final String TLA_TRANSLATION_COMMENT_LINE_PREFIX
     		= "\\* " + PcalParams.EndXlation1 + " " + PcalParams.EndXlation2;
     
+    private static final String LABEL_ROOT_REGEX = "[a-zA-Z][a-zA-Z0-9_]*";
+    private static final Pattern LABEL_ROOT_PATTERN = Pattern.compile(LABEL_ROOT_REGEX);
     
     /**
      * Main function called from the command line
@@ -1664,7 +1667,11 @@ class trans {
                 {
                     return CommandLineError("Label root must follow `-labelRoot' option");
                 }
-                PcalParams.LabelRoot = args[nextArg];
+                String labelRootArg = args[nextArg];
+                if (!LABEL_ROOT_PATTERN.matcher(labelRootArg).matches()) {
+                    return CommandLineError("Label root must be a valid PlusCal identifier (must start with a letter and contain only letters, numbers, and underscores)");
+                }
+                PcalParams.LabelRoot = labelRootArg;
             }
             // else if (option.equals("-readOnly") || (pcal && option.equals("readOnly"))) {
             // PcalParams.readOnly = true;

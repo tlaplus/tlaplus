@@ -28,12 +28,65 @@ package pcal;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import java.io.File;
+import java.io.IOException;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
 
 public class PcalParamsTest {
+
+	private static File testFile;
+
+	@BeforeClass
+	public static void setUpClass() throws IOException {
+		// Create a test file in the system's temp directory
+		testFile = File.createTempFile("dummy", ".tla");
+		testFile.deleteOnExit(); // Ensure cleanup if JVM exits unexpectedly
+	}
+
+	@AfterClass
+	public static void tearDownClass() {
+		if (testFile != null && testFile.exists()) {
+			testFile.delete();
+		}
+	}
 
 	@Test
 	public void test() {
 		assertNotSame(PcalParams.version, "1.9");
 		assertTrue(PcalParams.versionWeight > PcalParams.VersionToNumber("1.9"));
+	}
+
+	@Test
+	public void testLabelRootValid() throws IOException {
+		String[] validCases = {
+			"validName",     // standard identifier with letters
+			"a1",           // letter followed by number
+			"A_1",          // letter followed by underscore and number
+			"abc123_456"    // complex mix of letters, numbers, and underscores
+		};
+
+		for (String valid : validCases) {
+			assertEquals("Valid identifier should be accepted: " + valid,
+				trans.STATUS_OK,
+				trans.parseAndProcessArguments(new String[] {"-labelRoot", valid, testFile.getAbsolutePath()}));
+		}
+	}
+
+	@Test
+	public void testLabelRootInvalid() throws IOException {
+		String[] invalidCases = {
+			"1abc",    // starts with number
+			"_abc",    // starts with underscore
+			"123",     // only numbers
+			"_",       // only underscore
+			""        // empty string
+		};
+
+		for (String invalid : invalidCases) {
+			int result = trans.parseAndProcessArguments(new String[] {"-labelRoot", invalid, testFile.getAbsolutePath()});
+			assertEquals("Invalid identifier should be rejected: " + invalid,
+				trans.STATUS_EXIT_WITH_ERRORS, result);
+		}
 	}
 }
