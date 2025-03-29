@@ -299,7 +299,6 @@ class trans {
     private static final String LABEL_ROOT_REGEX = "[a-zA-Z][a-zA-Z0-9_]*";
     private static final Pattern LABEL_ROOT_PATTERN = Pattern.compile(LABEL_ROOT_REGEX);
     
-
     /**
      * Main function called from the command line
      * @param args, command line arguments
