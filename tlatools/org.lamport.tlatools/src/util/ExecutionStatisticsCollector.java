@@ -93,7 +93,7 @@ public class ExecutionStatisticsCollector {
 				if (isEnabled()) {
 					// Include identifier to track individual installations (not users!).
 					parameters.put("id", getIdentifier());
-					submit(parameters, dontWaitForCompletion);
+					submit(parameters);
 				}
 			}
 		}, "TLC Execution Statistics Collector");
@@ -213,7 +213,7 @@ public class ExecutionStatisticsCollector {
 	}
 
 	// Send the request.
-	private static void submit(final Map<String, String> parameters, final boolean dontWaitForCompletion) {
+	private static void submit(final Map<String, String> parameters) {
 		// Include a timestamp to cause HEAD to be un-cachable.
 		parameters.put("ts", Long.toString(System.currentTimeMillis()));
 		parameters.put("optout", Boolean.toString(isOptOut()));
