@@ -63,19 +63,13 @@ public class ExecutionStatisticsCollector {
 
 	public static final String PROP = ExecutionStatisticsCollector.class.getName() + ".id";
 	
-	private final boolean isOptOut;
 	private final String pathname;
 
 	public ExecutionStatisticsCollector() {
-		this(isOptOut(), PATH);
+		this(PATH);
 	}
 	
 	ExecutionStatisticsCollector(String path) {
-		this(false, path);
-	}
-	
-	ExecutionStatisticsCollector(final boolean optOut, final String path) {
-		this.isOptOut = optOut;
 		this.pathname = path;
 	}
 	
@@ -93,9 +87,7 @@ public class ExecutionStatisticsCollector {
 				if (isEnabled()) {
 					// Include identifier to track individual installations (not users!).
 					parameters.put("id", getIdentifier());
-					// Opt-out data doesn't report to the opt-in endpoint. The opt-in endpoint is
-					// public data, the opt-out endpoint doesn't get shared with the public.
-					submit((isOptOut() ? "esc02" : "esc01") + ".tlapl.us", parameters);
+					submit("esc01.tlapl.us", parameters);
 				}
 			}
 		}, "TLC Execution Statistics Collector");
@@ -122,19 +114,7 @@ public class ExecutionStatisticsCollector {
 		}
 		String identifier;
 
-		// In opt-out mode (where users must take action to disable execution
-		// statistics), a unique execution statistics identifier is randomly generated
-		// and saved to ~/.tlaplus/esc.txt. This identifier remains permanently linked
-		// to the current TLC installation.
 		final File udcFile = new File(pathname);
-		if (!udcFile.exists() && isOptOut) {
-			try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
-				br.write(getRandomIdentifier());
-			} catch (Exception e) {
-				// Something went wrong writing to file ~/.tlaplus/esc.txt. Consider ESC failed.
-				return null;
-			}
-		}
 		if (!udcFile.exists()) {
 			// No file ~/.tlaplus/esc.txt.
 			return null;
@@ -203,22 +183,11 @@ public class ExecutionStatisticsCollector {
 		return UUID.randomUUID().toString().replaceAll("-", "");
 	}
 
-	private static boolean isOptOut() {
-		return false; // Nobody is opt-out right now
-		
-		// Below is a way how we could detect Microsoft corpnet machines: This check is
-		// conservative because we don't identify Microsoft employees but corporate
-		// Microsoft computers. We don't set ESC to opt-out for Microsoft machines yet
-		// but might in the future.
-//		final String userDNSDomain = System.getenv("USERDNSDOMAIN");
-//		return userDNSDomain != null && userDNSDomain.toUpperCase().endsWith(".CORP.MICROSOFT.COM");
-	}
-
 	// Send the request.
 	private static void submit(final String hostname, final Map<String, String> parameters) {
 		// Include a timestamp to cause HEAD to be un-cachable.
 		parameters.put("ts", Long.toString(System.currentTimeMillis()));
-		parameters.put("optout", Boolean.toString(isOptOut()));
+		parameters.put("optout", Boolean.FALSE.toString());
 		
 		try {
 			final URL url = new URL("https://" + hostname + "/?" + encode(parameters));
