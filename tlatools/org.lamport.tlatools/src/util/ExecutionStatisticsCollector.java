@@ -93,7 +93,9 @@ public class ExecutionStatisticsCollector {
 				if (isEnabled()) {
 					// Include identifier to track individual installations (not users!).
 					parameters.put("id", getIdentifier());
-					submit(parameters);
+					// Opt-out data doesn't report to the opt-in endpoint. The opt-in endpoint is
+					// public data, the opt-out endpoint doesn't get shared with the public.
+					submit((isOptOut() ? "esc02" : "esc01") + ".tlapl.us", parameters);
 				}
 			}
 		}, "TLC Execution Statistics Collector");
@@ -213,16 +215,13 @@ public class ExecutionStatisticsCollector {
 	}
 
 	// Send the request.
-	private static void submit(final Map<String, String> parameters) {
+	private static void submit(final String hostname, final Map<String, String> parameters) {
 		// Include a timestamp to cause HEAD to be un-cachable.
 		parameters.put("ts", Long.toString(System.currentTimeMillis()));
 		parameters.put("optout", Boolean.toString(isOptOut()));
 		
 		try {
-			// Opt-out data doesn't report to the opt-in endpoint. The opt-in endpoint is
-			// public data, the opt-out endpoint doesn't get shared with the public.
-			final URL url = new URL(
-					"https://" + (isOptOut() ? "esc02" : "esc01") + ".tlapl.us/?" + encode(parameters));
+			final URL url = new URL("https://" + hostname + "/?" + encode(parameters));
 
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("HEAD");
