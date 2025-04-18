@@ -120,6 +120,10 @@ public class ExecutionStatisticsCollector {
 		}
 		String identifier;
 
+		// In opt-out mode (where users must take action to disable execution
+		// statistics), a unique execution statistics identifier is randomly generated
+		// and saved to ~/.tlaplus/esc.txt. This identifier remains permanently linked
+		// to the current TLC installation.
 		final File udcFile = new File(pathname);
 		if (!udcFile.exists() && isOptOut) {
 			try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
