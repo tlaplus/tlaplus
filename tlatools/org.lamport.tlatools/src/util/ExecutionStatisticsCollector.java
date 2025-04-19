@@ -33,8 +33,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -60,54 +64,139 @@ public class ExecutionStatisticsCollector {
 	}
 	
 	private static final String PATH = System.getProperty("user.home", "") + File.separator + ".tlaplus" + File.separator + "esc.txt";
+	
+	private static final String HOSTNAME = System.getProperty(ExecutionStatisticsCollector.class.getName() + ".domain", "tlaplus-execution-stats-collection01");
 
 	public static final String PROP = ExecutionStatisticsCollector.class.getName() + ".id";
 	
 	private final String pathname;
+	private final String hostname;
 
 	public ExecutionStatisticsCollector() {
-		this(PATH);
+		this(PATH, HOSTNAME);
 	}
-	
 	ExecutionStatisticsCollector(String path) {
 		this.pathname = path;
+		this.hostname = HOSTNAME;
+	}
+	
+	ExecutionStatisticsCollector(String path, final String hostname) {
+		this.pathname = path;
+		this.hostname = hostname;
 	}
 	
 	public void collect(final Map<String, String> parameters) {
-		collect(parameters, true);
+		collectAsync(parameters, true);
 	}
 
-	private void collect(final Map<String, String> parameters, final boolean dontWaitForCompletion) {
+	protected void collectAsync(final Map<String, String> parameters, final boolean dontWaitForCompletion) {
 		// Do not block TLC startup but send this to the background immediately. If
 		// dontWaitForCompletion is true, the VM will terminate this thread regardless
 		// of its state if the VM decides to shutdown (e.g. because TLC is done).
 		final Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				if (isEnabled()) {
-					// Include identifier to track individual installations (not users!).
-					parameters.put("id", getIdentifier());
-					submit("esc01.tlapl.us", parameters);
-				}
+				collect0(parameters);
 			}
+
 		}, "TLC Execution Statistics Collector");
 		thread.setDaemon(dontWaitForCompletion);
 		thread.start();
 	}
 	
-	/*
-	 * file == ~/.tlaplus/esc.txt
-	 * fl == first line of file interpreted as a string without terminal chars
-	 * in/out == opt-in & opt-out
-	 * y/r/n == data collected with constant id/data collected with random id/data not collected
-	 * 
-	 *       | No file | fl unreadable | fl empty | fl = "NO_UDC" | fl = "RANDOM_IDENTIFIER" | fl any other string
-	 * ==========================================================================================================
-	 * | out |   y     |       n       |    n     |       n       |            r             |         y         |
-	 * ----------------------------------------------------------------------------------------------------------
-	 * | in  |   n     |       n       |    n     |       n       |            r             |         y         |
-	 * ----------------------------------------------------------------------------------------------------------
-	 */
+	protected void collect0(final Map<String, String> parameters) {
+		/*
+		 * | `esc.txt`                            | DNS Query | DNS Query Succeeds (Private Reporting) | DNS Query NXDOMAIN (Public Reporting) |
+		 * |--------------------------------------|-----------|----------------------------------------|---------------------------------------|
+		 * | `NO_STATISTICS`                      | n         | N/A                                    | N/A                                   |
+		 * | No `esc.txt`, unreadable, or empty   | y         | UUIDv1                                 | N/A                                   |
+		 * | `RANDOM_IDENTIFIER`                  | y         | UUIDv4                                 | UUIDv4                                |
+		 * | Some string `S`                      | y         | `S`                                    | `S`                                   |
+		 * |--------------------------------------|-----------|----------------------------------------|---------------------------------------|
+		 */
+		String line = null;
+
+		// Check if the installation explicitly requested opt-out by having created the
+		// file containing the NO_ESC_STR.
+		final File udcFile = new File(pathname);
+		if (udcFile.exists()) {
+			try (BufferedReader br = new BufferedReader(new FileReader(udcFile))) {
+				line = br.readLine();
+				if (NO_ESC_STR.equals(line.trim())) {
+					return;
+				}
+			} catch (Exception swallow) {
+			}
+		}
+        
+		// The installation has not opted out. Check whether the installation's
+		// corporate owner (if any) wants to receive execution statistics.
+		// See: https://github.com/tlaplus/tlaplus/issues/1170
+		final InetAddress optIn = getOptInDNSRecord();
+        
+		if (optIn == null) {
+			final String id = getIdentifier(line);
+			if (id != null) {
+				// Include identifier to track individual installations (not users!).
+				parameters.put("id", id);
+				submit("esc01.tlapl.us", parameters);
+			}
+		} else {
+			// We use `getCanonicalHostName` instead of `getHostName` to resolve
+			// 'tlaplus-execution-stats-collection01' to its fully qualified domain name
+			// (FQDN), 'tlaplus-execution-stats-collection01.frob.com'. If we used
+			// `getHostName`, the TLS handshake during submission would fail because no
+			// valid TLS certificate includes a Subject Alternative Name (SAN) matching
+			// 'tlaplus-execution-stats-collection01.*'. (Issuing a certificate like that
+			// would effectively allow hijacking of HTTPS requests across any domain.)
+			//
+			// However, it's important to note that `getCanonicalHostName` performs a
+			// *reverse DNS lookup*. That means the hostname
+			// 'tlaplus-execution-stats-collection01' is first resolved to an IP address,
+			// which is then reverse-resolved to a domain name. If this reverse lookup does
+			// *not* resolve to `'tlaplus-execution-stats-collection01.frob.com'`, the TLS
+			// handshake will still fail.
+			final String chn = optIn.getCanonicalHostName();
+			if (line == null || line.trim().isEmpty()) {
+				parameters.put("id", getUUIDv1());
+				submit(chn, parameters);
+				return;
+			}
+			final String id = getIdentifier(line);
+			if (id != null) {
+				parameters.put("id", id);
+				submit(chn, parameters);
+				return;
+			}
+		}
+	}
+
+	private InetAddress getOptInDNSRecord() {
+		InetAddress optIn = null;
+		try {
+			optIn = InetAddress.getByName(hostname);
+		} catch (Exception swallow) {
+		}
+		return optIn;
+	}
+
+	public String getIdentifier(String identifier) {
+		if (System.getProperty(PROP) != null) {
+			return System.getProperty(PROP);
+		}
+
+		if (identifier == null || NO_ESC_STR.equals(identifier.trim())) {
+			// File is empty or its first line is "NO_STATISTICS".
+			return null;
+		} else if (identifier == null || RND_ID_STR.equals(identifier.trim())) {
+			identifier = getRandomIdentifier();
+		}
+		
+		// truncate the identifier no matter what, but first remove leading and trailing whitespaces.
+		final String trimmed = identifier.trim();
+		return trimmed.substring(0, Math.min(trimmed.length(), 32));
+	}
+
 	public String getIdentifier() {
 		if (System.getProperty(PROP) != null) {
 			return System.getProperty(PROP);
@@ -125,16 +214,7 @@ public class ExecutionStatisticsCollector {
 			// Something went wrong reading file ~/.tlaplus/esc.txt
 			return null;
 		}
-		if (identifier == null || NO_ESC_STR.equals(identifier.trim())) {
-			// File is empty or its first line is "NO_STATISTICS".
-			return null;
-		} else if (identifier == null || RND_ID_STR.equals(identifier.trim())) {
-			identifier = getRandomIdentifier();
-		}
-		
-		// truncate the identifier no matter what, but first remove leading and trailing whitespaces.
-		final String trimmed = identifier.trim();
-		return trimmed.substring(0, Math.min(trimmed.length(), 32));
+		return getIdentifier(identifier);
 	}
 
 	private boolean escFileExists() {
@@ -142,7 +222,16 @@ public class ExecutionStatisticsCollector {
 	}
 
 	public boolean isEnabled() {
-		return getIdentifier() != null;
+		// The getOptINDNSRecord function may block execution because of network I/O. As
+		// a result, any code that calls isEnabled in the Toolbox may also be blocked.
+		// Two of the known callers are Jobs that are built to handle blocking
+		// operations. However, the opt-in/out dialog in the Toolbox UI also invokes
+		// isEnabled. In that specific case, it was considered acceptable for the UI
+		// thread to potentially be blocked. If isEnabled doesn't take getOptInDNSRecord
+		// into account, a user cannot explicitly opt-out of company-level execution
+		// statistics because the dialog's opt-out button is only clickable if 
+		// execution statistics are currently enabled.
+		return getIdentifier() != null || getOptInDNSRecord() != null;
 	}
 
 	public void set(final Selection c) throws IOException {
@@ -184,13 +273,14 @@ public class ExecutionStatisticsCollector {
 	}
 
 	// Send the request.
-	private static void submit(final String hostname, final Map<String, String> parameters) {
+	protected void submit(final String hostname, final Map<String, String> parameters) {
 		// Include a timestamp to cause HEAD to be un-cachable.
 		parameters.put("ts", Long.toString(System.currentTimeMillis()));
 		parameters.put("optout", Boolean.FALSE.toString());
 		
 		try {
-			final URL url = new URL("https://" + hostname + "/?" + encode(parameters));
+			final URL url = new URL((Boolean.getBoolean(ExecutionStatisticsCollector.class.getName() + ".nossl") ? "http"
+					: "https") + "://" + hostname + "/?" + encode(parameters));
 
 			final HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("HEAD");
@@ -214,10 +304,57 @@ public class ExecutionStatisticsCollector {
 		
 		return buf.toString().replaceFirst(",$", "");
 	}
+	
+	private static byte[] getMacAddress() {
+		try {
+			final Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+
+			while (ifaces.hasMoreElements()) {
+				final NetworkInterface iface = ifaces.nextElement();
+				// An interface may not have an address, or a security manager may prevent
+				// access to it.
+				try {
+					final byte[] hardwareAddress = iface.getHardwareAddress();
+					if (hardwareAddress != null) {
+						return hardwareAddress;
+					}
+				} catch (final SocketException swallow) {
+				}
+			}
+		} catch (final SocketException swallow) {
+		}
+		return null;
+	}
+	
+	private String getUUIDv1() {
+		final byte[] mac = getMacAddress();
+		if (mac == null) {
+			return getRandomIdentifier();
+		}
+
+		final long uuidEpochOffset = -12219292800000L;
+		final long millisSinceUuidEpoch = System.currentTimeMillis() - uuidEpochOffset;
+		final long timestamp = millisSinceUuidEpoch * 10_000;
+
+		final long timeLow = timestamp & 0xFFFFFFFFL;
+		final long timeMid = (timestamp >>> 32) & 0xFFFFL;
+		long timeHi = (timestamp >>> 48) & 0x0FFFL;
+		timeHi |= 0x1000;
+
+		final long mostSigBits = (timeLow << 32) | (timeMid << 16) | timeHi;
+
+		long clockSeq = (long) (Math.random() * 0x3FFF);
+		clockSeq |= 0x8000;
+
+		final long leastSigBits = (clockSeq << 48) | ((mac[0] & 0xFFL) << 40) | ((mac[1] & 0xFFL) << 32)
+				| ((mac[2] & 0xFFL) << 24) | ((mac[3] & 0xFFL) << 16) | ((mac[4] & 0xFFL) << 8) | (mac[5] & 0xFFL);
+
+		return new UUID(mostSigBits, leastSigBits).toString().replaceAll("-", "");
+	}
 
 	// for manual testing //
 	
 	public static void main(String[] args) {
-		new ExecutionStatisticsCollector().collect(new HashMap<>(), false);
+		new ExecutionStatisticsCollector().collect0(new HashMap<>());
 	}
 }
