@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.lamport.tlatools;bundle-version="1.0.0",
  org.lamport.tlatools.api;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Service-Component: OSGI-INF/worker.xml,
  OSGI-INF/fpset.xml
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe

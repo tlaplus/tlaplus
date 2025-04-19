@@ -4,7 +4,7 @@ Bundle-Name: TLA+ Toolbox Standalone Product
 Bundle-SymbolicName: org.lamport.tla.toolbox.product.standalone;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Simon Zambrovski, Leslie Lamport
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.app,
  org.eclipse.core.resources,
