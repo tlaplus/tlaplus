@@ -188,7 +188,7 @@ public class ExecutionStatisticsCollector {
 		if (identifier == null || NO_ESC_STR.equals(identifier.trim())) {
 			// File is empty or its first line is "NO_STATISTICS".
 			return null;
-		} else if (identifier == null || RND_ID_STR.equals(identifier.trim())) {
+		} else if (RND_ID_STR.equals(identifier.trim())) {
 			identifier = getRandomIdentifier();
 		}
 		
