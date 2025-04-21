@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
@@ -32,8 +34,10 @@ import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool;
 import tlc2.value.impl.Value;
 import util.Assert;
+import util.ExecutionStatisticsCollector;
 import util.SimpleFilenameToStream;
 import util.TLAConstants;
+import util.TLCRuntime;
 import util.ToolIO;
 
 
@@ -238,9 +242,37 @@ public class REPL {
             MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
         	System.out.println("Enter a constant-level TLA+ expression.");
 
+           	reportExecutionStatistics();
+        	
             repl.runREPL(reader);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+	private static void reportExecutionStatistics() {
+		final Runtime runtime = Runtime.getRuntime();
+		final long heapMemory = runtime.maxMemory() / 1024L / 1024L;
+		
+		final TLCRuntime tlcRuntime = TLCRuntime.getInstance();
+		final long offHeapMemory = tlcRuntime.getNonHeapPhysicalMemory() / 1024L / 1024L;
+
+		final Map<String, String> udc = new LinkedHashMap<>();
+		// First indicate the version (to make parsing forward compatible)
+		udc.put("ver", TLCGlobals.getRevisionOrDev());
+		udc.put("mode", "repl");
+		udc.put("workers", String.valueOf(TLCGlobals.getNumWorkers()));
+		udc.put("cores", Integer.toString(Runtime.getRuntime().availableProcessors()));
+		udc.put("osName", System.getProperty("os.name"));
+		udc.put("osVersion", System.getProperty("os.version"));
+		udc.put("osArch", System.getProperty("os.arch"));
+		udc.put("jvmVendor", System.getProperty("java.vendor"));
+		udc.put("jvmVersion", System.getProperty("java.version"));
+		udc.put("jvmArch", tlcRuntime.getArchitecture().name());
+		udc.put("jvmHeapMem", Long.toString(heapMemory));
+		udc.put("jvmOffHeapMem", Long.toString(offHeapMemory));
+		udc.put("toolbox", Boolean.toString(TLCGlobals.tool));
+		udc.put("ide", System.getProperty(TLC.class.getName() + ".ide", TLCGlobals.tool ? "toolbox" : "cli"));
+		new ExecutionStatisticsCollector().collect(udc);
+	}
 }
