@@ -28,6 +28,7 @@ package util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.NoSuchFileException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,13 +108,14 @@ public class ExecutionStatisticsCollector {
 	
 	protected void collect0(final Map<String, String> parameters) {
 		/*
-		 * | `esc.txt`                            | DNS Query | DNS Query Succeeds (Private Reporting) | DNS Query NXDOMAIN (Public Reporting) |
-		 * |--------------------------------------|-----------|----------------------------------------|---------------------------------------|
-		 * | `NO_STATISTICS`                      | n         | N/A                                    | N/A                                   |
-		 * | No `esc.txt`, unreadable, or empty   | y         | UUIDv1                                 | N/A                                   |
-		 * | `RANDOM_IDENTIFIER`                  | y         | UUIDv4                                 | UUIDv4                                |
-		 * | Some string `S`                      | y         | `S`                                    | `S`                                   |
-		 * |--------------------------------------|-----------|----------------------------------------|---------------------------------------|
+		 * | `esc.txt`               | DNS Query | DNS Query Succeeds (Private Reporting) | DNS Query NXDOMAIN (Public Reporting) |
+		 * |-------------------------|-----------|----------------------------------------|---------------------------------------|
+		 * | `NO_STATISTICS`         | n         | N/A                                    | N/A                                   |
+		 * | Unreadable `esc.txt`    | n         | N/A                                    | N/A                                   |
+		 * | No `esc.txt` or empty   | y         | UUIDv1                                 | N/A                                   |
+		 * | `RANDOM_IDENTIFIER`     | y         | UUIDv4                                 | UUIDv4                                |
+		 * | Some string `S`         | y         | `S`                                    | `S`                                   |
+		 * |-------------------------|-----------|----------------------------------------|---------------------------------------|
 		 */
 		String line = null;
 
@@ -122,10 +125,13 @@ public class ExecutionStatisticsCollector {
 		if (udcFile.exists()) {
 			try (BufferedReader br = new BufferedReader(new FileReader(udcFile))) {
 				line = br.readLine();
-				if (NO_ESC_STR.equals(line.trim())) {
+				if (line != null && NO_ESC_STR.equals(line.trim())) {
 					return;
 				}
-			} catch (Exception swallow) {
+			} catch (FileNotFoundException | NoSuchFileException swallow) {
+			    // file does not exist; continue because the user has not expressed a preference.
+			} catch (IOException diableExecStatsSilently) {
+			    return;
 			}
 		}
         
