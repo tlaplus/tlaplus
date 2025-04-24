@@ -53,6 +53,7 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelConstants;
+import tla2sany.semantic.LevelNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
@@ -992,6 +993,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { propName });
                 }
+				if (opDef.getLevel() == LevelNode.VariableLevel) {
+					MP.printWarning(EC.TLC_LIVE_FORMULA_STATE_LEVEL, new String[] { propName });
+				}
                 this.processConfigProps(propName, opDef.getBody(), Context.Empty, List.Empty);
             } else if (prop == null)
             {

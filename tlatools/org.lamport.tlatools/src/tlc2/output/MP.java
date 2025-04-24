@@ -899,6 +899,15 @@ public class MP
         case EC.TLC_LIVE_FORMULA_TAUTOLOGY:
             b.append("Temporal formula is a tautology (its negation is unsatisfiable).");
             break;
+		case EC.TLC_LIVE_FORMULA_STATE_LEVEL:
+			b.append(
+					"The formula %1% is a state-level formula, but it was used as a PROPERTY (or PROPERTIES), "
+					+ "where a temporal formula is typically expected. State-level formulas used as PROPERTY "
+					+ "or PROPERTIES are only checked in the initial state. To verify that the formula %1% "
+					+ "holds in all states of every behavior, use INVARIANT %1% instead. Alternatively, "
+					+ "applying the \"always\" temporal operator (□) to the state-level formula %1% changes it "
+					+ "into a temporal formula, asserting that %1% holds in all states of every behavior.");
+			break;
 
         case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
