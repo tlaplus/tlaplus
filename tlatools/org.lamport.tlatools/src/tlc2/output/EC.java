@@ -258,6 +258,7 @@ public interface EC
     public static final int TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE = 2252;
     public static final int TLC_LIVE_FORMULA_TAUTOLOGY = 2253;
     public static final int TLC_LIVE_FORMULA_STATE_LEVEL = 2255;
+    public static final int TLC_CONFIG_NO_SPEC_BUT_PROPERTY = 2257;
 
     
     public static final int TLC_EXPECTED_VALUE = 2215;
