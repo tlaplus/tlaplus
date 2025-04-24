@@ -908,6 +908,14 @@ public class MP
 					+ "applying the \"always\" temporal operator (□) to the state-level formula %1% changes it "
 					+ "into a temporal formula, asserting that %1% holds in all states of every behavior.");
 			break;
+		case EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY:
+			b.append(
+					"Temporal properties (PROPERTY or PROPERTIES) are being verified without a behavior specification "
+					+ "(SPECIFICATION). Only INIT and NEXT have been provided. This is likely to result in (trivial) "
+					+ "counterexamples showing infinite stuttering following the initial state. It is recommended to use "
+					+ "SPECIFICATION Spec, with Spec asserting a suitable fairness constraint (compare Chapter "
+					+ "8, page 87ff of Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+			break;
 
         case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
