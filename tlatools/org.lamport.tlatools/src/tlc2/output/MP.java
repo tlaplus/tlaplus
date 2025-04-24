@@ -1790,14 +1790,8 @@ public class MP
             }
             placeHolder = "%" + (i + 1) + "%"; //$NON-NLS-1$ //$NON-NLS-2$
             placeHolderPosition = buffer.indexOf(placeHolder);
-            if (placeHolderPosition != -1)
-            {
+            while ((placeHolderPosition = buffer.indexOf(placeHolder)) != -1) {
                 buffer.replace(placeHolderPosition, placeHolderPosition + placeHolder.length(), parameters[i]);
-            } else
-            {
-                // the place holder is not found
-                // stop processing
-                break;
             }
         }
 
