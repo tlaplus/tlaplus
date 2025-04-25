@@ -1,3 +1,5 @@
+// Copyright (c) 2025, Oracle and/or its affiliates.
+
 package tlc2.output;
 
 import java.io.PrintWriter;
@@ -18,7 +20,6 @@ import util.Assert.TLCRuntimeException;
 import util.DebugPrinter;
 import util.Set;
 import util.TLAConstants;
-import util.TLAFlightRecorder;
 import util.ToolIO;
 
 /**
@@ -1644,8 +1645,6 @@ public class MP
     	if (!isSuppressed(errorCode)) {
     		ToolIO.out.println(getMessage(NONE, errorCode, parameters));
     	}
-		// Don't log the start and end markers when in -tool mode.
-		TLAFlightRecorder.message(getMessage0(NONE, errorCode, parameters));
         DebugPrinter.print("leaving printError(int, String[]) with errorCode "); //$NON-NLS-1$
     }
 
