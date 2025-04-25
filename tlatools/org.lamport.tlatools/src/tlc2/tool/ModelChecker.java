@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Wed  4 Jul 2007 at 17:46:34 PST by lamport
 //      modified on Fri Jan 18 11:33:51 PST 2002 by yuanyu
@@ -34,7 +35,6 @@ import util.Assert;
 import util.DebugPrinter;
 import util.FileUtil;
 import util.FilenameToStream;
-import util.TLAFlightRecorder;
 import util.UniqueString;
 
 /** 
@@ -922,9 +922,6 @@ public class ModelChecker extends AbstractChecker
                 MP.format(this.theStateQueue.size()),
                 MP.format(statesPerMinute),
                 MP.format(distinctStatesPerMinute) });
-		
-		TLAFlightRecorder.progress(isFinal, this.trace.getLevelForReporting(), l, fpSetSize, this.theStateQueue.size(),
-				statesPerMinute, distinctStatesPerMinute);
     }
 
     public static final void reportSuccess(final FPSet anFpSet, final long numOfGenStates) throws IOException

@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Tue 13 May 2008 at  5:13:46 PST by lamport
 
 /***************************************************************************
@@ -41,7 +42,6 @@ import util.FilenameToStream.TLAFile;
 import util.MonolithSpecExtractor;
 import util.NamedInputStream;
 import util.TLAConstants;
-import util.TLAFlightRecorder;
 import util.ToolIO;
 
 /**
@@ -305,9 +305,9 @@ public class ParseUnit {
                     }
                 }
             }
-			syserr.println(TLAFlightRecorder.message(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath)));            
+			syserr.println(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath));
         } else {
-            syserr.println(TLAFlightRecorder.message(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath)));
+            syserr.println(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath));
         }
 
         boolean parseSuccess; 
