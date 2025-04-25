@@ -405,6 +405,21 @@
 		</jar>
 	</target>
 
+	<!-- Tested with GraalVM CE 24.0.1: https://github.com/graalvm/graalvm-ce-builds/releases/tag/jdk-24.0.1 -->
+	<target name="dist-sany-graal-native" depends="dist">
+		<echo>WARNING: This feature is experimental and subject to change.</echo>
+		<exec executable="native-image">
+			<arg value="-cp" />
+			<arg value="${dist.file}" />
+			<arg value="-H:+UnlockExperimentalVMOptions" /> <!-- Required for -H:IncludeResources (as of Graal 24.0.1) -->
+			<arg value="-H:IncludeResources=tla2sany/.*" /> <!-- Make sure to include resource files (i.e. standard library modules) -->
+			<arg value="-H:-CheckToolchain" /> <!-- Make Graal a little more permissive in exotic environments -->
+			<arg value="-Os" />
+			<arg value="tla2sany.SANY" />
+			<arg value="sany" />
+		</exec>
+	</target>
+
 	<!-- Compiles the TLA+ tools *test* code -->
 	<target name="compile-test">
 		<!-- compile unit tests -->
