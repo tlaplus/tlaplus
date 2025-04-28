@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2023, Oracle and/or its affiliates.
+// Copyright (c) 2023, 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 15:30:13 PST by lamport
 //      modified on Wed Dec  5 23:18:07 PST 2001 by yuanyu
@@ -144,77 +144,6 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
   public Object setData(final Object obj) {
 		throw new WrongInvocationException("Value: Can not set data\n" +
 			    Values.ppr(toString()));
-  }
-
-  public final boolean isEmpty() {
-    try {
-
-      switch (this.getKind()) {
-        case SETENUMVALUE:
-          {
-            SetEnumValue set = (SetEnumValue)this;
-            return set.elems.size() == 0;
-          }
-        case INTERVALVALUE:
-          {
-            IntervalValue intv = (IntervalValue)this;
-            return intv.size() == 0;
-          }
-        case SETCAPVALUE:
-          {
-            SetCapValue cap = (SetCapValue)this;
-            return cap.elements().nextElement() == null;
-          }
-        case SETCUPVALUE:
-          {
-            SetCupValue cup = (SetCupValue)this;
-            return cup.elements().nextElement() == null;
-          }
-        case SETDIFFVALUE:
-          {
-            SetDiffValue diff = (SetDiffValue)this;
-            return diff.elements().nextElement() == null;
-          }
-        case SETOFFCNSVALUE:
-          {
-            SetOfFcnsValue fcns = (SetOfFcnsValue)this;
-            return fcns.elements().nextElement() == null;
-          }
-        case SETOFRCDSVALUE:
-          {
-            SetOfRcdsValue srv = (SetOfRcdsValue)this;
-            return srv.elements().nextElement() == null;
-          }
-        case SETOFTUPLESVALUE:
-          {
-            SetOfTuplesValue stv = (SetOfTuplesValue)this;
-            return stv.elements().nextElement() == null;
-          }
-        case SUBSETVALUE:
-          {
-            // SUBSET S is never empty.  (It always contains {}.)
-            return false;
-          }
-        case UNIONVALUE:
-          {
-            UnionValue uv = (UnionValue)this;
-            return uv.elements().nextElement() == null;
-          }
-        case SETPREDVALUE:
-          {
-            SetPredValue spv = (SetPredValue)this;
-            return spv.elements().nextElement() == null;
-          }
-        default:
-          Assert.fail("Shouldn't call isEmpty() on value " + Values.ppr(this.toString()), getSource());
-          return false;
-      }
-
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
   }
 
   /* Fully normalize this (composite) value. */
