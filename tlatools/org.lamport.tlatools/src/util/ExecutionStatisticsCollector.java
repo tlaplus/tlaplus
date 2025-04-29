@@ -88,7 +88,18 @@ public class ExecutionStatisticsCollector {
 	}
 	
 	public void collect(final Map<String, String> parameters) {
-		collectAsync(parameters, true);
+		// Execution statistics reporting is designed to be minimally invasive and
+		// should not interfere with model checking. However, if model checking
+		// completes immediately, there may not be enough time for the execution
+		// statistics to be properly reported. Additionally, the recently added DNS
+		// lookup step has increased the time required for reporting, making delays more
+		// likely. To address this, a new Java system property
+		// (`-Dutil.ExecutionStatisticsCollector.waitForCompletion=true`) has been
+		// introduced. When enabled, this property forces TLC to wait until execution
+		// statistics have been fully reported, i.e., until the URL connection has
+		// completed. This behavior only applies if execution statistics reporting is
+		// enabled.
+		collectAsync(parameters, !Boolean.getBoolean(ExecutionStatisticsCollector.class.getName() + ".waitForCompletion"));
 	}
 
 	protected void collectAsync(final Map<String, String> parameters, final boolean dontWaitForCompletion) {
