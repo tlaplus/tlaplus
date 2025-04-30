@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2020 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2025, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -123,20 +124,28 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	public boolean isValid(Action act, TLCState state) {
+	public InvariantViolation findFalsifyingContext(Action invariant, TLCState s0, TLCState s1) {
+		// Need this override for breakpoints to work
+		return isValid(invariant, s0, s1)
+			? null
+			: new InvariantViolation(invariant.pred, Context.Empty);
+	}
+
+	@Override
+	public boolean isValid(Action act, TLCState s0, TLCState s1) {
 		if (act.isInternal()) {
 			mode = EvalMode.Debugger;
 			try {
-				return this.isValid(act, state, TLCState.Empty);
+				return super.isValid(act, s0, s1);
 			} finally {
 				mode = EvalMode.State;
 			}
 		}
 		mode = EvalMode.State;
 		try {
-			return this.isValid(act, state, TLCState.Empty);
+			return super.isValid(act, s0, s1);
 		} catch (ResetEvalException ree) {
-			return this.isValid(act, state);
+			return super.isValid(act, s0, s1);
 		}
 	}
 	

@@ -24,6 +24,7 @@ import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.CallStackTool;
+import tlc2.tool.impl.InvariantViolation;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.IStateQueue;
 import tlc2.util.IStateWriter;
@@ -559,15 +560,15 @@ public class ModelChecker extends AbstractChecker
         return false;
 	}
 
-	final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+	final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String... params) throws IOException, WorkerException {
 		synchronized (this)
 		{
 		    if (this.setErrState(curState, succState, keep, ec))
 		    {
-		    	if (param == null) {
+		    	if (params == null) {
 		    		MP.printError(ec);
 		    	} else {
-		    		MP.printError(ec, param);
+		    		MP.printError(ec, params);
 		    	}
 				this.trace.printTrace(curState, succState);
 				this.theStateQueue.finishAll();
@@ -1181,10 +1182,11 @@ public class ModelChecker extends AbstractChecker
 				// Check properties of the state:
 				if (!seen || forceChecks) {
 					for (int j = 0; j < tool.getInvariants().length; j++) {
-						if (!tool.isValid(tool.getInvariants()[j], curState)) {
+						InvariantViolation counterexample = this.tool.findFalsifyingContext(this.tool.getInvariants()[j], curState, TLCState.Empty);
+						if (counterexample != null) {
 							// We get here because of invariant violation:
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
-									new String[] { tool.getInvNames()[j].toString(), tool.evalAlias(curState, curState).toString() });
+									new String[] { tool.getInvNames()[j].toString(), tool.evalAlias(curState, curState).toString(), counterexample.formatPretty() });
 							if (!TLCGlobals.continuation) {
 								this.errState = curState;
 								returnValue = EC.TLC_INVARIANT_VIOLATED_INITIAL;
