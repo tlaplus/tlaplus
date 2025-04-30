@@ -3982,8 +3982,7 @@ public abstract class Tool
 	    for (int i = 0; i < flen; i++) {
 	      Value boundSet = this.eval(domains[i], c, s0, s1, control, cm);
 	      if (!(boundSet instanceof Enumerable)) {
-	        Assert.fail("TLC encountered a non-enumerable quantifier bound\n" +
-	                    Values.ppr(boundSet.toString()) + ".\n" + domains[i], domains[i], c);
+	        Assert.fail(boundSet.getNonEnumerableErrorMsg(domains[i]), domains[i], c);
 	      }
 	      FormalParamNode[] farg = formals[i];
 	      if (isTuples[i]) {
