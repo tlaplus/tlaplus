@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -498,6 +499,9 @@ public class MP
             break;
         case EC.TLC_INVARIANT_VIOLATED_INITIAL:
             b.append("Invariant %1% is violated by the initial state:\n%2%");
+            if (parameters.length > 2) {
+                b.append("\n%3%");
+            }
             break;
         case EC.TLC_PROPERTY_VIOLATED_INITIAL:
             b.append("Property %1% is violated by the initial state:\n%2%");
@@ -519,6 +523,9 @@ public class MP
             break;
         case EC.TLC_INVARIANT_VIOLATED_BEHAVIOR:
             b.append("Invariant %1% is violated.");
+            if (parameters.length > 1) {
+                b.append("\n%2%");
+            }
             break;
         case EC.TLC_INVARIANT_VIOLATED_LEVEL:
         	b.append("The invariant %1% is not a state predicate (one with no primes or temporal operators).");

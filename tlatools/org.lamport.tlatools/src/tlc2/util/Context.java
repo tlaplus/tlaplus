@@ -1,12 +1,15 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 15:30:03 PST by lamport
 //      modified on Fri Feb 16 14:26:21 PST 2001 by yuanyu
 
 package tlc2.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -236,6 +239,41 @@ public final class Context implements Iterator<Context> {
 		}
 		return new Context(this.name, this.value, this.next.deepCopy());
 	}
+
+	/**
+	 * Create a new context by replacing a suffix of this one.  For example, given the context
+	 * <pre>
+	 *     a -> b -> c -> d -> e
+	 * </pre>
+	 * replacing suffix {@code c -> d -> e} with {@code x -> y} results in
+	 * <pre>
+	 *     a -> b -> x -> y
+	 * </pre>
+	 *
+	 * <p>Contexts are immutable; this method does not modify the receiver.
+	 *
+	 * <p>Note that suffixes are compared using reference equality.
+	 *
+	 * @param oldSuffix the suffix to replace
+	 * @param newSuffix the new suffix to add
+	 * @return a context with the old suffix replaced with the new suffix
+	 */
+	public Context withAlternateSuffix(Context oldSuffix, Context newSuffix) {
+		List<Context> prefix = new ArrayList<>(this.depth());
+		Context ptr = this;
+		while (ptr != oldSuffix && ptr != null) {
+			prefix.add(ptr);
+			ptr = ptr.next();
+		}
+
+		Context result = newSuffix;
+		for (int i = prefix.size() - 1; i >= 0; i--) {
+			Context entry = prefix.get(i);
+			result = result.cons(entry.getName(), entry.getValue());
+		}
+		return result;
+	}
+
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------

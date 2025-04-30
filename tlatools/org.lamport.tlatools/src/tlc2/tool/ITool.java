@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2025, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -126,6 +127,17 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 	TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
+
+	/**
+	 * Evaluate the given action, and if it evaluates to FALSE, return information about why.
+	 *
+	 * @param act the action
+	 * @param s0 the current state
+	 * @param s1 the next state (or {@link TLCState#Empty})
+	 * @return information about why the action evaluates to FALSE, or {@code null} if the action evaluates to TRUE
+	 * @throws util.Assert.TLCRuntimeException if the action does not evaluate to a boolean value
+	 */
+	FalseExpressionWithDetails checkValidity(Action act, TLCState s0, TLCState s1);
 
 	boolean isValid(ExprNode expr, Context ctxt);
 	
