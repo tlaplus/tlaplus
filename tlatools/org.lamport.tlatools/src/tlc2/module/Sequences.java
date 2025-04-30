@@ -6,6 +6,7 @@
 
 package tlc2.module;
 
+import tla2sany.semantic.ExprNode;
 import tlc2.output.EC;
 import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
@@ -13,8 +14,8 @@ import tlc2.tool.impl.TLARegistry;
 import tlc2.value.IBoolValue;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
-import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FunctionValue;
 import tlc2.value.impl.IntValue;
 import tlc2.value.impl.ModelValue;
 import tlc2.value.impl.OpValue;
@@ -486,4 +487,15 @@ public class Sequences extends UserObj implements ValueConstants
         return new TupleValue(values);
     }
 
+	@Override
+	public String getNonEnumerableErrorMsg(final ExprNode exprNode) {
+		return String.format(
+				"TLC encountered the non-enumerable quantifier bound\n%1$s\n%2$s\n"
+				+ "In TLA+, Seq(S) represents the set of all finite sequences whose elements come from the set S. Even when S\n"
+				+ "is a finite set, the number of possible sequences in Seq(S) is unbounded because sequences can have any\n"
+				+ "finite length (e.g., length 0, 1, 2, and so on). As a result, TLC cannot evaluate expressions that\n"
+				+ "universally (\\A) or existentially (\\E) quantify over %1$s, because this would require checking an\n"
+				+ "infinite number of cases. Note that for a finite set of sequences s, TLC handles s \\subseteq Seq(S).",
+				Values.ppr(this.toString()), exprNode.toString());
+	}
 }

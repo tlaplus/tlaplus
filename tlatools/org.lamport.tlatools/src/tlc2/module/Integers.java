@@ -5,6 +5,7 @@
 
 package tlc2.module;
 
+import tla2sany.semantic.ExprNode;
 import tlc2.output.EC;
 import tlc2.tool.EvalException;
 import tlc2.tool.impl.TLARegistry;
@@ -251,4 +252,14 @@ public class Integers extends UserObj implements ValueConstants
     {
         return sb.append("Int");
     }
+
+	@Override
+	public String getNonEnumerableErrorMsg(final ExprNode exprNode) {
+		return String.format(
+				"TLC encountered the non-enumerable quantifier bound\n%1$s\n%2$s\n"
+				+ "The set Int contains infinitely many elements. As a result, TLC cannot evaluate expressions that\n"
+				+ "universally (\\A) or existentially (\\E) quantify over %1$s, because this would require checking an\n"
+				+ "infinite number of cases. Note that TLC handles set membership like T \\subseteq Int for any finite set T.",
+				Values.ppr(this.toString()), exprNode.toString());
+	}
 }

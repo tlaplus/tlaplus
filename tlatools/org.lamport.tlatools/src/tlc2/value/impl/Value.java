@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
@@ -397,5 +398,10 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
 					.collect(Collectors.toList());
 		}
 		return new ArrayList<>(0);
+	}
+
+	public String getNonEnumerableErrorMsg(final ExprNode exprNode) {
+		return "TLC encountered a non-enumerable quantifier bound\n" +
+                Values.ppr(this.toString()) + ".\n" + exprNode.toString();
 	}
 }

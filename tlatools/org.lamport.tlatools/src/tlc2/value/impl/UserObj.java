@@ -5,6 +5,8 @@
 
 package tlc2.value.impl;
 
+import tla2sany.semantic.ExprNode;
+
 public abstract class UserObj {
 
   /* Returns negative, 0, positive for less than, equal, greater than. */
@@ -23,5 +25,8 @@ public abstract class UserObj {
     sb = this.toString(sb, 0, true);
     return sb.toString();
   }
-  
+
+  public String getNonEnumerableErrorMsg(final ExprNode exprNode) {
+	return null;
+  } 
 }

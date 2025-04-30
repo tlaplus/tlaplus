@@ -6,6 +6,7 @@
 
 package tlc2.value.impl;
 
+import tla2sany.semantic.ExprNode;
 import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
 import tlc2.value.Values;
@@ -136,4 +137,11 @@ public class UserValue extends Value {
     }
   }
 
+	@Override
+	public String getNonEnumerableErrorMsg(final ExprNode exprNode) {
+		if (userObj.getNonEnumerableErrorMsg(exprNode) != null) {
+			return userObj.getNonEnumerableErrorMsg(exprNode);
+		}
+		return super.getNonEnumerableErrorMsg(exprNode);
+	}	
 }
