@@ -495,7 +495,8 @@ public class Sequences extends UserObj implements ValueConstants
 				+ "is a finite set, the number of possible sequences in Seq(S) is unbounded because sequences can have any\n"
 				+ "finite length (e.g., length 0, 1, 2, and so on). As a result, TLC cannot evaluate expressions that\n"
 				+ "universally (\\A) or existentially (\\E) quantify over %1$s, because this would require checking an\n"
-				+ "infinite number of cases. Note that for a finite set of sequences s, TLC handles s \\subseteq Seq(S).",
+				+ "infinite number of cases. Note that for a finite set of sequences s, TLC handles s \\subseteq Seq(S).\n"
+				+ "See https://explain.tlapl.us/seq-unenumerable for additional details.",
 				Values.ppr(this.toString()), exprNode.toString());
 	}
 }
