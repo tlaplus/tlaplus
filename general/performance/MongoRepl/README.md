@@ -16,7 +16,7 @@ I have successfully run model checker on the spec with a small model that has:
 - # of logs up to 10
 
 State constraint:
-```
+```tla
 /\ \forall i \in Server: globalCurrentTerm <= 3
 /\ \forall i \in Server: Len(log[i]) <= 10
 ```
