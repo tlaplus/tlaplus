@@ -907,7 +907,8 @@ public class MP
 					+ "or PROPERTIES are only checked in the initial state. To verify that the formula %1% "
 					+ "holds in all states of every behavior, use INVARIANT %1% instead. Alternatively, "
 					+ "applying the \"always\" temporal operator (□) to the state-level formula %1% changes it "
-					+ "into a temporal formula, asserting that %1% holds in all states of every behavior.");
+					+ "into a temporal formula, asserting that %1% holds in all states of every behavior. "
+					+ "See https://explain.tlapl.us/invariants-and-properties for additional details.");
 			break;
 		case EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY:
 			b.append(

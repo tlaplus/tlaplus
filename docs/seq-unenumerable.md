@@ -24,7 +24,7 @@ In TLA+, Seq(S) represents the set of all finite sequences whose elements come f
 is a finite set, the number of possible sequences in Seq(S) is unbounded because sequences can have any
 finite length (e.g., length 0, 1, 2, and so on). As a result, TLC cannot evaluate expressions that
 universally (\A) or existentially (\E) quantify over Seq({"a", "b"}), because this would require checking an
-infinite number of cases. Note that for a finite set of sequences s, TLC handles s \subseteq Seq(S). [T0001]
+infinite number of cases. Note that for a finite set of sequences s, TLC handles s \subseteq Seq(S).
 ```
 
 The issue arises from using `Seq(S)` in your specification. In TLA+, `Seq(S)` denotes the set of all finite 

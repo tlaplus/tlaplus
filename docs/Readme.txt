@@ -1,0 +1,3 @@
+This folder does not belong at the root of the repository. It should be moved to the `tlatools/org.langtools.tla2tools/` folder instead.  However, Github pages cannot be configured to serve files from a subfolder.  So, this folder is left here to be served by Github pages.  The contents of this folder are not part of the repository.
+
+Please see https://github.com/tlaplus/tlaplus/pull/1181#issuecomment-2845429255 for more information.
