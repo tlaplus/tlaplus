@@ -1,10 +1,12 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:20:54 PST by lamport
 //      modified on Thu Mar 11 21:25:20 PST 1999 by yuanyu
 
 package tlc2.value.impl;
 
+import tlc2.tool.FingerprintException;
 import tlc2.value.IValue;
 
 public interface Enumerable extends IValue {
@@ -24,7 +26,26 @@ public interface Enumerable extends IValue {
 		 */
 		RANDOMIZED
     }
-	
+
+  /**
+   * Determine if this set is empty.  This method is roughly equivalent to testing <code>{@link #size()} == 0</code>
+   * but superior in two ways:
+   * <ul>
+   *     <li>More efficient (it is expensive to compute the size of some sets)</li>
+   *     <li>More reliable (works even if {@link #size()} would throw an exception because the set is too large)</li>
+   * </ul>
+   *
+   * @return true if this set is empty, or false if it contains at least one element
+   */
+  default boolean isEmpty() {
+    try {
+      return elements().nextElement() == null;
+    } catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
   @Override
   int size();
   boolean member(Value elem);
