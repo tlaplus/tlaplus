@@ -1161,7 +1161,7 @@ public class MP
             break;
 
         case EC.TLC_COVERAGE_START:
-            b.append("The coverage statistics at " + now());
+            b.append("The coverage statistics at " + now() + " (see https://explain.tlapl.us/module-coverage-statistics for how to interpret the following statistics).");
             break;
         case EC.TLC_COVERAGE_VALUE:
             b.append("  %1%: %2%");
