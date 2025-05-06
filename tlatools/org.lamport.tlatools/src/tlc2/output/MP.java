@@ -1169,6 +1169,9 @@ public class MP
         case EC.TLC_COVERAGE_VALUE_COST:
             b.append("  %1%: %2%:%3%");
             break;
+        case EC.TLC_COVERAGE_VAR:
+       		b.append("<%1% %2%>: %3%");
+            break;
         case EC.TLC_COVERAGE_INIT:
        		b.append("%1%: %2%:%3%");
             break;

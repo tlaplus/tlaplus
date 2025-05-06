@@ -33,10 +33,11 @@ Spec ==
 =====
 ```
 
-When TLC runs this spec with coverage reporting enabled, it may produce output like this:
+When TLC runs this spec with coverage reporting enabled (and without deadlock checking), it produces output like this:
 
 ```
 The coverage statistics at 2025-04-02 18:02:30
+<x line 4, col 11 to line 4, col 11 of module Foobar>: 10
 <Init line 6, col 1 to line 6, col 4 of module Foobar>: 1:1
   line 7, col 5 to line 7, col 12 of module Foobar: 1
 <Inc line 9, col 1 to line 9, col 3 of module Foobar>: 10:10
@@ -54,11 +55,14 @@ End of statistics.
 ```
 
 ## How to Interpret This Output
-Each block of coverage statistics corresponds to either a definition (like `Init`, `Inc`, or `Dec`) or an expression inside the definition.
+Each block of coverage statistics corresponds to either a variable declaration, a definition (like `Init`, `Inc`, or `Dec`), or an expression inside the definition.
+
+### Variable Declaration:
+The line `<x line 4, col 11 to line 4, col 11 of module Foobar>:10` indicates that TLC found 10 distinct values for the (declared) variable `x`.
 
 ### State-level expressions (`Init`):
 
-The line `<Init line 6, col 1 to line 6, col 4 of module Foobar>: 1:1` shows that TLC evaluated the `Init` predicate once, and it produced one initial state 
+The line `<Init line 6, col 1 to line 6, col 4 of module Foobar>: 1:1` shows that TLC evaluated the `Init` predicate once, and it produced one initial state. 
 
 ### Action-level expressions (`Inc` and `Dec`):
 
@@ -74,7 +78,7 @@ In addition to tracking how many times an expression is evaluated, TLC also repo
 
 This is especially relevant for expressions that manipulate sets, functions, sequences, or other compound structures. When such an allocation occurs, TLC appends a second number to the coverage entry in the format evaluations:cost.
 
-Consider the following specification, where the Next action repeatedly adds a new element to the set x:
+Consider the following specification, where the `Next` action repeatedly adds a new element to the set `x`:
 
 ```tla
 ------ MODULE Costs ------
@@ -96,6 +100,7 @@ Spec ==
 
 ```
 The coverage statistics at 2025-04-02 18:28:21
+<x line 4, col 11 to line 4, col 11 of module Foobar>:10
 Init line 6, col 1 to line 6, col 4 of module Foobar>: 1:1
   line 7, col 5 to line 7, col 10 of module Foobar: 1
 <Next line 9, col 1 to line 9, col 4 of module Foobar>: 10:10
@@ -111,6 +116,6 @@ End of statistics.
 
 This tells us:
 
-The sub-expression ({Cardinality(x) + 1}) was evaluated 10 times, and TLC incurred an allocation cost of 18 across those 10 evaluations. This cost represents internal overhead, such as memory allocation or structural copying involved in creating the new set value.
+The sub-expression `({Cardinality(x) + 1})` was evaluated 10 times, and TLC incurred an allocation cost of 18 across those 10 evaluations. This cost represents internal overhead, such as memory allocation or structural copying involved in creating the new set value.
 
 These costs can highlight performance hotspots in your specification—helpful for optimizing large models where memory usage or computational effort may become significant.
