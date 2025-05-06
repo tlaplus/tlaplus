@@ -293,7 +293,8 @@ public interface EC
     public static final int TLC_COVERAGE_PROPERTY = 2774;
     public static final int TLC_COVERAGE_CONSTRAINT = 2778;
     public static final int TLC_COVERAGE_END_OVERHEAD = 2777;
-    
+    public static final int TLC_COVERAGE_VAR = 2779;
+   
     // config file errors
     public static final int TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM = 2222;
     public static final int TLC_CONFIG_RHS_ID_APPEARED_AFTER_LHS_ID = 2223;
