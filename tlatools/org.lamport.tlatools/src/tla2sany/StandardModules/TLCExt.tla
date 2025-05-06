@@ -36,6 +36,8 @@ TLCGetAndSet(key, Op(_,_), val, defaultVal) ==
 
 -----------------------------------------------------------------------------
 
+(* HERE BE DRAGONS! The operators below are experimental! You will probably not need them! *)
+
 Trace == 
   (******************************************************************************)
   (* The sequence of states (represented as a record whose DOMAIN is the set of *)
@@ -49,13 +51,12 @@ Trace ==
   (* technical limitation could be removed though.                              *)
   (*                                                                            *)
   (* Beware that Trace is prohibitively expensive when evaluated as part of     *)
-  (* the next-state relation or constraints in model-checking mode.             *)
+  (* the next-state relation, invariants, properties, or any constraint in      *)
+  (* model-checking mode. Consider using a real history variable instead.       *)
   (******************************************************************************)
   TRUE \* TODO
 
 -----------------------------------------------------------------------------
-
-(* HERE BE DRAGONS! The operators below are experimental! You will probably not need them! *)
 
 CounterExample ==
     (****************************************************************************)
