@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2019 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2025, Oracle and/or its affiliates.
  *
  * The MIT License (MIT)
  * 
@@ -37,6 +38,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.InvariantViolation;
 import tlc2.tool.impl.ModelConfig;
 import tlc2.tool.impl.OpDefEvaluator;
 import tlc2.tool.impl.SpecProcessor;
@@ -126,6 +128,17 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 	TLCState enabled(SemanticNode pred, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1);
 	TLCState enabled(SemanticNode pred, IActionItemList acts, Context c, TLCState s0, TLCState s1, CostModel cm);
+
+	/**
+	 * Evaluate the given invariant in the given state and, if it evaluates to FALSE, return information about why.
+	 *
+	 * @param invariant the invariant
+	 * @param s0        the current state
+	 * @param s1        the next state (or {@link TLCState#Empty})
+	 * @return information about why the invariant evaluates to FALSE, or {@code null} if the invariant evaluates to TRUE
+	 * @throws util.Assert.TLCRuntimeException if the invariant does not evaluate to a boolean value
+	 */
+	InvariantViolation findFalsifyingContext(Action invariant, TLCState s0, TLCState s1);
 
 	boolean isValid(ExprNode expr, Context ctxt);
 	
