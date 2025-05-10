@@ -4075,6 +4075,17 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					);
 				}
 			}
+			
+			final SymbolNode s = symbolTable.resolveSymbol(labels[lvi]);
+			if (s != null) {
+				errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, syntaxTreeNode[0].getLocation(), String
+						.format("The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
+								+ "named %1$s, located at %2$s.\n"
+								+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
+								+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
+								+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
+								labels[lvi], s.getLocation()));
+			}
 
 			// The second one gets the expression indicating the field value (or set of
 			// values)
