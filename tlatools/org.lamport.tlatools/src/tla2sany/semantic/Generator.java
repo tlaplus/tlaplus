@@ -4075,6 +4075,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					);
 				}
 			}
+			
+			final SymbolNode s = symbolTable.resolveSymbol(labels[lvi]);
+			if (s != null) {
+				errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, syntaxTreeNode[0].getLocation(),
+						String.format(
+								"Field name %s in constructor overlaps with symbol at %s (see https://explain.tlapl.us/XXX)",
+								labels[lvi], s.getLocation()));
+			}
 
 			// The second one gets the expression indicating the field value (or set of
 			// values)
