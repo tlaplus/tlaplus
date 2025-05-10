@@ -24,8 +24,10 @@ CmdTemplate ==
     "-DTLA-Library=.. " \o
     "-DspecName=%3$s " \o
     "-Dtlc2.tool.ModelChecker.BAQueue=true " \o
+    "-Dtlc2.TLCGlobals.coverage=3 " \o
     "-cp %1$s " \o
     "tlc2.TLC " \o
+    "-coverage 1 " \o
     "-checkpoint 0 -workers %2$s %3$s/MC.tla > %4$s 2>&1">>
 
 LogFile(run, workers, spec) ==
