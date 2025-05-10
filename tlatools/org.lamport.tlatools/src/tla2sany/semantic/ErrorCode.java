@@ -164,7 +164,8 @@ public enum ErrorCode {
    * Standardized warnings. These should not cause a parse failure.
    */
   EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4800, ErrorLevel.WARNING),
-  INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4801, ErrorLevel.WARNING);
+  INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY (4801, ErrorLevel.WARNING),
+  RECORD_CONSTRUCTOR_FIELD_NAME_CLASH (4802, ErrorLevel.WARNING);
 
   /**
    * The error's level of seriousness.
