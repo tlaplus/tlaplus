@@ -24,7 +24,7 @@ CmdTemplate ==
     "-DTLA-Library=.. " \o
     "-DspecName=%3$s " \o
     "-Dtlc2.tool.ModelChecker.BAQueue=true " \o
-    "-Dtlc2.TLCGlobals.coverage=1 " \o
+    "-Dtlc2.TLCGlobals.coverage=2 " \o
     "-cp %1$s " \o
     "tlc2.TLC " \o
     "-coverage 1 " \o
