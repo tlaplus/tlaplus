@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2024, Oracle and/or its affiliates.
+// Copyright (c) 2024, 2025, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 14:01:40 PST by lamport  
 //      modified on Wed Dec  5 15:35:42 PST 2001 by yuanyu   
 
@@ -21,6 +21,7 @@ import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.impl.CallStackTool;
+import tlc2.tool.impl.InvariantViolation;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.tool.queue.IStateQueue;
@@ -551,20 +552,21 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
         {
 			for (k = 0; k < this.tool.getInvariants().length; k++)
             {
-                if (!tool.isValid(this.tool.getInvariants()[k], succState))
+                InvariantViolation counterexample = this.tool.findFalsifyingContext(this.tool.getInvariants()[k], succState, TLCState.Empty);
+                if (counterexample != InvariantViolation.NO_VIOLATION)
                 {
+                    String[] errorReportArgs = new String[] { this.tool.getInvNames()[k], counterexample.formatPretty() };
                     // We get here because of invariant violation:
                 	if (TLCGlobals.continuation) {
                         synchronized (this.tlc)
                         {
-							MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR,
-									this.tool.getInvNames()[k]);
+							MP.printError(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, errorReportArgs);
 							this.tlc.trace.printTrace(curState, succState);
 							return false;
                         }
                 	} else {
 						return this.doNextSetErr(curState, succState, false,
-								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, this.tool.getInvNames()[k]);
+								EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, errorReportArgs);
                 	}
 				}
 			}
@@ -609,9 +611,9 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
         return false;
 	}
 	
-	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String... params) throws IOException, WorkerException {
 		synchronized (this.tlc) {
-			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, keep, ec, param);
+			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, keep, ec, params);
 
 			// Invoke PostCondition
 			doPostCondition(curState, succState);
