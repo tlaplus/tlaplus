@@ -238,55 +238,52 @@ public interface TLAplusParserConstants {
   int op_infix_gg_uc = 246;
   int op_infix_iff_uc = 247;
   int op_infix_implies_uc = 248;
-  int op_infix_in_uc = 249;
-  int op_infix_land_uc = 250;
-  int op_infix_ld_ttile_uc = 251;
-  int op_infix_leads_to_uc = 252;
-  int op_infix_leq_uc = 253;
-  int op_infix_ll_uc = 254;
-  int op_infix_lor_uc = 255;
-  int op_infix_ls_ttile_uc = 256;
-  int op_infix_neq_uc = 257;
-  int op_infix_notin_uc = 258;
-  int op_infix_odot_uc = 259;
-  int op_infix_ominus_uc = 260;
-  int op_infix_oplus_uc = 261;
-  int op_infix_oslash_uc = 262;
-  int op_infix_otimes_uc = 263;
-  int op_infix_plus_arrow_uc = 264;
-  int op_infix_prec_uc = 265;
-  int op_infix_preceq_uc = 266;
-  int op_infix_propto_uc = 267;
-  int op_infix_qq_uc = 268;
-  int op_infix_rd_ttile_uc = 269;
-  int op_infix_rs_ttile_uc = 270;
-  int op_infix_sim_uc = 271;
-  int op_infix_simeq_uc = 272;
-  int op_infix_sqcap_uc = 273;
-  int op_infix_sqcup_uc = 274;
-  int op_infix_sqsubset_uc = 275;
-  int op_infix_sqsubseteq_uc = 276;
-  int op_infix_sqsupset_uc = 277;
-  int op_infix_sqsupseteq_uc = 278;
-  int op_infix_star_uc = 279;
-  int op_infix_subset_uc = 280;
-  int op_infix_subseteq_uc = 281;
-  int op_infix_succ_uc = 282;
-  int op_infix_succeq_uc = 283;
-  int op_infix_supset_uc = 284;
-  int op_infix_supseteq_uc = 285;
-  int op_infix_times_uc = 286;
-  int op_infix_uplus_uc = 287;
-  int op_infix_vertvert_uc = 288;
-  int op_infix_wr_uc = 289;
-  int op_118 = 290;
-  int op_119 = 291;
-  int IDENTIFIER = 292;
-  int ProofStepLexeme = 293;
-  int ProofImplicitStepLexeme = 294;
-  int ProofStepDotLexeme = 295;
-  int BareLevelLexeme = 296;
-  int UnnumberedStepLexeme = 297;
+  int op_infix_ld_ttile_uc = 249;
+  int op_infix_leads_to_uc = 250;
+  int op_infix_leq_uc = 251;
+  int op_infix_ll_uc = 252;
+  int op_infix_ls_ttile_uc = 253;
+  int op_infix_neq_uc = 254;
+  int op_infix_notin_uc = 255;
+  int op_infix_odot_uc = 256;
+  int op_infix_ominus_uc = 257;
+  int op_infix_oplus_uc = 258;
+  int op_infix_oslash_uc = 259;
+  int op_infix_otimes_uc = 260;
+  int op_infix_plus_arrow_uc = 261;
+  int op_infix_prec_uc = 262;
+  int op_infix_preceq_uc = 263;
+  int op_infix_propto_uc = 264;
+  int op_infix_qq_uc = 265;
+  int op_infix_rd_ttile_uc = 266;
+  int op_infix_rs_ttile_uc = 267;
+  int op_infix_sim_uc = 268;
+  int op_infix_simeq_uc = 269;
+  int op_infix_sqcap_uc = 270;
+  int op_infix_sqcup_uc = 271;
+  int op_infix_sqsubset_uc = 272;
+  int op_infix_sqsubseteq_uc = 273;
+  int op_infix_sqsupset_uc = 274;
+  int op_infix_sqsupseteq_uc = 275;
+  int op_infix_star_uc = 276;
+  int op_infix_subset_uc = 277;
+  int op_infix_subseteq_uc = 278;
+  int op_infix_succ_uc = 279;
+  int op_infix_succeq_uc = 280;
+  int op_infix_supset_uc = 281;
+  int op_infix_supseteq_uc = 282;
+  int op_infix_times_uc = 283;
+  int op_infix_uplus_uc = 284;
+  int op_infix_vertvert_uc = 285;
+  int op_infix_wr_uc = 286;
+  int op_118 = 287;
+  int op_119 = 288;
+  int IDENTIFIER = 289;
+  int ProofStepLexeme = 290;
+  int ProofImplicitStepLexeme = 291;
+  int ProofStepDotLexeme = 292;
+  int BareLevelLexeme = 293;
+  int UnnumberedStepLexeme = 294;
 
   int DEFAULT = 0;
   int PRAGMA = 1;
@@ -545,13 +542,10 @@ public interface TLAplusParserConstants {
     "\"\\u226b\"",
     "\"\\u21d4\"",
     "\"\\u21d2\"",
-    "\"\\u2208\"",
-    "\"\\u2227\"",
     "\"\\u2ae4\"",
     "\"\\u219d\"",
     "\"\\u2264\"",
     "\"\\u226a\"",
-    "\"\\u2228\"",
     "\"\\u22a3\"",
     "\"\\u2260\"",
     "\"\\u2209\"",
