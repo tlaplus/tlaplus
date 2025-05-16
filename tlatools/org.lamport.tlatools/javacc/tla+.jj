@@ -79,7 +79,7 @@ config.jj.
 options {
   LOOKAHEAD = 1;
   JAVA_UNICODE_ESCAPE = false; // disable processing of \\u
-  UNICODE_INPUT = false;
+  UNICODE_INPUT = true;    // Expect Unicode input; is a no-op in JavaCC 4.0 but silences Unicode warnings.
   DEBUG_PARSER = false;    // true;  
   DEBUG_LOOKAHEAD = false; // true; 
   DEBUG_TOKEN_MANAGER = false; // true; 
@@ -1259,13 +1259,10 @@ TOKEN: {
   op_infix_gg_uc : "≫" > | <
   op_infix_iff_uc : "⇔" > | <
   op_infix_implies_uc : "⇒" > | <
-  op_infix_in_uc : "∈" > | <
-  op_infix_land_uc : "∧" > | <
   op_infix_ld_ttile_uc : "⫤" > | <
   op_infix_leads_to_uc : "↝" > | <
   op_infix_leq_uc : "≤" > | <
   op_infix_ll_uc : "≪" > | <
-  op_infix_lor_uc : "∨" > | <
   op_infix_ls_ttile_uc : "⊣" > | <
   op_infix_neq_uc : "≠" > | <
   op_infix_notin_uc : "∉" > | <
@@ -1560,13 +1557,10 @@ InfixOpToken() : {
  | t = <op_infix_gg_uc>
  | t = <op_infix_iff_uc>
  | t = <op_infix_implies_uc>
- | t = <op_infix_in_uc>
- | t = <op_infix_land_uc>
  | t = <op_infix_ld_ttile_uc>
  | t = <op_infix_leads_to_uc>
  | t = <op_infix_leq_uc>
  | t = <op_infix_ll_uc>
- | t = <op_infix_lor_uc>
  | t = <op_infix_ls_ttile_uc>
  | t = <op_infix_neq_uc>
  | t = <op_infix_notin_uc>

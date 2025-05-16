@@ -1285,12 +1285,6 @@ private boolean correctLevel(Token tok) {
     case op_infix_implies_uc:
       t = jj_consume_token(op_infix_implies_uc);
       break;
-    case op_infix_in_uc:
-      t = jj_consume_token(op_infix_in_uc);
-      break;
-    case op_infix_land_uc:
-      t = jj_consume_token(op_infix_land_uc);
-      break;
     case op_infix_ld_ttile_uc:
       t = jj_consume_token(op_infix_ld_ttile_uc);
       break;
@@ -1302,9 +1296,6 @@ private boolean correctLevel(Token tok) {
       break;
     case op_infix_ll_uc:
       t = jj_consume_token(op_infix_ll_uc);
-      break;
-    case op_infix_lor_uc:
-      t = jj_consume_token(op_infix_lor_uc);
       break;
     case op_infix_ls_ttile_uc:
       t = jj_consume_token(op_infix_ls_ttile_uc);
@@ -1980,13 +1971,10 @@ expecting = "prefix or postfix operator";
       case op_infix_gg_uc:
       case op_infix_iff_uc:
       case op_infix_implies_uc:
-      case op_infix_in_uc:
-      case op_infix_land_uc:
       case op_infix_ld_ttile_uc:
       case op_infix_leads_to_uc:
       case op_infix_leq_uc:
       case op_infix_ll_uc:
-      case op_infix_lor_uc:
       case op_infix_ls_ttile_uc:
       case op_infix_neq_uc:
       case op_infix_notin_uc:
@@ -2567,13 +2555,10 @@ expecting = "infix or postfix operator";
       case op_infix_gg_uc:
       case op_infix_iff_uc:
       case op_infix_implies_uc:
-      case op_infix_in_uc:
-      case op_infix_land_uc:
       case op_infix_ld_ttile_uc:
       case op_infix_leads_to_uc:
       case op_infix_leq_uc:
       case op_infix_ll_uc:
-      case op_infix_lor_uc:
       case op_infix_ls_ttile_uc:
       case op_infix_neq_uc:
       case op_infix_notin_uc:
@@ -2855,13 +2840,10 @@ expecting = emptyString;
     case op_infix_gg_uc:
     case op_infix_iff_uc:
     case op_infix_implies_uc:
-    case op_infix_in_uc:
-    case op_infix_land_uc:
     case op_infix_ld_ttile_uc:
     case op_infix_leads_to_uc:
     case op_infix_leq_uc:
     case op_infix_ll_uc:
-    case op_infix_lor_uc:
     case op_infix_ls_ttile_uc:
     case op_infix_neq_uc:
     case op_infix_notin_uc:
@@ -4568,13 +4550,10 @@ int kind ;
       case op_infix_gg_uc:
       case op_infix_iff_uc:
       case op_infix_implies_uc:
-      case op_infix_in_uc:
-      case op_infix_land_uc:
       case op_infix_ld_ttile_uc:
       case op_infix_leads_to_uc:
       case op_infix_leq_uc:
       case op_infix_ll_uc:
-      case op_infix_lor_uc:
       case op_infix_ls_ttile_uc:
       case op_infix_neq_uc:
       case op_infix_notin_uc:
@@ -6013,13 +5992,10 @@ SyntaxTreeNode tn;
       case op_infix_gg_uc:
       case op_infix_iff_uc:
       case op_infix_implies_uc:
-      case op_infix_in_uc:
-      case op_infix_land_uc:
       case op_infix_ld_ttile_uc:
       case op_infix_leads_to_uc:
       case op_infix_leq_uc:
       case op_infix_ll_uc:
-      case op_infix_lor_uc:
       case op_infix_ls_ttile_uc:
       case op_infix_neq_uc:
       case op_infix_notin_uc:
@@ -6332,13 +6308,10 @@ SyntaxTreeNode tn;
           case op_infix_gg_uc:
           case op_infix_iff_uc:
           case op_infix_implies_uc:
-          case op_infix_in_uc:
-          case op_infix_land_uc:
           case op_infix_ld_ttile_uc:
           case op_infix_leads_to_uc:
           case op_infix_leq_uc:
           case op_infix_ll_uc:
-          case op_infix_lor_uc:
           case op_infix_ls_ttile_uc:
           case op_infix_neq_uc:
           case op_infix_notin_uc:
@@ -6586,13 +6559,10 @@ SyntaxTreeNode tn;
       case op_infix_gg_uc:
       case op_infix_iff_uc:
       case op_infix_implies_uc:
-      case op_infix_in_uc:
-      case op_infix_land_uc:
       case op_infix_ld_ttile_uc:
       case op_infix_leads_to_uc:
       case op_infix_leq_uc:
       case op_infix_ll_uc:
-      case op_infix_lor_uc:
       case op_infix_ls_ttile_uc:
       case op_infix_neq_uc:
       case op_infix_notin_uc:
@@ -6790,13 +6760,10 @@ SyntaxTreeNode tn;
         case op_infix_gg_uc:
         case op_infix_iff_uc:
         case op_infix_implies_uc:
-        case op_infix_in_uc:
-        case op_infix_land_uc:
         case op_infix_ld_ttile_uc:
         case op_infix_leads_to_uc:
         case op_infix_leq_uc:
         case op_infix_ll_uc:
-        case op_infix_lor_uc:
         case op_infix_ls_ttile_uc:
         case op_infix_neq_uc:
         case op_infix_notin_uc:
@@ -7122,13 +7089,10 @@ SyntaxTreeNode tn;
         case op_infix_gg_uc:
         case op_infix_iff_uc:
         case op_infix_implies_uc:
-        case op_infix_in_uc:
-        case op_infix_land_uc:
         case op_infix_ld_ttile_uc:
         case op_infix_leads_to_uc:
         case op_infix_leq_uc:
         case op_infix_ll_uc:
-        case op_infix_lor_uc:
         case op_infix_ls_ttile_uc:
         case op_infix_neq_uc:
         case op_infix_notin_uc:
@@ -7801,6 +7765,17 @@ SyntaxTreeNode tn;
     finally { jj_save(73, xla); }
   }
 
+  final private boolean jj_3R_210() {
+    if (jj_3R_215()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_92() {
+    if (jj_scan_token(LBR)) return true;
+    if (jj_3R_145()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_181() {
     if (jj_3R_192()) return true;
     return false;
@@ -8046,11 +8021,6 @@ SyntaxTreeNode tn;
 
   final private boolean jj_3R_218() {
     if (jj_3R_61()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_151() {
-    if (jj_3R_141()) return true;
     return false;
   }
 
@@ -8377,13 +8347,7 @@ SyntaxTreeNode tn;
     jj_scanpos = xsp;
     if (jj_scan_token(287)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(288)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(289)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(290)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(291)) return true;
+    if (jj_scan_token(288)) return true;
     }
     }
     }
@@ -8544,9 +8508,11 @@ SyntaxTreeNode tn;
     }
     }
     }
-    }
-    }
-    }
+    return false;
+  }
+
+  final private boolean jj_3R_151() {
+    if (jj_3R_141()) return true;
     return false;
   }
 
@@ -8974,7 +8940,7 @@ SyntaxTreeNode tn;
     lookingAhead = true;
     jj_semLA = getToken(1).image.equals("@");
     lookingAhead = false;
-    if (!jj_semLA || jj_scan_token(292)) return true;
+    if (!jj_semLA || jj_scan_token(289)) return true;
     }
     }
     }
@@ -9159,15 +9125,15 @@ SyntaxTreeNode tn;
   final private boolean jj_3R_137() {
     Token xsp;
     xsp = jj_scanpos;
+    if (jj_scan_token(290)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(291)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(292)) {
+    jj_scanpos = xsp;
     if (jj_scan_token(293)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(294)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(295)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(296)) {
-    jj_scanpos = xsp;
-    if (jj_scan_token(297)) return true;
+    if (jj_scan_token(294)) return true;
     }
     }
     }
@@ -9301,7 +9267,7 @@ SyntaxTreeNode tn;
     xsp = jj_scanpos;
     if (jj_3R_88()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(292)) return true;
+    if (jj_scan_token(289)) return true;
     }
     if (jj_scan_token(COLON)) return true;
     return false;
@@ -9351,7 +9317,7 @@ SyntaxTreeNode tn;
     xsp = jj_scanpos;
     if (jj_3R_87()) {
     jj_scanpos = xsp;
-    if (jj_scan_token(292)) return true;
+    if (jj_scan_token(289)) return true;
     }
     if (jj_scan_token(COMMA)) return true;
     return false;
@@ -9410,9 +9376,9 @@ SyntaxTreeNode tn;
   final private boolean jj_3R_173() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_scan_token(293)) {
+    if (jj_scan_token(290)) {
     jj_scanpos = xsp;
-    if (jj_scan_token(294)) return true;
+    if (jj_scan_token(291)) return true;
     }
     return false;
   }
@@ -10400,17 +10366,6 @@ SyntaxTreeNode tn;
     return false;
   }
 
-  final private boolean jj_3R_210() {
-    if (jj_3R_215()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_92() {
-    if (jj_scan_token(LBR)) return true;
-    if (jj_3R_145()) return true;
-    return false;
-  }
-
   public TLAplusParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -10471,7 +10426,7 @@ SyntaxTreeNode tn;
       jj_la1_8 = new int[] {0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0x0,0xffffffff,0xffffffff,0x0,0x0,0x0,};
    }
    private static void jj_la1_9() {
-      jj_la1_9 = new int[] {0x0,0x0,0xf,0x0,0x0,0x10,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xf,0x10,0x0,0x0,0x0,0x0,0x0,0x10,0x10,0x0,0x10,0x0,0x0,0x0,0xf,0x0,0x0,0x0,0x1f,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3e0,0x0,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0xf,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x10,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x10,0x0,0x0,0x0,0x0,0x10,0x0,0xf,0x0,0xf,0x60,0x7f,0x0,0x7f,0xf,0x0,0x0,0x0,};
+      jj_la1_9 = new int[] {0x0,0x0,0x1,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x2,0x0,0x0,0x0,0x0,0x0,0x2,0x2,0x0,0x2,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x3,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7c,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x2,0x2,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2,0x0,0x0,0x0,0x0,0x2,0x0,0x1,0x0,0x1,0xc,0xf,0x0,0xf,0x1,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[74];
   private boolean jj_rescan = false;
@@ -10648,8 +10603,8 @@ SyntaxTreeNode tn;
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[298];
-    for (int i = 0; i < 298; i++) {
+    boolean[] la1tokens = new boolean[295];
+    for (int i = 0; i < 295; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -10692,7 +10647,7 @@ SyntaxTreeNode tn;
         }
       }
     }
-    for (int i = 0; i < 298; i++) {
+    for (int i = 0; i < 295; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
