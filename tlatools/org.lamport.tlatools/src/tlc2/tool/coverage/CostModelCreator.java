@@ -49,6 +49,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
@@ -58,6 +59,7 @@ import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.util.statistics.CountDistinct;
+import util.UniqueString;
 
 /**
  * <h1>Why a CostModel:</h1> Why a CostModelCreator to traverses the semantic
@@ -428,7 +430,38 @@ public class CostModelCreator extends ExplorerVisitor {
 	}
 	
 	public static void report(final ITool tool, final long startTime) {
-        MP.printMessage(EC.TLC_COVERAGE_START);
+		report(tool);
+
+		// Notify users about the performance overhead related to coverage collection
+		// after N minutes of model checking. The assumption is that a user has little
+		// interest in coverage for a large (long-running) model anyway. In the future
+		// it is hopefully possible to switch from profiling to sampling to relax the
+		// performance overhead of coverage and cost statistics.
+		final long l = System.currentTimeMillis() - startTime;
+		if (l > (5L * 60L * 1000L)) {
+			MP.printMessage(EC.TLC_COVERAGE_END_OVERHEAD);
+		} else {
+			MP.printMessage(EC.TLC_COVERAGE_END);
+		}
+	}
+
+	private static void report(final ITool tool) {
+		MP.printMessage(EC.TLC_COVERAGE_START);
+		
+		// VARIABLE and VARIABLES
+		for (final OpDeclNode odn : tool.getSpecProcessor().getVariablesNodes()) {
+			final long count = odn.getCountDistinct().count();
+			// 'count' may be zero if report is evaluated before state-space exploration
+			// begins. Luckily, Noop#count returns -1 in such cases.
+			if (count >= 0) {
+				final UniqueString varName = odn.getName();
+				final Location location = odn.getLocation();
+				MP.printMessage(EC.TLC_COVERAGE_VAR,
+						new String[] { varName.toString(), location.toString(), String.valueOf(count) });
+			}
+		}
+		
+		// INIT (or SPECIFICATION)
     	final Vect<Action> init = tool.getInitStateSpec();
     	for (int i = 0; i < init.size(); i++) {
     		final Action initAction = init.elementAt(i);
@@ -495,17 +528,5 @@ public class CostModelCreator extends ExplorerVisitor {
     			impliedActions.cm.report();
     		}
         }
-       
-		// Notify users about the performance overhead related to coverage collection
-		// after N minutes of model checking. The assumption is that a user has little
-		// interest in coverage for a large (long-running) model anyway.  In the future
-        // it is hopefully possible to switch from profiling to sampling to relax the
-        // performance overhead of coverage and cost statistics.
-		final long l = System.currentTimeMillis() - startTime;
-		if (l > (5L * 60L * 1000L)) {
-			MP.printMessage(EC.TLC_COVERAGE_END_OVERHEAD);
-		} else {
-			MP.printMessage(EC.TLC_COVERAGE_END);
-		}
 	}
 }
