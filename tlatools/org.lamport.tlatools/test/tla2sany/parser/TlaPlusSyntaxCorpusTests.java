@@ -105,9 +105,6 @@ public class TlaPlusSyntaxCorpusTests {
 				// https://github.com/tlaplus/tlaplus/issues/737
 				"Step Expression Requiring Lookahead",
 
-				// https://github.com/tlaplus/tlaplus/issues/802
-				"String with Backtick",
-
 				// https://github.com/tlaplus/tlaplus/issues/812
 				"String with comment start",
 
