@@ -26,10 +26,10 @@ PROOF BY
     OmittedProof,
     ProofByDef
 
-(* ID: ProofByQED *)
-THEOREM ProofByQED == RefersTo(c, "c")
+(* ID: ProofByQEDA *)
+THEOREM ProofByQEDA == RefersTo(c, "c")
 PROOF
-  (* ID: ProofByQED!<1>a *)
+  (* ID: ProofByQEDA!<1>a *)
   <1>a QED
 
 (* ID: ProofByQED *)
@@ -56,7 +56,7 @@ COROLLARY NestedProof == []RefersTo(v, "v")
   (* ID: NestedProof!<2>b *) <2>b IsLevel(RefersTo(<1>b, "NestedProof!<1>b"), VariableLevel)
   (* ID: NestedProof!<2>c *) <2>c IsLevel(RefersTo(<1>c, "NestedProof!<1>c"), ActionLevel)
   (* ID: NestedProof!<2>d *) <2>d IsLevel(RefersTo(<1>d, "NestedProof!<1>d"), TemporalLevel)
-  <2>d QED
+  <2>e QED
     (* ID: NestedProof!<3>a *) <3>a IsLevel(RefersTo(<2>a, "NestedProof!<2>a"), ConstantLevel)
     (* ID: NestedProof!<3>b *) <3>b IsLevel(RefersTo(<2>b, "NestedProof!<2>b"), VariableLevel)
     (* ID: NestedProof!<3>c *) <3>c IsLevel(RefersTo(<2>c, "NestedProof!<2>c"), ActionLevel)
@@ -66,7 +66,7 @@ COROLLARY NestedProof == []RefersTo(v, "v")
       RefersTo(<3>b, "NestedProof!<3>b"),
       RefersTo(<3>c, "NestedProof!<3>c"),
       RefersTo(<3>d, "NestedProof!<3>d")
-<1>d QED BY
+<1>e QED BY
   RefersTo(<1>a, "NestedProof!<1>a"),
   RefersTo(<1>b, "NestedProof!<1>b"),
   RefersTo(<1>c, "NestedProof!<1>c"),
