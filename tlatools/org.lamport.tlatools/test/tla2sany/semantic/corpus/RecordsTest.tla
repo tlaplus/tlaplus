@@ -52,4 +52,6 @@ THEOREM TemporalRecord == IsLevel([
   TemporalLevel
 )
 
+
+THEOREM SomeRecord == [c |-> c] = [ x \in {"c"} |-> c]  
 =============================================================================
