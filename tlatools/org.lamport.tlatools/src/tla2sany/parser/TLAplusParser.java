@@ -9151,11 +9151,6 @@ SyntaxTreeNode tn;
     return false;
   }
 
-  final private boolean jj_3R_115() {
-    if (jj_scan_token(LOCAL)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_137() {
     Token xsp;
     xsp = jj_scanpos;
@@ -9172,6 +9167,11 @@ SyntaxTreeNode tn;
     }
     }
     }
+    return false;
+  }
+
+  final private boolean jj_3R_115() {
+    if (jj_scan_token(LOCAL)) return true;
     return false;
   }
 
