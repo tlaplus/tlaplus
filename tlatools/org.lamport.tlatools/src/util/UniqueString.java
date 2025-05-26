@@ -312,7 +312,6 @@ public final class UniqueString implements Serializable
         dos.writeInt(this.tok);
         dos.writeInt(this. getVarLoc()); 
          // Above changed from dos.writeInt(this.loc); by Yuan Yu on 17 Mar 2010
-        dos.writeInt(this.s.length());
         dos.writeString(this.s);
     }
 
@@ -328,8 +327,7 @@ public final class UniqueString implements Serializable
     {
         int tok1 = dis.readInt();
         int loc1 = dis.readInt();
-        int slen = dis.readInt();
-        String str = dis.readString(slen);
+        String str = dis.readString();
         return new UniqueString(str, tok1, loc1);
     }
     
@@ -337,8 +335,7 @@ public final class UniqueString implements Serializable
     {
         dis.readInt(); // skip, because invalid for the given internTbl
         dis.readInt(); // skip, because invalid for the given internTbl
-        final int slen = dis.readInt();
-        final String str = dis.readString(slen);
+        final String str = dis.readString();
         return UniqueString.uniqueStringOf(str);
     }
 
