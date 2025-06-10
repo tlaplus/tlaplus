@@ -284,12 +284,11 @@ public class SpecObj
                 * produces this error.  Hopefully, we can use this to attach a     *
                 * location to the error message.                                   *
                 *******************************************************************/
-                errors.addAbort(
+                throw errors.addError(
                     ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
                     Location.nullLoc,
                     "Cannot find source file for module " + name +
-                    ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + ".",
-                    true
+                    ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + "."
                 );
             }
         }
@@ -387,14 +386,12 @@ public class SpecObj
             if (referencee == parseUnit)
             {
                 // Circularity detected
-                errors.addAbort(
+                throw errors.addError(
                     ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
                     Location.nullLoc,
                     "Circular dependency among .tla files; dependency cycle is:\n\n  "
-                    + pathToString(circularPath),
-                    true
+                    + pathToString(circularPath)
                 );
-
             } else
             {
                 circularPath.addElement(referencee);

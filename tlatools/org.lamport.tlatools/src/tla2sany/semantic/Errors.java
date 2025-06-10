@@ -73,17 +73,10 @@ public class Errors {
 
   private List<ErrorDetails> warnings = new ArrayList<ErrorDetails>();
   private List<ErrorDetails> errors   = new ArrayList<ErrorDetails>();
-  private List<ErrorDetails> aborts   = new ArrayList<ErrorDetails>();
 
-  /*************************************************************************
-  * The following methods to return the warnings, errors, and aborts in a  *
-  * sane way were added by LL on 12 May 2008.                              *
-  *************************************************************************/
-  public String[] getAborts()   { return this.aborts.stream().map(ErrorDetails::toString).toArray(String[]::new); }
   public String[] getErrors()   { return this.errors.stream().map(ErrorDetails::toString).toArray(String[]::new); }
   public String[] getWarnings() { return this.warnings.stream().map(ErrorDetails::toString).toArray(String[]::new); }
 
-  public List<ErrorDetails> getAbortDetails()   { return new ArrayList<ErrorDetails>(this.aborts); }
   public List<ErrorDetails> getErrorDetails()   { return new ArrayList<ErrorDetails>(this.errors); }
   public List<ErrorDetails> getWarningDetails() { return new ArrayList<ErrorDetails>(this.warnings); }
 
@@ -97,7 +90,7 @@ public class Errors {
     }
   }
 
-  public final void addError(ErrorCode code, Location loc, String str) {
+  public final AbortException addError(ErrorCode code, Location loc, String str) {
     if (loc == null) {
       loc = Location.nullLoc;
     }
@@ -105,44 +98,20 @@ public class Errors {
     if (!this.errors.contains(error)) {
       this.errors.add(error);
     }
+    
+    return new AbortException();
   }
 
-  public final void addAbort(
-      ErrorCode code,
-      Location loc,
-      String str,
-      boolean abort
-  ) throws AbortException {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.aborts.contains(error)) {
-      this.aborts.add(error);
-    }
-
-    if (abort){
-      throw new AbortException();
-    }
-  }
-
-  public final boolean isSuccess()             { return this.aborts.isEmpty() && this.errors.isEmpty(); }
+  public final boolean isSuccess()             { return this.errors.isEmpty(); }
 
   public final boolean isFailure()             { return !this.isSuccess(); }
 
   public final int     getNumErrors()          { return this.errors.size(); }
 
-  public final int     getNumAbortsAndErrors() { return this.aborts.size() + this.errors.size(); }
-
-  public final int     getNumMessages()        { return this.aborts.size() + this.errors.size() + this.warnings.size(); }
+  public final int     getNumMessages()        { return this.errors.size() + this.warnings.size(); }
 
   public final String  toString()  {
     StringBuffer ret = new StringBuffer("");
-
-    ret.append((this.aborts.size() > 0) ? "*** Abort messages: " + this.aborts.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.aborts)   {
-      ret.append(error.toString() + "\n\n\n");
-    }
 
     ret.append((this.errors.size() > 0) ? "*** Errors: " + this.errors.size() + "\n\n" : "");
     for (final ErrorDetails error : this.errors)   {

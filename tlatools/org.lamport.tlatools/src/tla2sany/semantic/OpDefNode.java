@@ -786,17 +786,17 @@ public class OpDefNode extends OpDefOrDeclNode
         }
       }
       else  {// null arg vector; supposedly cannot happen
-        errors.addAbort(ErrorCode.INTERNAL_ERROR,
+        throw errors.addError(ErrorCode.INTERNAL_ERROR,
                         loc, "Internal error: null args vector for operator '" +
-                        this.getName() + "' that should take variable number of args.",true);
+                        this.getName() + "' that should take variable number of args.");
       }
     }
     else {
       // It is an operator with a fixed number of params (possibly zero)
       if (args == null | params == null) { // args vector should never be null
-        errors.addAbort(ErrorCode.INTERNAL_ERROR,
+        throw errors.addError(ErrorCode.INTERNAL_ERROR,
                         loc, "Internal error: Null args or params vector for operator '" +
-                        this.getName() + "'.", true);
+                        this.getName() + "'.");
       }
       else { // Normal case: params != null & args != null
         // if the number of args does not match the number of params
@@ -856,9 +856,9 @@ public class OpDefNode extends OpDefOrDeclNode
             } // end for
           }
           else {
-            errors.addAbort(ErrorCode.INTERNAL_ERROR, Location.nullLoc,
+            throw errors.addError(ErrorCode.INTERNAL_ERROR, Location.nullLoc,
                             "Internal error: operator neither BuiltIn nor UserDefined" +
-                            " \nin call to OpDefNode.match()", true);
+                            " \nin call to OpDefNode.match()");
           }
         }
       } // end "normal case"

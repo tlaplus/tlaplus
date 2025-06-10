@@ -427,11 +427,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						} else if (us == AtUS) {
 							ops[i] = AtSel;
 						} else {
-							errors.addAbort(
+							throw errors.addError(
 								ErrorCode.INTERNAL_ERROR,
 								stn.getLocation(),
-								"Internal error: Unexpected selector `" + stn.getImage() + "'.",
-								true
+								"Internal error: Unexpected selector `" + stn.getImage() + "'."
 							);
 						}
 					} // if stn.heirs().length > 0
@@ -541,11 +540,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// It would be nice if this produced a more helpful error
 						// message, but I have no idea if there are other bad inputs
 						// that can cause it.
-						errors.addAbort(
+						throw errors.addError(
 							ErrorCode.INTERNAL_ERROR,
 							prefixElts[i].getLocation(),
-							"Internal error: IdPrefixElement has other than 2 or 3 heirs.",
-							true
+							"Internal error: IdPrefixElement has other than 2 or 3 heirs."
 						);
 					}
 					;
@@ -697,11 +695,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * Check that, if sel.args[idx] != null, then it is an OpArgs node. *
 			 *********************************************************************/
 			if ((sel.args[idx] != null) && (sel.args[idx].getKind() != N_OpArgs)) {
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					sel.args[idx].getLocation(),
-					"Internal error: Unexpected syntax node kind.",
-					true
+					"Internal error: Unexpected syntax node kind."
 				);
 			}
 			;
@@ -744,14 +741,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 									"Need name or step number here, not `" + sel.opNames[idx] + "'.");
 							return nullOAN;
 						} else {
-							errors.addAbort(
+							throw errors.addError(
 								ErrorCode.INTERNAL_ERROR,
 								sel.opsSTN[idx].getLocation(),
-								"Internal error: should have name here.",
-								true
+								"Internal error: should have name here."
 							);
 						}
-						;
 					}
 					; // if (curName == null) ... ;
 					if (newName != null) {
@@ -821,11 +816,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * but I wouldn't swear to it. *
 					 **************************************************************/
 					if (idx != 0) {
-						errors.addAbort(
+						throw errors.addError(
 							ErrorCode.INTERNAL_ERROR,
 							sel.selSTN.getLocation(),
-							"Internal error: impossible naming of declaration.",
-							true
+							"Internal error: impossible naming of declaration."
 						);
 					} else if (sel.ops.length != 1) {
 						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
@@ -1006,13 +1000,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					break;
 
 				default:
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
-						"Internal error: unexpected node kind.",
-						true
+						"Internal error: unexpected node kind."
 					);
-					break;
 				}
 				; // switch (curSymbolNode.getKind())
 
@@ -1025,11 +1017,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (((prevMode == FindingOpName) && (curNode.getKind() != UserDefinedOpKind)
 						&& (curNode.getKind() != ThmOrAssumpDefKind))
 						|| ((prevMode != FindingOpName) && (curNode.getKind() != LabelKind))) {
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						sel.selSTN.getLocation(),
-						"Unexpected node kind in FollowingLabels mode.",
-						true
+						"Unexpected node kind in FollowingLabels mode."
 					);
 				}
 				;
@@ -1162,11 +1153,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							;
 							curOpApplNode = (OpApplNode) curArgs[temp - 1];
 							if (curOpApplNode.getOperator().getName() != OP_pair) {
-								errors.addAbort(
+								throw errors.addError(
 									ErrorCode.INTERNAL_ERROR,
 									sel.opsSTN[idx].getLocation(),
-									"Internal error: Expecting $Pair and didn't find it.",
-									true
+									"Internal error: Expecting $Pair and didn't find it."
 								);
 							}
 							;
@@ -1189,11 +1179,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							;
 							curOpApplNode = (OpApplNode) curArgs[temp - 1];
 							if (curOpApplNode.getOperator().getName() != OP_pair) {
-								errors.addAbort(
+								throw errors.addError(
 									ErrorCode.INTERNAL_ERROR,
 									sel.opsSTN[idx].getLocation(),
-									"Internal error: Expecting $Pair and didn't find it.",
-									true
+									"Internal error: Expecting $Pair and didn't find it."
 								);
 							}
 							;
@@ -1253,11 +1242,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							if (temp > 1) {
 								curOpApplNode = (OpApplNode) curNode;
 								if (curOpApplNode.getOperator().getName() != OP_pair) {
-									errors.addAbort(
+									throw errors.addError(
 										ErrorCode.INTERNAL_ERROR,
 										sel.opsSTN[idx].getLocation(),
-										"Internal error: Expecting $Pair and didn't find it.",
-										true
+										"Internal error: Expecting $Pair and didn't find it."
 									);
 								}
 								;
@@ -1480,11 +1468,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				else if ((curNode.getKind() == UserDefinedOpKind) || (curNode.getKind() == BuiltInKind)
 						|| (curNode.getKind() == NumberedProofStepKind)) {
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
-						"Internal error: " + " Should not have been able to select this node.",
-						true
+						"Internal error: " + " Should not have been able to select this node."
 					);
 				} // else if (curNode.getKind() == UserDefinedOpKind) || ...
 
@@ -1504,11 +1491,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} // else if (curNode.getKind() == LabelKind)
 
 				else {
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
-						"Internal error: Unknown node kind.",
-						true
+						"Internal error: Unknown node kind."
 					);
 				}
 				; // end last else of if sel.ops[idx] != ColonSel
@@ -1554,11 +1540,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				break; // case FindingSubExpr
 
 			default:
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					sel.selSTN.getLocation(),
-					"Internal error: Unexpected mode",
-					true
+					"Internal error: Unexpected mode"
 				);
 			} // switch (mode)
 			idx++;
@@ -1696,11 +1681,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				nodeParams = ((OpDefNode) curNode).getParams();
 			} else {
 				if (curNode.getKind() != ThmOrAssumpDefKind) {
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[sel.opsSTN.length - 1].getLocation(),
-						"Internal Error: Found unexpected node kind after FindingOpName",
-						true
+						"Internal Error: Found unexpected node kind after FindingOpName"
 					);
 				}
 				;
@@ -1929,11 +1913,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * curNode should be an expression node. *
 		 ***********************************************************************/
 		if (!(curNode instanceof ExprNode)) {
-			errors.addAbort(
+			throw errors.addError(
 				ErrorCode.INTERNAL_ERROR,
 				sel.selSTN.getLocation(),
-				"Internal error: Expected expression node.",
-				true
+				"Internal error: Expected expression node."
 			);
 		}
 		;
@@ -2264,14 +2247,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				processRecursive(definitions[lvi], currentModule);
 				break;
 			default:
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					definitions[lvi].getLocation(),
 					"Internal error: Syntax node of kind " + definitions[lvi].getKind()
-					+ " unsupported " + definitions[lvi].getImage(),
-					true
+					+ " unsupported " + definitions[lvi].getImage()
 				);
-				break;
 			}
 		}
 
@@ -2310,11 +2291,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (extendee == null) {
 					extendee = moduleTable.getModuleNode(extendeeID);
 					if (extendee == null) {
-						errors.addAbort(
+						throw errors.addError(
 							ErrorCode.INTERNAL_ERROR,
 							treeNodes[lvi].getLocation(),
-							"Could not find module " + extendeeID,
-							false
+							"Could not find module " + extendeeID
 						);
 					}
 				}
@@ -2924,11 +2904,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (curLevel < MaxLetInLevel) {
 			curLevel++;
 		} else {
-			errors.addAbort(
+			throw errors.addError(
 				ErrorCode.INTERNAL_ERROR,
 				treeNode.getLocation(),
-				"LETs nested more than " + MaxLetInLevel + " deep.",
-				true
+				"LETs nested more than " + MaxLetInLevel + " deep."
 			);
 		}
 		;
@@ -2961,11 +2940,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				break;
 
 			default:
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					syntaxTreeNode[lvi].getLocation(),
-					"Internal error: found unexpected syntax tree node in LET.",
-					true
+					"Internal error: found unexpected syntax tree node in LET."
 				);
 			} // switch
 		} // for
@@ -3217,11 +3195,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * be a GeneralId node and an OpArgs node, but let's be * sure. *
 			 *********************************************************************/
 			if ((genIdNode.getKind() != N_GeneralId) || (opApplNode.getKind() != N_OpArgs)) {
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					treeNode.getLocation(),
-					"Internal error: OpAppl node with unexpected children.",
-					true
+					"Internal error: OpAppl node with unexpected children."
 				);
 			}
 			;
@@ -3529,11 +3506,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 		;
 		if ((goal.getBody() == null) || (goal.getBody().getKind() != AssumeProveKind)) {
-			errors.addAbort(
+			throw errors.addError(
 				ErrorCode.INTERNAL_ERROR,
 				stn.getLocation(),
-				"Internal error: Expecting label to be in AssumeProveNode, but it's not.",
-				true
+				"Internal error: Expecting label to be in AssumeProveNode, but it's not."
 			);
 		}
 		;
@@ -4767,11 +4743,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					id = child.heirs()[1].getUS();
 					count = 1;
 				} else {
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						treeNode.getLocation(),
-						"Internal error: Error in formal params part of parse tree.",
-						true
+						"Internal error: Error in formal params part of parse tree."
 					);
 				}
 
@@ -5125,11 +5100,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * argument. *
 			 *********************************************************************/
 			if (targetSymbol.getArity() <= 0) {
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					opArgSyntaxNode.getLocation(),
-					"Internal error: expected to find arity > 0.",
-					true
+					"Internal error: expected to find arity > 0."
 				);
 			}
 			;
@@ -5149,11 +5123,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (errors.getNumErrors() > 0) {
 					return nullOpArg;
 				}
-				errors.addAbort(
+				throw errors.addError(
 					ErrorCode.INTERNAL_ERROR,
 					opArgSyntaxNode.getLocation(),
-					"Internal error: Expected an operator argument but found something else.",
-					true
+					"Internal error: Expected an operator argument but found something else."
 				);
 			}
 			;
@@ -5319,11 +5292,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// and as a declaration.
 		Context instanceeCtxt = this.getContext(moduleId);
 		if (instanceeCtxt == null) {
-			errors.addAbort(
+			throw errors.addError(
 				ErrorCode.INTERNAL_ERROR,
 				children[1].getLocation(),
-				"Internal error: No context available for module `" + moduleId.toString() + "'.",
-				true
+				"Internal error: No context available for module `" + moduleId.toString() + "'."
 			);
 		}
 		;
@@ -5339,11 +5311,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 
 		if (instanceeModuleNode == null) {
-			errors.addAbort(
+			throw errors.addError(
 				ErrorCode.INTERNAL_ERROR,
 				children[1].getLocation(),
-				"Could not find module " + moduleId.toString(),
-				false
+				"Could not find module " + moduleId.toString()
 			);
 		}
 
@@ -6304,13 +6275,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					break;
 
 				default:
-					errors.addAbort(
+					throw errors.addError(
 						ErrorCode.INTERNAL_ERROR,
 						stn.getLocation(),
-						"Internal error: Unexpected SyntaxTreeNode kind: " + heirs[i].getKind(),
-						true
+						"Internal error: Unexpected SyntaxTreeNode kind: " + heirs[i].getKind()
 					);
-					break;
 				}
 				; // switch
 
@@ -6430,312 +6399,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * Pop the sub-Context. *
 		 *********************************************************************/
 	} // generateProof
-
-	/***************************************************************************
-	 * The following method is not used and I have no idea why it's still * here. *
-	 ***************************************************************************/
-	private final LevelNode generateNumerableStep(TreeNode stn,
-//          TreeNode stmt, 
-//          UniqueString stepNum,
-//          TreeNode proof, 
-			ModuleNode cm) throws AbortException {
-		/***********************************************************************
-		 * Used to generate the step for a NumerableStep or QEDStep token. * Returns a
-		 * TheoremNode or ThmOrAssumpDefNode. * * The parsing into the syntactic tree
-		 * makes it hard to rationalize * processing of an N_NumerableStep node because
-		 * there are two * different ways such a step can be parsed * * 1. [step number]
-		 * (sequence of tokens of the statement) [proof] * 2. [step number]
-		 * (NonExprBody) [proof] * * where, in case 2, the NonExprBody node contains all
-		 * the tokens of * the statement except the optional step number. Here are the *
-		 * classes into which the different kinds of NumerableStep nodes fall. * * 1.
-		 * CASE, (step number) expression. * * 2. WITNESS, TAKE, PICK, HAVE,
-		 * ASSUME/PROVE, SUFFICES, * and PROVE expression *
-		 ***********************************************************************/
-		errors.addAbort(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Uses generateNumerable_Step", true);
-		UniqueString stepNum = null;
-		TreeNode[] heirs = stn.heirs();
-		int nextTok = 0;
-		ThmOrAssumpDefNode tadn = null;
-		boolean isSuffices = false;
-		boolean isAssumeProve = false;
-		/*********************************************************************
-		 * Set true if this is an ASSUME/PROVE step, in which case some * messing with
-		 * the symbol table is necessary so that symbols * declared in the ASSUME are
-		 * visible in the proof of this step. * They should be visible in the rest of
-		 * the proof iff this is a * SUFFICES ASSUME... step. *
-		 *********************************************************************/
-		Context assumeContext = null;
-		/*********************************************************************
-		 * For use with an ASSUME/PROVE. *
-		 *********************************************************************/
-		LevelNode body = null;
-		/*********************************************************************
-		 * This will be set to the body of the TheoremNode or * ThmOrAssumpDefNode. *
-		 *********************************************************************/
-
-		/***********************************************************************
-		 * We now save the values of heirs and nextTok. If the tokens of the * statement
-		 * are inside a NonExprBody node, we set heirs to the * children of that node,
-		 * nextTok to 0, and hasNonExprBody true. * After processing the statement, we
-		 * will reset heirs and set nextTok * to the its saved value plus 1. *
-		 ***********************************************************************/
-		TreeNode[] savedHeirs = heirs;
-		int savedNextTok = nextTok;
-		boolean hasNonExprBody = false;
-		if (heirs[nextTok].getKind() == N_NonExprBody) {
-			heirs = heirs[nextTok].heirs();
-			nextTok = 0;
-			hasNonExprBody = true;
-		}
-		;
-
-		/***********************************************************************
-		 * If next token is "SUFFICES", then skip over it and set isSuffices * true.
-		 * With the current grammar, this is the case only for an * ordinary assertion
-		 * (a statement or ASSUME/PROVE). *
-		 ***********************************************************************/
-		if (heirs[nextTok].getKind() == TLAplusParserConstants.SUFFICES) {
-			nextTok++;
-			isSuffices = true;
-		}
-		;
-
-		/***********************************************************************
-		 * Skip over the next token if it's "PROVE". With current grammar, * this only
-		 * happens when nextTok = 0. *
-		 ***********************************************************************/
-		if (heirs[nextTok].getKind() == TLAplusParserConstants.PROVE) {
-			nextTok++;
-		}
-		;
-
-		/***********************************************************************
-		 * If body will be an OpApplNode with a dummy operator (like $Pick), * then set
-		 * op to the operator's name and move past the determining * token (like
-		 * "PICK"). Otherwise, the body will be an ordinary * assertion and op is left
-		 * null. *
-		 ***********************************************************************/
-		UniqueString op = null;
-		switch (heirs[nextTok].getKind()) {
-		case TLAplusParserConstants.QED:
-			body = new OpApplNode(OP_qed, new ExprNode[0], heirs[nextTok], cm);
-			nextTok++;
-			break;
-
-		case TLAplusParserConstants.CASE:
-		case TLAplusParserConstants.HAVE:
-			op = OP_have;
-			if (heirs[nextTok].getKind() == TLAplusParserConstants.CASE) {
-				op = OP_pfcase;
-			}
-			;
-			nextTok++;
-			ExprNode[] args = new ExprNode[1];
-			args[0] = generateExpression(heirs[nextTok], cm);
-			body = new OpApplNode(op, args, heirs[nextTok], cm);
-			nextTok++;
-			break;
-
-		case TLAplusParserConstants.TAKE:
-		case TLAplusParserConstants.PICK:
-			op = OP_take;
-			if (heirs[nextTok].getKind() == TLAplusParserConstants.PICK) {
-				op = OP_pick;
-			}
-			;
-			nextTok++;
-
-			if (heirs[nextTok].getKind() == N_QuantBound) {
-				int offset = nextTok;
-				/*****************************************************************
-				 * The introduced identifiers are bounded--e.g., * "TAKE id \in Set". *
-				 *****************************************************************/
-				/*****************************************************************
-				 * Set quants to the number of N_QuantBound nodes. *
-				 *****************************************************************/
-				int quants = 1;
-				nextTok++;
-				while ((nextTok < heirs.length) && (heirs[nextTok].getKind() == TLAplusParserConstants.COMMA)) {
-					quants++;
-					nextTok = nextTok + 2;
-				}
-				;
-				FormalParamNode[][] params = new FormalParamNode[quants][0];
-				boolean[] bt = new boolean[quants];
-				ExprNode[] paramBounds = new ExprNode[quants];
-				processQuantBoundArgs(heirs, offset, params, bt, paramBounds, cm);
-
-//          ExprNode[]          args ;
-				if (op == OP_pick) {
-					/****************************************************************
-					 * This is a PICK step; get the ": expr". *
-					 ****************************************************************/
-					nextTok++; // Skip over the ":"
-					args = new ExprNode[1];
-					args[0] = generateExpression(heirs[nextTok], cm);
-					nextTok++;
-				} else {
-					/****************************************************************
-					 * This is a TAKE step. *
-					 ****************************************************************/
-					args = new ExprNode[0];
-				}
-				;
-				body = new OpApplNode(op, null, args, params, bt, paramBounds, stn, cm);
-			} else {
-				/*****************************************************************
-				 * The introduced identifiers are unbounded--e.g., * "TAKE id1, id2". *
-				 *****************************************************************/
-				/*****************************************************************
-				 * Set ids to the number of introduced identifiers. *
-				 *****************************************************************/
-				int ids = 1;
-				while ((nextTok + 2 * ids - 1 < heirs.length)
-						&& (heirs[nextTok + 2 * ids - 1].getKind() == TLAplusParserConstants.COMMA)) {
-					ids++;
-				}
-				;
-
-				/*****************************************************************
-				 * Set params to the array of new FormalParamNodes for the * identifiers. The
-				 * identifiers are added to the current symbol * table. *
-				 *****************************************************************/
-				FormalParamNode[] params = new FormalParamNode[ids];
-				for (int i = 0; i < ids; i++) {
-					params[i] = new FormalParamNode(heirs[2 * i + nextTok].getUS(), 0, heirs[2 * i + nextTok],
-							symbolTable, cm);
-				}
-				;
-				/*****************************************************************
-				 * Skip over the identifier-list tokens. *
-				 *****************************************************************/
-				nextTok = nextTok + 2 * ids - 1;
-
-//          ExprNode[] args ;
-				if (op == OP_pick) {
-					/****************************************************************
-					 * This is a PICK step; get the ": expr". *
-					 ****************************************************************/
-					nextTok++; // Skip over the ":"
-					args = new ExprNode[1];
-					args[0] = generateExpression(heirs[nextTok], cm);
-					nextTok++;
-				} else {
-					/****************************************************************
-					 * This is a TAKE step. *
-					 ****************************************************************/
-					args = new ExprNode[0];
-				}
-				;
-				body = new OpApplNode(op, args, params, stn, cm);
-			}
-			;
-			break;
-
-		case TLAplusParserConstants.WITNESS:
-			nextTok++;
-
-			/*******************************************************************
-			 * Set ids to the number of expressions. *
-			 *******************************************************************/
-			int ids = 1;
-			while ((nextTok + 2 * ids - 1 < heirs.length)
-					&& (heirs[nextTok + 2 * ids - 1].getKind() == TLAplusParserConstants.COMMA)) {
-				ids++;
-			}
-			;
-			ExprNode[] exprs = new ExprNode[ids];
-			for (int i = 0; i < ids; i++) {
-				exprs[i] = generateExpression(heirs[2 * i + nextTok], cm);
-			}
-			;
-
-			body = new OpApplNode(OP_tup, exprs, stn, cm);
-			nextTok = nextTok + 2 * ids - 1;
-			break;
-
-		default:
-			/*******************************************************************
-			 * This is an ordinary assertion--either an ExprNode or an * AssumeProve node. *
-			 *******************************************************************/
-			if (heirs[nextTok].getKind() == N_AssumeProve) {
-				/*****************************************************************
-				 * This is an AssumeProve node. * * For an ordinary ASSUME/PROVE, we need to
-				 * save symbol * declarations from top-level NEW statements in the ASSUME to *
-				 * make them visible only in the proof. If this is a SUFFICES * ASSUME/PROVE, we
-				 * don't need to do that because we want those * symbol declarations to be
-				 * visible outside the PROVE clause as * well. *
-				 *****************************************************************/
-				isAssumeProve = true;
-				if (!isSuffices) {
-					symbolTable.pushContext(new Context(moduleTable));
-// System.out.println("here") ;
-				}
-				;
-// System.out.println("here and there") ;
-				body = generateAssumeProve(heirs[nextTok], cm);
-				if (!isSuffices) {
-					assumeContext = symbolTable.getContext();
-					symbolTable.popContext();
-				}
-				;
-			} else {
-				/*****************************************************************
-				 * This is an ordinary expression. *
-				 *****************************************************************/
-				body = generateExpression(heirs[nextTok], cm);
-			}
-			;
-			nextTok++;
-			break;
-		}
-		; // switch
-
-		/***********************************************************************
-		 * Complete the ThmOrOpDefNode, if there is one. *
-		 ***********************************************************************/
-		if (stepNum != null) {
-			// SZA: the next line commented, to prevent a NullPointerException
-			// The method is not executed anyways.
-			// tadn.construct(true, body, cm, symbolTable, null) ;
-		}
-		;
-
-		/***********************************************************************
-		 * Restore heirs and nextTok if the statement's tokens were inside a *
-		 * NonExprBody node. *
-		 ***********************************************************************/
-		if (hasNonExprBody) {
-			heirs = savedHeirs;
-			nextTok = savedNextTok + 1;
-		}
-		;
-
-		/***********************************************************************
-		 * Set proof to the proof, or to null if there is none. There is no * check made
-		 * to see if this is a kind of step that should have a * proof. Thus, adding a
-		 * proof to something like a WITNESS statement * requires changing only the
-		 * parsing phase (specified by tla+.jj). *
-		 ***********************************************************************/
-		ProofNode proof = null;
-		if (heirs.length > nextTok) {
-			if (isAssumeProve && !isSuffices) {
-				symbolTable.pushContext(assumeContext);
-			}
-			;
-			proof = generateProof(heirs[nextTok], cm);
-			if (isAssumeProve && !isSuffices) {
-				symbolTable.popContext();
-			}
-			;
-		}
-		;
-
-		TheoremNode thm = new TheoremNode(stn, body, cm, proof, tadn);
-		thm.suffices = isSuffices;
-		return thm;
-
-	} // generateNumerableStep
 
 	private final LeafProofNode generateLeafProof(TreeNode stn, ModuleNode cm) throws AbortException {
 		TreeNode heirs[] = stn.heirs();
