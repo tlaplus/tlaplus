@@ -223,12 +223,11 @@ public class ParseUnit {
     // toolbox.util.AdapterFactory.locationToRegion.)  
     if (!mName.equals(fName)) {
     //  was:    if (!mName.equalsIgnoreCase(fName)) {
-      errors.addAbort(
+      throw errors.addError(
           ErrorCode.MODULE_NAME_DIFFERENT_FROM_FILE_NAME,
           Location.nullLoc,
           "File name '" + fName + "' does not match the name '" +
-          mName + "' of the top level module it contains.",
-          true
+          mName + "' of the top level module it contains."
       );
     }
   }
@@ -253,11 +252,10 @@ public class ParseUnit {
         // We ignore that possibility.
         if (!nis.sourceFile().exists())
         {
-            errors.addAbort(
+            throw errors.addError(
                 ErrorCode.INTERNAL_ERROR,
                 Location.nullLoc,
-                "Error: source file '" + nis.getName() + "' has apparently been deleted.",
-                true
+                "Error: source file '" + nis.getName() + "' has apparently been deleted."
             );
         }
 
@@ -341,11 +339,10 @@ public class ParseUnit {
         if (!parseSuccess)
         { // if parsing the contents of "nis" failed...
             // create the abort and throw the exception
-            errors.addAbort(
+            throw errors.addError(
                 ErrorCode.INTERNAL_ERROR,
                 Location.moduleLocation(nis.getModuleName()),
-                "Could not parse module " + nis.getModuleName() + " from file " + nis.getName(),
-                true
+                "Could not parse module " + nis.getModuleName() + " from file " + nis.getName()
             );
         }
             
