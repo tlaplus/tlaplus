@@ -310,7 +310,7 @@ public class SANY {
           spec.errorLevel = 4;
         }
       }
-      throw new SemanticException();
+      throw new SemanticException(e);
     }
     return;
   }

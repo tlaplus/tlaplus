@@ -3028,7 +3028,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return new DecimalNode(children[0].getImage(), children[2].getImage(), treeNode);
 
 		case N_Number:
-			return new NumeralNode(children[0].getImage(), treeNode);
+			return new NumeralNode(children[0].getImage(), treeNode, errors);
 
 		case N_String:
 			return new StringNode(treeNode, true);
