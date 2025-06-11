@@ -900,6 +900,12 @@ public class MP
         case EC.TLC_LIVE_FORMULA_TAUTOLOGY:
             b.append("Temporal formula is a tautology (its negation is unsatisfiable).");
             break;
+        case EC.TLC_LIVE_FORMULA_AND_FAIRNESS_TAUTOLOGY:
+            b.append("Implied-temporal checking is a tautology.\n"
+            		+ "The temporal formula %1% at %2% equals\n"
+            		+ "the fairness constraints of the behavior specification %3% at %4%.\n"
+            		+ "Therefore, checking whether %3% => %1% using TLC will never result in a violation of %1%.");
+            break;
 		case EC.TLC_LIVE_FORMULA_STATE_LEVEL:
 			b.append(
 					"The formula %1% is a state-level formula, but it was used as a PROPERTY (or PROPERTIES), "

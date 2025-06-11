@@ -259,7 +259,7 @@ public interface EC
     public static final int TLC_LIVE_FORMULA_TAUTOLOGY = 2253;
     public static final int TLC_LIVE_FORMULA_STATE_LEVEL = 2255;
     public static final int TLC_CONFIG_NO_SPEC_BUT_PROPERTY = 2257;
-
+    public static final int TLC_LIVE_FORMULA_AND_FAIRNESS_TAUTOLOGY = 2258;
     
     public static final int TLC_EXPECTED_VALUE = 2215;
     public static final int TLC_EXPECTED_EXPRESSION = 2246;
