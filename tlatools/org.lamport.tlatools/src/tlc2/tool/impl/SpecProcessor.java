@@ -111,6 +111,8 @@ import util.UniqueString;
 
 public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
+	private static final String PROPERTY = "PROPERTY";
+	
     private final String rootFile; // The root file of this spec.
     private final int toolId;
     private final Defns defns; // Global definitions reachable from root
@@ -970,7 +972,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { specName });
                 }
-                this.processConfigSpec(opDef.getBody(), Context.Empty, List.Empty);
+                this.processConfigSpec(opDef.getBody(), Context.Empty, List.Empty, new ArrayList<>());
             } else if (spec == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "name", specName });
@@ -1075,6 +1077,20 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 			// assert fairness (i.e., this.impliedTemporals is empty), then it's acceptable
 			// to have PROPERTY without a corresponding SPECIFICATION.
 			MP.printWarning(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY, new String[] { "" });
+		}
+
+		if (this.config.getSpec().length() > 0 && this.config.getProperties().size() == 1
+				&& Arrays.asList(this.temporals).stream().allMatch(a -> a.getAuxiliary().containsKey(PROPERTY))) {
+			// Resolve PROPERTY L 
+			final String liveName = (String) this.config.getProperties().elementAt(0);
+			// This cast is safe because of code above.
+			final OpDefNode opDefNode = (OpDefNode) this.defns.get(liveName);
+			// Raise a warning if a (novice) user checks S /\ L => L, where L is a liveness
+			// property (and S is the safety part of Spec). Note that we only handle a small
+			// subset of the syntactic variants of S /\ L => L.
+			MP.printWarning(EC.TLC_LIVE_FORMULA_AND_FAIRNESS_TAUTOLOGY,
+					new String[] { liveName, opDefNode.getLocation().toString(),
+							specName, ((OpDefNode) this.defns.get(specName)).getLocation().toString() });
 		}
         
 		// Process overrides given by ParameterizedSpecObj *after* the ordinary config
@@ -1194,18 +1210,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
     /* Process the SPECIFICATION field of the config file.  */
-    private final void processConfigSpec(ExprNode pred, Context c, List subs)
+    private final void processConfigSpec(ExprNode pred, Context c, List subs, java.util.List<SemanticNode> stack)
     {
         if (pred instanceof SubstInNode)
         {
             SubstInNode pred1 = (SubstInNode) pred;
-            this.processConfigSpec(pred1.getBody(), c, subs.cons(pred1));
+            this.processConfigSpec(pred1.getBody(), c, subs.cons(pred1), stack);
             return;
         }
         
         if (pred instanceof OpApplNode)
         {
             OpApplNode pred1 = (OpApplNode) pred;
+            stack.add(pred1);
             ExprOrOpArgNode[] args = pred1.getArgs();
             final SymbolNode opNode = pred1.getOperator();
             final Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
@@ -1224,7 +1241,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                         this.initPredVec.addElement(new Action(Specs.addSubsts(body, subs), c, ((OpDefNode) val), true, false));
                     } else
                     {
-                        this.processConfigSpec(body, c, subs);
+                        this.processConfigSpec(body, c, subs, stack);
                     }
                 } else if (val == null)
                 {
@@ -1258,7 +1275,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				// instantiation. This is better than checking a spec with a bogus context c.
 				if (odn.getBody() != null && !odn.getInRecursive() && odn.getArity() == args.length && subs.isEmpty()) {
 					c = symbolNodeValueLookupProvider.getOpContext((OpDefNode) val, args, c, false, toolId);
-					this.processConfigSpec(odn.getBody(), c, subs);
+					this.processConfigSpec(odn.getBody(), c, subs, stack);
 					return;
 				}
 			}
@@ -1272,7 +1289,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             {
                 for (int i = 0; i < args.length; i++)
                 {
-                    this.processConfigSpec((ExprNode) args[i], c, subs);
+                    // Instantiate to "fork" the current stack for each conjunct.
+                    this.processConfigSpec((ExprNode) args[i], c, subs, new ArrayList<>(stack));
                 }
                 return;
             }
@@ -1458,7 +1476,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           // The following case added by LL on 13 Nov 2009 to handle subexpression names.
           if (opcode ==  OPCODE_nop)
            {
-               this.processConfigSpec((ExprNode) args[0], c, subs);
+               this.processConfigSpec((ExprNode) args[0], c, subs, stack);
                return;
            }
         }
@@ -1469,8 +1487,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             this.initPredVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
         } else if (level == 3)
         {
-            this.temporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
-            this.temporalNameVec.addElement(pred.toString());
+			final Action a = new Action(Specs.addSubsts(pred, subs), c);
+			// Check whether any SemanticNode higher up in the (call) stack represents a
+			// liveness property. If so, tag the corresponding Action instance as part of a
+			// fairness constraint.
+			//
+			// Background: A liveness property L is decomposed into multiple Action
+			// instances. However, there is not necessarily a one-to-one correspondence
+			// between them. Moreover, it is difficult to trace an Action instance back to
+			// its originating liveness property, as the Action's name, location, or other
+			// fields do not explicitly store this information.
+			@SuppressWarnings("rawtypes")
+			final Vect properties = this.config.getProperties();
+			stack.stream().filter(sn -> properties.contains(sn.getTreeNode().toString())).findAny()
+					.ifPresent(sn -> a.getAuxiliary().put(PROPERTY, sn));
+
+			this.temporalVec.addElement(a);
+			this.temporalNameVec.addElement(pred.toString());
         } else
         {
             Assert.fail(EC.TLC_CANT_HANDLE_CONJUNCT, pred.toString());

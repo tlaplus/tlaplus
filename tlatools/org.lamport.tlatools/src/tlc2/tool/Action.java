@@ -5,6 +5,7 @@ package tlc2.tool;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -45,6 +46,11 @@ public final class Action implements ToolGlobals, Serializable {
   private int id;
   private final boolean isInitPred;
   private final boolean isInternal;
+  // This map provides a generic and reusable solution to addresses the recurring
+  // need to associate metadata with an action instance. The memory overhead from
+  // using a Map is considered acceptable, as the total number of action instances
+  // rarely exceeds 1000.
+  private final Map<Object, Object> auxiliary = new HashMap<>();
   public CostModel cm = CostModel.DO_NOT_RECORD;
 
   /* Constructors */
@@ -190,5 +196,9 @@ public final class Action implements ToolGlobals, Serializable {
 
 	public boolean isInternal() {
 		return isInternal;
+	}
+
+	public Map<Object, Object> getAuxiliary() {
+		return auxiliary;
 	}
 }
