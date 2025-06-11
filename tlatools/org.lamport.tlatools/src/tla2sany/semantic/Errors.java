@@ -28,7 +28,7 @@ import tla2sany.st.Location;
 
 public class Errors {
 
-  public static class ErrorDetails {
+  public static final class ErrorDetails {
 
     private final ErrorCode code;
 
@@ -36,7 +36,7 @@ public class Errors {
 
     private final String message;
 
-    public ErrorDetails(ErrorCode code, Location location, String message) {
+    ErrorDetails(ErrorCode code, Location location, String message) {
       this.code = code;
       this.location = location;
       this.message = message;
@@ -99,7 +99,7 @@ public class Errors {
       this.errors.add(error);
     }
     
-    return new AbortException();
+    return new AbortException(error, this);
   }
 
   public final boolean isSuccess()             { return this.errors.isEmpty(); }

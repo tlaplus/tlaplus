@@ -39,25 +39,29 @@ public class NumeralNode extends ExprNode {
    * @param stn
    * @throws AbortException
    */
-  public NumeralNode( String s, TreeNode stn ) throws AbortException {
+  public NumeralNode( String s, TreeNode stn, Errors errors ) throws AbortException {
     super(NumeralKind, stn);
     this.image = s;
     String num = s.toLowerCase();
     int radix = 10;
     if (num.charAt(0)=='\\') {
-     if (num.charAt(1)=='b') {
-    	 radix = 2;
-     } else if (num.charAt(1)=='o') {
-    	 radix = 8;
-     } else if (num.charAt(1)=='h') {
-    	 radix = 16;
-     } else {
-    	 throw new AbortException();  // This shouldn't happen.
+      if (num.charAt(1)=='b') {
+        radix = 2;
+      } else if (num.charAt(1)=='o') {
+        radix = 8;
+      } else if (num.charAt(1)=='h') {
+        radix = 16;
+      } else {
+        throw errors.addError(
+          ErrorCode.INTERNAL_ERROR,
+          stn.getLocation(),
+          "Unknown numeral format: " + num
+        );
      }
      num = num.substring(2);
     }
-    try {
 
+    try {
       this.value = Integer.parseInt( num, radix );
     } catch ( NumberFormatException e ) {
       this.bigValue = new BigInteger( s, radix );
@@ -67,7 +71,7 @@ public class NumeralNode extends ExprNode {
   public final int val() { return this.value; }
 
   public final BigInteger bigVal() { return this.bigValue; }
-  
+
   	/**
 	 * @return true if the numerical value of this instance should be referenced via
 	 *         {@link #val()}, false if it should be referenced via
