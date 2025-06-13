@@ -138,7 +138,6 @@ public class SemanticErrorCorpusTests {
       } case ERROR: {
         Assert.assertTrue(log.toString(), log.isFailure());
         final List<ErrorDetails> actual = log.getErrorDetails();
-        actual.addAll(log.getAbortDetails());
         Assert.assertFalse(log.toString(), actual.stream().anyMatch(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK));
         Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
         break;

@@ -284,7 +284,7 @@ public class SANY {
           if (semanticErrors.getNumMessages() > 0) {
             syserr.println("Semantic errors:\n\n" + semanticErrors);
             // indicate fatal error during semantic analysis or level-checking
-            if ( semanticErrors.getNumAbortsAndErrors() > 0 ) {
+            if ( semanticErrors.getNumErrors() > 0 ) {
               spec.errorLevel = 4;
             } // end if
           } // end if
@@ -306,7 +306,7 @@ public class SANY {
         }
         
         // indicate fatal error during semantic analysis or level-checking
-        if ( semanticErrors.getNumAbortsAndErrors() > 0 ) { 
+        if ( semanticErrors.getNumErrors() > 0 ) { 
           spec.errorLevel = 4;
         }
       }

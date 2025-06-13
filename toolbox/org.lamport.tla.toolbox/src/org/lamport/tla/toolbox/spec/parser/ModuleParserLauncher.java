@@ -31,7 +31,9 @@ import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
+import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.Errors.ErrorDetails;
 import tla2sany.semantic.ExternalModuleTable;
 import util.FilenameToStream;
 import util.ToolIO;
@@ -412,12 +414,13 @@ public class ModuleParserLauncher
 
                 // Test for special case of importing unknown module. (added 5
                 // Sep 2009 by lamport)
-                String[] abortMsgs = result.getParseErrors().getAborts();
-                if ((abortMsgs.length > 0) && (abortMsgs[0].indexOf("Cannot find source file for module") != -1))
-                {
-                    parsingModuleIndex = abortMsgs[0].indexOf("imported in module ") + 19;
-                    nameToFind = abortMsgs[0].substring(parsingModuleIndex, abortMsgs[0].indexOf(".",
-                            parsingModuleIndex + 1));
+                for (final ErrorDetails abortDetails : result.getParseErrors().getErrorDetails()) {
+                    if (abortDetails.getCode() == ErrorCode.MODULE_FILE_CANNOT_BE_FOUND) {
+                        final String abortMsg = abortDetails.getMessage();
+                        parsingModuleIndex = abortMsg.indexOf("imported in module ") + 19;
+                        nameToFind = abortMsg.substring(parsingModuleIndex, abortMsg.indexOf(".",
+                                parsingModuleIndex + 1));
+                    }
                 }
 
                 // Correct the capitalization of nameToFind, if necessary.
@@ -489,11 +492,12 @@ public class ModuleParserLauncher
                     // the abort in parseErrors
                     if (result.getParseErrors() != null)
                     {
-                        String[] aborts = result.getParseErrors().getAborts();
+                        String[] aborts = result.getParseErrors().getErrors();
                         if (aborts.length > 0)
                         {
-                            // error message
-                            message = aborts[0];
+                            // The error message triggering the abort will be
+                            // the most recent, so get the last message.
+                            message = aborts[aborts.length - 1];
                         }
                     }
                     // Unless this is the one abort in which err.moduleName can
@@ -532,11 +536,10 @@ public class ModuleParserLauncher
             if (result.getSemanticErrors() != null)
             {
 
-                String[][] errors = { result.getSemanticErrors().getAborts(), result.getSemanticErrors().getErrors(),
-                        result.getSemanticErrors().getWarnings() };
-                int[] holderType = { IMarker.SEVERITY_ERROR, IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
+                String[][] errors = { result.getSemanticErrors().getErrors(), result.getSemanticErrors().getWarnings() };
+                int[] holderType = { IMarker.SEVERITY_ERROR, IMarker.SEVERITY_WARNING };
 
-                for (int j = 0; j < 3; j++)
+                for (int j = 0; j < errors.length; j++)
                 {
                     for (int i = 0; i < errors[j].length; i++)
                     {
