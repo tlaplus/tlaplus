@@ -25,6 +25,7 @@ import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import tlc2.tool.Action;
+import tlc2.tool.impl.SpecProcessor;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.NamedInputStream;
@@ -1056,7 +1057,7 @@ public class SpecObj
 		return new ArrayList<>();
 	}
 
-	public List<Action> getInvariants() {
+	public List<Action> getInvariants(SpecProcessor specProcessor) {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}
