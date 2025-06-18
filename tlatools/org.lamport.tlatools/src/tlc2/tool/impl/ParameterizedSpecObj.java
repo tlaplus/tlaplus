@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import tla2sany.modanalyzer.ModulePointer;
 import tla2sany.modanalyzer.ParseUnit;
@@ -40,6 +41,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
+import tlc2.debug.TLCDebuggerExpression;
 import tlc2.tool.Action;
 import tlc2.util.Context;
 import tlc2.value.impl.StringValue;
@@ -76,9 +78,9 @@ public class ParameterizedSpecObj extends SpecObj {
 			final ModulePointer rootModule = pu.getRootModule();
 			
 			@SuppressWarnings("unchecked")
-			final List<Invariant> invs = (List<Invariant>) params.get(INVARIANT);
-			for (Invariant inv : invs) {
-				rootModule.getRelatives().addExtendee(inv.module);
+			final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.get(INVARIANT);
+			for (InvariantTemplate inv : invs) {
+				inv.getModules().forEach(rootModule.getRelatives()::addExtendee);
 			}
 		}
 		return pu;
@@ -132,30 +134,79 @@ public class ParameterizedSpecObj extends SpecObj {
 		}
 	}
 
-	public static class Invariant {
-		public final String module;
-		public final String operator;
+	public static abstract class InvariantTemplate {
+
+		protected final Set<String> modules;
 		
-		public Invariant(String module, String operator) {
-			super();
-			this.module = module;
+		public InvariantTemplate(final Set<String> modules) {
+			this.modules = modules;
+		}
+		
+		public abstract Action getAction(final SpecProcessor spec);
+
+		public Set<String> getModules() {
+			// TODO:
+			// CompileTimeInvariantTemplate: Returns the single module where the invariant
+			// is both declared and defined.
+			// RuntimeInvariantTemplate: Returns the set of modules that the invariant
+			// depends on. The module where the invariant is declared and defined is managed
+			// separately by TLCDebuggerExpression.
+			return modules;
+		}
+	}	
+	
+	// Note: There is exactly one instance of CompileTimeInvariantTemplate, which is
+	// specifically created for the TLA+ Debugger. Unfortunately, I couldn't find a
+	// way to implement this using RuntimeInvariantTemplate—which would eliminate
+	// the need for this separation—because it requires a Java module override.
+	// The Java module override is matched and connected to its TLA+ counterpart
+	// before the RuntimeInvariantTemplate is processed.  Thus, without the
+	// CompileTimeInvariantTemplate, the connection between the Java module override
+	// and its TLA+ counterpart would not be established.
+	public static class CompileTimeInvariantTemplate extends InvariantTemplate {
+		private final String operator;
+		
+		public CompileTimeInvariantTemplate(String module, String operator) {
+			super(Set.of(module));
 			this.operator = operator;
+		}
+
+		@Override
+		public Action getAction(final SpecProcessor spec) {
+			final ExternalModuleTable mt = spec.getModuleTbl();
+			final ModuleNode moduleNode = mt.getModuleNode(modules.iterator().next());
+			final OpDefNode opDef = moduleNode.getOpDef(operator);			
+			return new Action(opDef.getBody(), Context.Empty, opDef, false, true);
+		}
+	}
+	
+	public static class RuntimeInvariantTemplate extends InvariantTemplate {
+		private final String expr;
+
+		public RuntimeInvariantTemplate(final String expr) {
+			this(Set.of(), expr);
+		}
+
+		public RuntimeInvariantTemplate(final Set<String> modules, final String expr) {
+			super(modules);
+			this.expr = expr;
+		}
+
+		@Override
+		public Action getAction(final SpecProcessor spec) {
+			final OpDefNode opDef = TLCDebuggerExpression.process(spec, spec.getRootModule(), expr);
+			return new Action(opDef.getBody(), Context.Empty, opDef, false, true);
 		}
 	}
 
 	@Override
-	public List<Action> getInvariants() {
+	public List<Action> getInvariants(final SpecProcessor specProcessor) {
 		final List<Action> res = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
-		final List<Invariant> invs = (List<Invariant>) params.getOrDefault(INVARIANT, new ArrayList<>());
-		for (Invariant inv : invs) {
-			
-			final ExternalModuleTable mt = getExternalModuleTable();
-			final ModuleNode moduleNode = mt.getModuleNode(inv.module);
-			final OpDefNode opDef = moduleNode.getOpDef(inv.operator);
-			
-			res.add(new Action(opDef.getBody(), Context.Empty, opDef, false, true));
+		final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.getOrDefault(INVARIANT, new ArrayList<>());
+		for (InvariantTemplate inv : invs) {
+			res.add(inv.getAction(specProcessor));
 		}
 		return res;
 	}

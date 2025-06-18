@@ -1096,7 +1096,11 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		// Process overrides given by ParameterizedSpecObj *after* the ordinary config
 		// has been processed. A check above expects this.invariants to be empty if
 		// this.initPred is empty.
-        final java.util.List<Action> overrides = specObj.getInvariants();
+		// Pass this because the member variable specProcess in Spec (the parent
+		// class of Tool) is still null at this point; the implementation of
+		// getInvariants requires access to SpecProcessor in order to process
+		// RuntimeInvariantTemplates.
+        final java.util.List<Action> overrides = specObj.getInvariants(this);
 
         final ArrayList<Action> a = new ArrayList<>(Arrays.asList(this.invariants));
 		a.addAll(overrides);

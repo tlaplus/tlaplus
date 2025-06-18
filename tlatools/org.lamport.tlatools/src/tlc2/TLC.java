@@ -40,8 +40,10 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ParameterizedSpecObj;
-import tlc2.tool.impl.ParameterizedSpecObj.Invariant;
+import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
+import tlc2.tool.impl.ParameterizedSpecObj.CompileTimeInvariantTemplate;
+import tlc2.tool.impl.ParameterizedSpecObj.RuntimeInvariantTemplate;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
@@ -489,13 +491,20 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.debug = true;
+            } else if (args[index].equals("-inv"))
+            {
+				index++;
+				@SuppressWarnings("unchecked")
+				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
+						k -> new ArrayList<InvariantTemplate>());
+				invs.add(new RuntimeInvariantTemplate(args[index++]));
             } else if (args[index].equals("-debugger"))
             {
 				index++;
 				@SuppressWarnings("unchecked")
-				final List<Invariant> invs = (List<Invariant>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
-						k -> new ArrayList<Invariant>());
-				invs.add(new Invariant("_TLAPlusDebugger", "_TLAPlusDebuggerInvariant"));
+				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
+						k -> new ArrayList<InvariantTemplate>());
+				invs.add(new CompileTimeInvariantTemplate("_TLAPlusDebugger", "_TLAPlusDebuggerInvariant"));
 				debugPort = 4712; // standard port.
 				if ((index < args.length) && (args[index].contains("port=") || args[index].contains("nosuspend")
 						|| args[index].contains("nohalt") || args[index].contains("suspend")
@@ -1558,6 +1567,8 @@ public class TLC {
 														+ "-dumpTrace parameter may appear multiple times.\n"
 														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
 														+ "formats is easy.\n", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-inv", "expr", 
+               "evaluate the given (state-level) TLA+ formula expr as an invariant", true));
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
