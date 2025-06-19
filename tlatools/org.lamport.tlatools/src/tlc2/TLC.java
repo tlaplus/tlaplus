@@ -511,6 +511,23 @@ public class TLC {
 				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params
 						.computeIfAbsent(ParameterizedSpecObj.INVARIANT, k -> new ArrayList<InvariantTemplate>());
 				invs.add(new RuntimeInvariantTemplate(modules, expr));
+            } else if (args[index].equals("-invlevel"))
+            {
+				index++;
+				try {
+					Integer.parseInt(args[index]);
+				} catch (NumberFormatException e) {
+					printErrorMsg("Error: An integer for -invlevel required." + " But encountered " + args[index]);
+					return false;
+				}
+				@SuppressWarnings("unchecked")
+				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
+						k -> new ArrayList<InvariantTemplate>());
+				// Explicitly depend on TLC and Naturals because those two modules are not
+				// guaranteed to be EXTENDED by the root module. Use underscore prefixes to
+				// avoid name clashes with user modules.
+				invs.add(new RuntimeInvariantTemplate(Set.of("TLC", "Naturals"), String.format(
+						"LET _T == INSTANCE TLC _N == INSTANCE Naturals IN _N!<(_T!TLCGet(\"level\"), %s)", args[index++])));
             } else if (args[index].equals("-debugger"))
             {
 				index++;
@@ -1582,6 +1599,13 @@ public class TLC {
 														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-inv", "expr", 
                "evaluate the given (state-level) TLA+ formula expr as an invariant", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-invlevel", "n", 
+				"with n \\in Nat, evaluate the invariant TLCGet(\"level\") < n,\n"
+				+ "where TLCGet(\"level\") represents the distance of the current\n"
+				+ "state to some initial state. In other words, TLC will print the\n"
+				+ "first trace it encounters with length n. After that, TLC will\n"
+				+ "stop, unless the '-continue' parameter is specified.",
+				true));
     	sharedArguments.add(new UsageGenerator.Argument("-debug",
 														"print various debugging information - not for production use\n",
 														true));
