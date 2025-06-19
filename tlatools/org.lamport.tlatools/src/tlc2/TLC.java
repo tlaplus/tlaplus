@@ -16,10 +16,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,9 +42,9 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ParameterizedSpecObj;
+import tlc2.tool.impl.ParameterizedSpecObj.CompileTimeInvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
-import tlc2.tool.impl.ParameterizedSpecObj.CompileTimeInvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.RuntimeInvariantTemplate;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
@@ -494,10 +496,21 @@ public class TLC {
             } else if (args[index].equals("-inv"))
             {
 				index++;
+				final String expr = args[index++];
+
+				// Hack to handle expressions that depend on modules on the fly, i.e., LET T ==
+				// INSTANCE TLC N == INSTANCE Naturals IN T!... /\ N!...
+				final Pattern pattern = Pattern.compile("INSTANCE\\s+(\\w+)");
+				final Matcher matcher = pattern.matcher(expr);
+				final Set<String> modules = new HashSet<>();
+				while (matcher.find()) {
+					modules.add(matcher.group(1));
+				}
+
 				@SuppressWarnings("unchecked")
-				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
-						k -> new ArrayList<InvariantTemplate>());
-				invs.add(new RuntimeInvariantTemplate(args[index++]));
+				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params
+						.computeIfAbsent(ParameterizedSpecObj.INVARIANT, k -> new ArrayList<InvariantTemplate>());
+				invs.add(new RuntimeInvariantTemplate(modules, expr));
             } else if (args[index].equals("-debugger"))
             {
 				index++;
