@@ -180,6 +180,7 @@ jobs:
           SKIP+=("specifications/EinsteinRiddle/Einstein.cfg")
         fi
         python "$SCRIPT_DIR/check_small_models.py"                        \
+          --verbose                                                       \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
@@ -193,6 +194,7 @@ jobs:
         # before termination or else it fails. This makes it not amenable to
         # smoke testing.
         python "$SCRIPT_DIR/smoke_test_large_models.py"                   \
+          --verbose                                                       \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
