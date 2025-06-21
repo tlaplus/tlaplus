@@ -1080,6 +1080,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		}
 
 		if (this.config.getSpec().length() > 0 && this.config.getProperties().size() == 1
+				&& this.temporals.length > 0
 				&& Arrays.asList(this.temporals).stream().allMatch(a -> a.getAuxiliary().containsKey(PROPERTY))) {
 			// Resolve PROPERTY L 
 			final String liveName = (String) this.config.getProperties().elementAt(0);

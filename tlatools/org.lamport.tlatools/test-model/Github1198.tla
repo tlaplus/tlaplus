@@ -84,4 +84,14 @@ LiveG1 ==
 SpecG ==
 	Init /\ [][Next]_b /\ LiveG1 /\ WF_b(Next)
 
+------
+
+Abstract == 
+	INSTANCE Github1198abs
+
+SpecH ==
+    Init /\ [][Next]_b
+    
+Refinement ==
+    Abstract!Spec
 =============================================================================
