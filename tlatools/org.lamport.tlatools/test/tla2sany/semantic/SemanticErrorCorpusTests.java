@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -47,6 +48,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.output.LogLevel;
 import tla2sany.output.RecordedSanyOutput;
+import tla2sany.semantic.ErrorCode.ErrorLevel;
 import tla2sany.semantic.Errors.ErrorDetails;
 import tlc2.tool.CommonTestCase;
 import util.FilenameToStream;
@@ -67,9 +69,9 @@ public class SemanticErrorCorpusTests {
     /**
      * A regex pattern to match & extract an error code from a filename.
      * Matches files of the form:
-     * - W1004_Test.tla
-     * - E2006_Test.tla
-     * - E2006_SpecificTestCaseName_Test.tla
+     * - W4604_Test.tla
+     * - E4006_Test.tla
+     * - E4006_SpecificTestCaseName_Test.tla
      */
     private static final Pattern FILENAME_PATTERN = Pattern.compile("[W|E](?<code>\\d+)(_(?<case>\\S+))?_Test\\.tla");
 
@@ -127,23 +129,10 @@ public class SemanticErrorCorpusTests {
   @Test
   public void test() {
     final Errors log = parse(this.testCase.modulePath);
-    switch (this.testCase.expectedCode.getSeverityLevel()) {
-      case WARNING: {
-        Assert.assertTrue(log.toString(), log.isSuccess());
-        final List<ErrorDetails> actual = log.getWarningDetails();
-        Assert.assertFalse(log.toString(), actual.stream().anyMatch(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK));
-        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
-        break;
-      } case ERROR: {
-        Assert.assertTrue(log.toString(), log.isFailure());
-        final List<ErrorDetails> actual = log.getErrorDetails();
-        Assert.assertFalse(log.toString(), actual.stream().anyMatch(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK));
-        Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
-        break;
-      } default: {
-        Assert.fail(this.testCase.toString());
-      }
-    }
+    Assert.assertEquals(log.toString(), this.testCase.expectedCode.getSeverityLevel() == ErrorLevel.ERROR, log.isFailure());
+    final List<ErrorDetails> actual = log.getMessages();
+    Assert.assertEquals(new ArrayList<>(), actual.stream().filter(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK).collect(Collectors.toList()));
+    Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
   }
 
   /**
