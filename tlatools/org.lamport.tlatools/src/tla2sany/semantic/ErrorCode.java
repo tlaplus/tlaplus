@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 4270 Linux Foundation. All rights reserved.
+ * Copyright (c) 2025 Linux Foundation. All rights reserved.
  *
  * The MIT License (MIT)
  *
@@ -63,7 +63,7 @@ public enum ErrorCode {
    * never be reached since the semantic checking process will have failed
    * before those points.
    */
-  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.UNDEFINED),
+  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.ERROR),
 
   /**
    * SANY contains some code handling language features that are either not
@@ -79,7 +79,7 @@ public enum ErrorCode {
    * Subexpressions are one prominent category of language feature tagged
    * with this error code.
    */
-  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.UNDEFINED),
+  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.ERROR),
 
   /**
    * Standardized errors. These should cause a parse failure. They are
@@ -171,7 +171,6 @@ public enum ErrorCode {
    * The error's level of seriousness.
    */
   public static enum ErrorLevel {
-    UNDEFINED,
     WARNING,
     ERROR
   }

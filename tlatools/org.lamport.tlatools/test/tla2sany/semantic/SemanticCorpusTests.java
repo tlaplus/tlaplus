@@ -199,7 +199,7 @@ public class SemanticCorpusTests {
     }
     Assert.assertTrue(output.toString(), spec.parseErrors.isSuccess());
     Assert.assertTrue(output.toString(), spec.semanticErrors.isSuccess());
-    Assert.assertTrue(output.toString(), spec.semanticErrors.getWarnings().length == 0);
+    Assert.assertTrue(output.toString(), spec.semanticErrors.getWarningDetails().isEmpty());
     return spec.getExternalModuleTable();
   }
 

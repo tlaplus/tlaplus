@@ -1,33 +1,45 @@
-// Copyright (c) 2003 Compaq Corporation.  All rights reserved.
-// Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-
-/***************************************************************************
-* Every Semantic node has an errors field that is an Errors object.  A     *
-* SpecObj object also has a few different kinds of Errors objects.  Here   *
-* are the relevant methods:                                                *
-*                                                                          *
-*    addWarning                                                            *
-*    addError                                                              *
-*    addAbort   : These methods add the indicated level of error.          *
-*                                                                          *
-*    isSuccess()                                                           *
-*    isFailure() : Indicates if addError or addAbort was called.           *
-*                                                                          *
-*    getNumErrors()                                                        *
-*    getNumAbortsAndErrors()                                               *
-*    getNumMessages()        : Return approximately obvious values.        *
-*                                                                          *
-*    toString() : Returns all the errors as a single string.               *
-***************************************************************************/
+/*******************************************************************************
+ * Copyright (c) 2003 Compaq Corporation. All rights reserved.
+ * Copyright (c) 2003 Microsoft Corporation. All rights reserved.
+ * Copyright (c) 2025 Linux Foundation. All rights reserved.
+ *
+ * The MIT License (MIT)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ ******************************************************************************/
 package tla2sany.semantic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import tla2sany.semantic.ErrorCode.ErrorLevel;
 import tla2sany.st.Location;
 
+/**
+ * SANY's central logging class. Messages are tagged with a standardized
+ * {@link ErrorCode} and stored for later display or processing.
+ */
 public class Errors {
 
+  /**
+   * Un-serialized information about an error.
+   */
   public static final class ErrorDetails {
 
     private final ErrorCode code;
@@ -71,55 +83,115 @@ public class Errors {
     }
   }
 
-  private List<ErrorDetails> warnings = new ArrayList<ErrorDetails>();
-  private List<ErrorDetails> errors   = new ArrayList<ErrorDetails>();
+  /**
+   * A centralized list of recorded messages.
+   */
+  private final List<ErrorDetails> messages = new ArrayList<ErrorDetails>();
 
-  public String[] getErrors()   { return this.errors.stream().map(ErrorDetails::toString).toArray(String[]::new); }
-  public String[] getWarnings() { return this.warnings.stream().map(ErrorDetails::toString).toArray(String[]::new); }
+  /**
+   * Retrieves all recorded messages of exactly the given level.
+   *
+   * @param level The level of messages to retrieve.
+   * @return All recorded messages of exactly the given level.
+   */
+  public List<ErrorDetails> getMessagesOfLevel(ErrorLevel level) {
+    return this.messages.stream().filter(
+        msg -> msg.getCode().getSeverityLevel().equals(level)
+      ).collect(Collectors.toList());
+  }
 
-  public List<ErrorDetails> getErrorDetails()   { return new ArrayList<ErrorDetails>(this.errors); }
-  public List<ErrorDetails> getWarningDetails() { return new ArrayList<ErrorDetails>(this.warnings); }
+  /**
+   * Retrieves all recorded messages.
+   *
+   * @return A list of all recorded messages.
+   */
+  public List<ErrorDetails> getMessages() {
+    return new ArrayList<ErrorDetails>(this.messages);
+  }
 
+  public List<ErrorDetails> getErrorDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.ERROR);
+  }
+
+  public String[] getErrors() {
+    return this.getErrorDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  public List<ErrorDetails> getWarningDetails() {
+    return this.getMessagesOfLevel(ErrorLevel.WARNING);
+  }
+
+  public String[] getWarnings() {
+    return this.getWarningDetails().stream()
+        .map(ErrorDetails::toString).toArray(String[]::new);
+  }
+
+  /**
+   * Append a message to the log. If location is null, the value
+   * {@link Location.nullLoc} is assigned. Idempotent; will not append the
+   * same message to the log multiple times. Returns {@link AbortException}
+   * which can optionally be thrown by the caller, if error is fatal.
+   *
+   * @param code The standardized error code associated with the message.
+   * @param loc A spec location associated with the message.
+   * @param str A human-readable message.
+   * @return An exception which can optionally be thrown by the caller.
+   */
+  public final AbortException addMessage(ErrorCode code, Location loc, String str) {
+    loc = null == loc ? Location.nullLoc : loc;
+    final ErrorDetails message = new ErrorDetails(code, loc, str);
+    if (!this.messages.contains(message)) {
+      this.messages.add(message);
+    }
+
+    return new AbortException(message, this);
+  }
+  
+  /**
+   * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
+   */
+  @Deprecated
   public final void addWarning(ErrorCode code, Location loc, String str) {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.warnings.contains(error)) {
-      this.warnings.add(error);
-    }
+    this.addMessage(code, loc, str);
   }
-
+  
+  /**
+   * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
+   */
+  @Deprecated
   public final AbortException addError(ErrorCode code, Location loc, String str) {
-    if (loc == null) {
-      loc = Location.nullLoc;
-    }
-    final ErrorDetails error = new ErrorDetails(code, loc, str);
-    if (!this.errors.contains(error)) {
-      this.errors.add(error);
-    }
-    
-    return new AbortException(error, this);
+    return this.addMessage(code, loc, str);
   }
 
-  public final boolean isSuccess()             { return this.errors.isEmpty(); }
+  public final boolean isSuccess() {
+    return this.getErrorDetails().isEmpty();
+  }
 
-  public final boolean isFailure()             { return !this.isSuccess(); }
+  public final boolean isFailure() {
+    return !this.isSuccess();
+  }
 
-  public final int     getNumErrors()          { return this.errors.size(); }
+  public final int getNumErrors() {
+    return this.getErrorDetails().size();
+  }
 
-  public final int     getNumMessages()        { return this.errors.size() + this.warnings.size(); }
+  public final int getNumMessages() {
+    return this.messages.size();
+  }
 
-  public final String  toString()  {
+  public final String toString()  {
     StringBuffer ret = new StringBuffer("");
 
-    ret.append((this.errors.size() > 0) ? "*** Errors: " + this.errors.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.errors)   {
+    final List<ErrorDetails> errors = this.getErrorDetails();
+    ret.append((errors.size() > 0) ? "*** Errors: " + errors.size() + "\n\n" : "");
+    for (final ErrorDetails error : errors) {
       ret.append(error.toString() + "\n\n\n");
     }
 
-    ret.append((this.warnings.size() > 0) ? "*** Warnings: " + this.warnings.size() + "\n\n" : "");
-    for (final ErrorDetails error : this.warnings) {
+    final List<ErrorDetails> warnings = this.getWarningDetails();
+    ret.append((warnings.size() > 0) ? "*** Warnings: " + warnings.size() + "\n\n" : "");
+    for (final ErrorDetails error : warnings) {
       ret.append(error.toString() + "\n\n\n");
     }
 
