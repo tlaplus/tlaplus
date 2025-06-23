@@ -929,6 +929,14 @@ public class MP
 					+ "SPECIFICATION Spec, with Spec asserting a suitable fairness constraint (compare Chapter "
 					+ "8, page 87ff of Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
 			break;
+		case EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY:
+			b.append(
+					"Temporal properties (PROPERTY or PROPERTIES) are being verified without a fairness constraint "
+					+ "conjoined to the behavior specification %1% defined at %2%. This may lead to trivial counterexamples "
+					+ "in which the system exhibits infinite stuttering immediately after the initial state. To avoid this, "
+					+ "it is recommended to conjoin a suitable fairness constraint to %1% (compare Chapter 8, page 87ff of "
+					+ "Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+			break;
 
         case EC.TLC_EXPECTED_VALUE:
             b.append("TLC expected a %1% value, but did not find one. %2%");
