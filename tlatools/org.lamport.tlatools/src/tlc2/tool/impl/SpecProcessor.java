@@ -1210,7 +1210,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             } else if (!(inv instanceof IBoolValue) || !(((BoolValue) inv).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "invariant", name, inv.toString() });
-            }
+            } else if (inv instanceof IBoolValue)
+			{
+            	MP.printWarning(EC.TLC_INVARIANT_CONSTANT_LEVEL, new String[] { name, ((BoolValue) inv).toString() });
+			}
         }
     }
 
