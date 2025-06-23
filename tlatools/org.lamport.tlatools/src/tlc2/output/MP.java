@@ -528,6 +528,11 @@ public class MP
         				+ "please check if this bug described in LevelNode.java starting at line 590ff affects you.");
         	}
             break;
+        case EC.TLC_INVARIANT_CONSTANT_LEVEL:
+			b.append(
+					"The invariant %1% is a constant-level formula (i.e., it contains no variables, primes, or temporal operators) and evaluates to %2%. "
+					+ "To assert constant-level formulas in your spec, use ASSUME ConstInv, or to give the assumption a name such as YourAssumption, use ASSUME YourAssumption == ConstInv.");
+            break;
 
         case EC.TLC_INVARIANT_EVALUATION_FAILED:
             if (parameters.length == 1) {
