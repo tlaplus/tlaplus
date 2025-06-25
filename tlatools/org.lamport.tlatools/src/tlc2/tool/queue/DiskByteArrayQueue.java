@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 
@@ -591,7 +592,7 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		  }
 	}
 	
-	static final class ByteValueOutputStream implements IValueOutputStream, IDataOutputStream {
+	public static final class ByteValueOutputStream implements IValueOutputStream, IDataOutputStream {
 
 		private byte[] bytes;
 		
@@ -740,19 +741,15 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 */
 		@Override
 		public final void writeString(String str) throws IOException {
-			final int length = str.length();
-			ensureCapacity(idx + length);
-			
-			final char[] c = new char[length];
-			str.getChars(0, length, c, 0);
-			
-			for (int i = 0; i < c.length; i++) {
-				this.bytes[idx++] = (byte) c[i];
-			}
+			final byte[] strBytes = str.getBytes(StandardCharsets.UTF_8);
+			this.writeInt(strBytes.length);
+			ensureCapacity(this.idx + strBytes.length);
+			System.arraycopy(strBytes, 0, this.bytes, this.idx, strBytes.length);
+			this.idx += strBytes.length;
 		}
 	}
 	
-	static final class ByteValueInputStream implements ValueConstants, IValueInputStream, IDataInputStream {
+	public static final class ByteValueInputStream implements ValueConstants, IValueInputStream, IDataInputStream {
 
 		private final byte[] bytes;
 		
@@ -927,12 +924,21 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 		 * @see util.IDataInputStream#readString(int)
 		 */
 		@Override
-		public final String readString(int length) throws IOException {
-			final char[] s = new char[length];
-			for (int i = 0; i < s.length; i++) {
-				s[i] = (char) this.bytes[idx++];
+		public final String readString() throws IOException {
+			final int length = readInt();
+			if(length == 0) {
+				return "";
 			}
-			return new String(s);
+			assert length > 0;
+			// UTF-8 unicode
+			final String result = new String(this.bytes, this.idx, length, StandardCharsets.UTF_8);
+			this.idx += length;
+			return result;
+		}
+		
+		@Override
+		public final boolean atEOF() {
+			return this.idx == this.bytes.length;
 		}
 	}
 
