@@ -53,21 +53,21 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
+    expectedDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
+    expectedDetails.add(new ErrorDetails(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, null, message3);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
-    expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
+    expectedDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc3, message3));
 
     final String[] expected = new String[] { expected1, expected2, expected3 };
     final String[] actual = log.getWarnings();
@@ -79,6 +79,7 @@ public class TestErrors {
     Assert.assertEquals(0, log.getErrors().length);
 
     final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
+    Assert.assertEquals(expectedDetails, log.getMessages());
     Assert.assertEquals(expectedDetails, log.getWarningDetails());
     Assert.assertEquals(blank, log.getErrorDetails());
 
@@ -95,19 +96,19 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test error message";
-    log.addError(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc1, message1);
     final String expected1 = loc1.toString() + "\n\n" + message1;
     expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is another test error message";
-    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expected2 = loc2.toString() + "\n\n" + message2;
     expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc2, message2));
 
     final Location loc3 = Location.nullLoc;
     final String message3 = "This is yet another test error message";
-    log.addError(ErrorCode.INTERNAL_ERROR, null, message3);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, null, message3);
     final String expected3 = loc3.toString() + "\n\n" + message3;
     expectedDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc3, message3));
 
@@ -122,6 +123,7 @@ public class TestErrors {
 
     final List<ErrorDetails> blank = new ArrayList<ErrorDetails>();
     Assert.assertEquals(blank, log.getWarningDetails());
+    Assert.assertEquals(expectedDetails, log.getMessages());
     Assert.assertEquals(expectedDetails, log.getErrorDetails());
 
     final String actualSummary = log.toString();
@@ -136,15 +138,15 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
-    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
@@ -171,19 +173,19 @@ public class TestErrors {
 
     final Location loc1 = genLocation();
     final String message1 = "This is a test warning message";
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
-    log.addWarning(ErrorCode.INTERNAL_ERROR, loc1, message1);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
+    log.addMessage(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1);
     final String expectedWarning = loc1.toString() + "\n\n" + message1;
     final String[] expectedWarnings = new String[] { expectedWarning };
     final List<ErrorDetails> expectedWarningDetails = new ArrayList<ErrorDetails>();
-    expectedWarningDetails.add(new ErrorDetails(ErrorCode.INTERNAL_ERROR, loc1, message1));
+    expectedWarningDetails.add(new ErrorDetails(ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY, loc1, message1));
 
     final Location loc2 = genLocation();
     final String message2 = "This is a test error message";
-    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
-    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
-    log.addError(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc2, message2);
+    log.addMessage(ErrorCode.INTERNAL_ERROR, loc2, message2);
     final String expectedError = loc2.toString() + "\n\n" + message2;
     final String[] expectedErrors = new String[] { expectedError };
     final List<ErrorDetails> expectedErrorDetails = new ArrayList<ErrorDetails>();
