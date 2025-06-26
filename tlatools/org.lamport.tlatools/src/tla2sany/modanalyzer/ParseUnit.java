@@ -30,6 +30,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
@@ -312,7 +313,11 @@ public class ParseUnit {
         try 
         {
             // create parser object
-            parseTree = new tla2sany.parser.TLAplusParser(nis, StandardCharsets.UTF_8.name());
+            final TLAplusParser parser = new TLAplusParser(nis, StandardCharsets.UTF_8.name());
+            parseTree = parser;
+            if (System.getProperty("TLA-StackTrace", "off").equals("on")) {
+                parser.routeTraceOutputTo(ToolIO.out);
+            }
 
             // Here is the one true REAL call to the parseTree.parse() for a file;
             // The root node of the parse tree is left in parseTree.
