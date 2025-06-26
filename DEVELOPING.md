@@ -57,6 +57,7 @@ Install the following dependencies to your path:
  * [Java Development Kit](https://adoptium.net/) version 11 (newer versions will [likely cause build failures](https://github.com/tlaplus/tlaplus/issues/1162#issuecomment-2737943830))
  * [Apache Ant](https://ant.apache.org/) version 1.9.8+
  * [Apache Maven](https://maven.apache.org/) version 3.9.7+
+ * [Git](https://git-scm.com/) version 2.0+
 
 Clone this repo & open a shell in its root, then run:
 ```bash
