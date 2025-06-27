@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.SilentSanyOutput;
 import tlc2.tool.CommonTestCase;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
@@ -23,8 +24,8 @@ public class Github429Test {
 	@Test
 	public void testForFailedParse() {
         try {
-			SANY.frontEndParse(moduleSpec, ToolIO.out);
-			SANY.frontEndSemanticAnalysis(moduleSpec, ToolIO.out, false);
+			SANY.frontEndParse(moduleSpec, new SilentSanyOutput());
+			SANY.frontEndSemanticAnalysis(moduleSpec, new SilentSanyOutput(), false);
 		} catch (final Exception e) {
 			Assert.fail("No exception should occur during parse. Instead encountered [" + e.getClass()
 								+ "] with message: " + e.getMessage());

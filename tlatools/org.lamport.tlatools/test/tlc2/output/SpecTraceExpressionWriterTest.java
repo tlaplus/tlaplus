@@ -13,6 +13,9 @@ import org.junit.Test;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tlc2.model.Formula;
 import tlc2.model.MCState;
 import tlc2.model.TraceExpressionInformationHolder;
@@ -78,7 +81,8 @@ public class SpecTraceExpressionWriterTest {
 		final SpecObj so = new SpecObj(tlaFile.getAbsolutePath(), null);
 		final TestPrintStream printStream = new TestPrintStream();
 		
-		final int result = SANY.frontEndMain(so, tlaFile.getAbsolutePath(), printStream);
+		final SanyOutput out = new SimpleSanyOutput(printStream, LogLevel.INFO);
+		final int result = SANY.frontEndMain(so, tlaFile.getAbsolutePath(), out);
 		if (result != 0) {
 			throw new FrontEndException("Parsing returned a non-zero success code (" + result + ")");
 		}

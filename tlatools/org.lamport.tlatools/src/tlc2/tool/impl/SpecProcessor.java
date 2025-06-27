@@ -44,6 +44,9 @@ import java.util.stream.Collectors;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.DecimalNode;
@@ -390,7 +393,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // checked errors (init, parse, semantic).
             // Only if something unexpected happens the
             // exception is thrown
-			SANY.frontEndMain(specObj, this.rootFile, ps);
+            SanyOutput out = new SimpleSanyOutput(ps, LogLevel.INFO);
+            SANY.frontEndMain(specObj, this.rootFile, out);
         } catch (FrontEndException e)
         {
         	if (ps instanceof DelayedPrintStream) {
