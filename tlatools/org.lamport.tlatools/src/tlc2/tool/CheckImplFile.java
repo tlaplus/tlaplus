@@ -15,6 +15,8 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.utilities.SanyOutput;
+import tla2sany.utilities.SanyOutput.LogLevel;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -100,9 +102,10 @@ public class CheckImplFile extends CheckImpl
         SpecObj spec = new SpecObj(rfname, null);
         try
         {
+            SanyOutput out = new SanyOutput(ToolIO.out, ToolIO.err, LogLevel.INFO, LogLevel.ERROR);
             SANY.frontEndInitialize();
-            SANY.frontEndParse(spec, ToolIO.out);
-            SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
+            SANY.frontEndParse(spec, out);
+            SANY.frontEndSemanticAnalysis(spec, out, true);
         } catch (Throwable e)
         {
             String msg = (e.getMessage()==null)?e.toString():e.getMessage();

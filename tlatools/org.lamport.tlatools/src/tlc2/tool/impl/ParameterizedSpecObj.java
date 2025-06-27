@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.tool.impl;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
+import tla2sany.utilities.SanyOutput;
 import tlc2.debug.TLCDebuggerExpression;
 import tlc2.tool.Action;
 import tlc2.util.Context;
@@ -62,9 +62,9 @@ public class ParameterizedSpecObj extends SpecObj {
 	}
 
 	@Override
-	protected final ParseUnit findOrCreateParsedUnit(final String name, final Errors errors, final boolean firstCall, final PrintStream ps)
+	protected final ParseUnit findOrCreateParsedUnit(final String name, final Errors errors, final boolean firstCall, final SanyOutput out)
 			throws AbortException {
-		final ParseUnit pu = super.findOrCreateParsedUnit(name, errors, firstCall, ps);
+		final ParseUnit pu = super.findOrCreateParsedUnit(name, errors, firstCall, out);
 		if (firstCall && params.containsKey(POST_CONDITIONS)) {
 			final ModulePointer rootModule = pu.getRootModule();
 			

@@ -48,10 +48,11 @@ import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.Errors.ErrorDetails;
+import tla2sany.utilities.SanyOutput;
+import tla2sany.utilities.SanyOutput.LogLevel;
 import tlc2.tool.CommonTestCase;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
-import util.ToolIO;
 import util.WrongInvocationException;
 
 /**
@@ -158,23 +159,16 @@ public class SemanticErrorCorpusTests {
     final FilenameToStream fts = new SimpleFilenameToStream(rootModulePath.getParent().toString());
     final SpecObj spec = new SpecObj(rootModulePath.toString(), fts);
     final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    final PrintStream out = new PrintStream(output);
+    final PrintStream outStream = new PrintStream(output);
+    final SanyOutput out = new SanyOutput(outStream, outStream, LogLevel.INFO, LogLevel.ERROR);
     SANY.frontEndInitialize();
-    final PrintStream toolOut = ToolIO.out;
-    final PrintStream toolErr = ToolIO.err;
     try {
-      ToolIO.out = out;
-      ToolIO.err = out;
       SANY.frontEndParse(spec, out);
     } catch (ParseException e) {
       Assert.assertNotEquals(e.toString() + output.toString(), 0, spec.parseErrors.getNumMessages());
       return spec.parseErrors;
-    } finally {
-      ToolIO.out = toolOut;
-      ToolIO.err = toolErr;
-    }
-    try {
-      SANY.frontEndSemanticAnalysis(spec, new PrintStream(out), true);
+    } try {
+      SANY.frontEndSemanticAnalysis(spec, out, true);
     } catch (SemanticException e) {
       return spec.semanticErrors;
     } catch (WrongInvocationException e) {

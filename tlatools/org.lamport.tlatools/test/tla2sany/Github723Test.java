@@ -15,6 +15,7 @@ public class Github723Test extends SANYTest {
 	public void test() {
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 
 		SANY.SANYmain(new String[] { CommonTestCase.BASE_PATH + File.separator + "sany" + File.separator + "Github723.tla" });
 

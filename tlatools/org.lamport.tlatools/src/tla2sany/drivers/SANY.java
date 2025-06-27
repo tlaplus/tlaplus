@@ -3,7 +3,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.drivers;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +17,9 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
-import tla2sany.semantic.SemanticNode;
 import tla2sany.st.TreeNode;
+import tla2sany.utilities.SanyOutput;
+import tla2sany.utilities.SanyOutput.LogLevel;
 import util.FileUtil;
 import util.ToolIO;
 import util.UniqueString;
@@ -118,17 +118,17 @@ public class SANY {
   public static final int frontEndMain(
                              SpecObj spec, 
                              String fileName, 
-                             PrintStream syserr) throws FrontEndException {
+                             SanyOutput out) throws FrontEndException {
     try {
       // **** Initialize the global environment
       frontEndInitialize();
     
       // **** Parsing 
-      if (doParsing) frontEndParse(spec, syserr);
+      if (doParsing) frontEndParse(spec, out);
     
       // **** Semantic analysis and level checking
       if (doSemanticAnalysis) 
-            {frontEndSemanticAnalysis(spec, syserr, doLevelChecking);} ;
+            {frontEndSemanticAnalysis(spec, out, doLevelChecking);} ;
     }
     catch (ParseException pe) {
       return -1;
@@ -137,8 +137,7 @@ public class SANY {
       return -1;
     }
     catch (Exception e) {
-      // e.printStackTrace(syserr);
-      syserr.println(e.toString());
+      out.log(LogLevel.ERROR, e.toString());
       throw new FrontEndException(e);
     }
     if (doStrictErrorCodes) {
@@ -156,11 +155,11 @@ public class SANY {
   } // frontEndInitialize
 
   // Parse all of the files referred to by the top-level file in specification
-  public static void frontEndParse(SpecObj spec, PrintStream syserr) 
+  public static void frontEndParse(SpecObj spec, SanyOutput out) 
   throws ParseException {
-	  frontEndParse(spec, syserr, true);
+	  frontEndParse(spec, out, true);
   }
-  public static void frontEndParse(SpecObj spec, PrintStream syserr, boolean validatePCalTranslation) 
+  public static void frontEndParse(SpecObj spec, SanyOutput out, boolean validatePCalTranslation) 
   throws ParseException {
       /***********************************************************************
        * Modified on 12 May 2008 by LL to remove "throws AbortException",     *
@@ -170,7 +169,7 @@ public class SANY {
       try 
       {
           // Actual parsing method called from inside loadSpec()
-          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, syserr)) 
+          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, out)) 
           {
               // dead code SZ 02. Aug 2009
               /*
@@ -182,8 +181,7 @@ public class SANY {
 
           if (!spec.parseErrors.isSuccess()) 
           {
-              if (syserr!= null) syserr.println( spec.parseErrors );
-
+              out.log(LogLevel.ERROR, spec.parseErrors.toString());
               // indicate fatal error during parsing phase
               spec.errorLevel = 2;
               throw new ParseException(); 
@@ -197,21 +195,16 @@ public class SANY {
       }
       catch (Exception e) 
       {
-          // Assert.printStack(e);
-          syserr.println("\nFatal errors while parsing TLA+ spec in file " + 
-                  spec.getFileName() + "\n"); 
-
-          syserr.println(e.toString()); 
-          // syserr.println("Parsing errors detected before unexpected exception:\n");
-          syserr.print( spec.parseErrors );
-
+          out.log(LogLevel.ERROR, "\nFatal errors while parsing TLA+ spec in file %s\n", spec.getFileName());
+          out.log(LogLevel.ERROR, e.toString());
+          out.log(LogLevel.ERROR, spec.parseErrors.toString());
           throw new ParseException();
       }
       return;
   } //
 
   public static void frontEndSemanticAnalysis(SpecObj spec,
-                                              PrintStream syserr,
+                                              SanyOutput out,
                                               boolean levelCheck) 
   throws SemanticException {
     String      moduleStringName;
@@ -254,7 +247,7 @@ public class SANY {
           */
  
           // Generate semantic graph for the entire external module
-          syserr.println("Semantic processing of module " + moduleStringName);
+          out.log(LogLevel.INFO, "Semantic processing of module %s", moduleStringName);
           // create new Generator object
           Generator gen = new Generator(externalModuleTable, semanticErrors);
     
@@ -280,9 +273,11 @@ public class SANY {
           if (i == spec.semanticAnalysisVector.size()-1) { 
             externalModuleTable.setRootModule( moduleNode ); 
           }
-    
+
           if (semanticErrors.getNumMessages() > 0) {
-            syserr.println("Semantic errors:\n\n" + semanticErrors);
+            // TODO: split warnings & errors out into appropriate log level
+            out.log(LogLevel.ERROR, "Semantic errors:\n\n%s", semanticErrors);
+
             // indicate fatal error during semantic analysis or level-checking
             if ( semanticErrors.getNumErrors() > 0 ) {
               spec.errorLevel = 4;
@@ -292,18 +287,20 @@ public class SANY {
       } // end while
     }
     catch (AbortException e) {
-      if ( syserr != null) {
-        syserr.println("Fatal errors in semantic processing of TLA spec " +
-                       spec.getFileName() + "\n" + e.getMessage() +
-                       "\nStack trace for exception:\n"); 
-        e.printStackTrace(syserr);
-      }
+      out.log(
+          LogLevel.ERROR,
+          "Fatal errors in semantic processing of TLA spec %s\n%s\nStack trace for exception:\n",
+          spec.getFileName(),
+          e.getMessage()
+      );
+      e.printStackTrace(out.getStream(LogLevel.ERROR));
   
       if (semanticErrors.getNumMessages() > 0) {
-        if ( syserr != null ) {
-          syserr.println("Semantic errors detected before the unexpected exception:\n");
-          syserr.print("\n" + semanticErrors);
-        }
+        out.log(
+            LogLevel.ERROR,
+            "Semantic errors detected before the unexpected exception:\n\n%s",
+            semanticErrors
+        );
         
         // indicate fatal error during semantic analysis or level-checking
         if ( semanticErrors.getNumErrors() > 0 ) { 
@@ -397,6 +394,13 @@ public class SANY {
       System.exit(-1);
     }
 
+    final SanyOutput out = new SanyOutput(
+        ToolIO.out,
+        ToolIO.err,
+        LogLevel.INFO,
+        LogLevel.ERROR
+    );
+
     // After the termination of the previous loop, the remaining
     // elements on the command line must be file names for specifications.
 
@@ -406,7 +410,7 @@ public class SANY {
     for ( ; i < args.length; i++) {
       // continue the loop where the last one left off
       // Print documentation line on System.out
-      ToolIO.out.println("\n****** SANY2 " + version + "\n") ;
+      out.log(LogLevel.INFO, "\n****** SANY2 %s\n", version);
 
       // Get next file name from command line; then parse,
       // semantically analyze, and level check the spec started in
@@ -417,7 +421,7 @@ public class SANY {
       if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
       {
           try {
-              int ret = frontEndMain(spec, args[i], ToolIO.out);
+              int ret = frontEndMain(spec, args[i], out);
 			  if (ret != 0) {
             	  System.exit(ret);
               }
@@ -425,7 +429,7 @@ public class SANY {
             catch (FrontEndException fe) {
               // For debugging
               fe.printStackTrace();   
-              ToolIO.out.println(fe);
+              out.log(LogLevel.ERROR, fe.toString());
               System.exit(-1);
             }
 
@@ -439,7 +443,7 @@ public class SANY {
             }
       } else 
       {
-          ToolIO.out.println("Cannot find the specified file " + args[i] + ".");
+          out.log(LogLevel.ERROR, "Cannot find the specified file %s.", args[i]);
           System.exit(-1);
       }
     }

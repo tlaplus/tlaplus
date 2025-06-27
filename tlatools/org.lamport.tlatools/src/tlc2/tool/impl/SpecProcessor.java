@@ -67,6 +67,8 @@ import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
+import tla2sany.utilities.SanyOutput;
+import tla2sany.utilities.SanyOutput.LogLevel;
 import tlc2.TLCGlobals;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.module.TLCBuiltInOverrides;
@@ -390,7 +392,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // checked errors (init, parse, semantic).
             // Only if something unexpected happens the
             // exception is thrown
-			SANY.frontEndMain(specObj, this.rootFile, ps);
+            SanyOutput out = new SanyOutput(ToolIO.out, ps, LogLevel.INFO, LogLevel.ERROR);
+            SANY.frontEndMain(specObj, this.rootFile, out);
         } catch (FrontEndException e)
         {
         	if (ps instanceof DelayedPrintStream) {

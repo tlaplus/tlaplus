@@ -137,6 +137,7 @@ public class OptionalSemicolonTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 	}
