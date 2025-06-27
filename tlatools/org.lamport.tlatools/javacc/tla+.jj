@@ -90,19 +90,28 @@ PARSER_BEGIN(TLAplusParser)
 
 package tla2sany.parser;
 
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SilentSanyOutput;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
-import util.ToolIO;
 import util.UniqueString;
 
 import java.util.Deque;
 import java.util.ArrayDeque;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree {
+
+  private SanyOutput out = new SilentSanyOutput();
+
+  public TLAplusParser(java.io.InputStream stream, String encoding, SanyOutput out) {
+    this(stream, encoding);
+    this.out = out;
+  }
 
   public String[] dependencies() {
     /***********************************************************************
@@ -190,8 +199,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       *********************************************************************/
       tla2sany.st.ParseError  list[] = PErrors.errors();
       for (int i = 0; i < list.length; i++ ) {
-        ToolIO.out.println( list[i].reportedError() );
-//        ToolIO.out.println( "+ " + list[i].defaultError() );
+        this.out.log(LogLevel.ERROR, list[i].reportedError());
       }
     }
 //   ParseTree.setNumberFlags( numberFlag, decimalFlag );
@@ -460,7 +468,9 @@ Operator lastOp;
        } ;
     if (! node.isKind(N_OpApplication)) {return false;} ;
     SyntaxTreeNode opArgs = (SyntaxTreeNode) node.heirs()[1] ;
-if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
+    if (opArgs.kind != N_OpArgs) {
+      this.out.log(LogLevel.ERROR, "Bug: not N_OpArgs node");
+    };
         /*******************************************************************
         * Sanity check--can be removed after debugging.                    *
         *******************************************************************/
@@ -711,14 +721,14 @@ if (opArgs.kind != N_OpArgs) { ToolIO.out.println("Bug: not N_OpArgs node"); };
 
   private final void bpa( String s) { // Beginning of Production Actions 
     addHeir( null );
-if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println("Beginning " + s);
+    this.out.log(LogLevel.TRACE, "Beginning %s", s); 
     pushMsg( s, getToken(1) );
     expecting = emptyString;
   }
 
   private final void epa() {
     popMsg();
-if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println("Ending " + msgStack [ msgStackCurrentSize   ]);
+    this.out.log(LogLevel.TRACE, "Ending %s", msgStack[msgStackCurrentSize]);
     Assert.check( popHeir(), EC.SANY_PARSER_CHECK_2);
  // "Assertion error in epa()" 
     expecting = emptyString;
@@ -2699,10 +2709,7 @@ QEDStep() : {
           || (t.kind == ProofStepDotLexeme)) {
         tn.originalImage = tn.image ;
         tn.image = correctedStepNum(t) ;
-// ToolIO.out.println("correcting " + tn.originalImage) ;
        } ;
-// ToolIO.out.println("xyz: t.image = " + t.image + ", correctedImage = " 
-// + tn.image + ", t.kind = " + t.kind ) ;
 
       addHeir(tn) ; 
       expecting = "QED" ;
@@ -2758,8 +2765,6 @@ SyntaxTreeNode Step() : {
         tn.originalImage = tn.image ;
         tn.image = correctedStepNum(t) ;
        } ;
-// ToolIO.out.println("xyz2: t.image = " + t.image + ", correctedImage = " 
-// + tn.image + ", t.kind = " + t.kind ) ;
       addHeir(tn) ;
       expecting = "proof step";
     }
@@ -4119,10 +4124,7 @@ PrimitiveExp() : {
                     tn0.originalImage = tn0.image ;
                     tn0.image = correctedStepNum(t) ;
                    } ;
-                  
-// ToolIO.out.println("xyz-expr: t.image = " + t.image + 
-// ", correctedImage = " + tn0.image) ;
-                                                                 }
+                }
         | tn0 = InfixOp()
         | tn0 = PostfixOp()
         | LOOKAHEAD(<op_76>)

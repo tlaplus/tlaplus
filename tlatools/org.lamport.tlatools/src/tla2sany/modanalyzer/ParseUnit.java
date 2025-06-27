@@ -24,12 +24,13 @@ package tla2sany.modanalyzer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
@@ -41,7 +42,6 @@ import util.FileUtil;
 import util.FilenameToStream.TLAFile;
 import util.MonolithSpecExtractor;
 import util.NamedInputStream;
-import util.TLAConstants;
 import util.ToolIO;
 
 /**
@@ -157,7 +157,7 @@ public class ParseUnit {
     return null;
   }
 
-  private final void writeParseTreeToFile(boolean file, Errors errors) throws AbortException {
+  private final void writeParseTreeToFile(boolean file, Errors errors, SanyOutput out) throws AbortException {
       // Construct the name with a .jcg extension (Jean-Charles Gregoire)
       PrintWriter pw;
       if (file) 
@@ -194,7 +194,7 @@ public class ParseUnit {
           // errors.addAbort("Error: Failed to open output file " + sinkName +
           //        "\n" + e.getMessage());        }
       } else {
-          pw = new PrintWriter(ToolIO.out);
+          pw = new PrintWriter(out.getStream(LogLevel.DEBUG));
           SyntaxTreePrinter.print( parseTree, pw );
           pw.flush();
       }
@@ -241,7 +241,7 @@ public class ParseUnit {
      * We receive `rootParseUnit` so we are able to find the file location for a 
      * module part of a monolith spec. 
      */
-    public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit, PrintStream syserr) throws AbortException
+    public final void parseFile(Errors errors, boolean firstCall, String name, ParseUnit rootParseUnit, SanyOutput out) throws AbortException
     {
         // Has it already been parsed since last modified? If yes, then no need to parse again
         if (parseStamp > nis.sourceFile().lastModified())
@@ -271,15 +271,10 @@ public class ParseUnit {
 			absoluteResolvedPath = nis.sourceFile().toPath();
 		}
         /***********************************************************************
-        * This is a bug.  The higher-level parsing methods have a PrintStream  *
-        * argument to which such output gets written.  That argument should    *
-        * have been passed down to this method.  (LL: 11 Mar 08)               *
-        *                                                                      *
         * The following statement modified by LL on 13 Mar 08 to produce       *
         * more useful output for the GUI.                                      *
         ***********************************************************************/
-        if (ToolIO.getMode() == ToolIO.SYSTEM)
-        {            
+        if (ToolIO.getMode() == ToolIO.SYSTEM) {
             // If `resolver.getLibraryPath` returns `null` or the file is not an instance of TLAFile
             // (and as we didn't have errors in previous steps, the module
             // really exists somewhere), then we assume that this file is part of a monolith file.
@@ -303,9 +298,10 @@ public class ParseUnit {
                     }
                 }
             }
-			syserr.println(String.format("%s %s%s", TLAConstants.LoggingAtoms.PARSING_FILE, absoluteResolvedPath, originalFilePath));
+
+            out.log(LogLevel.INFO, "Parsing file %s%s", absoluteResolvedPath, originalFilePath);
         } else {
-            syserr.println(String.format("Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath));
+            out.log(LogLevel.INFO, "Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath);
         }
 
         boolean parseSuccess; 
@@ -362,22 +358,16 @@ public class ParseUnit {
         // Determine which modules extend or include which others
         determineModuleRelationships(rootModule, /* parent */null);
 
-        /*
-        // Debugging
-        ToolIO.err.println("ModuleRelationships for ParseUnit " + this.getName() + "\n" +  
-                           spec.getModuleRelationships().toString() ); 
-        */
-
         // Make sure file contains module of the same name
         verifyEquivalenceOfFileAndModuleNames(errors);
 
         // Use system property to decide whether to "print" the parse tree to a file
         if (System.getProperty("TLA-Print", "off").equals("file"))
         {
-            writeParseTreeToFile(true, errors);
+            writeParseTreeToFile(true, errors, out);
         } else if (System.getProperty("TLA-Print", "off").equals("on"))
         {
-            writeParseTreeToFile(false, errors);
+            writeParseTreeToFile(false, errors, out);
         }
     }
 

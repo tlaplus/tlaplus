@@ -5,7 +5,6 @@ package tla2sany.modanalyzer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -15,6 +14,8 @@ import java.util.Set;
 
 import pcal.Validator;
 import pcal.Validator.ValidationResult;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
@@ -222,19 +223,6 @@ public class SpecObj
         return moduleRelationshipsSpec;
     }
 
-    // Prints the context of one ParseUnit
-    public final void printParseUnitContext()
-    {
-        Enumeration<String> enumerate = parseUnitContext.keys();
-
-        ToolIO.out.println("parseUnitContext =");
-        while (enumerate.hasMoreElements())
-        {
-            String key = enumerate.nextElement();
-            ToolIO.out.println("  " + key + "-->" + ((ParseUnit) parseUnitContext.get(key)).getName());
-        }
-    }
-
     // This method looks up a ParseUnit "name" in the parseUnitContext
     // table. If it is not found, then the corresponding file is looked
     // up in the file system and parsed, and a new ParseUnit is created
@@ -244,7 +232,7 @@ public class SpecObj
     // module in the ParseUnit created is the name of the entire
     // SpecObj. Returns the ParseUnit found or created. Aborts if
     // neither happens.
-    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall, PrintStream syserr) throws AbortException
+    protected ParseUnit findOrCreateParsedUnit(String name, Errors errors, boolean firstCall, SanyOutput out) throws AbortException
     {
         ParseUnit parseUnit;
 
@@ -295,7 +283,7 @@ public class SpecObj
 
         // Actually parse the file named in "parseUnit" (or no-op if it
         // has already been parsed)
-        parseUnit.parseFile(errors, firstCall, name, rootParseUnit, syserr);
+        parseUnit.parseFile(errors, firstCall, name, rootParseUnit, out);
 
         return parseUnit;
         // return a non-null "parseUnit" iff named module has been found,
@@ -881,8 +869,8 @@ public class SpecObj
     /**
      * This invokes {@code loadSpec(rootExternalModuleName, errors, false);}
      */
-    public boolean loadSpec(final String rootExternalModuleName, final Errors errors, PrintStream syserr) throws AbortException {
-    	return loadSpec(rootExternalModuleName, errors, false, syserr);
+    public boolean loadSpec(final String rootExternalModuleName, final Errors errors, SanyOutput out) throws AbortException {
+    	return loadSpec(rootExternalModuleName, errors, false, out);
     }
     
     /**
@@ -895,16 +883,16 @@ public class SpecObj
 	 *                           followed by a validation of them if they exist
 	 * @see Validator
 	 */
-	public boolean loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits, PrintStream syserr)
+	public boolean loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits, SanyOutput out)
 			throws AbortException {
         // If rootExternalModuleName" has *not* already been parsed, then
         // go to the file system and find the file containing it, create a
         // ParseUnit for it, and parse it. Parsing includes determining
         // module relationships. Aborts if not found in file system
-        rootParseUnit = findOrCreateParsedUnit(rootExternalModuleName, errors, true /* first call */, syserr);
+        rootParseUnit = findOrCreateParsedUnit(rootExternalModuleName, errors, true /* first call */, out);
         rootModule = rootParseUnit.getRootModule();
         if (validateParseUnits) {
-        	validateParseUnit(rootParseUnit);
+        	validateParseUnit(rootParseUnit, out);
         }
 
         // Retrieve and parse all module extentions: As long as there is
@@ -929,7 +917,7 @@ public class SpecObj
             if (parseUnitContext.get(nextParseUnitName) == null)
             {
                 // find it in the file system (if there) and parse and analyze it.
-                nextExtentionOrInstantiationParseUnit = findOrCreateParsedUnit(nextParseUnitName, errors, false /* not first call */, syserr);
+                nextExtentionOrInstantiationParseUnit = findOrCreateParsedUnit(nextParseUnitName, errors, false /* not first call */, out);
             } else
             {
                 // or find it in the known parseUnitContext
@@ -945,7 +933,7 @@ public class SpecObj
             if (extentionFound)
             {
                 if (validateParseUnits) {
-                	validateParseUnit(nextExtentionOrInstantiationParseUnit);
+                	validateParseUnit(nextExtentionOrInstantiationParseUnit, out);
                 }
 
                 extenderOrInstancerParseUnit.addExtendee(nextExtentionOrInstantiationParseUnit);
@@ -988,7 +976,7 @@ public class SpecObj
         // loadUnresolvedRelatives(moduleRelationshipsSpec, rootModule, errors);
     }
 	
-	private void validateParseUnit(final ParseUnit parseUnit) {
+	private void validateParseUnit(final ParseUnit parseUnit, SanyOutput out) {
     	final File f = parseUnit.getNis().sourceFile();
     	
     	try (final FileInputStream fis = new FileInputStream(f)) {
@@ -1001,10 +989,12 @@ public class SpecObj
     	       modify the translation.
     	       TLC called: By default, a warning should be raised.  It should be considered
     	          the same as Case 2. */
-				ToolIO.out.println(String.format(
-						"!! WARNING: The PlusCal algorithm and its TLA+ translation in "
-								+ "module %s filename since the last translation.",
-						parseUnit.getName()));
+    		    out.log(
+    		        LogLevel.WARNING,
+    		        "!! WARNING: Both the PlusCal algorithm and its TLA+ translation in "
+    		        + "module %s filename have changed since the last translation.",
+    		        parseUnit.getName()
+    		    );
     		} else if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS)) {
       	      /* The algorithm hash is valid and the translation hash is invalid.
      	       There are two reasons: (1) The user is debugging the spec, or
@@ -1016,23 +1006,38 @@ public class SpecObj
      	          TLC but raise a transient window with a warning that is easily ignored.  
      	          For case (2), it should be possible to put something in a translation 
      	          comment to disable the warning. */
-				ToolIO.out.println(String.format("!! WARNING: The TLA+ translation in "
-						+ "module %s has changed since its last translation.", parseUnit.getName()));
+    		    out.log(
+    		        LogLevel.WARNING,
+    		        "!! WARNING: The TLA+ translation in module %s has changed "
+    		        + "since its last translation.",
+    		        parseUnit.getName()
+    		    );
     		} else if (results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
        	      /* The algorithm hash is invalid and the translation hash is valid.
      	       TLC called: By default, a warning should be generated.  I see little reason 
      	         for not generating the warning.  So, it doesn't matter if its inconvenient
      	         to turn off the warning, but turning it off should affect only the current
      	         spec; and it should be easy to turn back on. */
-				ToolIO.out.println(String.format("!! WARNING: The PlusCal algorithm in "
-						+ "module %s has changed since its last translation.", parseUnit.getName()));
+    		    out.log(
+    		        LogLevel.WARNING,
+    		        "!! WARNING: The PlusCal algorithm in module %s has changed "
+    		        + "since its last translation.",
+    		        parseUnit.getName()
+    		    );
     		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
-				ToolIO.err.println("A unexpected problem was encountered attempting to validate the specification for "
-						+ parseUnit.getName());
+    		    out.log(
+    		        LogLevel.ERROR,
+    		        "A unexpected problem was encountered attempting to validate the specification for %s",
+    		        parseUnit.getName()
+    		    );
     		}
     	} catch (final IOException e) {
-    		ToolIO.err.println("Encountered an exception while attempt to validate " + f.getAbsolutePath() + " - "
-    				+ e.getMessage());
+    	    out.log(
+    	        LogLevel.ERROR,
+    	        "Encountered an exception while attempt to validate %s - %s",
+    	        f.getAbsolutePath(),
+    	        e.getMessage()
+    	    );
     	}
 	}
 
