@@ -50,6 +50,9 @@ import tla2sany.drivers.SemanticException;
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tla2sany.parser.ParseException;
 import tlc2.tool.CommonTestCase;
 import util.FilenameToStream;
@@ -180,21 +183,23 @@ public class SemanticCorpusTests {
   private static ExternalModuleTable parse(Path rootModulePath) {
     final FilenameToStream fts = new SimpleFilenameToStream(rootModulePath.getParent().toString());
     final SpecObj spec = new SpecObj(rootModulePath.toString(), fts);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    final PrintStream outStream = new PrintStream(output);
+    final SanyOutput out = new SimpleSanyOutput(outStream, LogLevel.INFO);
     SANY.frontEndInitialize();
     try {
-      SANY.frontEndParse(spec, new PrintStream(out));
+      SANY.frontEndParse(spec, out);
     } catch (ParseException e) {
-      Assert.fail(e.toString() + out.toString());
+      Assert.fail(e.toString() + output.toString());
     }
     try {
-      SANY.frontEndSemanticAnalysis(spec, new PrintStream(out), true);
+      SANY.frontEndSemanticAnalysis(spec, out, true);
     } catch (SemanticException e) {
-      Assert.fail(e.toString() + out.toString());
+      Assert.fail(e.toString() + output.toString());
     }
-    Assert.assertTrue(out.toString(), spec.parseErrors.isSuccess());
-    Assert.assertTrue(out.toString(), spec.semanticErrors.isSuccess());
-    Assert.assertTrue(out.toString(), spec.semanticErrors.getWarnings().length == 0);
+    Assert.assertTrue(output.toString(), spec.parseErrors.isSuccess());
+    Assert.assertTrue(output.toString(), spec.semanticErrors.isSuccess());
+    Assert.assertTrue(output.toString(), spec.semanticErrors.getWarnings().length == 0);
     return spec.getExternalModuleTable();
   }
 

@@ -40,6 +40,7 @@ public class RecursiveDefDeclMismatchTest extends SANYTest {
 	public void test() {
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		
 		SANY.SANYmain(new String[] { CommonTestCase.BASE_PATH + File.separator + "sany" + File.separator + "RecursiveDefDeclMismatch.tla" });
 

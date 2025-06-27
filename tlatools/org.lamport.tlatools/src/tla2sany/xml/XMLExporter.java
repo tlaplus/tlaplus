@@ -3,8 +3,6 @@
 
 package tla2sany.xml;
 
-import java.io.ByteArrayOutputStream;
-
 /**
  * a tool for exporting the loaded modules to XML format
  */
@@ -36,6 +34,9 @@ import org.xml.sax.SAXException;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import util.FileUtil;
@@ -140,10 +141,6 @@ public class XMLExporter {
 
     FilenameToStream fts = new SimpleFilenameToStream(paths);
 
-    // redirecting System.out
-    PrintStream out = System.out;
-    System.setOut(new PrintStream(new ByteArrayOutputStream()));
-
     SpecObj spec = new SpecObj(tla_name, fts);
 
     // Get next file name from command line; then parse,
@@ -154,7 +151,8 @@ public class XMLExporter {
     //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
     if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
       try {
-        SANY.frontEndMain(spec, tla_name, System.err);
+        SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
+        SANY.frontEndMain(spec, tla_name, out);
         if (spec.getExternalModuleTable() == null)
           throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
         if (spec.getExternalModuleTable().getRootModule() == null)
@@ -234,7 +232,7 @@ public class XMLExporter {
             // but fail for other errors
           }*/
       }
-      StreamResult result = new StreamResult(out);
+      StreamResult result = new StreamResult(ToolIO.out);
 
       transformer.transform(source, result);
     } catch (ParserConfigurationException pce) {
