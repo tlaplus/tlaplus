@@ -2,13 +2,14 @@
 package tla2sany.parser;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class TLAplusParserTokenManager implements TLAplusParserConstants
 {

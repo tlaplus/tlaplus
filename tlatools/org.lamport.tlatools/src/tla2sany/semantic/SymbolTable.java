@@ -2,7 +2,9 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
-import tla2sany.utilities.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import tla2sany.utilities.Vector;
 import util.UniqueString;
 
@@ -20,10 +22,15 @@ import util.UniqueString;
 public class SymbolTable implements ASTConstants {
 
    
-  private Stack               contextStack;  
-     // A SymbolTable is a stack of contexts.  New contexts are
-     // pushed on the stack for LET, for formal param lists, 
-     // for bound variables sets, and for inner modules
+  /**
+   * A {@link SymbolTable} is a stack of {@link Context} objects. New
+   * {@link Context} objects are pushed on the stack for a LET, for formal
+   * parameter lists, for bound variable sets, and for inner modules. Note
+   * that with {@link java.util.Deque}, iteration goes from top of stack to
+   * bottom (or rather, head to tail of the double-ended queue).
+   */
+  private final Deque<Context> contextStack;
+
   private Context             topContext;    
      // The top context on the stack
   private Context             baseContext;   
@@ -46,8 +53,8 @@ public class SymbolTable implements ASTConstants {
     baseContext = topContext;
 
     errors = errs;
-    contextStack = new Stack();
-    contextStack.push( topContext );
+    contextStack = new ArrayDeque<>();
+    contextStack.addFirst(topContext);
     this.mt = mt;
   };
 
@@ -55,11 +62,8 @@ public class SymbolTable implements ASTConstants {
   public SymbolTable(ExternalModuleTable mt, Errors errs, SymbolTable st) {
     modNode = st.modNode;
     errors = errs;
-    contextStack = new Stack();
-    for (int i = 0; i < st.contextStack.size(); i++) {
-      contextStack.push( st.contextStack.elementAt( i ) );
-    }
-    baseContext = (Context)contextStack.elementAt(0);
+    contextStack = new ArrayDeque<>(st.contextStack);
+    baseContext = contextStack.peekLast();
     this.mt = mt;
   }
 
@@ -71,13 +75,13 @@ public class SymbolTable implements ASTConstants {
   public final Context getContext() { return topContext; }
 
   public final void pushContext( Context ct ) {
-    contextStack.push( ct ); 
+    contextStack.addFirst(ct); 
     topContext = ct;
   }
 
   public final void popContext() {
-    contextStack.pop();
-    topContext = (Context) contextStack.peek();
+    contextStack.removeFirst();
+    topContext = contextStack.peekFirst();
   }
 
   public final void setModuleNode(ModuleNode mn) { modNode = mn; }
@@ -89,8 +93,7 @@ public class SymbolTable implements ASTConstants {
   * null if there is no entry for `name'.                                  *
   *************************************************************************/
 	public final SymbolNode resolveSymbol(UniqueString name) {
-		for (int c = contextStack.size() - 1; c >= 0; c--) {
-			Context ct = (Context) contextStack.elementAt(c);
+		for (Context ct : contextStack) {
 			SymbolNode r = ct.getSymbol(name);
 			if (r != null)
 				return r;
@@ -101,8 +104,7 @@ public class SymbolTable implements ASTConstants {
   public final ModuleNode resolveModule(UniqueString name) {
     ModuleName modName = new ModuleName(name);
 
-    for (int c = contextStack.size()-1; c >= 0; c--) {
-      Context ct = (Context)contextStack.elementAt(c);
+    for (Context ct : contextStack) {
       SymbolNode res = ct.getSymbol(modName);
       if (res != null) return (ModuleNode)res;
     }
@@ -249,8 +251,7 @@ public class SymbolTable implements ASTConstants {
   public String toString() {
     String ret = "\n\n***SymbolTable\n\n*** top context";
 
-    for (int c = contextStack.size()-1; c >= 0; c--) {
-      Context ct = (Context) contextStack.elementAt(c);
+    for (Context ct : contextStack) {
       Vector v = ct.getContextEntryStringVector(1,true, errors);
 
       for (int i = 0; i < v.size(); i++) {

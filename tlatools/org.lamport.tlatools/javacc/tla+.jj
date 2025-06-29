@@ -92,13 +92,15 @@ package tla2sany.parser;
 
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
+
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree {
 
@@ -723,12 +725,12 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
   }
 //
 
-  Stack internals = new Stack();
+  Deque<UniqueString> internals = new ArrayDeque<UniqueString>();
 
   private final void addDependency( UniqueString s ) {
-    int lvi = internals.search( s );
-    if ( lvi < 0 )
-      dependencyList.addElement( s );
+    if (!internals.contains(s)) {
+      dependencyList.addElement(s);
+    }
   }
 
   private final UniqueString reduceString( String s ) {
@@ -1647,7 +1649,7 @@ Module() : {
   Token t;
   SyntaxTreeNode lSTN[] = new SyntaxTreeNode[ 4 ];
   bpa( "Module definition" );
-  internals.push( null );
+  final int stackLevel = internals.size();
   Object pop = null;
 } {
 { expecting = "---- MODULE"; }
@@ -1658,8 +1660,8 @@ Module() : {
   lSTN[2] =  Body()
 { expecting = "==== or more Module body"; }
   lSTN[3] =  EndModule()
-{ do { pop = internals.pop(); } while (pop != null );
-  internals.push( lSTN[0].zero[1].image );
+{ while (internals.size() > stackLevel) { internals.removeFirst(); }
+  internals.addFirst(lSTN[0].zero[1].image);
   epa(); return new SyntaxTreeNode( mn, N_Module, lSTN ); }
 }
 
