@@ -4,10 +4,11 @@ import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
+import tla2sany.utilities.SanyOutput;
+import tla2sany.utilities.SanyOutput.LogLevel;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
-import util.ToolIO;
 import util.UniqueString;
 
 public class TLAplusParserTokenManager implements TLAplusParserConstants

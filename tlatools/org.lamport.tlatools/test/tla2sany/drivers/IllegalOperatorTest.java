@@ -37,6 +37,7 @@ public class IllegalOperatorTest  {
 	public void test() {
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		
 		SANY.SANYmain(
 				new String[] { CommonTestCase.BASE_PATH + "IllegalOperatorTest" });
