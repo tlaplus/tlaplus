@@ -57,19 +57,19 @@ public class ModulePointer {
 
 
   // Returns Vector of names of modules extended
-  Vector getNamesOfModulesExtended() {
+  Vector<String> getNamesOfModulesExtended() {
     return moduleRelatives.directlyExtendedModuleNames; 
   }
   
 
   // Returns Vector of names of modules instanced
-  Vector getNamesOfModulesInstantiated() { 
+  Vector<String> getNamesOfModulesInstantiated() { 
     return moduleRelatives.directlyInstantiatedModuleNames; 
   }
 
 
   // Returns Vector of names of Module pointers for immediate inner modules
-  Vector getDirectInnerModules() { 
+  Vector<ModulePointer> getDirectInnerModules() { 
     return moduleRelatives.directInnerModules; 
   }
 

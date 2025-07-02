@@ -111,7 +111,7 @@ public class Explorer {
 
 	private void lookUpAndPrintSyntaxTree(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
@@ -139,7 +139,7 @@ public class Explorer {
 
 	private void lookUpAndPrintDef(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
@@ -176,7 +176,7 @@ public class Explorer {
 
 	private void levelDataPrint(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
