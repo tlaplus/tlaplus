@@ -115,13 +115,13 @@ public class ParseUnit {
 
   public final ModulePointer getRootModule()  { return rootModule; }
 
-  final        Vector        getExtendees()   { return parseUnitRelatives.extendees; }
+  final        Vector<ParseUnit> getExtendees()   { return parseUnitRelatives.extendees; }
 
-  final        Vector        getExtendedBy()  { return parseUnitRelatives.extendedBy; }
+  final        Vector<ParseUnit> getExtendedBy()  { return parseUnitRelatives.extendedBy; }
 
-  final        Vector        getInstancees()  { return parseUnitRelatives.instancees; }
+  final        Vector<ParseUnit> getInstancees()  { return parseUnitRelatives.instancees; }
              
-  final        Vector        getInstancedBy() { return parseUnitRelatives.instancedBy; }
+  final        Vector<ParseUnit> getInstancedBy() { return parseUnitRelatives.instancedBy; }
 
   // Add-methods
   final        void          addExtendee(ParseUnit pu)    { parseUnitRelatives.extendees.addElement(pu); }
@@ -150,7 +150,7 @@ public class ParseUnit {
     return module.getRelatives().outerModule;
   }
 
-  final Vector getPeers(ModulePointer module) {
+  final Vector<ModulePointer> getPeers(ModulePointer module) {
     if ( module.getRelatives().outerModule != null ) {
       return module.getRelatives().outerModule.getRelatives().directInnerModules;
     }
@@ -387,11 +387,11 @@ public class ParseUnit {
     }
 
     ModuleContext currentContext = getContext(currentModule);
-    Vector        extendeeNames  = otherModule.getNamesOfModulesExtended();
+    final Vector<String> extendeeNames  = otherModule.getNamesOfModulesExtended();
 
     // For all modules extended by otherModule
     for (int i = 0; i < extendeeNames.size(); i++) {
-      String        extendeeName = (String)extendeeNames.elementAt(i);
+      String        extendeeName = extendeeNames.elementAt(i);
       ModulePointer extendeeResolvant = currentContext.resolve(extendeeName);
 
       // if extendeeName is resolved in currentContext, then
@@ -399,9 +399,9 @@ public class ParseUnit {
       // recursively add to currentContext all of the inner modules in
       // modules extended by resolvant
       if ( extendeeResolvant != null ) {
-        Vector directInnerModules = extendeeResolvant.getDirectInnerModules();
+        Vector<ModulePointer> directInnerModules = extendeeResolvant.getDirectInnerModules();
         for (int j = 0; j < directInnerModules.size(); j++) {
-          ModulePointer upperInnerMod = (ModulePointer)directInnerModules.elementAt(j);
+          ModulePointer upperInnerMod = directInnerModules.elementAt(j);
           currentContext.bindIfNotBound(upperInnerMod.getName(), upperInnerMod);
           handleExtensions(currentModule,extendeeResolvant); // recursive call
 	}
@@ -449,10 +449,10 @@ public class ParseUnit {
       // etc. at point where it is defined
       currentContext.union(getParent(ancestorModule).getContext());
 
-      Vector peers = getPeers(ancestorModule);
+      final Vector<ModulePointer> peers = getPeers(ancestorModule);
       // All peers defined so far are in the currentContext
       for (int i = 0; i < peers.size() - 1; i++) {
-        ModulePointer nextPeer = (ModulePointer)peers.elementAt(i);
+        ModulePointer nextPeer = peers.elementAt(i);
         currentContext.bindIfNotBound(nextPeer.getName(), nextPeer);
       }
       ancestorModule = getParent(ancestorModule);

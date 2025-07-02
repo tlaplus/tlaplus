@@ -99,7 +99,7 @@ public class SubstInNode extends ExprNode {
    * substitutions is to be produced.
    */
   public SubstInNode(TreeNode treeNode, SymbolTable instancerST,
-		     Vector<OpDeclNode> instanceeDecls, ModuleNode ingmn, ModuleNode edmn, Errors errors)
+		     final Vector<OpDeclNode> instanceeDecls, ModuleNode ingmn, ModuleNode edmn, Errors errors)
   throws AbortException {
     super(SubstInKind, treeNode);
     this.instantiatingModule = ingmn;
@@ -149,10 +149,10 @@ public class SubstInNode extends ExprNode {
    * OpApplNode or an OpArgNode substituted for each CONSTANT of
    * VARIABLE OpDeclNode in vector v.
    */
-  final void constructSubst(Vector<OpDeclNode> instanceeDecls, SymbolTable instancerST,
+  final void constructSubst(final Vector<OpDeclNode> instanceeDecls, SymbolTable instancerST,
 			    TreeNode treeNode, Errors errors)
   throws AbortException {
-    Vector<Subst> vtemp = new Vector<>();
+    final Vector<Subst> vtemp = new Vector<>();
 
     // for each CONSTANT or VARIABLE declared in module being
     // instantiated (the instancee)
@@ -204,7 +204,7 @@ public class SubstInNode extends ExprNode {
     // that are legally possible. Make an array out of them
     this.substs = new Subst[ vtemp.size() ];
     for (int i = 0; i < vtemp.size(); i++) {
-      this.substs[i] = (Subst)vtemp.elementAt(i);
+      this.substs[i] = vtemp.elementAt(i);
     }
   } // end constructSubst()
 
@@ -279,7 +279,7 @@ public class SubstInNode extends ExprNode {
    * then we have an error.
    * @param errors Log into which to emit errors.
    */
-  final void matchAll(Vector<OpDeclNode> decls, Errors errors) {
+  final void matchAll(final Vector<OpDeclNode> decls, Errors errors) {
     for (int i = 0; i < decls.size(); i++) {
       // Get the name of the i'th operator that must be substituted for
       UniqueString opName = decls.elementAt(i).getName();

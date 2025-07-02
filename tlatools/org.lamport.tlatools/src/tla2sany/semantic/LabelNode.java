@@ -94,7 +94,7 @@ public class LabelNode extends ExprNode
     * beginning of OpDefOrLabelNode.java for an explanation.               *
     ***********************************************************************/
 
-  private Hashtable labels = null ;
+  private Hashtable<UniqueString, LabelNode> labels = null ;
     /***********************************************************************
     * This field is used to implement the OpDefOrLabel interface.  It is   *
     * a hashtable of OpDefNode objects representing labels within the      *
@@ -165,7 +165,7 @@ public class LabelNode extends ExprNode
   * There doesn't seem to be any easy way to write these methods only      *
   * once.                                                                  *
   *************************************************************************/
-  public void setLabels(Hashtable ht) {labels = ht; }
+  public void setLabels(Hashtable<UniqueString, LabelNode> ht) {labels = ht; }
     /***********************************************************************
     * Sets the set of labels.                                              *
     ***********************************************************************/
@@ -185,8 +185,8 @@ public class LabelNode extends ExprNode
     * as odn, then odn is added to the set and true is return; else the    *
     * set is unchanged and false is returned.                              *
     ***********************************************************************/
-    if (labels == null) {labels = new Hashtable(); } ;
-    if (labels.containsKey(odn)) {return false ;} ;
+    if (labels == null) {labels = new Hashtable<>(); } ;
+    if (labels.containsKey(odn.getName())) {return false ;} ;
     labels.put(odn.getName(), odn) ;
     return true;
    }
@@ -197,12 +197,12 @@ public class LabelNode extends ExprNode
     * `labels'.                                                            *
     ***********************************************************************/
     if (labels == null) {return new LabelNode[0];} ;
-    Vector v = new Vector() ;
-    Enumeration e = labels.elements() ;
+    final Vector<LabelNode> v = new Vector<>() ;
+    final Enumeration<LabelNode> e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
     for (int i = 0 ; i < v.size() ; i++)
-      {retVal[i] = (LabelNode) v.elementAt(i); } ;
+      {retVal[i] = v.elementAt(i); } ;
     return retVal ;
    }
 
@@ -316,9 +316,9 @@ public class LabelNode extends ExprNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration list = labels.keys() ;
+       Enumeration<UniqueString> list = labels.keys() ;
        while (list.hasMoreElements()) {
-          ret += ((UniqueString) list.nextElement()).toString() + "  " ;
+          ret += (list.nextElement()).toString() + "  " ;
          } ;
       }
     else {ret += "\n  Labels: null";} ;
