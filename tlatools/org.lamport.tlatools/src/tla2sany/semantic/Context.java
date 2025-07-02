@@ -246,13 +246,13 @@ public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class "template" (or one of its subclasses)
    */
-  public Vector<SymbolNode> getByClass( Class<?> template ) {
-    Vector<SymbolNode> result = new Vector<>();
+  public <T> Vector<T> getByClass(Class<T> template) {
+    final Vector<T> result = new Vector<>();
     Enumeration<Pair> list = table.elements();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (template.isInstance(elt.info)) {
-        result.addElement( elt.info );
+        result.addElement(template.cast(elt.info));
       }
     }
     return result;
@@ -268,7 +268,7 @@ public class Context implements ExploreNode {
       // Class template = OpDefNode.class;
     Pair nextPair = lastPair;
 
-    Vector<OpDefNode> result = new Vector<>();
+    final Vector<OpDefNode> result = new Vector<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof OpDefNode &&     // true for superclasses too.
            ((OpDefNode)nextPair.info).getKind() != ASTConstants.ModuleInstanceKind &&
@@ -289,7 +289,7 @@ public class Context implements ExploreNode {
       // Class template = ThmOrAssumpDefNode.class;
     Pair nextPair = lastPair;
 
-    Vector<ThmOrAssumpDefNode> result = new Vector<>();
+    final Vector<ThmOrAssumpDefNode> result = new Vector<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof ThmOrAssumpDefNode)
         { result.addElement( (ThmOrAssumpDefNode)(nextPair.info) );} ;
@@ -301,49 +301,48 @@ public class Context implements ExploreNode {
   /**
    * Returns vector of OpDeclNodes that represent CONSTANT declarations
    */
-  public Vector<SemanticNode> getConstantDecls() {
+  public Vector<OpDeclNode> getConstantDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
     Enumeration<Pair> list = table.elements();
 
-    Vector<SemanticNode> result = new Vector<>();
+    final Vector<OpDeclNode> result = new Vector<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
          ((OpDeclNode)elt.info).getKind() == ASTConstants.ConstantDeclKind  )
-        result.addElement( (SemanticNode)(elt.info) );
+        result.addElement( (OpDeclNode)(elt.info) );
 
     }
     return result;
   }
 
-  /* Returns vector of OpDeclNodes that represent CONSTANT declarations  */
-  public Vector<SemanticNode> getVariableDecls() {
+  /* Returns vector of OpDeclNodes that represent VARIABLE declarations  */
+  public Vector<OpDeclNode> getVariableDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
     Enumeration<Pair> list = table.elements();
 
-    Vector<SemanticNode> result = new Vector<>();
+    final Vector<OpDeclNode> result = new Vector<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
            ((OpDeclNode)elt.info).getKind() == ASTConstants.VariableDeclKind  )
-        result.addElement( (SemanticNode)(elt.info) );
+        result.addElement( (OpDeclNode)(elt.info) );
     }
     return result;
   }
 
   /**
-   * Returns a Vector of those SymbolNodes in this Context that are
-   * instances of class ModuleNode
+   * Returns a Vector {@link ModuleNode} instances in this context.
    */
-  public Vector<SemanticNode> getModDefs() {
+  public Vector<ModuleNode> getModDefs() {
     Class<? extends SemanticNode> template = ModuleNode.class;
     Enumeration<Pair> list = table.elements();
 
-    Vector<SemanticNode> result = new Vector<>();
+    final Vector<ModuleNode> result = new Vector<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (template.isInstance(elt.info))    // true for superclasses too.
-        result.addElement( (SemanticNode)(elt.info) );
+        result.addElement( (ModuleNode)(elt.info) );
     }
     return result;
   }
@@ -490,7 +489,7 @@ public class Context implements ExploreNode {
   * information.                                                           
   *************************************************************************/
   public Vector<String> getContextEntryStringVector(int depth, boolean b, Errors errors) {
-    Vector<String> ctxtEntries = new Vector<>(100);  // vector of Strings
+    final Vector<String> ctxtEntries = new Vector<>(100);
     Context naturalsContext =
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
 

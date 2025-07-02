@@ -6,13 +6,13 @@ import tla2sany.utilities.Vector;
 
 class ParseUnitRelatives {
 
-  Vector extendees  = new Vector();  // vector of ParseUnit objects
+  final Vector<ParseUnit> extendees  = new Vector<>();
 
-  Vector extendedBy = new Vector();  // vector of ParseUnit objects
+  final Vector<ParseUnit> extendedBy = new Vector<>();
 
-  Vector instancees = new Vector();  // vector of ParseUnit objects  
+  final Vector<ParseUnit> instancees = new Vector<>();
 
-  Vector instancedBy = new Vector();  // vector of ParseUnit objects
+  final Vector<ParseUnit> instancedBy = new Vector<>();
 
   public final String toString() {
     return "[ extendees = "   + extendees.toString() +

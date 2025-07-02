@@ -81,22 +81,16 @@ public class ExternalModuleTable implements ExploreNode {
   * moduleHashTable, and that each of its entries has a moduleName as the  *
   * key and a value that's an ExternalModuleTableEntry object.             *
   *************************************************************************/
-  public Hashtable<UniqueString, ExternalModuleTableEntry> moduleHashTable;
+  public final Hashtable<UniqueString, ExternalModuleTableEntry> moduleHashTable = new Hashtable<>();
 
   // Vector moduleVector contains ModuleNodes (the same ones as
   // moduleHashTable), but preserves the order in which they were
   // inserted.  If module A depends on module B, then A has a HIGHER
   // index than B.
-  public Vector<ModuleNode>    moduleNodeVector;
+  public final Vector<ModuleNode> moduleNodeVector = new Vector<>();
 
   // The nodule node of the root module
   public ModuleNode rootModule;
-
-  // Constructor
-  public ExternalModuleTable() {
-    moduleHashTable  = new Hashtable<>();
-    moduleNodeVector = new Vector<>();
-  }
 
   // Set and get the rootModule field
   public ModuleNode getRootModule()              { return rootModule; }
@@ -123,7 +117,7 @@ public class ExternalModuleTable implements ExploreNode {
   public ModuleNode[] getModuleNodes() {
     ModuleNode [] mods = new ModuleNode[moduleNodeVector.size()];
     for (int i = 0; i < mods.length; i++) {
-      mods[i] = (ModuleNode)moduleNodeVector.elementAt(i);
+      mods[i] = moduleNodeVector.elementAt(i);
     }
     return mods;
   }
@@ -185,7 +179,7 @@ public class ExternalModuleTable implements ExploreNode {
 
     String ret = "";
     for (int i = 0; i < moduleNodeVector.size(); i++) {
-      ModuleNode mn = (ModuleNode)moduleNodeVector.elementAt(i);
+      ModuleNode mn = moduleNodeVector.elementAt(i);
       if (mn != null) {
         ret += Strings.indent(2, "\nModule: " + Strings.indent(2, mn.toString(depth, errors)) );
       } else {

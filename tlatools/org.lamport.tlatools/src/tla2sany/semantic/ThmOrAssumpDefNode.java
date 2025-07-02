@@ -306,7 +306,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * then that LabelNode is returned; otherwise null is returned.         *
     ***********************************************************************/
     if (labels == null) {return null;} ;
-    return (LabelNode) labels.get(us) ;
+    return labels.get(us) ;
    }
 
   public boolean addLabel(LabelNode odn) {
@@ -327,8 +327,8 @@ public class ThmOrAssumpDefNode extends SymbolNode
     * `labels'.                                                            *
     ***********************************************************************/
     if (labels == null) {return new LabelNode[0];} ;
-    Vector<LabelNode> v = new Vector<>() ;
-    Enumeration<LabelNode> e = labels.elements() ;
+    final Vector<LabelNode> v = new Vector<>() ;
+    final Enumeration<LabelNode> e = labels.elements() ;
     while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
     for (int i = 0 ; i < v.size() ; i++)
@@ -626,7 +626,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     ***********************************************************************/
     if (labels != null) {
        ret += "\n  Labels: " ;
-       Enumeration<UniqueString> list = labels.keys() ;
+       final Enumeration<UniqueString> list = labels.keys() ;
        while (list.hasMoreElements()) {
           ret += list.nextElement().toString() + "  " ;
          } ;

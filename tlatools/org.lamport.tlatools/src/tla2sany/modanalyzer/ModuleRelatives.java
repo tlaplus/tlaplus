@@ -19,18 +19,24 @@ public class ModuleRelatives {
   ModulePointer outerModule                     = null; // TreeNode of the immediate outer (parent) module; 
                                                         //   null currentModule is the outermost in parseUnit
 
-  Vector        directInnerModules              = new Vector(); 
-                                                        // Vector of ModulePointers for immediate inner modules 
+  /**
+   * Vector of ModulePointers for immediate inner modules
+   */
+  final Vector<ModulePointer> directInnerModules = new Vector<>();
 
-  Vector        directlyExtendedModuleNames     = new Vector(); 
-                                                        // Vector of String names for modules mentioned in EXTENDS decls by 
-                                                        //   currentModule, whether or not they are resolved within the 
-                                                        //   current ParseUnit
+  /**
+   * Vector of String names for modules mentioned in EXTENDS decls by
+   * currentModule, whether or not they are resolved within the
+   * current ParseUnit
+   */
+  final Vector<String> directlyExtendedModuleNames = new Vector<>();
 
-  Vector        directlyInstantiatedModuleNames = new Vector(); 
-                                                        // Vector of String names for modules directly instantiated 
-                                                        //   by currentModule, whether or not they are resolved within the
-                                                        //   current ParseUnit
+  /**
+   * Vector of String names for modules directly instantiated
+   * by currentModule, whether or not they are resolved within the
+   * current ParseUnit
+   */
+  final Vector<String> directlyInstantiatedModuleNames = new Vector<>();
 
   ModuleContext context = new ModuleContext();          // The context that maps module String names known in this module 
                                                         //   (whether or not they are referenced in it) to ModulePointers
@@ -51,17 +57,17 @@ public class ModuleRelatives {
 
     ret += "\ndirectInnerModules: ";
     for (int i = 0; i < directInnerModules.size(); i++) {
-      ret += ((ModulePointer)(directInnerModules.elementAt(i))).getName() + " ";
+      ret += directInnerModules.elementAt(i).getName() + " ";
     }
 
     ret += "\ndirectlyExtendedModuleNames: ";
     for (int i = 0; i < directlyExtendedModuleNames.size(); i++) {
-      ret += (String)(directlyExtendedModuleNames.elementAt(i)) + " ";
+      ret += directlyExtendedModuleNames.elementAt(i) + " ";
     }
 
     ret += "\ndirectlyInstantiatedModuleNames: ";
     for (int i = 0; i < directlyInstantiatedModuleNames.size(); i++) {
-      ret += (String)(directlyInstantiatedModuleNames.elementAt(i)) + " ";
+      ret += directlyInstantiatedModuleNames.elementAt(i) + " ";
     }
 
     ret += "\n" + context.toString();
