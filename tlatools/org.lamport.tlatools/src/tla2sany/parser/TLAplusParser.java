@@ -3,13 +3,15 @@ package tla2sany.parser;
 
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
 import util.ToolIO;
 import util.UniqueString;
+
+import java.util.Deque;
+import java.util.ArrayDeque;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree, TLAplusParserConstants {
 
@@ -634,12 +636,12 @@ if (System.getProperty("TLA-StackTrace", "off").equals("on")) ToolIO.out.println
   }
 //
 
-  Stack internals = new Stack();
+  Deque<UniqueString> internals = new ArrayDeque<UniqueString>();
 
   private final void addDependency( UniqueString s ) {
-    int lvi = internals.search( s );
-    if ( lvi < 0 )
-      dependencyList.addElement( s );
+    if (!internals.contains(s)) {
+      dependencyList.addElement(s);
+    }
   }
 
   private final UniqueString reduceString( String s ) {
@@ -1488,7 +1490,7 @@ Token t;
   Token t;
   SyntaxTreeNode lSTN[] = new SyntaxTreeNode[ 4 ];
   bpa( "Module definition" );
-  internals.push( null );
+  final int stackLevel = internals.size();
   Object pop = null;
   expecting = "---- MODULE";
     lSTN[0] = BeginModule();
@@ -1498,8 +1500,8 @@ Token t;
     lSTN[2] = Body();
   expecting = "==== or more Module body";
     lSTN[3] = EndModule();
-  do { pop = internals.pop(); } while (pop != null );
-  internals.push( lSTN[0].zero[1].image );
+  while (internals.size() > stackLevel) { internals.removeFirst(); }
+  internals.addFirst(lSTN[0].zero[1].image);
   epa(); {if (true) return new SyntaxTreeNode( mn, N_Module, lSTN );}
     throw new Error("Missing return statement in function");
   }
@@ -7765,17 +7767,6 @@ SyntaxTreeNode tn;
     finally { jj_save(73, xla); }
   }
 
-  final private boolean jj_3R_210() {
-    if (jj_3R_215()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_92() {
-    if (jj_scan_token(LBR)) return true;
-    if (jj_3R_145()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_181() {
     if (jj_3R_192()) return true;
     return false;
@@ -10363,6 +10354,17 @@ SyntaxTreeNode tn;
     jj_scanpos = xsp;
     if (jj_scan_token(77)) return true;
     }
+    return false;
+  }
+
+  final private boolean jj_3R_210() {
+    if (jj_3R_215()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_92() {
+    if (jj_scan_token(LBR)) return true;
+    if (jj_3R_145()) return true;
     return false;
   }
 

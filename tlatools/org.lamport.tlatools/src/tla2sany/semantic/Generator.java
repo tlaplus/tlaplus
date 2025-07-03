@@ -16,6 +16,8 @@
 
 package tla2sany.semantic;
 
+import java.util.Deque;
+import java.util.ArrayDeque;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -27,7 +29,6 @@ import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Stack;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
 import tlc2.output.EC;
@@ -78,11 +79,17 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 	private ExternalModuleTable moduleTable;
 	public Errors errors;
-	private Stack excStack; // Holds stack of OpApplNodes for $Except
-							// operators; used for @
-	private Stack excSpecStack; // Holds stack of OpApplNode for @Pair
-								// operators representing ExceptSpecs;
-								// also used for @
+
+	/**
+	 * Holds stack of {@link OpApplNode} for EXCEPT operators; also used for \@.
+	 */
+	private Deque<OpApplNode> excStack = new ArrayDeque<>();
+
+	/**
+	 * Holds stack of {@link OpApplNode} for {@link ASTConstants#OP_Pair}
+	 * operators representing EXCEPT expressions; also used for \@.
+	 */
+	private Deque<OpApplNode> excSpecStack = new ArrayDeque<>();
 
 	// dummy definitions; used during the creation of the "-- TLA+ BUILTINS --"
 	// phony module,
@@ -133,26 +140,27 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			}
 		}
 
-		Stack funcStack = new Stack();
+		private final Deque<pair> funcStack = new ArrayDeque<>();
 
 		void push(UniqueString uniqueString, OpApplNode oan) {
-			funcStack.push(new pair(uniqueString, oan));
+			this.funcStack.addFirst(new pair(uniqueString, oan));
 		}
 
 		void pop() {
-			funcStack.pop();
+			this.funcStack.removeFirst();
 		}
 
 		// If same function found farther down on stack, then this is a recursive
 		// function definition--change the operator to indicate so.
 		boolean recursionCheck(UniqueString uniqueString) {
-			for (int lvi = funcStack.size() - 1; lvi >= 0; lvi--) {
-				if (uniqueString.equals(((pair) funcStack.elementAt(lvi)).uniqueString())) {
+			for (pair p : this.funcStack) {
+				if (uniqueString.equals(p.uniqueString())) {
 					// OA-rfs = recursive func spec
-					((pair) funcStack.elementAt(lvi)).oan().resetOperator(OP_rfs);
+					p.oan().resetOperator(OP_rfs);
 					return true;
 				}
 			}
+
 			return false;
 		}
 
@@ -2077,8 +2085,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		this.errors = errs;
 		this.moduleTable = moduleTable;
 		this.symbolTable = new SymbolTable(moduleTable, errors);
-		this.excStack = new Stack();
-		this.excSpecStack = new Stack();
 	}
 
 	public final SymbolTable getSymbolTable() {
@@ -3104,7 +3110,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			SyntaxTreeNode sTreeNode = (SyntaxTreeNode) treeNode;
 			if ((sTreeNode.heirs()[1].getKind() == IDENTIFIER) && (sTreeNode.heirs()[1].getUS() == AtUS)
 					&& (((SyntaxTreeNode) sTreeNode.heirs()[0]).heirs().length == 0)) {
-				if (excStack.empty() || excSpecStack.empty()) {
+				if (excStack.isEmpty() || excSpecStack.isEmpty()) {
 					// if either stack is empty, then @ used in improper EXCEPT context
 					errors.addError(
 						ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
@@ -3115,7 +3121,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} else {
 					// So, the context for @ is proper, then construct the
 					// AtNode and return it
-					return new AtNode((OpApplNode) excStack.peek(), (OpApplNode) excSpecStack.peek());
+					return new AtNode(excStack.peekFirst(), excSpecStack.peekFirst());
 				}
 			}
 			;
@@ -4200,16 +4206,16 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Push the except node and the except spec node on stacks so
 			// that the RHS of the ExceptSpec, which might contain an @, can
 			// be evaluated in their "context".
-			excSpecStack.push(excSpecNode);
-			excStack.push(excNode);
+			excSpecStack.addFirst(excSpecNode);
+			excStack.addFirst(excNode);
 
 			// Generate the expression constituting the RHS of the
 			// ExceptionSpec allow @ in the context of this expression.
 			sops[1] = generateExpression(syntaxTreeNode[syntaxTreeNode.length - 1], cm);
 
 			// Pop them back off
-			excSpecStack.pop();
-			excStack.pop();
+			excSpecStack.removeFirst();
+			excStack.removeFirst();
 
 			// Store excSpecNode as another operand of $Except
 			operands[excSpecIx + 1] = excSpecNode;
@@ -6747,7 +6753,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * where an "@" could appear. The test for this * is taken from
 		 * generateExpression. *
 		 ***********************************************************************/
-		if (!((excStack.empty() || excSpecStack.empty()))) {
+		if (!((excStack.isEmpty() || excSpecStack.isEmpty()))) {
 			errors.addError(
 				ErrorCode.LABEL_NOT_ALLOWED_IN_FUNCTION_EXCEPT,
 				stn.getLocation(),
