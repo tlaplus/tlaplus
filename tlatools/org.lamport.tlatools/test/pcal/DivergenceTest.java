@@ -76,6 +76,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertNoSubstring("!! WARNING " + filename);
@@ -118,6 +119,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertNoSubstring("!! WARNING " + filename);
@@ -140,6 +142,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
@@ -164,6 +167,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
@@ -189,6 +193,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
@@ -233,6 +238,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
@@ -276,6 +282,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
@@ -319,10 +326,11 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The PlusCal algorithm and its TLA+ translation in module %s filename since the last translation.",
+				"!! WARNING: Both the PlusCal algorithm and its TLA+ translation in module %s filename have changed since the last translation.",
 				filename));
 	}
 	@Test
@@ -361,6 +369,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertNoSubstring(String.format(
@@ -383,6 +392,7 @@ public class DivergenceTest extends PCalTest {
 		// Parse with SANY and check for errors (collects parse errors into ToolIO.out)
 		final TestPrintStream testPrintStream = new TestPrintStream();
 		ToolIO.out = testPrintStream;
+		ToolIO.err = testPrintStream;
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertNoSubstring("!! WARNING " + filename);

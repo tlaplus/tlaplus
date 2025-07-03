@@ -1,6 +1,5 @@
 package org.lamport.tla.toolbox.spec.parser;
 
-import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Vector;
@@ -29,8 +28,10 @@ import tla2sany.drivers.SANY;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tla2sany.parser.ParseException;
-import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.Errors.ErrorDetails;
@@ -142,11 +143,6 @@ public class ModuleParserLauncher
         // Initialize the module variables
         SpecObj moduleSpec = new SpecObj(ResourceHelper.getModuleName(moduleFilename), resolver);
 
-        // The parsing methods take a PrintStream on which they print out some
-        // (but hardly all) error messages.
-        // They're called with this one.
-        PrintStream outputStr = ToolIO.out;
-
         // get the time stamp for the call of the parser
         long parserCallTime = System.currentTimeMillis();
 
@@ -157,10 +153,11 @@ public class ModuleParserLauncher
             SANY.frontEndInitialize();
             // should cancel?
             checkCancel(monitor);
-            SANY.frontEndParse(moduleSpec, outputStr, false);
+            SanyOutput out = new SimpleSanyOutput(ToolIO.out, LogLevel.INFO);
+            SANY.frontEndParse(moduleSpec, out, false);
             // should cancel?
             checkCancel(monitor);
-            SANY.frontEndSemanticAnalysis(moduleSpec, outputStr, true);
+            SANY.frontEndSemanticAnalysis(moduleSpec, out, true);
             // should cancel?
             checkCancel(monitor);
         } catch (ParseException e)

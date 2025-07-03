@@ -12,6 +12,9 @@ import java.io.PrintWriter;
 
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
+import tla2sany.output.LogLevel;
+import tla2sany.output.SanyOutput;
+import tla2sany.output.SimpleSanyOutput;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
@@ -100,9 +103,10 @@ public class CheckImplFile extends CheckImpl
         SpecObj spec = new SpecObj(rfname, null);
         try
         {
+            SanyOutput out = new SimpleSanyOutput(ToolIO.out, LogLevel.INFO);
             SANY.frontEndInitialize();
-            SANY.frontEndParse(spec, ToolIO.out);
-            SANY.frontEndSemanticAnalysis(spec, ToolIO.out, true);
+            SANY.frontEndParse(spec, out);
+            SANY.frontEndSemanticAnalysis(spec, out, true);
         } catch (Throwable e)
         {
             String msg = (e.getMessage()==null)?e.toString():e.getMessage();

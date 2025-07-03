@@ -36,16 +36,6 @@ public class ModulePointer {
 
   // Returns the String name of this module
   final String getName() { 
-    /*
-    // Debug
-    String ret; 
-    try { 
-      ret = treeNode.heirs()[0].heirs()[1].getImage(); 
-    } catch (Exception e) { 
-      ToolIO.out.println("In ModulePointer.getName(); bad TreeNode is:\n"); 
-      treeNode.printST(0); 
-    } 
-    */
     return treeNode.heirs()[0].heirs()[1].getImage(); 
   }
 
