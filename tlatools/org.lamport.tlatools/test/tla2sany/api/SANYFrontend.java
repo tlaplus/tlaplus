@@ -120,7 +120,7 @@ public class SANYFrontend implements Frontend {
     for (final String dependencyName : dependencies) {
       if (incompleteModules.contains(dependencyName)) {
         // TODO: reconstruct dependency chain for error message
-        throw log.addError(
+        throw log.addMessage(
           ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
           Location.nullLoc,
           "Circular dependency detected"
