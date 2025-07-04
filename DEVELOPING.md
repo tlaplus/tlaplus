@@ -217,7 +217,7 @@ That said, it is worth following a few guiding principles:
 For new Java code we recommend (but do not require):
 
  - Each `public` class and method should have a javadoc description of its purpose and behavior.
- - Use 4 spaces for indentation.  If you choose to use tabs instead, do not mix tabs and spaces.
+ - Do not mix tabs and spaces.
  - Put opening curly braces (`{`) on the same line as the corresponding declaration or statement.
  - Include braces for single-statement bodies of statements like `if` and `while`, even though they are optional.
  - Avoid lines longer than 120 characters.
