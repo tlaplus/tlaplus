@@ -52,6 +52,20 @@ THEOREM TemporalRecord == IsLevel([
   TemporalLevel
 )
 
+-----------------------------------------------------------------------------
 
-THEOREM SomeRecord == [c |-> c] = [ x \in {"c"} |-> c]  
+THEOREM [c |-> c] = [ x \in {"c"} |-> c]  
+
+THEOREM \E self \in {}: [ v |-> v[self] ]
+
+ASSUME DOMAIN [v |-> "white", q |-> c] # {}
+ASSUME DOMAIN [q |-> c, v |-> "white"] # {}
+
+Rational(num) == [num |-> num]
+ASSUME DOMAIN Rational(42) # {}
+
+N == {c}
+THEOREM v \in [ p: N, q: {0}, v: {"white"} ]
+=============================================================================
+
 =============================================================================

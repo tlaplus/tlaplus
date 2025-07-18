@@ -18,15 +18,18 @@ package tla2sany.semantic;
 
 import java.util.Deque;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParserConstants;
+import tla2sany.semantic.SemanticNode.ChildrenVisitor;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -4031,13 +4034,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		int length = (children.length - 1) / 2;
 
 		// Create an array of pairs to handle all of the fields mentioned in the form
-		ExprNode[] fieldPairs = new ExprNode[length];
+		OpApplNode[] fieldPairs = new OpApplNode[length];
 		// Create an array of Unique Strings to check uniqueness of fields. Not very
 		// efficient
 		// but a HashTable may be overkill most of the time.
 		// Remember a label is a string.
 		UniqueString[] labels = new UniqueString[length];
-
+		
 		// For each field in the RcdConstructor or SetOfRecords
 		for (int lvi = 0; lvi < length; lvi++) {
 			TreeNode syntaxTreeNode[] = children[2 * lvi + 1].heirs();
@@ -4057,34 +4060,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					);
 				}
 			}
-			
-			// Raise a warning if SANY encounters the following construct, which suggests
-			// that the user expects the value of R to be [i \in {23} |-> 42], i.e. 23 :> 42:
-			//
-			//   bar == 23
-			//   R == [bar |-> 42]
-			//
-			// This may indicate a misunderstanding of the semantics of record construction.
-			//
-			// However, do NOT raise a warning in cases like the following, which imply that
-			// the she understands the semantics correctly:
-			//
-			//   bar == 23
-			//   R == [bar |-> bar]
-			//
-			// (see https://github.com/tlaplus/tlaplus/issues/1184#issuecomment-2889363740)
-			if (!syntaxTreeNode[0].getHumanReadableImage().equals(syntaxTreeNode[2].getHumanReadableImage())) {
-				final SymbolNode s = symbolTable.resolveSymbol(labels[lvi]);
-				if (s != null) {
-					errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, syntaxTreeNode[0].getLocation(), String
-							.format("The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
-									+ "named %1$s, located at %2$s.\n"
-									+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
-									+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
-									+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
-									labels[lvi], s.getLocation()));
-				}
-			}
 
 			// The second one gets the expression indicating the field value (or set of
 			// values)
@@ -4093,11 +4068,86 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Put the $Pair OpApplNode into the fieldPairs array
 			fieldPairs[lvi] = new OpApplNode(OP_pair, sops, children[2 * lvi + 1], cm);
 		}
+		
+		// Raise a warning if SANY encounters the following construct, which suggests
+		// that the user expects the value of R to be [i \in {23} |-> 42], i.e. 23 :> 42:
+		//
+		//   bar == 23
+		//   R == [bar |-> 42]
+		//
+		// This may indicate a misunderstanding of the semantics of record construction.
+		//
+		// However, do NOT raise a warning in cases like the following, which imply that
+		// the she understands the semantics correctly:
+		//
+		//   CONSTANT bar
+		//   R == [bar |-> bar]
+		//
+		// (see https://github.com/tlaplus/tlaplus/issues/1184#issuecomment-2889363740)
+		final List<OpApplNode> fps = Arrays.asList(fieldPairs);
+		for (OpApplNode fp : fps) {
+			final StringNode lhs = (StringNode) fp.getArgs()[0];
+			final ExprOrOpArgNode rhs = fp.getArgs()[1];
+			final SymbolNode s = symbolTable.resolveSymbol(lhs.getRep());
+			if (s != null) {
+				if (!isBuiltFromDeclarations(rhs)
+						// Suppress the warning for the current record component if the right-hand side
+						// of any other component is built from a CONSTANT, VARIABLE, or bound variable,
+						// suggesting that the user understands the semantics.
+						&& !fps.stream().anyMatch(oan -> isBuiltFromDeclarations(oan))) {
+					errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, lhs.getLocation(), String.format(
+							"The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
+									+ "named %1$s, located at %2$s.\n"
+									+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
+									+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
+									+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
+							lhs.getRep(), s.getLocation()));
+				}
+			}
+		}
+		
 		// Create the top-level OpApplNode, for either the SetOfRecords op
 		// or the RcdConstructor op.
 		return new OpApplNode(operator, fieldPairs, treeNode, cm);
 	}
 
+	// true if the ExprOrOpArgNode is (transitively) built from a parameter
+	// (FormalParameterNode), CONSTANT (OpDeclNode), or a VARIABLE (OpDeclNode)
+	// declaration.
+	// TODO: Should this become API of SemanticNode? 
+	private static final boolean isBuiltFromDeclarations(final ExprOrOpArgNode expr) {
+		return expr.walkChildren(new ChildrenVisitor<Boolean>() {
+			private boolean found;
+
+			public void preVisit(final SemanticNode node) {
+				if (node instanceof OpApplNode) {
+					final OpApplNode oan = (OpApplNode) node;
+					if (oan.getOperator() instanceof OpDeclNode) {
+						found = true;
+					}
+					if (oan.getOperator() instanceof FormalParamNode) {
+						found = true;
+					}
+					if (oan.getOperator() instanceof OpDefNode) {
+						// Follow the operator definition to see if it is built from declarations.
+						oan.getOperator().walkChildren(this);
+					}
+				}
+			}
+
+			public boolean preempt(SemanticNode node) {
+				// Stops the traversal early if a node meeting the criteria (e.g., being an
+				// OpDeclNode or FormalParamNode) has been found. This improves efficiency by
+				// avoiding unnecessary traversal of the remaining nodes.
+				return found;
+			}
+
+			public Boolean get() {
+				return found;
+			}
+		}).get();
+	}
+	
 	private final ExprNode processAction(TreeNode treeNode, TreeNode children[], ModuleNode cm) throws AbortException {
 		UniqueString match;
 		switch (children[0].getKind()) {
