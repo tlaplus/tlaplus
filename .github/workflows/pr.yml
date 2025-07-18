@@ -161,6 +161,7 @@ jobs:
     - name: Parse tlaplus/examples modules
       run: |
         python "$SCRIPT_DIR/parse_modules.py"                             \
+          --verbose                                                       \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
