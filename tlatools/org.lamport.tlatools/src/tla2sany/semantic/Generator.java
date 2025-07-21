@@ -2194,16 +2194,34 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 			public void preVisit(final SemanticNode node) {
 				if (node instanceof OpApplNode) {
-					final OpApplNode oan = (OpApplNode) node;
-					if (oan.getOperator() instanceof OpDeclNode) {
+					final SymbolNode operator = ((OpApplNode) node).getOperator();
+					if (operator instanceof OpDeclNode) {
 						found = true;
 					}
-					if (oan.getOperator() instanceof FormalParamNode) {
+					if (operator instanceof FormalParamNode) {
 						found = true;
 					}
-					if (oan.getOperator() instanceof OpDefNode) {
+					if (operator instanceof OpDefNode) {
+						// Special cases for operator stubs in the standard modules.
+						if (operator.getName() == UniqueString.of("BOOLEAN")) {
+							found = true;
+							return;
+						}
+						final ModuleNode moduleNode = ((OpDefNode) operator).getOriginallyDefinedInModuleNode();
+						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Integers") && operator.getName() == UniqueString.of("Int")) {
+							found = true;
+							return;
+						}
+						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Naturals") && operator.getName() == UniqueString.of("Nat")) {
+							found = true;
+							return;
+						}
+						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Reals") && operator.getName() == UniqueString.of("Reals")) {
+							found = true;
+							return;
+						}
 						// Follow the operator definition to see if it is built from declarations.
-						oan.getOperator().walkChildren(this);
+						operator.walkChildren(this);
 					}
 				}
 			}
