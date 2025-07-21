@@ -312,6 +312,7 @@ public class ModuleNode extends SymbolNode {
   private Vector instanceVec   = new Vector();  // Vector of InstanceNodes
 
   private Vector topLevelVec   = new Vector();
+
     /***********************************************************************
     * A vector containing all the entries in the preceding three vectors,  *
     * plus all top-level UseOrHideNode nodes, in the order in which they   *
@@ -323,6 +324,12 @@ public class ModuleNode extends SymbolNode {
     * A vector of all OpDefNodes for operators declared in RECURSIVE       *
     * statements--even within LET expressions.                             *
     ***********************************************************************/
+  
+  /***********************************************************************
+  * A vector of all records in the order in which they are defined       *
+  * in the module.                             *
+  ***********************************************************************/
+  private final Vector<OpApplNode> recordVec = new Vector<>();  // Vector of RecordNodes
 
   // Invoked only in Generator
   public ModuleNode(UniqueString us, Context ct, TreeNode stn) {
@@ -495,6 +502,17 @@ public class ModuleNode extends SymbolNode {
   }
 
   /**
+   * Returns the array of Records that are part of this module.
+   */
+  public final OpApplNode[] getRecords() {
+    OpApplNode[] records = new OpApplNode[recordVec.size()];
+    for (int i = 0; i< recordVec.size(); i++) {
+    	records[i] = recordVec.elementAt(i);
+    }
+    return records;
+  }
+
+  /**
    * Returns the array of AssumeNodes that are part of this module,
      including ones from extended (but not instantiated) modules.
    */
@@ -582,6 +600,11 @@ public boolean isStandard() {
  */
 public void setStandard(boolean isStandard) {
 	this.isStandard = isStandard;
+}
+
+final OpApplNode addRecord(OpApplNode r) {
+	recordVec.addElement(r);
+	return r;
 }
 
 final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
