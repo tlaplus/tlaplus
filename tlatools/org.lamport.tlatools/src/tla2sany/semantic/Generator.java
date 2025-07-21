@@ -77,8 +77,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * constructor. *
 	 ***********************************************************************/
 
-	private ExternalModuleTable moduleTable;
-	public Errors errors;
+	private final ExternalModuleTable moduleTable;
+	private final Errors errors;
 
 	/**
 	 * Holds stack of {@link OpApplNode} for EXCEPT operators; also used for \@.
