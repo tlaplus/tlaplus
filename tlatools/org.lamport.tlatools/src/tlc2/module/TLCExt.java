@@ -57,6 +57,7 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.util.FP64;
 import tlc2.util.IdThread;
+import tlc2.value.IValue;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
@@ -333,8 +334,10 @@ public class TLCExt {
 		final ExprOrOpArgNode expr = args[0];
 		final ExprOrOpArgNode closure = args[1];
 
-		if (expr.getLevel() == LevelConstants.VariableLevel) {
-
+		if (expr.getLevel() == LevelConstants.ConstantLevel) {
+			final Value key = tool.eval(closure, c, s0, s1, control, cm);
+			return tool.getOrSetCached(key, (final Value _ignored) -> tool.eval(expr, c, s0, s1, control, cm));
+		} else if ( expr.getLevel() == LevelConstants.VariableLevel) {
 			final int key = expr.hashCode() ^ closure.hashCode() ^ tool.eval(closure, c, s0).hashCode();
 
 			final Value value = s0.getCached(key);
@@ -345,7 +348,7 @@ public class TLCExt {
 			return s0.setCached(key, tool.eval(expr, c, s0, s1, control, cm));
 		}
 
-		// For constant, action or temporal formulas, all we do is to evaluate the TLA+
+		// For action or temporal formulas, all we do is to evaluate the TLA+
 		// expression--nothing is cached!
 		return null; // Returning null here causes Tool.java to evaluate the original expression.
 	}
