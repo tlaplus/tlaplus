@@ -2124,6 +2124,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			//
 			// (see https://github.com/tlaplus/tlaplus/issues/1184#issuecomment-2889363740)
 			final List<OpApplNode> records = Arrays.asList(m.getRecords());
+			
+			// All records across all modules.
+			final List<OpApplNode> allRecords = m.getExtendedModuleSet(true).stream()
+					.flatMap(mod -> Arrays.stream(mod.getRecords())).collect(Collectors.toList());
+			allRecords.addAll(records);
+
 			for (OpApplNode record : records) {
 				final List<OpApplNode> fieldPairs = getFieldPairs(record);
 				for (OpApplNode fp : fieldPairs) {
@@ -2135,7 +2141,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 								// Suppress the warning for the current record component if the right-hand side of any other component of this record is built from a CONSTANT, VARIABLE, or bound variable, suggesting that the user understands the semantics.
 								&& !fieldPairs.stream().anyMatch(Generator::isBuiltFromDeclarations)
 								// Suppress the warning for the current record component if the right-hand side of any other record with the same components is built from a CONSTANT, VARIABLE, or bound variable, suggesting that the user understands the semantics.
-								&& !records.stream().filter(r -> recordsSameDomain(r, record)).flatMap(r -> getFieldPairs(r).stream()).anyMatch(Generator::isBuiltFromDeclarations)
+								&& !allRecords.stream().filter(r -> recordsSameDomain(r, record)).flatMap(r -> getFieldPairs(r).stream()).anyMatch(Generator::isBuiltFromDeclarations)
 							) {
 							errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, lhs.getLocation(), String.format(
 									"The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
