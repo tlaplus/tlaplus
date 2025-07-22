@@ -176,6 +176,7 @@ public class SemanticErrorCorpusTests {
       // https://github.com/tlaplus/tlaplus/issues/1149
       return spec.semanticErrors;
     }
+      SANY.frontEndLinting(spec, out);
     return spec.semanticErrors;
   }
 }
