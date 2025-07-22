@@ -312,7 +312,6 @@ public class ModuleNode extends SymbolNode {
   private Vector instanceVec   = new Vector();  // Vector of InstanceNodes
 
   private Vector topLevelVec   = new Vector();
-
     /***********************************************************************
     * A vector containing all the entries in the preceding three vectors,  *
     * plus all top-level UseOrHideNode nodes, in the order in which they   *

@@ -17,20 +17,16 @@
 package tla2sany.semantic;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParserConstants;
-import tla2sany.semantic.SemanticNode.ChildrenVisitor;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -2106,143 +2102,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		if (treeNode.isKind(N_Module)) {
 			this.context = symbolTable.getContext();
-			final ModuleNode m = this.generateModule(treeNode, null);
-			
-			// Raise a warning if SANY encounters the following construct, which suggests
-			// that the user expects the value of R to be [i \in {23} |-> 42], i.e. 23 :> 42:
-			//
-			//   bar == 23
-			//   R == [bar |-> 42]
-			//
-			// This may indicate a misunderstanding of the semantics of record construction.
-			//
-			// However, do NOT raise a warning in cases like the following, which imply that
-			// the she understands the semantics correctly:
-			//
-			//   CONSTANT bar
-			//   R == [bar |-> bar]
-			//
-			// (see https://github.com/tlaplus/tlaplus/issues/1184#issuecomment-2889363740)
-			final List<OpApplNode> records = Arrays.asList(m.getRecords());
-			
-			// All records across all modules.
-			final List<OpApplNode> allRecords = m.getExtendedModuleSet(true).stream()
-					.flatMap(mod -> Arrays.stream(mod.getRecords())).collect(Collectors.toList());
-			allRecords.addAll(records);
-
-			for (OpApplNode record : records) {
-				final List<OpApplNode> fieldPairs = getFieldPairs(record);
-				for (OpApplNode fp : fieldPairs) {
-					final StringNode lhs = (StringNode) fp.getArgs()[0];
-					final ExprOrOpArgNode rhs = fp.getArgs()[1];
-					final SymbolNode s = symbolTable.resolveSymbol(lhs.getRep());
-					if (s != null) {
-						if (!isBuiltFromDeclarations(rhs)
-								// Suppress the warning for the current record component if the right-hand side of any other component of this record is built from a CONSTANT, VARIABLE, or bound variable, suggesting that the user understands the semantics.
-								&& !fieldPairs.stream().anyMatch(Generator::isBuiltFromDeclarations)
-								// Suppress the warning for the current record component if the right-hand side of any other record with the same components is built from a CONSTANT, VARIABLE, or bound variable, suggesting that the user understands the semantics.
-								&& !allRecords.stream().filter(r -> recordsSameDomain(r, record)).flatMap(r -> getFieldPairs(r).stream()).anyMatch(Generator::isBuiltFromDeclarations)
-							) {
-							errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, lhs.getLocation(), String.format(
-									"The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
-											+ "named %1$s, located at %2$s.\n"
-											+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
-											+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
-											+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
-											lhs.getRep(), s.getLocation()));
-						}
-					}
-				}
-			}
-			
-			return m;
+			return this.generateModule(treeNode, null);
 		}
 		return null;
-	}
-
-	private static final List<OpApplNode> getFieldPairs(OpApplNode record) {
-		return Arrays.asList(record.getArgs()).stream()
-				.filter(arg -> arg instanceof OpApplNode).map(arg -> (OpApplNode) arg)
-				.collect(Collectors.toList());
-	}
-	
-	// Returns true if two records share the same DOMAIN.
-	private static final boolean recordsSameDomain(final OpApplNode r1, final OpApplNode r2) {
-		if (r1 == r2) {
-			return true;
-		}
-		if (r1.getArgs().length != r2.getArgs().length) {
-			return false;
-		}
-		OUTER: for (int i = 0; i < r1.getArgs().length; i++) {
-			OpApplNode f1 = (OpApplNode) r1.getArgs()[i];
-			StringNode s1 = (StringNode) f1.getArgs()[0];
-			
-			for (int j = 0; j < r2.getArgs().length; j++) {
-				OpApplNode f2 = (OpApplNode) r2.getArgs()[j];
-				StringNode s2 = (StringNode) f2.getArgs()[0];
-				if (s1.getRep() == s2.getRep()) {
-					continue OUTER;
-				}
-			}
-			return false;
-		}
-		return true;
-	}
-
-	// true if the ExprOrOpArgNode is (transitively) built from a parameter
-	// (FormalParameterNode), CONSTANT (OpDeclNode), or a VARIABLE (OpDeclNode)
-	// declaration.
-	// TODO: Should this become API of SemanticNode? 
-	private static final boolean isBuiltFromDeclarations(final ExprOrOpArgNode expr) {
-		return expr.walkChildren(new ChildrenVisitor<Boolean>() {
-			private boolean found;
-
-			public void preVisit(final SemanticNode node) {
-				if (node instanceof OpApplNode) {
-					final SymbolNode operator = ((OpApplNode) node).getOperator();
-					if (operator instanceof OpDeclNode) {
-						found = true;
-					}
-					if (operator instanceof FormalParamNode) {
-						found = true;
-					}
-					if (operator instanceof OpDefNode) {
-						// Special cases for operator stubs in the standard modules.
-						if (operator.getName() == UniqueString.of("BOOLEAN")) {
-							found = true;
-							return;
-						}
-						final ModuleNode moduleNode = ((OpDefNode) operator).getOriginallyDefinedInModuleNode();
-						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Integers") && operator.getName() == UniqueString.of("Int")) {
-							found = true;
-							return;
-						}
-						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Naturals") && operator.getName() == UniqueString.of("Nat")) {
-							found = true;
-							return;
-						}
-						if (moduleNode != null && moduleNode.getName() == UniqueString.of("Reals") && operator.getName() == UniqueString.of("Reals")) {
-							found = true;
-							return;
-						}
-						// Follow the operator definition to see if it is built from declarations.
-						operator.walkChildren(this);
-					}
-				}
-			}
-
-			public boolean preempt(SemanticNode node) {
-				// Stops the traversal early if a node meeting the criteria (e.g., being an
-				// OpDeclNode or FormalParamNode) has been found. This improves efficiency by
-				// avoiding unnecessary traversal of the remaining nodes.
-				return found;
-			}
-
-			public Boolean get() {
-				return found;
-			}
-		}).get();
 	}
 
 	private final Context getContext(UniqueString us) {
@@ -4169,13 +4031,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		int length = (children.length - 1) / 2;
 
 		// Create an array of pairs to handle all of the fields mentioned in the form
-		OpApplNode[] fieldPairs = new OpApplNode[length];
+		ExprNode[] fieldPairs = new ExprNode[length];
 		// Create an array of Unique Strings to check uniqueness of fields. Not very
 		// efficient
 		// but a HashTable may be overkill most of the time.
 		// Remember a label is a string.
 		UniqueString[] labels = new UniqueString[length];
-		
+
 		// For each field in the RcdConstructor or SetOfRecords
 		for (int lvi = 0; lvi < length; lvi++) {
 			TreeNode syntaxTreeNode[] = children[2 * lvi + 1].heirs();
@@ -4203,12 +4065,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Put the $Pair OpApplNode into the fieldPairs array
 			fieldPairs[lvi] = new OpApplNode(OP_pair, sops, children[2 * lvi + 1], cm);
 		}
-		
 		// Create the top-level OpApplNode, for either the SetOfRecords op
 		// or the RcdConstructor op.
 		return cm.addRecord(new OpApplNode(operator, fieldPairs, treeNode, cm));
 	}
-	
+
 	private final ExprNode processAction(TreeNode treeNode, TreeNode children[], ModuleNode cm) throws AbortException {
 		UniqueString match;
 		switch (children[0].getKind()) {
