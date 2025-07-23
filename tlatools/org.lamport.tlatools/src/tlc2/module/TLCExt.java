@@ -28,9 +28,11 @@ package tlc2.module;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.locks.StampedLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -326,6 +328,9 @@ public class TLCExt {
 		return ModelValue.add(str.val.toString());
 	}
 	
+	private static final StampedLock tlcEval2Lock = new StampedLock();
+	
+	@SuppressWarnings("unchecked")
 	@Evaluation(definition = "TLCCache", module = "TLCExt", warn = false, silent = true)
 	public static Value tlcEval2(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
 			final TLCState s1, final int control, final CostModel cm) {
@@ -334,10 +339,52 @@ public class TLCExt {
 		final ExprOrOpArgNode closure = args[1];
 
 		if (expr.getLevel() == LevelConstants.ConstantLevel) {
-			final Value key = tool.eval(closure, c, s0, s1, control, cm).normalize();
-			return tool.getOrSetCached(key, () -> {
-				return tool.eval(expr, c, s0, s1, control, cm).normalize();
-			});
+			final Value key = tool.eval(closure, c, s0, s1, control, cm);
+			
+			long stamp = tlcEval2Lock.readLock();
+			try {
+				HashMap<Value, Value> cache = (HashMap<Value, Value>)expr.getToolObject(tool.getId());
+				Value value = null;
+				if (cache != null) {
+					value = cache.get(key);
+				}
+				if (value != null) {
+					return value;
+				}
+				
+				tlcEval2Lock.unlock(stamp);
+				stamp = 0;
+				
+				// Note: do this outside of the write lock, otherwise recursive TLCCache invocations that miss
+				// the cache will deadlock trying to write to the cache while an outer call holds the lock.
+				Value freshValue = tool.eval(expr, c, s0, s1, control, cm);
+				// This is needed to ensure the value is usable from any thread going forward.
+				freshValue.initialize();
+				
+				// Now get the write lock, but assume nothing stayed put.
+				// Other writers might have done some or all of your work for you.
+				stamp = tlcEval2Lock.writeLock();
+				if (cache == null) {
+					// Re-fetch the cache if it was missing before, in case it's allocated now.
+					cache = (HashMap<Value, Value>)expr.getToolObject(tool.getId());
+				}
+				if (cache == null) {
+					cache = new HashMap<>();
+					expr.setToolObject(tool.getId(), cache);
+				}
+				
+				value = cache.get(key);
+				if (value != null) {
+					return value;
+				}
+				
+				cache.put(key, freshValue);
+				return freshValue;
+			} finally {
+				if (stamp != 0) {
+					tlcEval2Lock.unlock(stamp);
+				}
+			}
 		} else if ( expr.getLevel() == LevelConstants.VariableLevel) {
 			final int key = expr.hashCode() ^ closure.hashCode() ^ tool.eval(closure, c, s0).hashCode();
 
