@@ -335,8 +335,8 @@ public class TLCExt {
 		final ExprOrOpArgNode closure = args[1];
 
 		if (expr.getLevel() == LevelConstants.ConstantLevel) {
-			final Value key = tool.eval(closure, c, s0, s1, control, cm);
-			return tool.getOrSetCached(key, (final Value _ignored) -> tool.eval(expr, c, s0, s1, control, cm));
+			final Value key = tool.eval(closure, c, s0, s1, control, cm).normalize();
+			return tool.getOrSetCached(key, (final Value _ignored) -> tool.eval(expr, c, s0, s1, control, cm).normalize());
 		} else if ( expr.getLevel() == LevelConstants.VariableLevel) {
 			final int key = expr.hashCode() ^ closure.hashCode() ^ tool.eval(closure, c, s0).hashCode();
 
