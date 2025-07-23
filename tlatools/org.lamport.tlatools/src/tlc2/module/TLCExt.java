@@ -57,7 +57,6 @@ import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.util.FP64;
 import tlc2.util.IdThread;
-import tlc2.value.IValue;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
@@ -336,7 +335,9 @@ public class TLCExt {
 
 		if (expr.getLevel() == LevelConstants.ConstantLevel) {
 			final Value key = tool.eval(closure, c, s0, s1, control, cm).normalize();
-			return tool.getOrSetCached(key, (final Value _ignored) -> tool.eval(expr, c, s0, s1, control, cm).normalize());
+			return tool.getOrSetCached(key, () -> {
+				return tool.eval(expr, c, s0, s1, control, cm).normalize();
+			});
 		} else if ( expr.getLevel() == LevelConstants.VariableLevel) {
 			final int key = expr.hashCode() ^ closure.hashCode() ^ tool.eval(closure, c, s0).hashCode();
 
