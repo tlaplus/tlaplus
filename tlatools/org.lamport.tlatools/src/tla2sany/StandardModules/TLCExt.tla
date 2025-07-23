@@ -168,7 +168,7 @@ TLCCache(expression, closure) ==
   (* Equals the value that an earlier evaluation of the expression evaluated to *)
   (* iff the closure of the earlier evaluation and this evaluation are equal.   *)
   (*                                                                            *)
-  (* Works in constant and variable-level contexts.                             *)
+  (* Works in constant and state-level contexts.                                *)
   (******************************************************************************)
   expression
 

@@ -32,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.locks.StampedLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -328,7 +328,7 @@ public class TLCExt {
 		return ModelValue.add(str.val.toString());
 	}
 	
-	private static final StampedLock tlcEval2Lock = new StampedLock();
+	private static final ReentrantReadWriteLock tlcEval2Lock = new ReentrantReadWriteLock();
 	
 	@SuppressWarnings("unchecked")
 	@Evaluation(definition = "TLCCache", module = "TLCExt", warn = false, silent = true)
@@ -341,7 +341,9 @@ public class TLCExt {
 		if (expr.getLevel() == LevelConstants.ConstantLevel) {
 			final Value key = tool.eval(closure, c, s0, s1, control, cm);
 			
-			long stamp = tlcEval2Lock.readLock();
+			ReentrantReadWriteLock.ReadLock readLock = tlcEval2Lock.readLock();
+			ReentrantReadWriteLock.WriteLock writeLock = null;
+			readLock.lock();
 			try {
 				HashMap<Value, Value> cache = (HashMap<Value, Value>)expr.getToolObject(tool.getId());
 				Value value = null;
@@ -352,18 +354,14 @@ public class TLCExt {
 					return value;
 				}
 				
-				tlcEval2Lock.unlock(stamp);
-				stamp = 0;
-				
-				// Note: do this outside of the write lock, otherwise recursive TLCCache invocations that miss
-				// the cache will deadlock trying to write to the cache while an outer call holds the lock.
-				Value freshValue = tool.eval(expr, c, s0, s1, control, cm);
-				// This is needed to ensure the value is usable from any thread going forward.
-				freshValue.initialize();
+				readLock.unlock();
+				readLock = null;
 				
 				// Now get the write lock, but assume nothing stayed put.
 				// Other writers might have done some or all of your work for you.
-				stamp = tlcEval2Lock.writeLock();
+				writeLock = tlcEval2Lock.writeLock();
+				writeLock.lock();
+				
 				if (cache == null) {
 					// Re-fetch the cache if it was missing before, in case it's allocated now.
 					cache = (HashMap<Value, Value>)expr.getToolObject(tool.getId());
@@ -378,11 +376,19 @@ public class TLCExt {
 					return value;
 				}
 				
-				cache.put(key, freshValue);
-				return freshValue;
+				// The element is still missing. Populate it (may recursively read and/or write lock)..
+				value = tool.eval(expr, c, s0, s1, control, cm);
+				// This is needed to ensure the value is usable from any thread going forward.
+				value.initialize();
+				
+				cache.put(key, value);
+				return value;
 			} finally {
-				if (stamp != 0) {
-					tlcEval2Lock.unlock(stamp);
+				if (readLock != null) {
+					readLock.unlock();
+				}
+				if (writeLock != null) {
+					writeLock.unlock();
 				}
 			}
 		} else if ( expr.getLevel() == LevelConstants.VariableLevel) {
