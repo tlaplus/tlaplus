@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.Supplier;
 
 import tla2sany.parser.SyntaxTreeNode;
@@ -4021,11 +4022,5 @@ public abstract class Tool
 
 	public static boolean isProbabilistic() {
 		return PROBABILISTIC;
-	}
-	
-	private final ConcurrentHashMap<Value, Value> constantsCache = new ConcurrentHashMap<>();
-	
-	public Value getOrSetCached(Value key, Supplier<Value> valueSrc) {
-		return constantsCache.computeIfAbsent(key, (Value _ignored) -> valueSrc.get());
 	}
 }
