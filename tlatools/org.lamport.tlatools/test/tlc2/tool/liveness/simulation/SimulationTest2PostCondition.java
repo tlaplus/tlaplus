@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import tlc2.TLC;
 import tlc2.output.EC;
 
 public class SimulationTest2PostCondition extends SuccessfulSimulationTestCase {
