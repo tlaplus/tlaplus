@@ -322,15 +322,7 @@ public class Simulator {
 		//
 		this.aril = rng.getAril();
 		
-		final SimulationWorkerResult result = simulate(initStates);
-		int errorCode = result.isError() ? result.error().errorCode : EC.NO_ERROR;
-		
-		// see tlc2.tool.Worker.doPostCheckAssumption()
-		if (result.isError() && result.error().hasTrace()) {
-			errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample()), errorCode);
-		} else {
-			errorCode = Math.max(this.tool.checkPostCondition(), errorCode);
-		}
+		int errorCode = simulate(initStates);
 
 		// Do a final progress report.
 		report.isRunning = false;
@@ -348,7 +340,7 @@ public class Simulator {
 		return errorCode;
 	}
 
-	protected SimulationWorkerResult simulate(final StateVec initStates) throws InterruptedException {
+	protected int simulate(final StateVec initStates) throws InterruptedException {
 		// Start up multiple simulation worker threads, each with their own unique seed.
 		final Set<Integer> runningWorkers = new HashSet<>();
 		for (int i = 0; i < this.workers.size(); i++) {
@@ -358,6 +350,7 @@ public class Simulator {
 		}
 
 		SimulationWorkerResult result;
+		int errorCode = EC.NO_ERROR;
 		
 		// Continuously consume results from all worker threads.
 		while (true) {
@@ -388,6 +381,7 @@ public class Simulator {
 								error.stateTrace);
 						error.errorCode = EC.GENERAL;
 					}
+					errorCode = error.errorCode;
 					break;
 				}
 				
@@ -398,7 +392,15 @@ public class Simulator {
 				// regardless of the "continue" parameter, since these errors likely indicate a bug in the spec.
 				if (isNonContinuableError(error.errorCode)) {
 					error.errorCode = error.errorCode;
+					errorCode = error.errorCode;
 					break;
+				}
+				
+				// see tlc2.tool.Worker.doPostCheckAssumption()
+				if (result.error().hasTrace()) {
+					error.errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample()), error.errorCode);
+				} else {
+					error.errorCode = Math.max(this.tool.checkPostCondition(), error.errorCode);
 				}
 				
 				// If the 'continue' option is false, then we always terminate on the
@@ -406,6 +408,7 @@ public class Simulator {
 				// results from the worker threads.
 				if (!TLCGlobals.continuation) {
 					error.errorCode = error.errorCode;
+					errorCode = error.errorCode;
 					break;
 				}
 
@@ -413,11 +416,13 @@ public class Simulator {
 				{
 					error.errorCode = EC.GENERAL;
 				}
+				errorCode = error.errorCode;
 			}
 			// If the result is OK, this indicates that the worker has terminated, so we
 			// make note of this. If all of the workers have terminated, there is no need to
 			// continue waiting for results, so we should terminate.
 			else {
+				errorCode = this.tool.checkPostCondition();
 				runningWorkers.remove(result.workerId());
 				if(runningWorkers.isEmpty()) {
 					break;
@@ -427,7 +432,7 @@ public class Simulator {
 		
 		// Shut down all workers.
 		this.shutdownAndJoinWorkers(workers);
-		return result;
+		return errorCode;
 	}
 
 	protected final void printBehavior(final TLCRuntimeException exception, final StateVec stateTrace) {
