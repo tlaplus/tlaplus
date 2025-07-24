@@ -398,7 +398,10 @@ public class Simulator {
 				
 				// see tlc2.tool.Worker.doPostCheckAssumption()
 				if (result.error().hasTrace()) {
-					error.errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample()), error.errorCode);
+					error.errorCode = Math
+							//TODO numOfGenTraces is not ideal because it is not monotonically increasing.
+							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
+									Map.of("_DumpTraceFilePrefix", String.format("%s_", numOfGenTraces.get()))), error.errorCode);
 				} else {
 					error.errorCode = Math.max(this.tool.checkPostCondition(), error.errorCode);
 				}
