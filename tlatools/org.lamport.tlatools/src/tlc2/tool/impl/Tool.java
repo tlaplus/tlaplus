@@ -3551,23 +3551,27 @@ public abstract class Tool
 
 	@Override
 	public final int checkPostCondition() {
-		return checkPostConditionWithContext(Context.Empty);
+		return checkPostConditionWithContext(Context.Empty, Map.of());
 	}
 
 	@Override
 	public final int checkPostConditionWithCounterExample(final IValue value) {
+		return checkPostConditionWithCounterExample(value, Map.of());
+	}
+
+	@Override
+	public final int checkPostConditionWithCounterExample(final IValue value, final Map<String, String> params) {
 		final SymbolNode def = getCounterExampleDef();
 		if (def == null) {
 			// TLCExt!CounterExample does not appear anywhere in the spec.
 			return checkPostCondition();
 		}
-		final Context ctxt = Context.Empty.cons(def, value);
-		return checkPostConditionWithContext(ctxt);
+		return checkPostConditionWithContext(Context.Empty.cons(def, value), params);
 	}
 
-	private final int checkPostConditionWithContext(final Context ctxt) {
+	private final int checkPostConditionWithContext(final Context ctxt, final Map<String, String> params) {
 		// User request: http://discuss.tlapl.us/msg03658.html
-		final ExprNode[] postConditions = getPostConditionSpecs();
+		final ExprNode[] postConditions = getPostConditionSpecs(params);
 		for (int i = 0; i < postConditions.length; i++) {
 			final ExprNode en = postConditions[i];
 			try {
