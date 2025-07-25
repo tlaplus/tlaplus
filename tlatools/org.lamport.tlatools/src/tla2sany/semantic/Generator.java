@@ -16,8 +16,8 @@
 
 package tla2sany.semantic;
 
-import java.util.Deque;
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -77,8 +77,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * constructor. *
 	 ***********************************************************************/
 
-	private ExternalModuleTable moduleTable;
-	public Errors errors;
+	private final ExternalModuleTable moduleTable;
+	private final Errors errors;
 
 	/**
 	 * Holds stack of {@link OpApplNode} for EXCEPT operators; also used for \@.
@@ -4057,34 +4057,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					);
 				}
 			}
-			
-			// Raise a warning if SANY encounters the following construct, which suggests
-			// that the user expects the value of R to be [i \in {23} |-> 42], i.e. 23 :> 42:
-			//
-			//   bar == 23
-			//   R == [bar |-> 42]
-			//
-			// This may indicate a misunderstanding of the semantics of record construction.
-			//
-			// However, do NOT raise a warning in cases like the following, which imply that
-			// the she understands the semantics correctly:
-			//
-			//   bar == 23
-			//   R == [bar |-> bar]
-			//
-			// (see https://github.com/tlaplus/tlaplus/issues/1184#issuecomment-2889363740)
-			if (!syntaxTreeNode[0].getHumanReadableImage().equals(syntaxTreeNode[2].getHumanReadableImage())) {
-				final SymbolNode s = symbolTable.resolveSymbol(labels[lvi]);
-				if (s != null) {
-					errors.addWarning(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, syntaxTreeNode[0].getLocation(), String
-							.format("The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
-									+ "named %1$s, located at %2$s.\n"
-									+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
-									+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
-									+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
-									labels[lvi], s.getLocation()));
-				}
-			}
 
 			// The second one gets the expression indicating the field value (or set of
 			// values)
@@ -4095,7 +4067,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 		// Create the top-level OpApplNode, for either the SetOfRecords op
 		// or the RcdConstructor op.
-		return new OpApplNode(operator, fieldPairs, treeNode, cm);
+		return cm.addRecord(new OpApplNode(operator, fieldPairs, treeNode, cm));
 	}
 
 	private final ExprNode processAction(TreeNode treeNode, TreeNode children[], ModuleNode cm) throws AbortException {

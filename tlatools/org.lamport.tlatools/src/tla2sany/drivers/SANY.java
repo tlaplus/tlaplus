@@ -9,12 +9,13 @@ import java.util.List;
 
 import tla2sany.explorer.Explorer;
 import tla2sany.explorer.ExplorerQuitException;
+import tla2sany.linter.Linter;
+import tla2sany.modanalyzer.ParseUnit;
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.OutErrSanyOutput;
 import tla2sany.output.SanyOutput;
 import tla2sany.output.SimpleSanyOutput;
-import tla2sany.modanalyzer.ParseUnit;
-import tla2sany.modanalyzer.SpecObj;
 import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
@@ -72,6 +73,10 @@ public class SANY {
     // true <=> level checking should be done
     //          no effect if doSemanticAnalysis is false
     //          default is true; turned OFF by -L switch
+
+  private static boolean doLinting = true;  
+  // true <=> linting should be done
+  //          default is true; turned OFF by -G switch
 
   private static boolean doDebugging        = false; 
     // true <=> control should be transferred to debugger;
@@ -143,6 +148,11 @@ public class SANY {
       // **** Semantic analysis and level checking
       if (doSemanticAnalysis) 
             {frontEndSemanticAnalysis(spec, out, doLevelChecking);} ;
+
+      // **** Semantic analysis and level checking
+      if (doLinting) 
+            {frontEndLinting(spec, out); } ;
+
     }
     catch (ParseException pe) {
       return -1;
@@ -359,6 +369,22 @@ public class SANY {
     return;
   }
 
+	public static void frontEndLinting(final SpecObj spec, final SanyOutput out) {
+		final ExternalModuleTable externalModuleTable = spec.getExternalModuleTable();
+		final Errors semanticErrors = spec.semanticErrors;
+
+		// If the semantic analysis was successful, run linting on all non-standard
+		// modules.
+		final Linter linter = new Linter();
+		for (ModuleNode module : externalModuleTable.getModuleNodes()) {
+			if (module.isStandardModule()) {
+				continue; // skip standard modules
+			}
+			out.log(LogLevel.INFO, "Linting of module %s", module.getName());
+			linter.lint(module, externalModuleTable, semanticErrors);
+		}
+	}
+
   private static void printUsage()
   {
       final List<List<UsageGenerator.Argument>> commandVariants = new ArrayList<>();
@@ -417,6 +443,8 @@ public class SANY {
           doSemanticAnalysis = !doSemanticAnalysis;
       else if (args[i].equals("-L") || args[i].equals("-l")) 
            doLevelChecking    = !doLevelChecking;
+      else if (args[i].equals("-G") || args[i].equals("-g")) 
+          doLinting    = !doLinting;
       else if (args[i].equals("-D") || args[i].equals("-d")) 
            doDebugging        = !doDebugging;
       else if (args[i].equals("-STAT") || args[i].equals("-stat")) {
