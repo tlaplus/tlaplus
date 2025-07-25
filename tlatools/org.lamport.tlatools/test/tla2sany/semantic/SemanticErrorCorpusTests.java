@@ -165,6 +165,9 @@ public class SemanticErrorCorpusTests {
     SANY.frontEndInitialize();
     try {
       SANY.frontEndParse(spec, out);
+      if (spec.parseErrors.getNumMessages() > 0) {
+        return spec.parseErrors;
+      }
     } catch (ParseException e) {
       Assert.assertNotEquals(e.toString() + output.toString(), 0, spec.parseErrors.getNumMessages());
       return spec.parseErrors;
