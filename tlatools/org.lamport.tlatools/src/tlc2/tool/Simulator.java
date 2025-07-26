@@ -402,7 +402,7 @@ public class Simulator {
 				if (result.error().hasTrace()) {
 					error.errorCode = Math
 							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
-									Map.of("_DumpTraceFilePrefix", String.format(""))), error.errorCode);
+									Map.of("_DumpTraceFilePrefix", String.format("%s_", System.currentTimeMillis()))), error.errorCode);
 				} else {
 					error.errorCode = Math.max(this.tool.checkPostCondition(), error.errorCode);
 				}

@@ -30,6 +30,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
@@ -46,43 +52,40 @@ public class Github1217Test extends ModelCheckerTestCase {
 	private static final Path dumpFilePath = Paths.get(System.getProperty("java.io.tmpdir"), "Github1217.json");
 
 	public Github1217Test() {
-		super("Github766", new String[] { "-note", "-config", "Github1217.cfg", "-simulate", "-invlevel", "10",
-						  "-dumpTrace", "json", "Github1217.json", "Github1217.tla"},
+		super("Github1217", new String[] { "-note", "-config", "Github1217.cfg", "-simulate", "-invlevel", "10",
+						  				  "-dumpTrace", "json", dumpFilePath.toString(), "Github1217.tla"},
 		EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
-  // java -cp dist/tla2tools.jar tlc2.TLC -note -simulate -invlevel 10 -dumptrace json out.json test-model/Github1217.tla
-
-
+	@Override
+ 	protected boolean runWithDebugger() {
+ 		return false;
+ 	}
 	@Test
 	public void testSpec() throws IOException {
-
-		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		// assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "51", "50", "47"));
-		// assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+	  	assertTrue(recorder.recorded(EC.TLC_FINISHED));
 
 		// Assert POSTCONDITION.
-		//assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		//assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 
-		//assertTrue(Files.exists(Github1217Test.dumpFilePath));
-		//System.out.println(Github1217Test.dumpFilePath);
-		//assertEquals(Github1217Test.dumpFilePath.toString(), 0.0, 1.0);
+		assertTrue(Files.exists(Github1217Test.dumpFilePath));
 
-		// If the file exist, simply compare it to a correct and manually checked version.
-		// try (final InputStream expected = getClass().getResourceAsStream("Github1147.dot");
-		// 		final FileInputStream actual = new FileInputStream(Github1147Test.dumpFilePath.toFile());) {
-		// 	BufferedReader expectedReader = new BufferedReader(new InputStreamReader(expected));
-		// 	BufferedReader actualReader = new BufferedReader(new InputStreamReader(actual));
-		// 	while (expectedReader.ready() && actualReader.ready()) {
-		// 		String expectedLine = expectedReader.readLine();
-		// 		String actualLine = actualReader.readLine();
-		// 		assertEquals(expectedLine, actualLine);
-		// 	}
+		try (
+				final InputStream expected = getClass().getResourceAsStream("Github1217.dump");
+				final FileInputStream actual = new FileInputStream(Github1217Test.dumpFilePath.toFile());
+		) {
+			BufferedReader expectedReader = new BufferedReader(new InputStreamReader(expected));
+			BufferedReader actualReader = new BufferedReader(new InputStreamReader(actual));
+			while (expectedReader.ready() && actualReader.ready()) {
+				String expectedLine = expectedReader.readLine();
+				String actualLine = actualReader.readLine();
+				assertEquals(expectedLine, actualLine);
+			}
 
-		// 	assertEquals(expectedReader.ready(), actualReader.ready());
-		// }
+			assertEquals(expectedReader.ready(), actualReader.ready());
+		}
 
-		// assertZeroUncovered();
+		assertZeroUncovered();
 	}
 }
