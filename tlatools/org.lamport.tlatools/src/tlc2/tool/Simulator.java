@@ -362,6 +362,8 @@ public class Simulator {
 
 			// If the result is an error, print it.
 			if (result.workerId() == -1) {
+				// This might happen when thread pool fails to spawn a thread.
+				errorCode = EC.GENERAL;
 				runningWorkers.clear();
 				break;
 			} else if (result.isError()) {
@@ -403,7 +405,6 @@ public class Simulator {
 				// see tlc2.tool.Worker.doPostCheckAssumption()
 				if (result.error().hasTrace()) {
 					error.errorCode = Math
-							//TODO numOfGenTraces is not ideal because it is not monotonically increasing.
 							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
 									Map.of("_DumpTraceFilePrefix", String.format("%s_", numOfGenTraces.get()))), error.errorCode);
 				} else {
