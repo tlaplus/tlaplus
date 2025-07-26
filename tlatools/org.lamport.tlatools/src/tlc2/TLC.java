@@ -657,46 +657,41 @@ public class TLC {
                 }
             } else if (args[index].equalsIgnoreCase("-dumpTrace"))
             {
+                @SuppressWarnings("unchecked")
+                final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+                        ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+                PostCondition pc;
+
 				index++; // consume "-dumpTrace".
 				if ((index + 1) < args.length) {
 					final String fmt = args[index++];
 					if ("json".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]));
+						pc = new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]);
 					} else if ("tla".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
-								"_TLAPlusCounterExampleFile", args[index++]));
+						pc = new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
+								"_TLAPlusCounterExampleFile", args[index++]);
 					} else if ("tlc".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pc = new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]);
 					} else if ("tlcplain".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pc = new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]);
 					} else if ("tlcaction".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pc = new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]);
 					} else if ("dot".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_DotTrace", "_DotTrace", "_DotTraceFile", args[index++]));
-					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
-						//Add your new dumpTrace formats here!
+						pc = new PostCondition("_DotTrace", "_DotTrace", "_DotTraceFile", args[index++]);
 					} else {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
 						return false;
 					}
+                    pcs.add(pc);
+
+                    // Parse the second optional parameter
+                    if ((index + 2) < args.length) {
+                        if ("dumpdir".equalsIgnoreCase(args[index])) {
+                            index++; // consume "-dumpdir".
+                            final String dir = Paths.get(args[index++]).toString() + File.separator;
+                            pcs.add(new PostCondition(pc.module, pc.operator, "_DumpTraceFileDirectory", dir));
+                        }
+                    }
 				} else {
 					printErrorMsg("Error: A format and a file name for dumping traces required.");
 					return false;
@@ -1571,7 +1566,10 @@ public class TLC {
     													"provide the configuration file; defaults to SPEC.cfg", true));
     	sharedArguments.add(new UsageGenerator.Argument("-continue",
     													"continue running even when an invariant is violated; default\n"
-    														+ "behavior is to halt on first violation", true));
+    														+ "behavior is to halt on first violation.\n"
+														+ "In -simulate mode, invariants defined with \n"
+														+ "-invlevel, -postCondition and other options are \n"
+														+ "evaluated multiple times.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-coverage", "minutes",
 														"interval between the collection of coverage information;\n"
     														+ "if not specified, no coverage will be collected", true));
@@ -1588,7 +1586,7 @@ public class TLC {
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
 															+ "full state descriptions", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file",
+    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file [dumpdir dir]",
 														"in case of a property violation, formats the TLA+ error trace\n"
     													+ "as the given format and dumps the output to the specified\n"
 														+ "file.  The file is relative to the same directory as the\n"
