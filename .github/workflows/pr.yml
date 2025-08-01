@@ -146,17 +146,17 @@ jobs:
       run: |
         python "$SCRIPT_DIR/unicode_conversion.py"  \
           --tlauc_path "$DEPS_DIR/tlauc/tlauc"      \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"
+          --examples_root "$EXAMPLES_DIR"
     - name: Add unicode shims
       if: matrix.unicode
       run: |
         python "$SCRIPT_DIR/unicode_number_set_shim.py" \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"
+          --examples_root "$EXAMPLES_DIR"
     - name: Translate PlusCal
       run: |
         python $SCRIPT_DIR/translate_pluscal.py         \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"    \
-          --manifest_path "$EXAMPLES_DIR/manifest.json" \
+          --examples_root "$EXAMPLES_DIR"               \
           --enable_assertions
     - name: Parse tlaplus/examples modules
       run: |
@@ -166,7 +166,7 @@ jobs:
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
+          --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions
     - name: Model-check small tlaplus/examples models
       run: |
@@ -186,7 +186,7 @@ jobs:
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
+          --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions                                             \
           --skip "${SKIP[@]}"
     - name: Smoke-test large tlaplus/examples models
@@ -200,7 +200,7 @@ jobs:
           --apalache_path "$DEPS_DIR/apalache"                            \
           --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
-          --manifest_path "$EXAMPLES_DIR/manifest.json"                   \
+          --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions                                             \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
 
