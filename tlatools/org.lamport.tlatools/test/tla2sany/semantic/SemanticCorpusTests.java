@@ -22,9 +22,7 @@
  ******************************************************************************/
 package tla2sany.semantic;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,8 +49,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
-import tla2sany.output.SanyOutput;
-import tla2sany.output.SimpleSanyOutput;
+import tla2sany.output.RecordedSanyOutput;
 import tla2sany.parser.ParseException;
 import tlc2.tool.CommonTestCase;
 import util.FilenameToStream;
@@ -183,23 +180,21 @@ public class SemanticCorpusTests {
   private static ExternalModuleTable parse(Path rootModulePath) {
     final FilenameToStream fts = new SimpleFilenameToStream(rootModulePath.getParent().toString());
     final SpecObj spec = new SpecObj(rootModulePath.toString(), fts);
-    final ByteArrayOutputStream output = new ByteArrayOutputStream();
-    final PrintStream outStream = new PrintStream(output);
-    final SanyOutput out = new SimpleSanyOutput(outStream, LogLevel.INFO);
+    final RecordedSanyOutput out = new RecordedSanyOutput(LogLevel.INFO);
     SANY.frontEndInitialize();
     try {
       SANY.frontEndParse(spec, out);
     } catch (ParseException e) {
-      Assert.fail(e.toString() + output.toString());
+      Assert.fail(e.toString() + out.toString());
     }
     try {
       SANY.frontEndSemanticAnalysis(spec, out, true);
     } catch (SemanticException e) {
-      Assert.fail(e.toString() + output.toString());
+      Assert.fail(e.toString() + out.toString());
     }
-    Assert.assertTrue(output.toString(), spec.parseErrors.isSuccess());
-    Assert.assertTrue(output.toString(), spec.semanticErrors.isSuccess());
-    Assert.assertTrue(output.toString(), spec.semanticErrors.getWarnings().length == 0);
+    Assert.assertTrue(out.toString(), spec.parseErrors.isSuccess());
+    Assert.assertTrue(out.toString(), spec.semanticErrors.isSuccess());
+    Assert.assertTrue(out.toString(), spec.semanticErrors.getWarnings().length == 0);
     return spec.getExternalModuleTable();
   }
 
