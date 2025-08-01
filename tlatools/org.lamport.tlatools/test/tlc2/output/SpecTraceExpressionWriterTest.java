@@ -13,14 +13,11 @@ import org.junit.Test;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
-import tla2sany.output.LogLevel;
-import tla2sany.output.SanyOutput;
-import tla2sany.output.SimpleSanyOutput;
+import tla2sany.output.SilentSanyOutput;
 import tlc2.model.Formula;
 import tlc2.model.MCState;
 import tlc2.model.TraceExpressionInformationHolder;
 import util.TLAConstants;
-import util.TestPrintStream;
 
 /**
  * The genesis for these tests is regressions that were introduced by beautification changes made as part of #393.
@@ -79,10 +76,8 @@ public class SpecTraceExpressionWriterTest {
 		writer.writeFiles(tlaFile, cfgFile);
 		
 		final SpecObj so = new SpecObj(tlaFile.getAbsolutePath(), null);
-		final TestPrintStream printStream = new TestPrintStream();
 		
-		final SanyOutput out = new SimpleSanyOutput(printStream, LogLevel.INFO);
-		final int result = SANY.frontEndMain(so, tlaFile.getAbsolutePath(), out);
+		final int result = SANY.frontEndMain(so, tlaFile.getAbsolutePath(), new SilentSanyOutput());
 		if (result != 0) {
 			throw new FrontEndException("Parsing returned a non-zero success code (" + result + ")");
 		}
