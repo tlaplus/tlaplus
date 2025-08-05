@@ -39,7 +39,7 @@ PostCondition ==
                                   <<3, [x |-> 2]>> >> },
                          state |-> {<<1, [x |-> 0]>>, <<2, [x |-> 1]>>, <<3, [x |-> 2]>>} ]
        /\ TLCGet("spec") =
-				       [ impliedinits |-> {},
+				       [ impliedinits |-> {}, impliedactions |-> {},
 				  invariants |->
 				      { [ name |-> "IsNotTwo",
 				          location |->

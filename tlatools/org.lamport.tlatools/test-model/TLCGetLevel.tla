@@ -40,6 +40,14 @@ Prop ==
 
 PostCondition ==
     TLCGet("spec") = [ impliedinits |-> {},
+                impliedactions |-> 
+                    { [ name |-> "UnnamedAction",
+                        location |-> 
+                            [ beginLine |-> 39,
+                                beginColumn |-> 10,
+                                endLine |-> 39,
+                                endColumn |-> 87,
+                                module |-> "TLCGetLevel" ] ] },
                 invariants |->
                     { [ coverage |-> [count |-> 4],
                         name |-> "Inv",

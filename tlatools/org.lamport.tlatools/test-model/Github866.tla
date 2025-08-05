@@ -46,6 +46,7 @@ PostCondition ==
        /\ TLCGet("all")[r][v] = TLCGet("all")[r][w]
   /\ TLCGet("spec") = 
 				[ impliedinits |-> {},
+				  impliedactions |-> {},
 				  invariants |-> {},
 				  impliedtemporals |-> {},
 				  temporals |-> {},
@@ -76,17 +77,17 @@ PostCondition ==
 				  actionconstraints |->
 				      { [ name |-> "ActionConstraint",
 				          location |->
-				              [ beginLine |-> 94,
+				              [ beginLine |-> 95,
 				                beginColumn |-> 1,
-				                endLine |-> 94,
+				                endLine |-> 95,
 				                endColumn |-> 30,
 				                module |-> "Github866" ] ] },
 				  constraints |->
 				      { [ name |-> "Constraint",
 				          location |->
-				              [ beginLine |-> 93,
+				              [ beginLine |-> 94,
 				                beginColumn |-> 1,
-				                endLine |-> 93,
+				                endLine |-> 94,
 				                endColumn |-> 23,
 				                module |-> "Github866" ] ] } ]
 				  

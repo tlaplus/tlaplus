@@ -100,6 +100,7 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
 	
 	private static final UniqueString SPEC_IMPLIEDINITS = UniqueString.of("impliedinits");
+	private static final UniqueString SPEC_IMPLIEDACTIONS = UniqueString.of("impliedactions");
 	private static final UniqueString SPEC_INVARIANTS = UniqueString.of("invariants");
 	private static final UniqueString SPEC_IMPLIEDTEMPORALS = UniqueString.of("impliedtemporals");
 	private static final UniqueString SPEC_TERMPORALS = UniqueString.of("temporals");
@@ -310,7 +311,7 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("spec")`.
 			 */
-			final UniqueString[] n = new UniqueString[9];
+			final UniqueString[] n = new UniqueString[10];
 			final Value[] v = new Value[n.length];
 
 			// Inits as found by spec processing.
@@ -338,6 +339,10 @@ public class TLCGetSet implements ValueConstants {
 
 			n[4] = SPEC_IMPLIEDINITS;
 			v[4] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedInits()).stream()
+					.map(TLCGetSet::property2Value).collect(Collectors.toList())), false);
+
+			n[9] = SPEC_IMPLIEDACTIONS;
+			v[9] = new SetEnumValue(new ValueVec(Arrays.asList(tool.getImpliedActions()).stream()
 					.map(TLCGetSet::property2Value).collect(Collectors.toList())), false);
 
 			n[5] = SPEC_IMPLIEDTEMPORALS;
