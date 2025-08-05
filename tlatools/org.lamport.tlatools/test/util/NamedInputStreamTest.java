@@ -54,7 +54,7 @@ public class NamedInputStreamTest {
     assertEquals(inputFile.toRealPath(), nis.getAbsoluteResolvedPath());
     assertEquals(String.format("[ fileName: %s, moduleName: %s ]", fileName, moduleName), nis.toString());
     assertEquals(1, NamedInputStream.getNumberOfreferences());
-    assertArrayEquals(contents, nis.readAllBytes());
+    assertArrayEquals(contents, nis.getInputStream().readAllBytes());
     nis.close();
     assertEquals(0, NamedInputStream.getNumberOfreferences());
   }
