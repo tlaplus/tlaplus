@@ -14,7 +14,6 @@ import java.util.Set;
 
 import pcal.Validator;
 import pcal.Validator.ValidationResult;
-import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
@@ -272,12 +271,20 @@ public class SpecObj
                 * produces this error.  Hopefully, we can use this to attach a     *
                 * location to the error message.                                   *
                 *******************************************************************/
-                throw errors.addError(
-                    ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
-                    Location.nullLoc,
-                    "Cannot find source file for module " + name +
-                    ((nextExtenderOrInstancerModule == null) ? "" : " imported in module " + nextExtenderOrInstancerModule.getName()) + "."
-                );
+                if (nextExtenderOrInstancerModule == null) {
+                  throw errors.addError(
+                      ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
+                      Location.nullLoc,
+                      "Cannot find source file for module " + name
+                  );
+                } else {
+                  throw errors.addError(
+                      ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
+                      Location.moduleLocation(nextExtenderOrInstancerModule.getName()),
+                      "Cannot find source file for module " + name
+                      + " imported in module " + nextExtenderOrInstancerModule.getName() + "."
+                  );
+                }
             }
         }
 
@@ -869,8 +876,8 @@ public class SpecObj
     /**
      * This invokes {@code loadSpec(rootExternalModuleName, errors, false);}
      */
-    public boolean loadSpec(final String rootExternalModuleName, final Errors errors, SanyOutput out) throws AbortException {
-    	return loadSpec(rootExternalModuleName, errors, false, out);
+    public void loadSpec(final String rootExternalModuleName, final Errors errors, SanyOutput out) throws AbortException {
+    	loadSpec(rootExternalModuleName, errors, false, out);
     }
     
     /**
@@ -883,7 +890,7 @@ public class SpecObj
 	 *                           followed by a validation of them if they exist
 	 * @see Validator
 	 */
-	public boolean loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits, SanyOutput out)
+	public void loadSpec(final String rootExternalModuleName, final Errors errors, final boolean validateParseUnits, SanyOutput out)
 			throws AbortException {
         // If rootExternalModuleName" has *not* already been parsed, then
         // go to the file system and find the file containing it, create a
@@ -892,7 +899,7 @@ public class SpecObj
         rootParseUnit = findOrCreateParsedUnit(rootExternalModuleName, errors, true /* first call */, out);
         rootModule = rootParseUnit.getRootModule();
         if (validateParseUnits) {
-        	validateParseUnit(rootParseUnit, out);
+        	validateParseUnit(rootParseUnit, errors);
         }
 
         // Retrieve and parse all module extentions: As long as there is
@@ -933,7 +940,7 @@ public class SpecObj
             if (extentionFound)
             {
                 if (validateParseUnits) {
-                	validateParseUnit(nextExtentionOrInstantiationParseUnit, out);
+                	validateParseUnit(nextExtentionOrInstantiationParseUnit, errors);
                 }
 
                 extenderOrInstancerParseUnit.addExtendee(nextExtentionOrInstantiationParseUnit);
@@ -971,12 +978,9 @@ public class SpecObj
         // semanticAnalysisVector; this vector determines the order in
         // which semantic analysis is done on parseUnits
         calculateDependencies(rootParseUnit);
-
-        return true;
-        // loadUnresolvedRelatives(moduleRelationshipsSpec, rootModule, errors);
     }
 	
-	private void validateParseUnit(final ParseUnit parseUnit, SanyOutput out) {
+	private void validateParseUnit(final ParseUnit parseUnit, Errors errors) {
     	final File f = parseUnit.getNis().sourceFile();
     	
     	try (final FileInputStream fis = new FileInputStream(f)) {
@@ -989,11 +993,11 @@ public class SpecObj
     	       modify the translation.
     	       TLC called: By default, a warning should be raised.  It should be considered
     	          the same as Case 2. */
-    		    out.log(
-    		        LogLevel.WARNING,
-    		        "!! WARNING: Both the PlusCal algorithm and its TLA+ translation in "
-    		        + "module %s filename have changed since the last translation.",
-    		        parseUnit.getName()
+    		    errors.addWarning(
+    		        ErrorCode.PLUSCAL_ALGORITHM_AND_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
+    		        Location.moduleLocation(parseUnit.getName()),
+    		        "Both the PlusCal algorithm and its TLA+ translation in module "
+    		        + parseUnit.getName() + " have changed since the last translation."
     		    );
     		} else if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS)) {
       	      /* The algorithm hash is valid and the translation hash is invalid.
@@ -1006,11 +1010,11 @@ public class SpecObj
      	          TLC but raise a transient window with a warning that is easily ignored.  
      	          For case (2), it should be possible to put something in a translation 
      	          comment to disable the warning. */
-    		    out.log(
-    		        LogLevel.WARNING,
-    		        "!! WARNING: The TLA+ translation in module %s has changed "
-    		        + "since its last translation.",
-    		        parseUnit.getName()
+    		    errors.addWarning(
+    		        ErrorCode.PLUSCAL_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
+    		        Location.moduleLocation(parseUnit.getName()),
+    		        "The TLA+ translation in module " + parseUnit.getName()
+    		        + " has changed since its last translation."
     		    );
     		} else if (results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
        	      /* The algorithm hash is invalid and the translation hash is valid.
@@ -1018,25 +1022,26 @@ public class SpecObj
      	         for not generating the warning.  So, it doesn't matter if its inconvenient
      	         to turn off the warning, but turning it off should affect only the current
      	         spec; and it should be easy to turn back on. */
-    		    out.log(
-    		        LogLevel.WARNING,
-    		        "!! WARNING: The PlusCal algorithm in module %s has changed "
-    		        + "since its last translation.",
-    		        parseUnit.getName()
+    		    errors.addWarning(
+    		        ErrorCode.PLUSCAL_ALGORITHM_CHANGED_SINCE_LAST_TRANSLATION,
+    		        Location.moduleLocation(parseUnit.getName()),
+    		        "The PlusCal algorithm in module " + parseUnit.getName()
+    		        + " has changed since its last translation."
     		    );
     		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
-    		    out.log(
-    		        LogLevel.ERROR,
-    		        "A unexpected problem was encountered attempting to validate the specification for %s",
-    		        parseUnit.getName()
+    		    errors.addError(
+    		        ErrorCode.INTERNAL_ERROR,
+    		        Location.moduleLocation(parseUnit.getName()),
+    		        "A unexpected problem was encountered attempting to validate"
+    		        + " the specification for " + parseUnit.getName()
     		    );
     		}
     	} catch (final IOException e) {
-    	    out.log(
-    	        LogLevel.ERROR,
-    	        "Encountered an exception while attempt to validate %s - %s",
-    	        f.getAbsolutePath(),
-    	        e.getMessage()
+    	    errors.addError(
+    	        ErrorCode.INTERNAL_ERROR,
+    	        Location.moduleLocation(parseUnit.getName()),
+    	        "Encountered an exception while attempt to validate "
+    	        + f.getAbsolutePath() + " - " + e.getMessage()
     	    );
     	}
 	}
