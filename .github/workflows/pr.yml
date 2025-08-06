@@ -147,11 +147,6 @@ jobs:
         python "$SCRIPT_DIR/unicode_conversion.py"  \
           --tlauc_path "$DEPS_DIR/tlauc/tlauc"      \
           --examples_root "$EXAMPLES_DIR"
-    - name: Add unicode shims
-      if: matrix.unicode
-      run: |
-        python "$SCRIPT_DIR/unicode_number_set_shim.py" \
-          --examples_root "$EXAMPLES_DIR"
     - name: Translate PlusCal
       run: |
         python $SCRIPT_DIR/translate_pluscal.py         \
