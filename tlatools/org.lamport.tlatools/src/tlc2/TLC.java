@@ -1109,9 +1109,11 @@ public class TLC {
 						this.recorder, pcs);
 			} else {
 				if (teSpecOut.toString().toLowerCase().endsWith(TLAConstants.Files.TLA_EXTENSION)) {
-					this.teSpec = new TraceExplorationSpec(teSpecOut.getParent(), teSpecOut.getFileName().toFile()
-							.getName().replaceFirst(TLAConstants.Files.TLA_EXTENSION + "$", ""), mainModuleName,
-							this.recorder, pcs);
+					this.teSpec = new TraceExplorationSpec(
+							teSpecOut.getParent() == null ? Paths.get(".") : teSpecOut.getParent(),
+							teSpecOut.getFileName().toFile().getName().replaceFirst(
+									TLAConstants.Files.TLA_EXTENSION + "$", ""),
+							mainModuleName, this.recorder, pcs);
 				} else {
 					this.teSpec = new TraceExplorationSpec(teSpecOut, new Date(startTime), mainModuleName, this.recorder, pcs);
 				}
