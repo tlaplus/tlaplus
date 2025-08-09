@@ -27,6 +27,7 @@ package tlc2.tool;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import tla2sany.semantic.ExprNode;
@@ -187,6 +188,8 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 	int checkPostCondition();
 	
 	int checkPostConditionWithCounterExample(IValue value);
+	
+	int checkPostConditionWithCounterExample(IValue value, Map<String, String> params);
 
 	String[] getInvNames();
 
@@ -261,7 +264,7 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 
 	SemanticNode getViewSpec();
 
-	ExprNode[] getPostConditionSpecs();
+	ExprNode[] getPostConditionSpecs(final Map<String, String> params);
 
 	OpDefNode getCounterExampleDef();
 
