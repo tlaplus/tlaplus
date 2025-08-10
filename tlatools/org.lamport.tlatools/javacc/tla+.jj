@@ -91,8 +91,6 @@ PARSER_BEGIN(TLAplusParser)
 package tla2sany.parser;
 
 import tla2sany.output.LogLevel;
-import tla2sany.output.SanyOutput;
-import tla2sany.output.SilentSanyOutput;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
@@ -106,10 +104,14 @@ import java.util.ArrayDeque;
 
 public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree {
 
-  private SanyOutput out = new SilentSanyOutput();
+  private tla2sany.output.SanyOutput out = new tla2sany.output.SilentSanyOutput();
 
-  public TLAplusParser(java.io.InputStream stream, String encoding, SanyOutput out) {
-    this(stream, encoding);
+  public TLAplusParser(tla2sany.output.SanyOutput out, byte[] sourceInput) {
+    this(out, new java.io.ByteArrayInputStream(sourceInput));
+  }
+
+  public TLAplusParser(tla2sany.output.SanyOutput out, java.io.InputStream sourceInput) {
+    this(sourceInput, java.nio.charset.StandardCharsets.UTF_8.name());
     this.out = out;
   }
 
@@ -236,7 +238,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       *********************************************************************/
   }   
 
-  private final void belchDEF() {
+  final void belchDEF() {
     /***********************************************************************
     * The purpose of this method seems to be to introduce a dummy          *
     * <DEFBREAK> token into the token stream, which is used in parsing     *
@@ -1629,26 +1631,13 @@ CompilationUnit() : {
   belchDEF();
 }{
   [ Prelude() ]
-  tempASTN = Module() { token_source.SwitchTo(0); }
-    /***********************************************************************
-    * In the classic practice of documentation by identifier name, we      *
-    * find that the definition of SwitchTo in                              *
-    * ConfigurationTokenManager.java is                                    *
-    *                                                                      *
-    *    static public void SwitchTo(int lexState)                         *
-    *                                                                      *
-    * so its argument seems to be a lexical state.  We also find in        *
-    * that file                                                            *
-    *                                                                      *
-    *    static int defaultLexState = 0;                                   *
-    *                                                                      *
-    * leading us to guess that this is setting the lexical state to        *
-    * DEFAULT.                                                             *
-    ***********************************************************************/
+  tempASTN = Module() {
+    // Reset tokenizer state to default value after parsing module.
+    token_source.SwitchTo(token_source.defaultLexState);
+  }
 
   { return tempASTN;}
 }
-/* SwitchTo is used to reset the state of the tokenizer */
 
 void Prelude() : { } {
   <BEGIN_PRAGMA> ( <NUMBER> | <IDENTIFIER> )*
