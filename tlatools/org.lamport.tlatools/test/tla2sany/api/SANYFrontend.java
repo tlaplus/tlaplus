@@ -22,12 +22,10 @@
  ******************************************************************************/
 package tla2sany.api;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import tla2sany.output.SilentSanyOutput;
 import tla2sany.parser.ParseException;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.parser.TokenMgrError;
@@ -75,8 +73,7 @@ public class SANYFrontend implements Frontend {
     Resolver resolver
   ) throws TokenMgrError, ParseException {
     final ModuleSourceCode source = resolver.resolve(moduleName);
-    final InputStream input = new ByteArrayInputStream(source.text);
-    final TLAplusParser parser = new TLAplusParser(input, StandardCharsets.UTF_8.name());
+    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), source.text);
     return new ModuleSyntaxTree(source, parser.CompilationUnit());
   }
 

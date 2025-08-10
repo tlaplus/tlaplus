@@ -26,13 +26,12 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import tla2sany.output.SilentSanyOutput;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
@@ -102,8 +101,7 @@ public abstract class TLCDebuggerExpression {
 		final String wrapper = "---- MODULE %s ----\nEXTENDS %s\n%s == %s\n====";
 		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, bpOpDef, conditionExpr);
 		byte[] wrappedConditionExprBytes = wrappedConditionExpr.getBytes(StandardCharsets.UTF_8);
-		InputStream sourceCode = new ByteArrayInputStream(wrappedConditionExprBytes);
-		TLAplusParser parser = new TLAplusParser(sourceCode, StandardCharsets.UTF_8.name());
+		TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), wrappedConditionExprBytes);
 		boolean syntaxParseSuccess = parser.parse();
 		SyntaxTreeNode syntaxRoot = parser.ParseTree;
 		if (!syntaxParseSuccess || null == syntaxRoot) {

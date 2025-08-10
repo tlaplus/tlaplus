@@ -2164,7 +2164,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				break;
 
 			case N_OperatorDefinition:
-				processOperator(definitions[lvi], null, currentModule);
+			  currentModule.appendDef(processOperator(definitions[lvi], null, currentModule));
 				break;
 
 			case N_FunctionDefinition:
@@ -2430,7 +2430,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * It creates an OpDef node and puts it * in ModuleNode cm's set of definitions.
 	 * *
 	 ************************************************************************/
-	private final void processOperator(TreeNode treeNode, final Vector<SemanticNode> defs, ModuleNode cm) throws AbortException {
+	final OpDefNode processOperator(TreeNode treeNode, Vector<SemanticNode> defs, ModuleNode cm) throws AbortException {
 		TreeNode syntaxTreeNode = treeNode;
 		UniqueString name = null;
 		int arity = 0;
@@ -2626,12 +2626,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (odn != null) {
 			odn.setLabels(ht);
 		}
-		;
-		/*********************************************************************
-		 * If there was no error, then odn is an OpDefNode and we must set * it labels
-		 * field. *
-		 *********************************************************************/
-		cm.appendDef(symbolNode);
+
 		/*******************************************************************
 		 * Add the new OpDefNode to the current module's set of * definitions. *
 		 *******************************************************************/
@@ -2639,6 +2634,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// Let-In expression
 		if (defs != null)
 			defs.addElement((OpDefNode)symbolNode);
+
+		return (OpDefNode)symbolNode;
 	} // processOperator
 
 	private final void processQuantBoundArgs(TreeNode[] treeNodeA, // node whose children include
@@ -2922,7 +2919,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 *********************************************************************/
 			switch (syntaxTreeNode[lvi].getKind()) {
 			case N_OperatorDefinition:
-				processOperator(syntaxTreeNode[lvi], defVec, cm);
+			  cm.appendDef(processOperator(syntaxTreeNode[lvi], defVec, cm));
 				break;
 
 			case N_FunctionDefinition:
@@ -2977,7 +2974,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		return letIn;
 	} // end processLetIn
 
-	private final ExprNode generateExpression(TreeNode treeNode, ModuleNode cm) throws AbortException {
+	final ExprNode generateExpression(TreeNode treeNode, ModuleNode cm) throws AbortException {
 		/***********************************************************************
 		 * Must return an ExprNode that represents an expression, and not a * labeled
 		 * ASSUME/PROVE *
@@ -5883,7 +5880,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						vec.addElement(processModuleDefinition(defSTN, defsVec, iVec, cm));
 						break;
 					case N_OperatorDefinition:
-						processOperator(defSTN, vec, cm);
+					  cm.appendDef(processOperator(defSTN, vec, cm));
+						
 						/*************************************************************
 						 * processOperator creates an OpDefNode, puts an entry for * it in symbolTable,
 						 * and adds the OpDefNode to vec. *
