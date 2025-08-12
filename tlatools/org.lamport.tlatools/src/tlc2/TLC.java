@@ -1571,7 +1571,10 @@ public class TLC {
     													"provide the configuration file; defaults to SPEC.cfg", true));
     	sharedArguments.add(new UsageGenerator.Argument("-continue",
     													"continue running even when an invariant is violated; default\n"
-    														+ "behavior is to halt on first violation", true));
+    														+ "behavior is to halt on first violation.\n"
+														+ "In -simulate mode, invariants defined with \n",
+														+ "-invlevel, -postCondition and other options are \n",
+														+ "evaluated multiple times.", true));
     	sharedArguments.add(new UsageGenerator.Argument("-coverage", "minutes",
 														"interval between the collection of coverage information;\n"
     														+ "if not specified, no coverage will be collected", true));
