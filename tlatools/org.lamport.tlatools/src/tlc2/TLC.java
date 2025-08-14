@@ -713,8 +713,35 @@ public class TLC {
 					@SuppressWarnings("unchecked")
 					final List<PostCondition> pcs = (List<PostCondition>) params
 							.computeIfAbsent(ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-					// TODO: Add input validation!
-					pcs.add(new PostCondition(args[index++]));
+					final String moduleBangOp = args[index++];
+					if (!moduleBangOp.contains("!")) {
+						printErrorMsg("Module!Operator for postCondition required. Encountered: " + moduleBangOp);
+						return false;
+					}
+					final String[] parts = moduleBangOp.split("!");
+					if (parts.length != 2) {
+						printErrorMsg("Module!Operator for postCondition must be of the form module!operator. Encountered: " + moduleBangOp);
+						return false;
+					}
+					final String module = parts[0];
+					if (module.isEmpty()) {
+						printErrorMsg("Module name for postCondition required. Encountered: " + moduleBangOp);
+						return false;
+					}
+					if (module.contains(".")) {
+						printErrorMsg("Module name for postCondition must not contain a dot. Encountered: " + module);
+						return false;
+					}
+					final String def = parts[1];
+					if (def.isEmpty()) {
+						printErrorMsg("Operator name for postCondition required. Encountered: " + moduleBangOp);
+						return false;
+					}
+					if (def.contains(".")) {
+						printErrorMsg("Operator name for postCondition must not contain a dot. Encountered: " + def);
+						return false;
+					}
+					pcs.add(new PostCondition(module, def));
 				} else {
 					printErrorMsg("Error: Module!Operator for postCondition required.");
 					return false;
