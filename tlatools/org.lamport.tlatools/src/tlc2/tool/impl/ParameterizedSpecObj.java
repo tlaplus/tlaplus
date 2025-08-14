@@ -112,10 +112,6 @@ public class ParameterizedSpecObj extends SpecObj {
 		public final String module;
 		public final String operator;
 		public final Map<String, String> redefinitions;
-
-		public PostCondition(String moduleBangOp) {
-			this(moduleBangOp.split("!")[0], moduleBangOp.split("!")[1]);
-		}
 		
 		public PostCondition(String module, String operator) {
 			this(module, operator, new HashMap<>());
