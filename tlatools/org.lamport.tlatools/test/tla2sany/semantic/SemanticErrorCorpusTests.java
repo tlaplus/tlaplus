@@ -131,6 +131,7 @@ public class SemanticErrorCorpusTests {
     final Errors log = parse(this.testCase.modulePath);
     Assert.assertEquals(log.toString(), this.testCase.expectedCode.getSeverityLevel() == ErrorLevel.ERROR, log.isFailure());
     final List<ErrorDetails> actual = log.getMessages();
+    Assert.assertTrue(actual.stream().allMatch(error -> error.getCode().getParameterCount() == ErrorCode.VARIADIC_PARAMETERS || error.getCode().getParameterCount() == error.getParameters().size()));
     Assert.assertEquals(new ArrayList<>(), actual.stream().filter(error -> error.getCode() == ErrorCode.SUSPECTED_UNREACHABLE_CHECK).collect(Collectors.toList()));
     Assert.assertTrue(log.toString(), actual.stream().anyMatch(error -> error.getCode() == this.testCase.expectedCode));
   }
