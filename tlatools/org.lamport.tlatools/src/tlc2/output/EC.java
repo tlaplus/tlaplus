@@ -251,6 +251,7 @@ public interface EC
     public static final int TLC_FP_COMPLETED = 2211;
     
     public static final int TLC_LIVE_IMPLIED = 2212;
+    public static final int TLC_LIVE_IMPLIED_DEBUG = 2263;
     public static final int TLC_LIVE_CANNOT_HANDLE_FORMULA = 2213;
     public static final int TLC_LIVE_WRONG_FORMULA_FORMAT = 2214;
     public static final int TLC_LIVE_ENCOUNTERED_ACTIONS = 2249;
