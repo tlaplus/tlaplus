@@ -880,6 +880,10 @@ public class MP
         case EC.TLC_LIVE_IMPLIED:
             b.append("Implied-temporal checking--satisfiability problem has %1% branches.");
             break;
+        case EC.TLC_LIVE_IMPLIED_DEBUG:
+			b.append(
+					"Implied-temporal checking--branch of satisfiable problem has %1% possible error model(s), %2% promise(s), %3% state check(s), %4% action check(s), and a tableau with %5% node(s).");
+            break;
         case EC.TLC_LIVE_CANNOT_HANDLE_FORMULA:
         	if (parameters.length > 1) {
         		b.append("TLC cannot handle the temporal formula %1%:\n%2%");

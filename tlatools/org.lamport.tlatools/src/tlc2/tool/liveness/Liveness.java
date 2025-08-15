@@ -5,6 +5,10 @@
 
 package tlc2.tool.liveness;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
@@ -733,14 +737,15 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				// LEN#extractPromises returns all <>(someStateOrConstantLevelFormula), which
 				// are added as promises to the OOS.
 				TBGraph tbg = new TBGraph(tf1);
-				
-// Uncomment to write the tableau in dot format to disk.				
-//				try {
-//					Files.write(Paths.get("./TBGraph.dot"), tbg.toDotViz().getBytes());
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				if (System.getProperty(Liveness.class.getName() + ".tableauExportPath") != null) {
+					try {
+						Files.write(Paths.get(
+								System.getProperty(Liveness.class.getName() + ".tableauExportPath", "./TBGraph.dot")),
+								tbg.toDotViz().getBytes());
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				oss[i] = new OrderOfSolution(tbg, tf1.extractPromises());
 			}
 
@@ -773,6 +778,19 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			oss[i].setCheckAction(new LiveExprNode[actionBin.size()]);
 			for (int j = 0; j < actionBin.size(); j++) {
 				oss[i].getCheckAction()[j] = (LiveExprNode) actionBin.elementAt(j);
+			}
+						
+			// A debugging aid that prints stats about each OrderOfSolution.
+			if (Boolean.getBoolean(Liveness.class.getName() + ".debug")) {
+				final LNEven[] promises = oss[i].getPromises();
+				final LiveExprNode[] checkAction = oss[i].getCheckAction();
+				final LiveExprNode[] checkState = oss[i].getCheckState();
+
+				MP.printMessage(EC.TLC_LIVE_IMPLIED_DEBUG, String.valueOf(pems != null ? pems.length : 0),
+						String.valueOf(promises != null ? promises.length : 0),
+						String.valueOf(checkAction != null ? checkAction.length : 0),
+						String.valueOf(checkState != null ? checkState.length : 0),
+						String.valueOf(oss[i].hasTableau() ? oss[i].getTableau().size() : 0));
 			}
 		}
 		// Could null TBPar tfbin and Vect<Vect<OSExprPem>> pembin here.
