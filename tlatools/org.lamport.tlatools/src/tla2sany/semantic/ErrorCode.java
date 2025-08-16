@@ -41,7 +41,7 @@ public enum ErrorCode {
    * artifacts of the specific method SANY uses for validation than general
    * cases that should be standardized.
    */
-  INTERNAL_ERROR (4003, ErrorLevel.ERROR),
+  INTERNAL_ERROR (4003, ErrorLevel.ERROR, ErrorCode.VARIADIC_PARAMETERS),
 
   /**
    * Many error checks are duplicates of earlier error checks, so the process
@@ -63,7 +63,7 @@ public enum ErrorCode {
    * never be reached since the semantic checking process will have failed
    * before those points.
    */
-  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.ERROR),
+  SUSPECTED_UNREACHABLE_CHECK (4004, ErrorLevel.ERROR, ErrorCode.VARIADIC_PARAMETERS),
 
   /**
    * SANY contains some code handling language features that are either not
@@ -79,7 +79,7 @@ public enum ErrorCode {
    * Subexpressions are one prominent category of language feature tagged
    * with this error code.
    */
-  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.ERROR),
+  UNSUPPORTED_LANGUAGE_FEATURE (4005, ErrorLevel.ERROR, ErrorCode.VARIADIC_PARAMETERS),
 
   /**
    * Standardized errors. These should cause a parse failure. They are
@@ -176,9 +176,20 @@ public enum ErrorCode {
   }
 
   /**
+   * Indicates the error code is accompanied by an arbitrary & unbounded
+   * number of parameters.
+   */
+  public static final int VARIADIC_PARAMETERS = -1;
+
+  /**
    * The standardized error code value.
    */
   private final int value;
+
+  /**
+   * The number of parameters that should be attached to the error.
+   */
+  private final int parameterCount;
 
   /**
    * The error's level of seriousness.
@@ -186,8 +197,13 @@ public enum ErrorCode {
   private final ErrorLevel level;
 
   private ErrorCode(int value, ErrorLevel level) {
+    this(value, level, 0);
+  }
+
+  private ErrorCode(int value, ErrorLevel level, int parameterCount) {
     this.value = value;
     this.level = level;
+    this.parameterCount = parameterCount;
   }
 
   /**
@@ -227,5 +243,16 @@ public enum ErrorCode {
    */
   public ErrorLevel getSeverityLevel() {
     return this.level;
+  }
+
+  /**
+   * Get the number of parameters expected to be attached to this error code.
+   * If {@link ErrorCode#VARIADIC_PARAMETERS}, an arbitrary & unbounded
+   * number of parameters can be attached to the code.
+   *
+   * @return The number of expected parameters.
+   */
+  public int getParameterCount() {
+    return this.parameterCount;
   }
 }

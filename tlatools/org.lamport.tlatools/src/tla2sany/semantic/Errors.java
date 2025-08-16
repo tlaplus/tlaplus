@@ -25,6 +25,7 @@
 package tla2sany.semantic;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,12 +47,15 @@ public class Errors {
 
     private final Location location;
 
-    private final String message;
+    private final String format;
 
-    ErrorDetails(ErrorCode code, Location location, String message) {
+    private final Object[] parameters;
+
+    ErrorDetails(ErrorCode code, Location location, String format, Object... parameters) {
       this.code = code;
       this.location = location;
-      this.message = message;
+      this.format = format;
+      this.parameters = parameters;
     }
 
     public ErrorCode getCode() {
@@ -63,12 +67,16 @@ public class Errors {
     }
 
     public String getMessage() {
-      return this.message;
+      return String.format(this.format, this.parameters);
+    }
+
+    public List<Object> getParameters() {
+      return List.of(this.parameters);
     }
 
     @Override
     public String toString() {
-      return this.location.toString() + "\n\n" + this.message;
+      return this.location.toString() + "\n\n" + this.getMessage();
     }
 
     @Override
@@ -79,7 +87,8 @@ public class Errors {
       final ErrorDetails other = (ErrorDetails)o;
       return this.code.equals(other.code)
           && this.location.equals(other.location)
-          && this.message.equals(other.message);
+          && this.format.equals(other.format)
+          && Arrays.equals(this.parameters, other.parameters);
     }
   }
 
@@ -135,19 +144,20 @@ public class Errors {
    *
    * @param code The standardized error code associated with the message.
    * @param loc A spec location associated with the message.
-   * @param str A human-readable message.
+   * @param format A message into which parameters are interpolated.
+   * @param parameters A list of standardized values attached to the error.
    * @return An exception which can optionally be thrown by the caller.
    */
-  public final AbortException addMessage(ErrorCode code, Location loc, String str) {
+  public final AbortException addMessage(ErrorCode code, Location loc, String format, Object... parameters) {
     loc = null == loc ? Location.nullLoc : loc;
-    final ErrorDetails message = new ErrorDetails(code, loc, str);
+    final ErrorDetails message = new ErrorDetails(code, loc, format, parameters);
     if (!this.messages.contains(message)) {
       this.messages.add(message);
     }
 
     return new AbortException(message, this);
   }
-  
+
   /**
    * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
    */
@@ -155,7 +165,7 @@ public class Errors {
   public final void addWarning(ErrorCode code, Location loc, String str) {
     this.addMessage(code, loc, str);
   }
-  
+
   /**
    * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
    */
