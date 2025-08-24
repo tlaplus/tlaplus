@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Sat 23 February 2008 at 10:16:24 PST by lamport
 //      modified on Mon Aug 20 10:54:08 PDT 2001 by yuanyu
@@ -247,6 +248,11 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return elems.isEmpty();
   }
 
   @Override
