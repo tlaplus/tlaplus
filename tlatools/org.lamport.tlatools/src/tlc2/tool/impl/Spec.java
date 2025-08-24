@@ -256,9 +256,9 @@ abstract class Spec
         return def.getBody();
     }
 
-    public final ExprNode[] getPostConditionSpecs()
+    public final ExprNode[] getPostConditionSpecs(final Map<String, String> params)
     {
-    	final List<ExprNode> res = this.specProcessor.getPostConditionSpecs();
+    	final List<ExprNode> res = this.specProcessor.getPostConditionSpecs(params);
     	
         String name = this.config.getPostCondition();
         if (name.length() != 0)
