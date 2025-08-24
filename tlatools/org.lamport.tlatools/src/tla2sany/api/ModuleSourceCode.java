@@ -22,6 +22,8 @@
  ******************************************************************************/
 package tla2sany.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -64,18 +66,18 @@ public class ModuleSourceCode {
    * desired (for advanced error reporting, for example) then the function
    * {@link ModuleSourceCode#getTextAsString} can be used.
    */
-  public final byte[] text;
+  private final byte[] text;
 
   /**
    * The origin of this module.
    */
-  public final ModuleOrigin origin;
+  private final ModuleOrigin origin;
 
   /**
    * The path at which this module was found, if sourced from
    * {@link ModuleOrigin#FILESYSTEM}. Null otherwise.
    */
-  public final Path path;
+  private final Path path;
 
   /**
    * Constructs a new instance of the {@link ModuleSourceCode} class.
@@ -91,11 +93,50 @@ public class ModuleSourceCode {
   }
 
   /**
+   * The text of this module's source code, as a UTF-8 encoded byte array.
+   *
+   * @return The module source code.
+   */
+  public byte[] getText() {
+    return this.text;
+  }
+
+  /**
+   * The origin of this module.
+   *
+   * @return The origin of this module.
+   */
+  public ModuleOrigin getOrigin() {
+    return this.origin;
+  }
+  
+  /**
+   * The path associated with this module, if it was sourced from the file
+   * system; otherwise null.
+   *
+   * @return The path associated with this module, if it has one.
+   */
+  public Path getPath() {
+    return this.path;
+  }
+
+  /**
    * Interpret the module text as a UTF-8 encoded string.
    *
    * @return The module text as a UTF-8 encoded string.
    */
   public String getTextAsString() {
     return new String(this.text, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Makes the module text available as a {@link InputStream}. The caller is
+   * responsible for lifetime management of the {@link InputStream} instance,
+   * although it is a {@link ByteArrayInputStream} so closing it is a no-op.
+   *
+   * @return The module text, as a {@link InputStream}.
+   */
+  public InputStream getTextAsInputStream() {
+    return new ByteArrayInputStream(this.text);
   }
 }
