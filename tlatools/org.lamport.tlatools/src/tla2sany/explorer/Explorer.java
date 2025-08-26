@@ -111,7 +111,7 @@ public class Explorer {
 
 	private void lookUpAndPrintSyntaxTree(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
@@ -130,8 +130,8 @@ public class Explorer {
 
 		// Print them all
 		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
-			((SemanticNode) (sym)).getTreeNode().printST(0);
+			SymbolNode sym = symbolVect.elementAt(i);
+			sym.getTreeNode().printST(0);
 			System.out.println();
 		}
 
@@ -139,7 +139,7 @@ public class Explorer {
 
 	private void lookUpAndPrintDef(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
@@ -158,7 +158,7 @@ public class Explorer {
 
 		// Print them all
 		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
+			SymbolNode sym = symbolVect.elementAt(i);
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
@@ -169,14 +169,14 @@ public class Explorer {
 			} else if (sym instanceof FormalParamNode) {
 				System.out.print("Module: " + ((FormalParamNode) sym).getModuleNode().getName());
 			}
-			System.out.println(((ExploreNode) (symbolVect.elementAt(i))).toString(100, errors) + "\n");
+			System.out.println(symbolVect.elementAt(i).toString(100, errors) + "\n");
 		}
 
 	}
 
 	private void levelDataPrint(String symbName) {
 
-		Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
+		final Vector<SymbolNode> symbolVect = new Vector<>(8); // Initial room for 8 symbols with same name
 
 		// Collect in Vector symbols all SymbolNodes in the semNodesTable whose name ==
 		// symbName
@@ -195,7 +195,7 @@ public class Explorer {
 
 		// Print them all
 		for (int i = 0; i < symbolVect.size(); i++) {
-			SymbolNode sym = (SymbolNode) (symbolVect.elementAt(i));
+			SymbolNode sym = symbolVect.elementAt(i);
 			if (sym instanceof OpDefOrDeclNode) {
 				if (((OpDefOrDeclNode) sym).getOriginallyDefinedInModuleNode() != null) {
 					System.out.print(
