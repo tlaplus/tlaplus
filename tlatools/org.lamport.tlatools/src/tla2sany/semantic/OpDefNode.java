@@ -35,6 +35,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1500,6 +1502,12 @@ public class OpDefNode extends OpDefOrDeclNode
         ret = doc.createElement("UserDefinedOpKind");
         ret.appendChild(appendText(doc,"uniquename",getName().toString()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
+		if (getPreComments().length > 0) {
+			ret.appendChild(appendCDATA(doc, "pre-comments", Arrays.stream(getPreComments()).filter(Objects::nonNull)
+					// Do not trim to preserve indentation of comments.
+					.map(String::stripTrailing).filter(s -> !s.isEmpty())
+					.collect(Collectors.joining(System.lineSeparator()))));
+		}
         ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
         if (params != null) {
           Element arguments = doc.createElement("params");
