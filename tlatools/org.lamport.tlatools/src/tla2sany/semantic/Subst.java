@@ -5,6 +5,7 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -256,10 +257,10 @@ public class Subst implements LevelConstants, ASTConstants, ExploreNode, XMLExpo
            "\nExpr: " + Strings.indent(2,(expr!=null ? expr.toString(depth-1, errors) : "<null>"));
   }
 
-  public Element export(Document doc, SymbolContext context) {
+  public Element export(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       Element ret = doc.createElement("Subst");
-      ret.appendChild(op.export(doc,context));
-      ret.appendChild(expr.export(doc,context));
+      ret.appendChild(op.export(doc,context, filter));
+      ret.appendChild(expr.export(doc,context, filter));
       return ret;
     }
 

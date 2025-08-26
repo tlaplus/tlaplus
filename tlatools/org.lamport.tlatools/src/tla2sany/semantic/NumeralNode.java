@@ -4,6 +4,7 @@ package tla2sany.semantic;
 
 import java.math.BigInteger;
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -145,7 +146,7 @@ public class NumeralNode extends ExprNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       String v = (bigValue != null) ? bigValue.toString() : (Integer.toString(value));
       Element e = doc.createElement("IntValue");
       Node n = doc.createTextNode(v);

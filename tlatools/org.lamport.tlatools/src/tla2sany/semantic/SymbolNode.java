@@ -2,6 +2,8 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.semantic;
 
+import java.util.function.BiPredicate;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -130,12 +132,12 @@ public abstract class SymbolNode extends LevelNode {
    * we want to expand their whole definitions and are using this method
    * we need to add location and level information here.
    */
-  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element exportDefinition(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     if (!context.isTop_level_entry())
       throw new IllegalArgumentException("Exporting definition "+getName()+" ref "+getNodeRef()+" twice!");
     context.resetTop_level_entry();
     try {
-      Element e = getSymbolElement(doc, context);
+      Element e = getSymbolElement(doc, context, filter);
       // level
       try {
         Element l = appendText(doc,"level",Integer.toString(getLevel()));
@@ -158,13 +160,13 @@ public abstract class SymbolNode extends LevelNode {
     }
   }
 
-  protected abstract Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context);
+  protected abstract Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter);
   protected abstract String getNodeRef();
 
   /** TL
    * we also override getLevelElement as it should never be called
    */
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     throw new UnsupportedOperationException("implementation Error: A symbol node may not be called for its level element.");
   }
 
@@ -172,9 +174,9 @@ public abstract class SymbolNode extends LevelNode {
    * We override export in order not to export location and level.
    * We only export names.
    */
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     // first add symbol to context
-    context.put(this, doc);
+    context.put(this, doc, filter);
     Element e = doc.createElement(getNodeRef());
     e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
     return e;

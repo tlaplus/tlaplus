@@ -5,6 +5,7 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -445,16 +446,16 @@ public class InstanceNode extends LevelNode {
     return ret;
   }
 
-  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getLevelElement(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
 
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
-        sbts.appendChild(substs[i].export(doc,context));
+        sbts.appendChild(substs[i].export(doc,context, filter));
       }
 
       Element prms = doc.createElement("params");
       for (int i=0; i<params.length; i++) {
-        prms.appendChild(params[i].export(doc,context));
+        prms.appendChild(params[i].export(doc,context, filter));
       }
 
       Element ret = doc.createElement("InstanceNode");

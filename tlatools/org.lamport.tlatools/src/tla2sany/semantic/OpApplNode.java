@@ -21,6 +21,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1330,7 +1331,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 	}
   
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("OpApplNode");
 
     // TL 2014 - A fix for detecting null representing OTHER inside a case (please refrain from using null as a semantical object),
@@ -1353,7 +1354,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
 
     // operator
     Element op = doc.createElement("operator");
-    op.appendChild(operator.export(doc,context));
+    op.appendChild(operator.export(doc,context, filter));
     e.appendChild(op);
 
     // operands
@@ -1364,7 +1365,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         ope.appendChild(appendText(doc,"StringNode","$Other"));
       }
       else {
-        ope.appendChild(operands[i].export(doc,context));
+        ope.appendChild(operands[i].export(doc,context, filter));
       }
     }
     e.appendChild(ope);
@@ -1375,7 +1376,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
       if (unboundedBoundSymbols != null) {
         for (int i=0; i< unboundedBoundSymbols.length; i++) {
           Element bvar = doc.createElement("unbound");
-          bvar.appendChild(unboundedBoundSymbols[i].export(doc,context));
+          bvar.appendChild(unboundedBoundSymbols[i].export(doc,context, filter));
           if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
           bvars.appendChild(bvar);
         }
@@ -1385,9 +1386,9 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         for (int i=0; i< boundedBoundSymbols.length; i++) {
           Element bvar = doc.createElement("bound");
           for (int j=0; j<boundedBoundSymbols[i].length; j++)
-            bvar.appendChild(boundedBoundSymbols[i][j].export(doc,context));
+            bvar.appendChild(boundedBoundSymbols[i][j].export(doc,context, filter));
           if (tupleOrs != null && tupleOrs[i]) bvar.appendChild(doc.createElement("tuple"));
-          bvar.appendChild(ranges[i].export(doc,context));
+          bvar.appendChild(ranges[i].export(doc,context, filter));
           bvars.appendChild(bvar);
         }
       }

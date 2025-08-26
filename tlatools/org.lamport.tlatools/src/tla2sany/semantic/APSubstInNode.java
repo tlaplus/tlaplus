@@ -20,6 +20,7 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -463,20 +464,20 @@ public class APSubstInNode extends LevelNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       Element sbts = doc.createElement("substs");
       for (int i=0; i<substs.length; i++) {
-        sbts.appendChild(substs[i].export(doc, context));
+        sbts.appendChild(substs[i].export(doc, context, filter));
       }
       Element bdy = doc.createElement("body");
-      bdy.appendChild(body.export(doc,context));
+      bdy.appendChild(body.export(doc,context, filter));
 
       Element from = doc.createElement("instFrom");
-      Element fromchild = this.instantiatingModule.export(doc, context);
+      Element fromchild = this.instantiatingModule.export(doc, context, filter);
       from.appendChild(fromchild);
 
       Element to = doc.createElement("instTo");
-      Element tochild = instantiatedModule.export(doc,context);
+      Element tochild = instantiatedModule.export(doc,context, filter);
       to.appendChild(tochild);
 
 

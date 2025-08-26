@@ -5,6 +5,7 @@ package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -297,11 +298,11 @@ implements ExploreNode, LevelConstants {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element ret = doc.createElement("LetInNode");
-    ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
+    ret.appendChild(appendElement(doc,"body",body.export(doc,context, filter)));
     Element arguments = doc.createElement("opDefs");
-    for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context));
+    for (int i=0; i<opDefs.length; i++) arguments.appendChild(opDefs[i].export(doc,context, filter));
     ret.appendChild(arguments);
 
     return ret;

@@ -40,6 +40,7 @@ package tla2sany.semantic;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -334,13 +335,13 @@ public class LabelNode extends ExprNode
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       Element ret = doc.createElement("LabelNode");
       ret.appendChild(appendText(doc,"uniquename",getName().toString()));
       ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
-      ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
+      ret.appendChild(appendElement(doc,"body",body.export(doc,context, filter)));
       Element arguments = doc.createElement("params");
-      for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc,context));
+      for (int i=0; i<params.length; i++) arguments.appendChild(params[i].export(doc,context, filter));
       ret.appendChild(arguments);
       return ret;
     }

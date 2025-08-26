@@ -4,6 +4,7 @@ package tla2sany.semantic;
 
 import java.math.BigDecimal;
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -140,7 +141,7 @@ public class DecimalNode extends ExprNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("DecimalNode");
     if (bigVal != null) {
       e.appendChild(appendText(doc,"mantissa",bigVal.unscaledValue().toString()));

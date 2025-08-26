@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -39,6 +40,8 @@ import tla2sany.output.SanyOutput;
 import tla2sany.output.SimpleSanyOutput;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefOrDeclNode;
+import tla2sany.semantic.SemanticNode;
 import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
@@ -59,6 +62,9 @@ public class XMLExporter {
         "-o", "Offline mode; skip XML schema validation step.", true));
     args.add(new UsageGenerator.Argument(
         "-t", "Terse; format XML output without tabs or newlines.", true));
+	args.add(new UsageGenerator.Argument("-r",
+			"Restrict mode; include only declarations and definitions of the specified module, excluding extended or instantiated modules.",
+			true));
     args.add(new UsageGenerator.Argument(
         "-I", "Include; use given directory path to resolve module dependencies.", true));
     args.add(new UsageGenerator.Argument(
@@ -107,6 +113,7 @@ public class XMLExporter {
 
     boolean offline_mode = false;
     boolean pretty_print = true;
+    boolean restricted = false;
     int lastarg = -1; // lastarg will be incremented, initialize at -1
     for (int i = 0; i < args.length - 1; i++) {
       if ("-o".equals(args[i])) {
@@ -115,6 +122,9 @@ public class XMLExporter {
       } else if ("-t".equals(args[i])) {
         pretty_print = false;
         lastarg = i;
+      } else if ("-r".equals(args[i])) {
+          restricted = true;
+          lastarg = i;
       } else if ("-I".equals(args[i])) {
         i++;
         if (i > args.length - 2)
@@ -187,12 +197,25 @@ public class XMLExporter {
       ExternalModuleTable table = spec.getExternalModuleTable();
       //Element e = table.getRootModule().exportDefinition(doc,context);
       //rootElement.appendChild(e);
-      ModuleNode[] externalModules = table.getModuleNodes();
-      for (int j = 0; j < externalModules.length; j++) {
-        //Element ext_e = externalModules[j].exportDefinition(doc, context);
-        Element ext_e = externalModules[j].export(doc, context);
-        rootElement.appendChild(ext_e);
-      }
+      
+		if (restricted) {
+			final BiPredicate<SemanticNode, SemanticNode> filter = (s1, s2) -> {
+				if (s1 instanceof OpDefOrDeclNode && s2 instanceof ModuleNode) {
+					final OpDefOrDeclNode oddn = (OpDefOrDeclNode) s1;
+					return s2.equals(oddn.getOriginallyDefinedInModuleNode());
+				}
+				return true;
+			};
+			Element ext_e = spec.getRootModule().export(doc, context, filter);
+			rootElement.appendChild(ext_e);
+		} else {
+			ModuleNode[] externalModules = table.getModuleNodes();
+			for (int j = 0; j < externalModules.length; j++) {
+				// Element ext_e = externalModules[j].exportDefinition(doc, context);
+				Element ext_e = externalModules[j].export(doc, context);
+				rootElement.appendChild(ext_e);
+			}
+		}
 
       // Insert the symbol table into the beginning of the XML DOM
       rootElement.insertBefore(context.getContextElement(doc), rootElement.getFirstChild());

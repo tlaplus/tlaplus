@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -336,9 +337,9 @@ public int levelChecked   = 0 ;
 
 
   @Override
-  protected Element getSemanticElement(Document doc, SymbolContext context) {
+  protected Element getSemanticElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       // T.L. abstract method used to add data from subclasses
-      Element e = getLevelElement(doc, context); //SymbolElement.getLevelElement is not supposed to be called
+      Element e = getLevelElement(doc, context, filter); //SymbolElement.getLevelElement is not supposed to be called
       try {
         Element l = appendText(doc,"level",Integer.toString(getLevel()));
         e.insertBefore(l,e.getFirstChild());
@@ -352,7 +353,7 @@ public int levelChecked   = 0 ;
      * T.L. October 2014
      * Abstract method for subclasses of LevelNode to add their information
      * */
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass());
     }
 

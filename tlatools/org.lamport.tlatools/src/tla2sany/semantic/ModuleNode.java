@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 import org.w3c.dom.Document;
@@ -1258,33 +1259,38 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     return "ModuleNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc, SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element ret = doc.createElement("ModuleNode");
     ret.appendChild(appendText(doc, "uniquename", getName().toString()));
 
-    SemanticNode[] nodes = null;
     // constants
     //Element constants = doc.createElement("constants");
-    nodes = getConstantDecls();
-    for (int i=0; i<nodes.length; i++) {
-      ret.appendChild(nodes[i].export(doc,context));
+    final  OpDeclNode[] consts = getConstantDecls();
+    for (int i=0; i<consts.length; i++) {
+		if (filter.test(consts[i], this)) {
+			ret.appendChild(consts[i].export(doc, context, filter));
+		}
     }
     //ret.appendChild(constants);
 
     // variables
     //Element variables = doc.createElement("variables");
-    nodes = getVariableDecls();
-    for (int i=0; i<nodes.length; i++) {
-      ret.appendChild(nodes[i].export(doc,context));
+    final OpDeclNode[] vars = getVariableDecls();
+    for (int i=0; i<vars.length; i++) {
+		if (filter.test(vars[i], this)) {
+			ret.appendChild(vars[i].export(doc, context, filter));
+		}
     }
     //ret.appendChild(variables);
 
     //operators
     //Element operators = doc.createElement("definitions");
-    nodes = getOpDefs();
-    for (int i=0; i<nodes.length; i++) {
-      ret.appendChild(nodes[i].export(doc,context)); //was with true to expand operators
-    }
+	final OpDefNode[] ops = getOpDefs();
+	for (int i = 0; i < ops.length; i++) {
+		if (filter.test(ops[i], this)) {
+			ret.appendChild(ops[i].export(doc, context, filter)); // was with true to expand operators
+		}
+	}
     //ret.appendChild(operators);
 
     /*
@@ -1305,9 +1311,11 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
     ret.appendChild(thms);
   */
 
-    nodes = getTopLevel();
+    LevelNode[] nodes = getTopLevel();
     for (int i=0; i<nodes.length; i++) {
-      ret.appendChild(nodes[i].export(doc,context));
+		if (filter.test(nodes[i], this)) {
+			ret.appendChild(nodes[i].export(doc,context, filter));
+		}
     }
 
     return ret;
