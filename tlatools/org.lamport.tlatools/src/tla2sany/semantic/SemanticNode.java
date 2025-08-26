@@ -554,6 +554,12 @@ public abstract class SemanticNode
       e.appendChild(n);
       return e;
     }
+    protected Element appendCDATA(Document doc, String el, String txt) {
+        Element e = doc.createElement(el);
+        Node n = doc.createCDATASection(txt);
+        e.appendChild(n);
+        return e;
+      }
 
 
     /** August 2014 - TL
