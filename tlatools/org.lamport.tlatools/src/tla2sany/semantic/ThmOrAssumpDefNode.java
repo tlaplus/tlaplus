@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -649,7 +650,7 @@ public class ThmOrAssumpDefNode extends SymbolNode
     }
   }
 
-  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getSymbolElement(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     assert(this.body != null); //A theorem or assumption definition without a body does not make sense.
     Element e = null;
     if (theorem) {
@@ -660,15 +661,15 @@ public class ThmOrAssumpDefNode extends SymbolNode
     }
 
     e.appendChild(appendText(doc, "uniquename", getName().toString() ));
-    e.appendChild(body.export(doc, context));
+    e.appendChild(body.export(doc, context, filter));
     return e;
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
   @Override
-  public Element export(Document doc, SymbolContext context) {
+  public Element export(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     // first add symbol to context
-    context.put(this, doc);
+    context.put(this, doc, filter);
     Element e = doc.createElement(getNodeRef());
     e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
     return e;

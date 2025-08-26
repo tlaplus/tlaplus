@@ -1,9 +1,12 @@
 package tla2sany.xml;
 
+import java.util.function.BiPredicate;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import tla2sany.semantic.AssumeNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 
@@ -51,33 +54,33 @@ public class SymbolContext {
     return flagArray[flag];
   }
 
-  public void put(SymbolNode nd, Document doc) {
+  public void put(SymbolNode nd, Document doc, BiPredicate<SemanticNode, SemanticNode> filter) {
     int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);
       setTop_level_entry();
-      context.put(k,nd.exportDefinition(doc,this));
+      context.put(k,nd.exportDefinition(doc,this, filter));
     }
   }
 
-  public void put(TheoremNode nd, Document doc) {
+  public void put(TheoremNode nd, Document doc, BiPredicate<SemanticNode, SemanticNode> filter) {
     int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);
       setTop_level_entry();
-      context.put(k,nd.exportDefinition(doc,this));
+      context.put(k,nd.exportDefinition(doc,this, filter));
     }
   }
 
-  public void put(AssumeNode nd, Document doc) {
+  public void put(AssumeNode nd, Document doc, BiPredicate<SemanticNode, SemanticNode> filter) {
     int k = nd.myUID;
     if (!keys.contains(k)) {
       // first add the key as it might be mentioned again inside the definition
       keys.add(k);
       setTop_level_entry();
-      context.put(k,nd.exportDefinition(doc,this));
+      context.put(k,nd.exportDefinition(doc,this, filter));
     }
   }
 

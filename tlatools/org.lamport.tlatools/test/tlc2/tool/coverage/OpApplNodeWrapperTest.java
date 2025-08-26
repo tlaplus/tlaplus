@@ -25,6 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
+import java.util.function.BiPredicate;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -35,6 +37,7 @@ import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
+import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.xml.SymbolContext;
 import tlc2.TLCGlobals;
@@ -168,7 +171,7 @@ public class OpApplNodeWrapperTest {
 		}
 
 		@Override
-		protected Element getSymbolElement(Document doc, SymbolContext context) {
+		protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
 			throw new UnsupportedOperationException("not implemented");
 		}
 

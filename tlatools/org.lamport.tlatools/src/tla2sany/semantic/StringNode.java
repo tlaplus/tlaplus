@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -133,7 +134,7 @@ public class StringNode extends ExprNode implements ExploreNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       Element e = doc.createElement("StringValue");
       Node n = doc.createTextNode(value.toString());
       e.appendChild(n);

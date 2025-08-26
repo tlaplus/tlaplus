@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -136,7 +137,7 @@ public class FormalParamNode extends SymbolNode {
     return "FormalParamNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc, SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("FormalParamNode");
     e.appendChild(appendText(doc,"uniquename",getName().toString()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

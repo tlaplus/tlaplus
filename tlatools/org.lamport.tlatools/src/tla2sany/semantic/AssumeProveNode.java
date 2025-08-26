@@ -5,6 +5,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -395,15 +396,15 @@ public class AssumeProveNode extends LevelNode {
   *************************************************************************/
 
   @Override
-  public Element getLevelElement(Document doc, SymbolContext context) {
+  public Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("AssumeProveNode");
     Element antecedent = doc.createElement("assumes");
     Element succedent = doc.createElement("prove");
 
     SemanticNode[] assumes = getAssumes();
-    for (int i=0; i<assumes.length; i++) antecedent.appendChild(assumes[i].export(doc,context));
+    for (int i=0; i<assumes.length; i++) antecedent.appendChild(assumes[i].export(doc,context, filter));
 
-    succedent.appendChild(getProve().export(doc,context));
+    succedent.appendChild(getProve().export(doc,context, filter));
 
     e.appendChild(antecedent);
     e.appendChild(succedent);

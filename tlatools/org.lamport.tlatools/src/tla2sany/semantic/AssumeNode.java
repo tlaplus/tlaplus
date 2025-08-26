@@ -4,6 +4,7 @@ package tla2sany.semantic;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -200,12 +201,12 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 
   /* MR: This is the same as SymbolNode.exportDefinition. Exports the actual theorem content, not only a reference.
    */
-  public Element exportDefinition(Document doc, SymbolContext context) {
+  public Element exportDefinition(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     if (!context.isTop_level_entry())
       throw new IllegalArgumentException("Exporting theorem ref "+getNodeRef()+" twice!");
     context.resetTop_level_entry();
     try {
-      Element e = getLevelElement(doc, context);
+      Element e = getLevelElement(doc, context, filter);
       // level
       try {
         Element l = appendText(doc,"level",Integer.toString(getLevel()));
@@ -242,26 +243,26 @@ public AssumeNode(TreeNode stn, ExprNode expr, ModuleNode mn,
 //  }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("AssumeNode");
     if (def != null) {
       //if there is a definition, export it too
       Node d = doc.createElement("definition");
-      d.appendChild(def.export(doc, context));
+      d.appendChild(def.export(doc, context, filter));
       e.appendChild(d);
       assert( def.getBody() == this.assumeExpr ); //make sure theorem and definition body agree before export
     }
     Node n = doc.createElement("body");
-    n.appendChild(getAssume().export(doc,context));
+    n.appendChild(getAssume().export(doc,context, filter));
     e.appendChild(n);
     return e;
   }
 
   /* overrides LevelNode.export and exports a UID reference instad of the full version*/
   @Override
-  public Element export(Document doc, SymbolContext context) {
+  public Element export(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     // first add symbol to context
-    context.put(this, doc);
+    context.put(this, doc, filter);
     Element e = doc.createElement(getNodeRef());
     e.appendChild(appendText(doc,"UID",Integer.toString(myUID)));
     return e;

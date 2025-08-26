@@ -6,6 +6,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -178,7 +179,7 @@ public class OpDeclNode extends OpDefOrDeclNode {
     return "OpDeclNodeRef";
   }
 
-  protected Element getSymbolElement(Document doc, SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("OpDeclNode");
     e.appendChild(appendText(doc,"uniquename",getName().toString()));
     e.appendChild(appendText(doc,"arity",Integer.toString(getArity())));

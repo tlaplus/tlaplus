@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -166,15 +167,15 @@ public class UseOrHideNode extends LevelNode {
    }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     //SemanticNode.SymbolContext context = new SemanticNode.SymbolContext(context2);
     Element e = doc.createElement("UseOrHideNode");
 
     Element factse = doc.createElement("facts");
     Element definitions = doc.createElement("defs");
 
-    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context));
-    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context));
+    for (int i=0; i<facts.length; i++) factse.appendChild(facts[i].export(doc,context, filter));
+    for (int i=0; i<defs.length; i++) definitions.appendChild(defs[i].export(doc,context, filter));
 
     e.appendChild(factse);
     e.appendChild(definitions);

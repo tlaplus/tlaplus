@@ -6,6 +6,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -143,11 +144,11 @@ public class OpArgNode extends ExprOrOpArgNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("OpArgNode");
     Element n = doc.createElement("argument");
     //Element ope = op.getSymbolElement(doc, context);
-    Element ope = op.export(doc, context);
+    Element ope = op.export(doc, context, filter);
     n.appendChild(ope);
     e.appendChild(n);
 

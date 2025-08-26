@@ -20,6 +20,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -198,11 +199,11 @@ public class NewSymbNode extends LevelNode {
    }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("NewSymbNode");
-    e.appendChild(getOpDeclNode().export(doc,context));
+    e.appendChild(getOpDeclNode().export(doc,context, filter));
     if (getSet() != null) {
-      e.appendChild(getSet().export(doc,context));
+      e.appendChild(getSet().export(doc,context, filter));
     }
     return e;
   }

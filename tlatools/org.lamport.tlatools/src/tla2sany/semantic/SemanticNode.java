@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Document;
@@ -500,7 +501,7 @@ public abstract class SemanticNode
      * All nodes inherit from semantic node, which just attach location to the returned node
      */
 
-  protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context) {
+  protected Element getSemanticElement(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       throw new UnsupportedOperationException("xml export is not yet supported for: " + getClass());
     }
 
@@ -565,9 +566,9 @@ public abstract class SemanticNode
     /** August 2014 - TL
      * A location element is prepannded to an implementing element
      */
-  public Element export(Document doc, tla2sany.xml.SymbolContext context) {
+  public Element export(Document doc, tla2sany.xml.SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
       try {
-        Element e = getSemanticElement(doc, context);
+        Element e = getSemanticElement(doc, context, filter);
         try {
           Element loc = getLocationElement(doc);
           e.insertBefore(loc,e.getFirstChild());

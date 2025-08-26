@@ -3,6 +3,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -173,12 +174,12 @@ public class AtNode extends ExprNode {
   }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("AtNode");
     SemanticNode exceptObj = exceptRef.getArgs()[0];
     SemanticNode exceptComponents = exceptComponentRef.getArgs()[0];
-    e.appendChild(exceptObj.export(doc,context));
-    e.appendChild(exceptComponents.export(doc,context));
+    e.appendChild(exceptObj.export(doc,context, filter));
+    e.appendChild(exceptComponents.export(doc,context, filter));
     return e;
   }
 }

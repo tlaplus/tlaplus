@@ -2,6 +2,7 @@
 package tla2sany.semantic;
 
 import java.util.Hashtable;
+import java.util.function.BiPredicate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,11 +222,11 @@ public class NonLeafProofNode extends ProofNode {
    }
 
   @Override
-  protected Element getLevelElement(Document doc, SymbolContext context) {
+  protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("steps");
 
     for (int i=0; i< steps.length; i++) {
-      e.appendChild(steps[i].export(doc,context));
+      e.appendChild(steps[i].export(doc,context, filter));
     }
 
     return e;

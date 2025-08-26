@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Document;
@@ -1495,7 +1496,7 @@ public class OpDefNode extends OpDefOrDeclNode
     }
   }
 
-  protected Element getSymbolElement(Document doc, SymbolContext context) {
+  protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element ret = null;
     switch (getKind()) {
       case UserDefinedOpKind:
@@ -1508,12 +1509,12 @@ public class OpDefNode extends OpDefOrDeclNode
 					.map(String::stripTrailing).filter(s -> !s.isEmpty())
 					.collect(Collectors.joining(System.lineSeparator()))));
 		}
-        ret.appendChild(appendElement(doc,"body",body.export(doc,context)));
+        ret.appendChild(appendElement(doc,"body",body.export(doc,context, filter)));
         if (params != null) {
           Element arguments = doc.createElement("params");
           for (int i=0; i<params.length; i++) {
             Element lp = doc.createElement("leibnizparam");
-            lp.appendChild(params[i].export(doc,context));
+            lp.appendChild(params[i].export(doc,context, filter));
             if (isLeibnizArg != null && isLeibnizArg[i]) lp.appendChild(doc.createElement("leibniz"));
             arguments.appendChild(lp);
           }
@@ -1529,7 +1530,7 @@ public class OpDefNode extends OpDefOrDeclNode
         if (params != null) {
           for (int i=0; i<params.length; i++) {
             Element lp = doc.createElement("leibnizparam");
-            lp.appendChild(params[i].export(doc,context));
+            lp.appendChild(params[i].export(doc,context, filter));
             if (isLeibnizArg != null && isLeibnizArg[i]) lp.appendChild(doc.createElement("leibniz"));
             arguments2.appendChild(lp);
           }
