@@ -29,6 +29,9 @@ import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.output.EC;
 import tlc2.output.MP;
+import tlc2.repl.Command;
+import tlc2.repl.CommandParseException;
+import tlc2.repl.EvaluateExpressionCommand;
 import tlc2.tool.EvalException;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.Tool;
@@ -191,15 +194,13 @@ public class REPL {
      */
     public void runREPL(final LineReader reader) throws IOException {
         // Run the loop.
-    	String expr;
         while (true) {
             try {
-                expr = reader.readLine(prompt);
-                String res = processInput(expr);
-                if (res.equals("")) {
-                    continue;
-                }
-                System.out.println(res);
+                String line = reader.readLine(prompt);
+                Command command = Command.parse(line);
+                command.apply(this, System.out);
+            } catch (CommandParseException e) {
+                System.err.println("Failed to parse command: " + e.getMessage());
             } catch (UserInterruptException e) {
                 return;
             } catch (EndOfFileException e) {
@@ -222,10 +223,7 @@ public class REPL {
             // TODO: Allow external spec file to be loaded into REPL context.
  
             if(args.length == 1) {
-                String res = repl.processInput(args[0]);
-                if (!res.equals("")) {
-                	System.out.println(res);
-                }
+                new EvaluateExpressionCommand(args[0]).apply(repl, System.out);
                 //TODO Return actual exit value if parsing/evaluation fails.
                 System.exit(0);
             }
@@ -240,7 +238,7 @@ public class REPL {
 
 			System.out.println("Welcome to the TLA+ REPL!");
             MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
-        	System.out.println("Enter a constant-level TLA+ expression.");
+            System.out.println("Enter a constant-level TLA+ expression or type :help for help.");
 
            	reportExecutionStatistics();
         	
