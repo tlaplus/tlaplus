@@ -30,7 +30,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     ***********************************************************************/
     String[]deps = new String[ dependencyList.size() ];
     for (int lvi =0; lvi < deps.length; lvi++)
-      deps[lvi] = ((UniqueString)dependencyList.elementAt(lvi)).toString();
+      deps[lvi] = dependencyList.elementAt(lvi).toString();
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
@@ -43,7 +43,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * The root node.                                                       *
     ***********************************************************************/
 
-  public Vector dependencyList = new Vector( 20 );
+  public final Vector<UniqueString> dependencyList = new Vector<UniqueString>(20);
 
   private UniqueString mn = null;
      /**********************************************************************
