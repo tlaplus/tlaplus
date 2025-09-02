@@ -744,7 +744,7 @@
 			<formatter type="plain" usefile="false" />
 			<!-- Run the given set of test case specified by the pattern, by setting the property 'test.testcase'. -->
 			<!-- For example, to run the tests whose filename constains 'Vec' in the util package: -->
-			<!-- ant -f customBuild.xml test-set -Dtest.testcases=tlc2/util/*Vec* -->
+			<!-- ant -f customBuild.xml test-set -Dtest.testcases="tlc2/util/*Vec*" -->
 			<batchtest fork="yes" todir="${test.reports}" skipNonTests="true">
 				<fileset dir="${test.dir}">
 					<include name="${test.testcases}"/>

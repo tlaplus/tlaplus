@@ -51,6 +51,16 @@ ant -f customBuild.xml test # Runs unit tests
 The unit tests should all succeed.
 The compiled `tla2tools.jar` will be output to `tlatools/org.lamport.tlatools/dist/tla2tools.jar`, and can be used the same as any `tla2tools.jar` you download from the releases.
 
+Use the `test-set` target to run a single test instead of the entire test suite:
+```bash
+ant -f customBuild.xml test-set -Dtest.testcases="tla2sany/parser/TlaPlusSyntaxCorpusTests.java"
+```
+The path is resolved relative to the `tlatools/org.lamport.tlatools/test` directory.
+Running multiple tests with a glob pattern is also supported, but be sure to put the glob pattern in quotes so it is passed into `ant` instead of being expanded by your shell:
+```bash
+ant -f customBuild.xml test-set -Dtest.testcases="tlc2/util/*Vec*"
+```
+
 Build & Test Toolbox IDE
 ------------------------
 Install the following dependencies to your path:
