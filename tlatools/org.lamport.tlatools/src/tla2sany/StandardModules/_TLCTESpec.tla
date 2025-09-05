@@ -23,6 +23,9 @@ LOCAL _TLCTraceFile ==
 LOCAL _conjunct(prime, idx) ==
     FoldSet(LAMBDA v, acc: acc \o _ToConjunt(v, prime, idx), "", _Vars)
 
+LOCAL _subVars ==
+    FoldSet(LAMBDA v, acc: acc \o (IF acc = "" THEN "" ELSE ", ") \o v, "", _Vars)
+
 LOCAL _TLCTraceModule ==
 	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) IN
 	"---- MODULE " \o ModuleName \o " ----\n" \o
@@ -36,6 +39,9 @@ LOCAL _TLCTraceModule ==
 	"\n" \o
     "_next ==\n\\E i,j \\in DOMAIN Trace:\n/\\ i = TLCGet(\"level\")\n/\\ j = i + 1\n" \o
     _conjunct("", "i") \o _conjunct("'", "j") \o
+    "\n(* Allow infinite stuttering to prevent deadlock on termination. *)" \o
+    "\n_terminating ==\n\tUNCHANGED <<" \o _subVars \o ">>" \o 
+    "\n\n_spec == \n\t_init /\\ [][_next \\/ _terminating]_<<" \o _subVars \o ">>\n" \o
     "\n===="
     \* TODO: Append in-file config here.
 
