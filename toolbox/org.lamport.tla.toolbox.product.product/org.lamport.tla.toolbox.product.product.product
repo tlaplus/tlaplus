@@ -79,11 +79,6 @@ openFile
    </features>
 
    <configurations>
-      <plugin id="aws-ec2" autoStart="true" startLevel="4" />
-      <plugin id="azurecompute-arm" autoStart="true" startLevel="4" />
-      <plugin id="com.jcraft.jsch" autoStart="true" startLevel="4" />
-      <plugin id="ec2" autoStart="true" startLevel="4" />
-      <plugin id="jclouds-core" autoStart="true" startLevel="4" />
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
@@ -92,9 +87,6 @@ openFile
       <plugin id="org.eclipse.equinox.http.registry" autoStart="true" startLevel="3" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.update.configurator" autoStart="false" startLevel="10" />
-      <plugin id="org.lamport.tla.toolbox.jclouds" autoStart="true" startLevel="4" />
-      <plugin id="packet" autoStart="true" startLevel="4" />
-      <plugin id="sts" autoStart="true" startLevel="4" />
       <property name="eclipse.buildId" value="1.8.0" />
    </configurations>
 

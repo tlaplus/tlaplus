@@ -95,14 +95,6 @@
          version="0.0.0"/>
 
    <includes
-         id="org.lamport.tla.toolbox.feature.jclouds"
-         version="0.0.0"/>
-
-   <includes
-         id="org.apache.jclouds.feature"
-         version="0.0.0"/>
-
-   <includes
          id="com.abstratt.eclipsegraphviz.feature"
          version="0.0.0"/>
 
