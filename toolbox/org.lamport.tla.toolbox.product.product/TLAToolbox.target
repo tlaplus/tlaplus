@@ -28,7 +28,7 @@
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.pde.source.feature.group" version="0.0.0"/>
-<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.23/R-4.23-202203080310/"/>
+<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.25/R-4.25-202208311800/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
