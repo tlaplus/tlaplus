@@ -37,7 +37,6 @@
 		<!-- bundles -->
 		<module>toolbox/org.lamport.tla.toolbox.rss</module>
 		<module>toolbox/org.lamport.tla.toolbox</module>
-		<module>toolbox/org.lamport.tla.toolbox.jnlp</module>
 		<module>toolbox/org.lamport.tla.toolbox.doc</module>
 		<module>toolbox/org.lamport.tla.toolbox.editor.basic</module>
 		<module>toolbox/org.lamport.tla.toolbox.tool.prover</module>
@@ -60,7 +59,6 @@
 		<module>tlatools/org.lamport.tlatools.feature</module>
 		<module>toolbox/org.lamport.tla.toolbox.feature.base</module>
 		<module>toolbox/org.lamport.tla.toolbox.feature.editor</module>
-		<module>toolbox/org.lamport.tla.toolbox.feature.jnlp</module>
 		<module>toolbox/org.lamport.tla.toolbox.feature.help</module>
 		<module>toolbox/org.lamport.tla.toolbox.feature.prover</module>
 		<module>toolbox/org.lamport.tla.toolbox.feature.tla2tex</module>

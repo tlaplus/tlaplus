@@ -43,10 +43,6 @@
          version="0.0.0"/>
 
    <includes
-         id="org.lamport.tla.toolbox.feature.jnlp"
-         version="0.0.0"/>
-
-   <includes
          id="org.lamport.tla.toolbox.feature.branding"
          version="0.0.0"/>
 
