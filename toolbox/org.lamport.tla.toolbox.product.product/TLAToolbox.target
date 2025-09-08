@@ -2,8 +2,6 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.hamcrest" version="0.0.0"/>
-<unit id="org.apache.commons.io" version="0.0.0"/>
-<unit id="org.apache.commons.collections" version="0.0.0"/>
 <unit id="javax.activation" version="0.0.0"/>
 <unit id="javax.mail" version="0.0.0"/>
 <unit id="org.easymock" version="0.0.0"/>
@@ -11,6 +9,8 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.google.gson" version="0.0.0"/>
+<unit id="org.apache.commons.io" version="0.0.0"/>
+<unit id="org.apache.commons.collections" version="0.0.0"/>
 <unit id="org.apache.commons.lang3" version="0.0.0"/>
 <repository id="eclipse-orbit-newer" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532//repository/"/>
 </location>
@@ -28,13 +28,13 @@
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.pde.source.feature.group" version="0.0.0"/>
-<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.19/R-4.19-202103031800/"/>
+<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.20/R-4.20-202106111600/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
 <repository id="github-pdf4eclipse" location="http://lemmster.de/Pdf4Eclipse/"/>
 </location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="false" type="InstallableUnit">
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.lamport.openjdk.feature.feature.group" version="0.0.0"/>
 <repository id="github-jdk" location="http://lemmster.de/eclipse-jdk-bundles/"/>
 </location>
