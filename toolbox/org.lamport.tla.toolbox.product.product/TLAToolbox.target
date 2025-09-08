@@ -2,7 +2,6 @@
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.hamcrest" version="0.0.0"/>
-<unit id="com.jcraft.jsch" version="0.0.0"/>
 <unit id="org.apache.commons.io" version="0.0.0"/>
 <unit id="org.apache.commons.collections" version="0.0.0"/>
 <unit id="javax.activation" version="0.0.0"/>
