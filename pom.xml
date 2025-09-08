@@ -35,7 +35,6 @@
 		<module>tlatools/org.lamport.tlatools.consumer.distributed</module>
 
 		<!-- bundles -->
-		<module>toolbox/org.lamport.tla.toolbox.rss</module>
 		<module>toolbox/org.lamport.tla.toolbox</module>
 		<module>toolbox/org.lamport.tla.toolbox.doc</module>
 		<module>toolbox/org.lamport.tla.toolbox.editor.basic</module>

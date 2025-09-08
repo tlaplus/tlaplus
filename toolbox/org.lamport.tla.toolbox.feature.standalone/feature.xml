@@ -94,10 +94,6 @@
          id="com.abstratt.eclipsegraphviz.feature"
          version="0.0.0"/>
 
-   <includes
-         id="org.eclipse.recommenders.news.rcp.feature"
-         version="0.0.0"/>
-
    <plugin
          id="org.lamport.tla.toolbox.product.standalone"
          download-size="0"
@@ -274,20 +270,6 @@
          unpack="false"/>
 
    <plugin
-         id="com.google.guava"
-         download-size="0"
-         install-size="0"
-         version="15.0.0.v201403281430"
-         unpack="false"/>
-
-   <plugin
-         id="com.google.guava"
-         download-size="0"
-         install-size="0"
-         version="21.0.0.v20170206-1425"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.mylyn.commons.ui"
          download-size="0"
          install-size="0"
@@ -313,14 +295,6 @@
          download-size="0"
          install-size="0"
          version="1.1.500.v20200407-1355"
-         unpack="false"/>
-
-   <plugin
-         id="org.lamport.tla.toolbox.rss"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
          unpack="false"/>
 
    <plugin

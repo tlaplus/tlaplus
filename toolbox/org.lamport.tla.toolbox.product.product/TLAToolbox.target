@@ -11,6 +11,7 @@
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.google.gson" version="0.0.0"/>
+<unit id="org.apache.commons.lang3" version="0.0.0"/>
 <repository id="eclipse-orbit-newer" location="http://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532//repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
@@ -40,10 +41,6 @@
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
 <repository id="abstratt" location="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/master/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.recommenders.news.rcp.feature.feature.group" version="0.0.0"/>
-<repository id="eclipse-rcp" location="http://download.eclipse.org/releases/2018-09/201809191002"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.mylyn.commons.feature.group" version="0.0.0"/>
