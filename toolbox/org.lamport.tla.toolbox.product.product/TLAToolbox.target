@@ -35,10 +35,6 @@
 <repository id="github-pdf4eclipse" location="http://lemmster.de/Pdf4Eclipse/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.lamport.openjdk.feature.feature.group" version="0.0.0"/>
-<repository id="github-jdk" location="http://lemmster.de/eclipse-jdk-bundles/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0"/>
 <repository id="abstratt" location="jar:https://raw.githubusercontent.com/tlaplus/tlaplus/master/toolbox/org.lamport.tla.toolbox.product.product/cachedTargetPlatform/com.abstratt.eclipsegraphviz.repository-2.5.201812.zip!/"/>
 </location>
