@@ -106,6 +106,40 @@ jobs:
           -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn  \
           -fae -B verify --file pom.xml
 
+      ##
+      ## Sign Toolbox macOS zip file.
+      ##
+    - name: Set up Apple Certs
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_CERTS" > certs.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
+    - name: Set up Apple Key (dev)
+      if: matrix.operating-system == 'macos-latest'
+      run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
+      shell: bash
+      env:
+        APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
+    - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+           ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
+           openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
+           ## Create a fresh keychain "tla" and import certs and keys into it.
+           security create-keychain -p ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           security import certs.pem -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           security import dev.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
+           ## Listing the keychain once is apparently required for codesign to work.
+           security list-keychains -s tla
+           ## Not sure what this is for, but hey: https://stackoverflow.com/a/40039594
+           security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
+           ## Unzip, sign, and zip up the TLA Toolbox.
+           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
+           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
+           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
+           xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip"
+
   examples-tests:
     name: Examples Integration Tests
     runs-on: ubuntu-latest
