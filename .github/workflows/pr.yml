@@ -8,6 +8,8 @@ jobs:
   tlatools-build-and-test:
     name: TLA+ Tools Build & Test
     runs-on: ${{ matrix.operating-system }}
+    permissions:
+      checks: write # Required by mikepenz/action-junit-report@v4
     strategy:
       matrix:
         operating-system: [ubuntu-latest, macos-latest]
