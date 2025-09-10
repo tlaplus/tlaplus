@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><?pde version="3.8"?><target name="TLA+ Toolbox" sequenceNumber="86">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="TLA+ Toolbox" sequenceNumber="86">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.hamcrest" version="0.0.0"/>
@@ -43,6 +45,10 @@
 <unit id="org.eclipse.mylyn.commons.notifications.feature.group" version="0.0.0"/>
 <repository id="eclipse-mylyn" location="http://download.eclipse.org/mylyn/releases/3.24"/>
 </location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.justj.openjdk.hotspot.jre.full.feature.group" version="0.0.0"/>
+<repository location="https://download.eclipse.org/justj/jres/17/updates/release/latest"/>
+</location>
 </locations>
-<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
+<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17"/>
 </target>
