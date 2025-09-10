@@ -139,6 +139,12 @@ jobs:
            codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
            ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
            xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip"
+    - name: Upload Toolbox Artifacts (zip files)
+      uses: actions/upload-artifact@v4
+      if: matrix.operating-system == 'macos-latest' ## This avoids a name clash (TLAToolboxes) between matrix runners. The macOS runner also builds the Windows and Linux zip files. Unlike the Linux runner, it additionally codesigns the macOS zip.
+      with:
+        name: TLAToolboxes
+        path: toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip
 
   examples-tests:
     name: Examples Integration Tests
