@@ -309,6 +309,11 @@ jobs:
       shell: bash
       env:
         APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
+    - name: Install rsync dependencies with Homebrew
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+        brew update
+        brew install rsync ## install samba rsync to not use macos' built-in openrsync.  Latter is incompatible with rrsync (restricted rsync) that protects our Inria machine.
     - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
       if: matrix.operating-system == 'macos-latest'
       run: |
@@ -334,4 +339,5 @@ jobs:
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
            ## Upload p2 and apt repository to INRIA machine.
+           rsync --version
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} github@upload.tlapl.us:products/

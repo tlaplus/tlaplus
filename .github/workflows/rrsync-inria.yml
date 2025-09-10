@@ -1,0 +1,37 @@
+name: Test rrsync to Inria machine (part of main.yml and pr.yml)
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    runs-on: ${{ matrix.operating-system }}
+    strategy: 
+      matrix:
+        operating-system: [ubuntu-latest, macos-latest]
+
+    steps:
+
+      ##
+      ## Configure SSH privkey (INRIA upload below)
+      ##
+    - name: Set up SSH private key
+      run: 'mkdir -p ~/.ssh && echo "$INRIA_SSH_PRIVKEY" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa'
+      shell: bash
+      env:
+        INRIA_SSH_PRIVKEY: ${{ secrets.INRIA_SSH_PRIVKEY }}
+
+    - name: Install dependencies with Homebrew
+      if: matrix.operating-system == 'macos-latest'
+      run: |
+        brew update
+        brew install rsync ## install samba rsync to not use macos' built-in openrsync.  Latter is incompatible with rrsync (restricted rsync) that protects our Inria machine.
+
+    - name: Create dummy file
+      run: dd if=/dev/zero of=${{matrix.operating-system}}.bin bs=1M count=1
+
+    - name: Upload assets to INRIA
+      run: |
+            rsync --version
+            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{matrix.operating-system}}.bin github@upload.tlapl.us:scratch/
