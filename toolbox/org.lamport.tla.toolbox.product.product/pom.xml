@@ -93,6 +93,13 @@
               <rootFolders><macosx>TLA+ Toolbox.app</macosx></rootFolders>
             </product>
           </products>
+          <!-- Recent versions of Tycho default to generating .tar.gz files instead of .zip. Since
+               we have provided .zip archives for many years, we will continue using .zip to ensure
+               consistency for users and tooling that rely on it. -->
+          <formats>
+            <linux>zip</linux>
+            <macosx>zip</macosx>
+          </formats>
         </configuration>
       </plugin>
       
