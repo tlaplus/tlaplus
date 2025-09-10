@@ -30,7 +30,7 @@
 <unit id="org.eclipse.core.runtime.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.pde.source.feature.group" version="0.0.0"/>
-<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.27/R-4.27-202303020300/"/>
+<repository id="eclipse" location="http://download.eclipse.org/eclipse/updates/4.29/R-4.29-202309031000/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="de.vonloesch.pdf4eclipse.feature.feature.group" version="0.0.0"/>
