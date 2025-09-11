@@ -61,7 +61,7 @@ public class SingleThreadedSimulator extends Simulator {
 	}
 
 	@Override
-	protected SimulationWorkerResult simulate(final StateVec initialStates) throws InterruptedException {
+	protected int simulate(final StateVec initialStates) throws InterruptedException {
 		// Unless REV#reset is issued below, running simulation under the debugger will
 		// result in different error traces even under identical seeds. This would not
 		// necessarily be a bug but producing the same trace with and without the
@@ -109,21 +109,22 @@ public class SingleThreadedSimulator extends Simulator {
 								error.stateTrace);
 						error.errorCode = EC.GENERAL;
 					}
-					return result;
+					errorCode = error.errorCode;
+					return errorCode;
 				}
 
 				// Print the trace for all other errors.
 				printBehavior(error);
 
 				if (isNonContinuableError(error.errorCode)) {
-					return result;
+					return errorCode;
 				}
 
 				// If the 'continue' option is false, then we always terminate on the
 				// first error, shutting down all workers. Otherwise, we continue receiving
 				// results from the worker threads.
 				if (!TLCGlobals.continuation) {
-					return result;
+					return errorCode;
 				}
 
 				if (errorCode == EC.NO_ERROR) {
@@ -134,7 +135,7 @@ public class SingleThreadedSimulator extends Simulator {
 			// terminate. For example, the worker has generated the requested number of traces.
 			else {
 				this.printSummary();
-				return result;
+				return errorCode;
 			}
 		}
 	}
