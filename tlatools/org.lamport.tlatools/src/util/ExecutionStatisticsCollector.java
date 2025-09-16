@@ -44,6 +44,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class ExecutionStatisticsCollector {
 
@@ -99,22 +101,29 @@ public class ExecutionStatisticsCollector {
 		// statistics have been fully reported, i.e., until the URL connection has
 		// completed. This behavior only applies if execution statistics reporting is
 		// enabled.
-		collectAsync(parameters, !Boolean.getBoolean(ExecutionStatisticsCollector.class.getName() + ".waitForCompletion"));
+		collectAsync(parameters, Boolean.getBoolean(ExecutionStatisticsCollector.class.getName() + ".waitForCompletion"));
 	}
 
-	protected void collectAsync(final Map<String, String> parameters, final boolean dontWaitForCompletion) {
+	protected void collectAsync(final Map<String, String> parameters, final boolean waitForCompletion) {
 		// Do not block TLC startup but send this to the background immediately. If
 		// dontWaitForCompletion is true, the VM will terminate this thread regardless
 		// of its state if the VM decides to shutdown (e.g. because TLC is done).
-		final Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				collect0(parameters);
-			}
+		final CompletableFuture<Void> collector = CompletableFuture.runAsync(() -> {
+			collect0(parameters);
+		});
 
-		}, "TLC Execution Statistics Collector");
-		thread.setDaemon(dontWaitForCompletion);
-		thread.start();
+		if (waitForCompletion) {
+			// The JVM does not wait for non-daemon threads to finish before terminating
+			// when termination is triggered by System.exit. TLC calls System.exit in
+			// several places. Thus, we add a shutdown hook that waits for the thread to
+			// finish.
+			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+				try {
+					collector.get(10, TimeUnit.SECONDS);
+				} catch (Exception ignored) {
+				}
+			}, "TLC Execution Statistics Collector Shutdown Hook"));
+		}
 	}
 	
 	protected void collect0(final Map<String, String> parameters) {
