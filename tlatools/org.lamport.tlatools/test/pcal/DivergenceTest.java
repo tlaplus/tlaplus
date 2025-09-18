@@ -146,7 +146,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				"The PlusCal algorithm in module %s has changed since its last translation.",
 				filename));
 	}
 	
@@ -171,7 +171,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				"The PlusCal algorithm in module %s has changed since its last translation.",
 				filename));
 	}
 	
@@ -197,7 +197,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				"The PlusCal algorithm in module %s has changed since its last translation.",
 				filename));
 	}
 
@@ -242,7 +242,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The PlusCal algorithm in module %s has changed since its last translation.",
+				"The PlusCal algorithm in module %s has changed since its last translation.",
 				filename));
 	}
 
@@ -286,7 +286,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: The TLA+ translation in module %s has changed since its last translation.",
+				"The TLA+ translation in module %s has changed since its last translation.",
 				filename));
 	}
 
@@ -330,7 +330,7 @@ public class DivergenceTest extends PCalTest {
 		SANY.SANYmain(new String[] { absolutePath });
 		testPrintStream.assertSubstring("Semantic processing of module " + filename);
 		testPrintStream.assertSubstring(String.format(
-				"!! WARNING: Both the PlusCal algorithm and its TLA+ translation in module %s filename have changed since the last translation.",
+				"Both the PlusCal algorithm and its TLA+ translation in module %s have changed since the last translation.",
 				filename));
 	}
 	@Test
