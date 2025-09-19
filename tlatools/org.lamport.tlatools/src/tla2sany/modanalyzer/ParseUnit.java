@@ -303,33 +303,14 @@ public class ParseUnit {
             out.log(LogLevel.INFO, "Parsing module %s in file %s", nis.getModuleName(), absoluteResolvedPath);
         }
 
-        boolean parseSuccess; 
-        try 
-        {
-            // create parser object
-            parseTree = new tla2sany.parser.TLAplusParser(out, nis);
+        parseTree = new tla2sany.parser.TLAplusParser(out, nis.getSource().getText());
 
-            // Here is the one true REAL call to the parseTree.parse() for a file;
-            // The root node of the parse tree is left in parseTree.
-            parseSuccess = parseTree.parse();
+        // Here is the one true REAL call to the parseTree.parse() for a file;
+        // The root node of the parse tree is left in parseTree.
+        boolean parseSuccess = parseTree.parse();
 
-            // set the parse time stamp
-            parseStamp = System.currentTimeMillis();
-        } finally 
-        {
-            try
-            {
-                // SZ Aug 6, 2009: close the stream and release the OS resources
-                // this is Ok, since the repeated call of the parse method will
-                // return due to the fact, that the parse time stamp is newer 
-                // then the file time stamp
-                nis.close();
-            } catch (IOException e)
-            {
-                // eventually it is a good place to inform the user that the resources are
-                // not released 
-            }
-        }
+        // set the parse time stamp
+        parseStamp = System.currentTimeMillis();
         
         if (!parseSuccess)
         { // if parsing the contents of "nis" failed...
