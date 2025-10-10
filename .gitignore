@@ -8,6 +8,11 @@ test-bin/
 toolbox/*/target/
 tlatools/*/target
 *.jar
+# Ignore all .jar artifacts by default, but include jars in lib dirs
+!tlatools/**/lib/
+!tlatools/**/lib/**/*.jar
+!toolbox/**/lib/
+!toolbox/**/lib/**/*.jar
 toolbox/*/farsite/*.pdf
 examples/DieHard/*.toolbox
 org.lamport.tla.toolbox.uitest/farsite/DistributedSystemModule.toolbox/
