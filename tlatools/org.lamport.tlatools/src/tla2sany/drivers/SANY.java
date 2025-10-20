@@ -471,7 +471,7 @@ public class SANY {
 
     final SanyOutput out = new OutErrSanyOutput(
         ToolIO.out,
-        ToolIO.err,
+        Boolean.getBoolean(SANY.class.getName() + ".errors2stderr") ? ToolIO.err : ToolIO.out,
         LogLevel.INFO,
         LogLevel.ERROR
     );
