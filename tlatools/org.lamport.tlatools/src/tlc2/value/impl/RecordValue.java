@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
@@ -92,6 +93,11 @@ public class RecordValue extends Value implements FunctionValue {
 			this.values[i] = entries.get(i).getValue();
 		}
 	}
+
+  public RecordValue(final RecordValue existing, UniqueString name, Value v) {
+	  this(Stream.concat(Arrays.stream(existing.names), Stream.of(name)).toArray(UniqueString[]::new),
+				Stream.concat(Arrays.stream(existing.values), Stream.of(v)).toArray(Value[]::new), false);
+  }
 
   public RecordValue(final Location location) {
 		this.names = new UniqueString[5];
