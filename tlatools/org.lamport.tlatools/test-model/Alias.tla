@@ -51,7 +51,7 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           te |-> ENABLED Next,      \* Trace Expression
           TLCGetAction |-> TLCGet("action"),
           lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
-         ELSE 
+         ELSE IF TLCGet("spec").impliedtemporals # {} THEN
          [yy |-> y, \* x and y reordered.
           x |-> x, 
           a |-> x' - x, 
@@ -60,7 +60,14 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           te |-> ENABLED Next,      \* Trace Expression
           lvl |-> [ i \in {1,2} |-> TLCGet("level")],
           trc |-> Trace]
-         
+         ELSE
+         [yy |-> y, \* x and y reordered.
+          x |-> x, 
+          a |-> x' - x, 
+          b |-> x' = x,
+          anim |-> Animation(x, y), \* Animation
+          te |-> ENABLED Next,      \* Trace Expression
+          lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
 
 PostCondition ==
 	/\ TLCGet("config").mode = "bfs" => TLCSet(42, TLCGet("generated"))
@@ -258,8 +265,7 @@ PostCondition ==
                       anim |-> "e1: 1 e2: FALSE",
                       te |-> TRUE,
                       lvl |-> <<1, 1>>,
-                      yy |-> FALSE,
-                      trc |-> <<[x |-> 1, y |-> FALSE]>> ] >>,
+		                yy |-> FALSE ] >>,
                 [ name |-> "A",
                   location |->
                       [ beginLine |-> 15,
@@ -274,9 +280,7 @@ PostCondition ==
                       anim |-> "e1: 2 e2: TRUE",
                       te |-> TRUE,
                       lvl |-> <<2, 2>>,
-                      yy |-> TRUE,
-                      trc |->
-                          <<[x |-> 1, y |-> FALSE], [x |-> 2, y |-> TRUE]>> ] >> >>,
+		                yy |-> TRUE ] >> >>,
               << << 2,
                     [ x |-> 2,
                       a |-> 1,
@@ -284,8 +288,7 @@ PostCondition ==
                       anim |-> "e1: 2 e2: TRUE",
                       te |-> TRUE,
                       lvl |-> <<2, 2>>,
-                      yy |-> TRUE,
-                      trc |-> <<[x |-> 1, y |-> FALSE], [x |-> 2, y |-> TRUE]>> ] >>,
+		                yy |-> TRUE ] >>,
                 [ name |-> "A",
                   location |->
                       [ beginLine |-> 15,
@@ -300,11 +303,7 @@ PostCondition ==
                       anim |-> "e1: 3 e2: FALSE",
                       te |-> TRUE,
                       lvl |-> <<3, 3>>,
-                      yy |-> FALSE,
-                      trc |->
-                          << [x |-> 1, y |-> FALSE],
-                            [x |-> 2, y |-> TRUE],
-                            [x |-> 3, y |-> FALSE] >> ] >> >>,
+		                yy |-> FALSE ] >> >>,
               << << 3,
                     [ x |-> 3,
                       a |-> 1,
@@ -312,11 +311,7 @@ PostCondition ==
                       anim |-> "e1: 3 e2: FALSE",
                       te |-> TRUE,
                       lvl |-> <<3, 3>>,
-                      yy |-> FALSE,
-                      trc |->
-                          << [x |-> 1, y |-> FALSE],
-                            [x |-> 2, y |-> TRUE],
-                            [x |-> 3, y |-> FALSE] >> ] >>,
+		                yy |-> FALSE ] >>,
                 [ name |-> "A",
                   location |->
                       [ beginLine |-> 15,
@@ -324,7 +319,14 @@ PostCondition ==
                         endLine |-> 17,
                         endColumn |-> 13,
                         module |-> "Alias" ] ],
-                <<4, [x |-> 4, y |-> TRUE]>> >> },
+		           << 4,
+		              [ x |-> 4,
+		                a |-> 0,
+		                b |-> TRUE,
+		                anim |-> "e1: 4 e2: TRUE",
+		                te |-> TRUE,
+		                lvl |-> <<4, 4>>,
+		                yy |-> TRUE ] >> >> },
 	        state |->
 	            { << 1,
 	                [ x |-> 1,
@@ -333,8 +335,7 @@ PostCondition ==
 	                  anim |-> "e1: 1 e2: FALSE",
 	                  te |-> TRUE,
 	                  lvl |-> <<1, 1>>,
-	                  yy |-> FALSE,
-	                  trc |-> <<[x |-> 1, y |-> FALSE]>> ] >>,
+		             yy |-> FALSE ] >>,
 	              << 2,
 	                [ x |-> 2,
 	                  a |-> 1,
@@ -342,8 +343,7 @@ PostCondition ==
 	                  anim |-> "e1: 2 e2: TRUE",
 	                  te |-> TRUE,
 	                  lvl |-> <<2, 2>>,
-	                  yy |-> TRUE,
-	                  trc |-> <<[x |-> 1, y |-> FALSE], [x |-> 2, y |-> TRUE]>> ] >>,
+		             yy |-> TRUE ] >>,
 	              << 3,
 	                [ x |-> 3,
 	                  a |-> 1,
@@ -351,12 +351,15 @@ PostCondition ==
 	                  anim |-> "e1: 3 e2: FALSE",
 	                  te |-> TRUE,
 	                  lvl |-> <<3, 3>>,
-	                  yy |-> FALSE,
-	                  trc |->
-	                      << [x |-> 1, y |-> FALSE],
-	                          [x |-> 2, y |-> TRUE],
-	                          [x |-> 3, y |-> FALSE] >> ] >>,
-	              <<4, [x |-> 4, y |-> TRUE]>> } ]
+		             yy |-> FALSE ] >>,
+		        << 4,
+		           [ x |-> 4,
+		             a |-> 0,
+		             b |-> TRUE,
+		             anim |-> "e1: 4 e2: TRUE",
+		             te |-> TRUE,
+		             lvl |-> <<4, 4>>,
+		             yy |-> TRUE ] >> } ]
 	
 PostConditionLasso ==
   	/\ IF CounterExample.state = {} THEN TRUE ELSE CounterExample = 
@@ -423,7 +426,6 @@ PostConditionStuttering ==
 ---- CONFIG Alias ----
 SPECIFICATION FairSpec
 INVARIANT Inv
-PROPERTY Prop
 ALIAS Alias
 POSTCONDITION PostCondition
 ======================
