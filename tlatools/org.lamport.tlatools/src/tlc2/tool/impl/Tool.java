@@ -1614,8 +1614,9 @@ public abstract class Tool
 				return alias;
 			}
 		} catch (EvalException | TLCRuntimeException e) {
-			// Fall back to original state if eval fails.
-			return current;
+			// Compare evalAlias(TLCStateInfo current, TLCState successor, Context ctxt) below.
+			return new RecordValue(new RecordValue(current), UniqueString.of("_ALIASEvalError"),
+					new StringValue(e.getMessage())).toState();
 		}
 		
 		return current;
@@ -1662,28 +1663,26 @@ public abstract class Tool
 				return new AliasTLCStateInfo(alias, current);
 			}
 		} catch (EvalException | TLCRuntimeException e) {
-			// Fall back to original state if eval fails.
-			return current;
-			// TODO We have to somehow communicate this exception back to the user.
-			// Unfortunately, the alias cannot be validated by SpecProcess (unless pure
-			// constant expression who are too simple to be used in trace expressions).
-			// Throwing the exception would be possible, but pretty annoying if TLC fails
-			// to print an error trace because of a bogus alias after hours of model
-			// checking (this is the very reason why the code falls back to return the 
-			// original/current state).  Printing the exception to stdout/stderr here
-			// would mess with the Toolbox's parsing that reads stdout back in.  It would
-			// also look bad because we would print the error on every evaluation of the
-			// alias and it's conceivable that -in most cases- evaluation would fail for
-			// all evaluations.  This suggests that we have to defer reporting of evaluation
-			// and runtime exception until after the error-trace has been printed. If
-			// evaluation only failed for some invocations of evalAlias, the user will
-			// be able to figure out the ones that failed by looking at the trace.  This
-			// state should not be kept in Tool, because it doesn't know how to group
-			// sequences of evalAlias invocations.
-			// We could avoid keeping state entirely, if the exception was attached as an
-			// "auxiliary" variable to the TLCStateInfo and printed as part of the error
-			// trace.  The error trace would look strange, but it appears to be the best
-			// compromise, especially if only some of the evaluations fail.
+			// Attach the exception as an auxiliary variable to the TLCStateInfo, allowing
+			// it to be displayed as part of the error trace.
+			//
+			// Previously, there was no clean way to communicate alias evaluation exceptions
+			// back to the user. Throwing the exception directly was undesirable, as it could
+			// prevent TLC from printing an error trace after long model-checking runs. Printing
+			// the exception to stdout or stderr was also not an option, since it would interfere
+			// with the Toolbox’s parsing of output and clutter the console—especially when
+			// alias evaluation fails repeatedly.
+			//
+			// By attaching the exception to TLCStateInfo, we defer its reporting until after
+			// the error trace is generated. This lets users inspect which alias evaluations
+			// failed directly from the trace. The Tool itself does not need to maintain
+			// additional state or group failed evaluations. While the resulting trace may look
+			// somewhat unusual, this approach provides the best balance between clarity,
+			// usability, and robustness.
+			//
+			// see https://github.com/tlaplus/tlaplus/issues/543
+			return new AliasTLCStateInfo(new RecordValue((RecordValue) current.toRecordValue(),
+					UniqueString.of("_ALIASEvalError"), new StringValue(e.getMessage())).toState(), current);
 		}
 		
 		return current;
