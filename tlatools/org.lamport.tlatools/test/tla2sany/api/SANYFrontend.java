@@ -73,7 +73,7 @@ public class SANYFrontend implements Frontend {
     Resolver resolver
   ) throws TokenMgrError, ParseException {
     final ModuleSourceCode source = resolver.resolve(moduleName);
-    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), source.text);
+    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), source.getText());
     return new ModuleSyntaxTree(source, parser.CompilationUnit());
   }
 
