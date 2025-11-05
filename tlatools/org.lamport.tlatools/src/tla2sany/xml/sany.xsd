@@ -207,6 +207,9 @@
   </xs:simpleType>
  </xs:element>
 
+  <!-- Pre-comments -->
+  <xs:element name="pre-comments" type="xs:string"/>
+
 
   <!-- Instantiations and substitutions -->
   <!-- Operator substitution? -->
@@ -490,6 +493,7 @@
         <xs:group ref="node"/>
         <xs:element ref="uniquename"/>
         <xs:element ref="arity"/>
+        <xs:element minOccurs="0" ref="pre-comments"/>
         <xs:element name="body">
           <xs:complexType>
             <xs:group ref="ExprNode"/>

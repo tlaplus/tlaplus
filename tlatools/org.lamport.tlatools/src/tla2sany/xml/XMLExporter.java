@@ -109,7 +109,7 @@ public class XMLExporter {
   static void moduleToXML(String... args) throws XMLExportingException {
 
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
-    LinkedList pathsLs = new LinkedList();
+    LinkedList<String> pathsLs = new LinkedList<>();
 
     boolean offline_mode = false;
     boolean pretty_print = true;
