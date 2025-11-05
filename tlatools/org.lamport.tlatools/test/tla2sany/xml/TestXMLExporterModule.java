@@ -460,4 +460,175 @@ public class TestXMLExporterModule {
 		// Assert that all expected comment styles were found
 		Assert.assertTrue("Missing expected comment styles: " + expectedComments.keySet(), expectedComments.isEmpty());
 	}
+
+	@Test
+	public void testUncommentFlagWithTLACommentStyles() throws Exception {
+		// Run XMLExporter with -u flag on TLACommentStyles.tla module
+		String modulePath = BASE_PATH + "TLACommentStyles.tla";
+		int exitCode = XMLExporter.run("-u", modulePath);
+
+		// Verify successful execution
+		Assert.assertEquals("XMLExporter should exit with code 0", 0, exitCode);
+
+		// Get the XML output
+		String xmlOutput = this.outStream.toString();
+		String errOutput = this.errStream.toString();
+
+		// Verify no stderr output
+		Assert.assertTrue("No errors should be written to stderr", errOutput.trim().isEmpty());
+
+		// Verify XML output is not empty
+		Assert.assertFalse("XML output should not be empty", xmlOutput.trim().isEmpty());
+
+		// Parse the XML to verify it's well-formed
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(xmlOutput)));
+
+		// Validate against XSD schema
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+		Assert.assertNotNull("sany.xsd schema file should be found", schemaFile);
+		Schema schema = schemaFactory.newSchema(schemaFile);
+		Validator validator = schema.newValidator();
+		validator.validate(new DOMSource(doc));
+
+		// --- Verify pre-comments are processed with uncomment ---
+		Element root = doc.getDocumentElement();
+		NodeList preCommentsNodes = root.getElementsByTagName("pre-comments");
+
+		// There should be pre-comments in the TLACommentStyles module
+		Assert.assertEquals("TLACommentStyles module should have operators with pre-comments", 4,
+				preCommentsNodes.getLength());
+
+		// With -u flag, boxed comments should have their box formatting removed
+		Map<String, String> expectedUncommentedContent = new HashMap<>(Map.of(
+			    "CommentStyle1", 
+			        "Calculate the sum of projections of the elements in a set.\n" +
+			        "\n" +
+			        "Example:\n" +
+			        "        MapThenSumSet(\n" +
+			        "            LAMBDA e : e.n,\n" +
+			        "            {[n |-> 0], [n |-> 1], [n |-> 2]}\n" +
+			        "        ) = 3",
+			    "CommentStyle2", 
+			        "COMMENT STYLE 2: Indented Boxed Comment\n" +
+			        "Used for nested or secondary explanations.\n" +
+			        "Note the indentation at the start.",
+			    "CommentStyle4",
+			        "Declaring instances local causes definition overrides to be hidden. In the\n" +
+			        "case of Toolbox, this causes the definition override of `_TETrace` to be\n" +
+			        "invisible.  In turn, TLC will then try to evaluate the TLA+ definition of\n" +
+			        "\n" +
+			        "`_TETrace` as defined in Tooblox.tla:\n" +
+			        "  Attempted to enumerate S \\ T when S:\n" +
+			        "  Nat\n" +
+			        "  is not enumerable.\n" +
+			        "\n" +
+			        "See: https://github.com/tlaplus/CommunityModules/issues/37"
+		));
+
+		for (int i = 0; i < preCommentsNodes.getLength(); i++) {
+			Element preComment = (Element) preCommentsNodes.item(i);
+			String commentText = preComment.getTextContent();
+
+			Element parent = (Element) preComment.getParentNode();
+			NodeList uniqueNames = parent.getElementsByTagName("uniquename");
+			if (uniqueNames.getLength() == 0)
+				continue;
+
+			String opName = uniqueNames.item(0).getTextContent().trim();
+
+			String expected = expectedUncommentedContent.get(opName);
+			if (expected != null) {
+				Assert.assertTrue("Comment for " + opName + " should be uncommented and contain expected content",
+						commentText.contains(expected));
+				expectedUncommentedContent.remove(opName);
+			}
+		}
+
+		// Assert that all expected uncommented content was found
+		Assert.assertTrue("Missing expected uncommented content for: " + expectedUncommentedContent.keySet(),
+				expectedUncommentedContent.isEmpty());
+	}
+
+	@Test
+	public void testUncommentFlagWithRelations() throws Exception {
+		// Run XMLExporter with -u flag on Relation.tla module
+		String modulePath = BASE_PATH + "Echo" + File.separator + "Relation.tla";
+		int exitCode = XMLExporter.run("-u", modulePath);
+
+		// Verify successful execution
+		Assert.assertEquals("XMLExporter should exit with code 0", 0, exitCode);
+
+		// Get the XML output
+		String xmlOutput = this.outStream.toString();
+		String errOutput = this.errStream.toString();
+
+		// Verify no stderr output
+		Assert.assertTrue("No errors should be written to stderr", errOutput.trim().isEmpty());
+
+		// Verify XML output is not empty
+		Assert.assertFalse("XML output should not be empty", xmlOutput.trim().isEmpty());
+
+		// Parse the XML to verify it's well-formed
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(xmlOutput)));
+
+		// Validate against XSD schema
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+		Assert.assertNotNull("sany.xsd schema file should be found", schemaFile);
+		Schema schema = schemaFactory.newSchema(schemaFile);
+		Validator validator = schema.newValidator();
+		validator.validate(new DOMSource(doc));
+
+		// --- Verify pre-comments are processed with uncomment ---
+		Element root = doc.getDocumentElement();
+		NodeList preCommentsNodes = root.getElementsByTagName("pre-comments");
+
+		// There should be at least some pre-comments in the Relation module
+		Assert.assertTrue("Relation module should have operators with pre-comments", preCommentsNodes.getLength() > 0);
+
+		// With -u flag, the boxed comments should have their formatting removed
+		// The actual comment content should still be present but without the box characters
+		Map<String, String> expectedUncommentedContent = new HashMap<>(Map.of(
+			"IsReflexive", "Is the relation R reflexive over S?",
+			"IsIrreflexive", "Is the relation R irreflexive over set S?",
+			"IsSymmetric", "Is the relation R symmetric over set S?",
+			"IsAsymmetric", "Is the relation R asymmetric over set S?",
+			"IsTransitive", "Is the relation R transitive over set S?",
+			"TransitiveClosure", "Compute the transitive closure of relation R over set S",
+			"ReflexiveTransitiveClosure", "Compute the reflexive transitive closure of relation R over set S",
+			"IsConnected", "Is the relation R connected over set S"
+		));
+
+		for (int i = 0; i < preCommentsNodes.getLength(); i++) {
+			Element preComment = (Element) preCommentsNodes.item(i);
+			String commentText = preComment.getTextContent();
+
+			// Pre-comments should not be empty
+			Assert.assertFalse("Pre-comment should not be empty", commentText.trim().isEmpty());
+
+			Element parent = (Element) preComment.getParentNode();
+			NodeList uniqueNames = parent.getElementsByTagName("uniquename");
+			if (uniqueNames.getLength() == 0)
+				continue;
+
+			String opName = uniqueNames.item(0).getTextContent().trim();
+
+			String expected = expectedUncommentedContent.get(opName);
+			if (expected != null && commentText.contains(expected)) {
+				// Found this operator's uncommented content, remove it from the map
+				expectedUncommentedContent.remove(opName);
+			}
+		}
+
+		// Assert that all expected uncommented content was found
+		Assert.assertTrue("Missing expected uncommented content for: " + expectedUncommentedContent.keySet(),
+				expectedUncommentedContent.isEmpty());
+	}
 }

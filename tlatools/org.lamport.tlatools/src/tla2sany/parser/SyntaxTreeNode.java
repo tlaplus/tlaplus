@@ -637,6 +637,169 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     return res ;
   }
   
+  /**
+   * Removes the box formatting from a boxed TLA+ comment.
+   * <p>
+   * A boxed comment has the following structure:
+   * <pre>
+   * (**************************************************************************)
+   * (* Some text here                                                         *)
+   * (* More text                                                              *)
+   * (**************************************************************************)
+   * </pre>
+   * This method extracts the content between the box boundaries, removing the
+   * (* and *) markers from each line and trimming trailing whitespace.
+   * 
+   * @param str the string potentially containing a boxed comment
+   * @return the unboxed content if the input is a boxed comment, otherwise returns
+   *         the input string unchanged
+   */
+  public static String unboxComment(String str) {
+		if (str == null || str.isEmpty()) {
+			return str;
+		}
+
+		// Check if this is a boxed comment by looking for (** and **)
+		int startOffset = str.indexOf("(**");
+		int endOffset = str.lastIndexOf("**)");
+
+		// Not a boxed comment - return as is
+		if (startOffset < 0 || endOffset < 0 || endOffset <= startOffset) {
+			return str;
+		}
+
+		// Split into lines (handle both Unix and Windows line endings)
+		String[] lines = str.split("\\r?\\n");
+
+		// Find which lines contain the box start and end by searching for the markers
+		int beginLine = -1;
+		int endLine = -1;
+
+		for (int i = 0; i < lines.length; i++) {
+			if (beginLine < 0 && lines[i].contains("(**")) {
+				beginLine = i;
+			}
+			// Continue searching to find the LAST occurrence of **)
+			if (lines[i].contains("**)")) {
+				endLine = i;
+			}
+		}
+
+		// If box is on a single line, it's not a proper boxed comment
+		if (beginLine < 0 || endLine < 0 || beginLine >= endLine) {
+			return str;
+		}
+
+		// Build the unboxed result
+		StringBuilder result = new StringBuilder();
+
+		// Process each line between the box boundaries (exclusive)
+		for (int i = beginLine + 1; i < endLine; i++) {
+			String currentLine = lines[i];
+			int beginTokenIndex = currentLine.indexOf("(*");
+			int endTokenIndex = currentLine.indexOf("*)");
+
+			if (beginTokenIndex >= 0 && endTokenIndex > beginTokenIndex) {
+				// Extract content between (* and *)
+				// Skip 3 characters after (* (the space and two more chars)
+				int contentStart = beginTokenIndex + 3;
+				if (contentStart <= endTokenIndex) {
+					String content = currentLine.substring(contentStart, endTokenIndex);
+					// Trim trailing whitespace
+					while (content.length() > 0 && Character.isWhitespace(content.charAt(content.length() - 1))) {
+						content = content.substring(0, content.length() - 1);
+					}
+					result.append(content);
+				}
+			} else {
+				// No proper tokens, keep the line as is
+				result.append(currentLine);
+			}
+
+			if (i < endLine - 1) {
+				result.append("\n");
+			}
+		}
+
+		return result.toString();
+	}
+
+	/**
+	 * Removes backslash-star (\*) prefixes from TLA+ comment lines.
+	 * <p>
+	 * TLA+ comments often use a \* prefix for formatting multi-line comments:
+	 * <pre>
+	 * \* This is a comment line
+	 * \* This is another comment line
+	 * \* And one more
+	 * </pre>
+	 * This method removes the \* prefix (and any following space) from lines
+	 * that start with it. Lines without the \* prefix are kept as-is.
+	 * <p>
+	 * The method only processes the input if at least half of the lines start
+	 * with \* (after trimming whitespace), otherwise it returns the input unchanged.
+	 * 
+	 * @param str the string potentially containing \* prefixed comment lines
+	 * @return the content with \* prefixes removed if the input appears to be a
+	 *         \* comment block, otherwise returns the input string unchanged
+	 */
+	public static String unboxBackslashStarComment(String str) {
+		if (str == null || str.isEmpty()) {
+			return str;
+		}
+
+		// Split into lines (handle both Unix and Windows line endings)
+		String[] lines = str.split("\\r?\\n");
+
+		// Check if this looks like a \* style comment
+		// At least some lines should start with \* (possibly after whitespace)
+		int backslashStarLines = 0;
+		for (String line : lines) {
+			String trimmed = line.trim();
+			if (trimmed.startsWith("\\*")) {
+				backslashStarLines++;
+			}
+		}
+
+		// If less than half the lines have \*, it's probably not a \* comment block
+		if (backslashStarLines < lines.length / 2) {
+			return str;
+		}
+
+		// Process each line to remove the \* prefix
+		StringBuilder result = new StringBuilder();
+		for (int i = 0; i < lines.length; i++) {
+			String line = lines[i];
+			String trimmed = line.trim();
+
+			if (trimmed.startsWith("\\*")) {
+				// Remove the \* prefix
+				// Find the position of \* in the original line
+				int backslashPos = line.indexOf("\\*");
+				if (backslashPos >= 0) {
+					// Skip past \* and any following space
+					int contentStart = backslashPos + 2; // Skip \*
+					if (contentStart < line.length() && line.charAt(contentStart) == ' ') {
+						contentStart++; // Skip the space after \*
+					}
+					if (contentStart < line.length()) {
+						result.append(line.substring(contentStart));
+					}
+					// else: line is just \* with nothing after it, leave it as empty line
+				}
+			} else {
+				// Keep non-\* lines as-is
+				result.append(line);
+			}
+
+			if (i < lines.length - 1) {
+				result.append("\n");
+			}
+		}
+
+		return result.toString();
+	}
+  
   public String toString() {
 	  return getHumanReadableImage();
   }

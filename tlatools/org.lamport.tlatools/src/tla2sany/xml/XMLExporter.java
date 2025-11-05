@@ -28,8 +28,11 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import tla2sany.drivers.FrontEndException;
@@ -38,6 +41,7 @@ import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
 import tla2sany.output.SimpleSanyOutput;
+import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefOrDeclNode;
@@ -64,6 +68,9 @@ public class XMLExporter {
         "-t", "Terse; format XML output without tabs or newlines.", true));
 	args.add(new UsageGenerator.Argument("-r",
 			"Restrict mode; include only declarations and definitions of the specified module, excluding extended or instantiated modules.",
+			true));
+	args.add(new UsageGenerator.Argument("-u",
+			"Uncomment; process boxed comments and single-line comments (\\*) in pre-comments to extract their content.",
 			true));
     args.add(new UsageGenerator.Argument(
         "-I", "Include; use given directory path to resolve module dependencies.", true));
@@ -114,6 +121,7 @@ public class XMLExporter {
     boolean offline_mode = false;
     boolean pretty_print = true;
     boolean restricted = false;
+    boolean uncomment = false;
     int lastarg = -1; // lastarg will be incremented, initialize at -1
     for (int i = 0; i < args.length - 1; i++) {
       if ("-o".equals(args[i])) {
@@ -124,6 +132,9 @@ public class XMLExporter {
         lastarg = i;
       } else if ("-r".equals(args[i])) {
           restricted = true;
+          lastarg = i;
+      } else if ("-u".equals(args[i])) {
+          uncomment = true;
           lastarg = i;
       } else if ("-I".equals(args[i])) {
         i++;
@@ -222,6 +233,28 @@ public class XMLExporter {
 
       //Insert name of root module
       insertRootName(doc, rootElement, spec);
+      
+      if (uncomment) {
+			// Instead of traversing all XML nodes, it would be more efficient to uncomment
+			// pre-comments directly within SANY's OpDefNode#getSymbolElement during the AST
+			// traversal that produces the XML. Moreover, since SemanticNode#getPreComments
+			// already returns an array of strings, the subsequent string-splitting
+			// operations are unnecessary. Unfortunately, I don't have time to refactor
+			// XMLExportable#export to accept a (generic) visitor capable of mapping,
+			// mutating, or transforming AST elements prior to their conversion into XML
+			// nodes (see https://github.com/tlaplus/tlaplus/issues/1236)
+    	  NodeList nodes = doc.getElementsByTagName("pre-comments");
+          for (int i = 0; i < nodes.getLength(); i++) {
+              NodeList children = ((Element) nodes.item(i)).getChildNodes();
+              for (int j = 0; j < children.getLength(); j++) {
+                  Node child = children.item(j);
+                  if (child.getNodeType() == Node.CDATA_SECTION_NODE) {
+						((CDATASection) child).setData(SyntaxTreeNode.unboxBackslashStarComment(
+								SyntaxTreeNode.unboxComment(((CDATASection) child).getData())));
+	              }
+              }
+          }
+      }
 
       //Create XML file
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
