@@ -4,7 +4,7 @@ package tla2sany.parser;
 import tla2sany.output.LogLevel;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;
@@ -32,7 +32,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     ***********************************************************************/
     String[]deps = new String[ dependencyList.size() ];
     for (int lvi =0; lvi < deps.length; lvi++)
-      deps[lvi] = dependencyList.elementAt(lvi).toString();
+      deps[lvi] = dependencyList.get(lvi).toString();
     return deps;
   }
   public TreeNode rootNode() { return ParseTree; }
@@ -45,7 +45,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
     * The root node.                                                       *
     ***********************************************************************/
 
-  public final Vector<UniqueString> dependencyList = new Vector<UniqueString>(20);
+  public final ArrayList<UniqueString> dependencyList = new ArrayList<UniqueString>(20);
 
   private UniqueString mn = null;
      /**********************************************************************
@@ -652,7 +652,7 @@ Operator lastOp;
 
   private final void addDependency( UniqueString s ) {
     if (!internals.contains(s)) {
-      dependencyList.addElement(s);
+      dependencyList.add(s);
     }
   }
 

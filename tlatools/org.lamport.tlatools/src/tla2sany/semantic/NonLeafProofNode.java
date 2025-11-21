@@ -11,7 +11,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tla2sany.xml.SymbolContext;
 
 /***************************************************************************
@@ -209,11 +209,11 @@ public class NonLeafProofNode extends ProofNode {
     * The following code for printing the context field copied without     *
     * understanding from ModuleNode.java.                                  *
     ***********************************************************************/
-    final Vector<String> contextEntries = context.getContextEntryStringVector(depth-1,false, errors);
+    final ArrayList<String> contextEntries = context.getContextEntryStringVector(depth-1,false, errors);
     if (contextEntries != null) {
       for (int i = 0; i < contextEntries.size(); i++) {
-        if (contextEntries.elementAt(i) != null) {
-          ret += Strings.indent(2, contextEntries.elementAt(i));
+        if (contextEntries.get(i) != null) {
+          ret += Strings.indent(2, contextEntries.get(i));
          }
         else { ret += "*** null ***"; } ;
          }

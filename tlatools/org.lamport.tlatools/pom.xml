@@ -219,6 +219,80 @@
 		    <artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
 		    <version>0.21.1</version>
 		</dependency>
+		
+		<!-- Dependencies migrated from lib/ folder -->
+		<dependency>
+		    <groupId>junit</groupId>
+		    <artifactId>junit</artifactId>
+		    <version>4.12</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.easymock</groupId>
+		    <artifactId>easymock</artifactId>
+		    <version>3.3.1</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>cglib</groupId>
+		    <artifactId>cglib-nodep</artifactId>
+		    <version>3.1</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.objenesis</groupId>
+		    <artifactId>objenesis</artifactId>
+		    <version>2.1</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.mail</groupId>
+		    <artifactId>mailapi</artifactId>
+		    <version>1.6.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.mail</groupId>
+		    <artifactId>smtp</artifactId>
+		    <version>1.6.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.activation</groupId>
+		    <artifactId>javax.activation-api</artifactId>
+		    <version>1.2.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.eclipse.jgit</groupId>
+		    <artifactId>org.eclipse.jgit</artifactId>
+		    <version>2.3.1.201302201838-r</version>
+		</dependency>
+		<dependency>
+		     <groupId>net.java.dev.javacc</groupId>
+		     <artifactId>javacc</artifactId>
+		     <version>4.0</version>
+		</dependency>
+
+		<!-- System Scope Dependencies (Local JARs not in Central) -->
+		<dependency>
+		    <groupId>tlatools</groupId>
+		    <artifactId>CommunityModules</artifactId>
+		    <version>202412190202</version>
+		    <scope>system</scope>
+		    <systemPath>${project.basedir}/lib/CommunityModules.jar</systemPath>
+		</dependency>
+		<dependency>
+		    <groupId>gov.nasa.jpf</groupId>
+		    <artifactId>jpf</artifactId>
+		    <version>1.0</version>
+		    <scope>system</scope>
+		    <systemPath>${project.basedir}/lib/jpf.jar</systemPath>
+		</dependency>
+		<dependency>
+		    <groupId>gov.nasa.jpf</groupId>
+		    <artifactId>jpf-classes</artifactId>
+		    <version>1.0</version>
+		    <scope>system</scope>
+		    <systemPath>${project.basedir}/lib/jpf-classes.jar</systemPath>
+		</dependency>
       </dependencies>
 
       <!-- August 2014 - TL
