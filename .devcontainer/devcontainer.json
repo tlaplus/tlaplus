@@ -1,0 +1,24 @@
+{
+	"name": "Java",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/java:1": {
+			"version": "17",
+			"installMaven": "true",
+			"installGradle": "false"
+		},
+        "ghcr.io/devcontainers/features/git:1": {}
+	},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "vscjava.vscode-maven"
+            ]
+        }
+    },
+    "postCreateCommand": "ant -version && mvn -version"
+}
