@@ -5,6 +5,16 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 
+/**
+ * Legacy wrapper around {@link ArrayList} to preserve historical semantics:
+ * <ul>
+ *   <li>{@link #contains(Object)} uses reference equality (==), not {@link Object#equals(Object)}.</li>
+ *   <li>{@link #insertElementAt(Object, int)} rejects {@code index == size()} (cannot append via insert).</li>
+ *   <li>{@link #elements()} returns a snapshot Enumeration taken at call time.</li>
+ * </ul>
+ * These differences make a drop-in replacement with {@link ArrayList} unsafe until all call sites
+ * are audited for identity-based membership checks.
+ */
 public class Vector<E> extends ArrayList<E> {
   private static final long serialVersionUID = 5334890925756142170L;
 
