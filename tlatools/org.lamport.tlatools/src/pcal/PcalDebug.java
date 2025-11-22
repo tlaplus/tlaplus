@@ -1,5 +1,6 @@
 package pcal;
 
+import java.util.List;
 import java.util.Vector;
 
 import pcal.exception.UnrecoverableException;
@@ -211,7 +212,7 @@ public class PcalDebug
         ;
     };
 
-    public static void printVector(Vector vec, String name)
+    public static void printVector(List vec, String name)
     /*********************************************************************
     * This method prints to standard output the contents of the vector   *
     * argument, where name is the name of the vector.                    *
@@ -226,12 +227,12 @@ public class PcalDebug
         int i = 0;
         while (i < vec.size())
         {
-            if (vec.elementAt(i) == null)
+            if (vec.get(i) == null)
             {
                 ToolIO.out.println(name + "[" + i + "] = null");
             } else
             {
-                ToolIO.out.println(name + "[" + i + "] = " + vec.elementAt(i).toString());
+                ToolIO.out.println(name + "[" + i + "] = " + vec.get(i).toString());
             }
             i = i + 1;
         }
@@ -243,7 +244,7 @@ public class PcalDebug
         ;
     };
 
-    public static void print2DVector(Vector vec, String name)
+    public static void print2DVector(List vec, String name)
     /*********************************************************************
     * This method prints to standard output the contents of its vector   *
     * argument, which is a vector of vectors, where name is the name of  *
@@ -259,12 +260,12 @@ public class PcalDebug
         int i = 0;
         while (i < vec.size())
         {
-            if (vec.elementAt(i) == null)
+            if (vec.get(i) == null)
             {
                 ToolIO.out.println(name + "[" + i + "] = null");
             } else
             {
-                printVector((Vector) vec.elementAt(i), name + "[" + i + "]");
+                printVector((List) vec.get(i), name + "[" + i + "]");
             }
             ;
             i = i + 1;

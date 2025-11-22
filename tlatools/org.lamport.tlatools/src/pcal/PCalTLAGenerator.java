@@ -1,5 +1,7 @@
 package pcal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import pcal.exception.PcalFixIDException;
@@ -64,13 +66,13 @@ public class PCalTLAGenerator
      * Note that this requires RemoveNameConflicts to be called first   *
      * because of the grotty use of the class variable st.              *
      ********************************************************************/
-    public Vector<String> translate() throws RemoveNameConflictsException
+    public List<String> translate() throws RemoveNameConflictsException
     {
-        Vector<String> result = new Vector<String>();
+        List<String> result = new ArrayList<String>();
         AST xast = null;  // Set to the exploded AST
 
         for (int i = 0; i < st.disambiguateReport.size(); i++)
-            result.addElement((String) st.disambiguateReport.elementAt(i));
+            result.add((String) st.disambiguateReport.get(i));
         // System.out.println("Before: " + ast.toString());
         // System.out.println("After renaming: " + ast.toString());
         try

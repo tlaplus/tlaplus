@@ -3,7 +3,9 @@
 package pcal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -92,13 +94,13 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mapVec
    * @return
    */
-  public void  makeMapping(Vector<Vector<MappingObject>> mapVec) {
+  public void  makeMapping(ArrayList<ArrayList<MappingObject>> mapVec) {
      this.mapping = new MappingObject[mapVec.size()][] ;
       for (int i = 0 ; i < this.mapping.length; i++) {
-          Vector<MappingObject> line = mapVec.elementAt(i);
+          List<MappingObject> line = mapVec.get(i);
           this.mapping[i] = new MappingObject[line.size()];
           for (int j = 0; j < line.size(); j++) {
-              this.mapping[i][j] = line.elementAt(j);
+              this.mapping[i][j] = line.get(j);
           }
       }
       return ;
@@ -891,9 +893,9 @@ public class TLAtoPCalMapping implements Serializable {
    * @param mappingVec
    * @return
    */
-  public static Vector<Vector<MappingObject>> RemoveRedundantParens(Vector<Vector<MappingObject>> mappingVec) {
-      Vector<Vector<MappingObject>> out = new Vector<Vector<MappingObject>>(); // Vector of Vectors of MappingObjects
-      Vector<PCalLocation> unmatchedLeft = new Vector<PCalLocation>();  
+  public static ArrayList<ArrayList<MappingObject>> RemoveRedundantParens(ArrayList<ArrayList<MappingObject>> mappingVec) {
+      ArrayList<ArrayList<MappingObject>> out = new ArrayList<ArrayList<MappingObject>>(); // Vector of Vectors of MappingObjects
+      List<PCalLocation> unmatchedLeft = new ArrayList<PCalLocation>();  
          // Vector of PCalLocations in out of unmatched LeftParen objects
       PCalLocation lastMatchedLeft = null;
         // position in out of last LeftParen object that was matched by
@@ -901,12 +903,12 @@ public class TLAtoPCalMapping implements Serializable {
       PCalLocation lastAddedRight = null;
       int i = 0 ;
       while (i < mappingVec.size()) {
-          Vector<MappingObject> inLine = mappingVec.elementAt(i);
-          Vector<MappingObject> outLine = new Vector<MappingObject>();
-          out.addElement(outLine);
+          List<MappingObject> inLine = mappingVec.get(i);
+          ArrayList<MappingObject> outLine = new ArrayList<MappingObject>();
+          out.add(outLine);
           int j = 0 ;
           while (j < inLine.size()) {
-              MappingObject inObj = inLine.elementAt(j); 
+              MappingObject inObj = inLine.get(j); 
               if (inObj.getType() == MappingObject.LEFT_PAREN) {
                 /*
                  * Bug in translating algorithm.  The following statement was
@@ -916,30 +918,30 @@ public class TLAtoPCalMapping implements Serializable {
                  *   
                  * The algorithm clearly indicates it should have been.
                  */
-                  unmatchedLeft.addElement(new PCalLocation(i, outLine.size()));
+                  unmatchedLeft.add(new PCalLocation(i, outLine.size()));
               }
               else if (inObj.getType() == MappingObject.RIGHT_PAREN) {
                   PCalLocation lastUnmatchedLeft = null ;
                   if (unmatchedLeft.size() != 0) {
                       lastUnmatchedLeft = 
-                        unmatchedLeft.elementAt(unmatchedLeft.size()-1);
+                        unmatchedLeft.get(unmatchedLeft.size()-1);
                   }
                   if (   IsNextIn(lastAddedRight, 
                                   new PCalLocation(i, j),
                                   mappingVec)
                       && IsNextIn(lastUnmatchedLeft, lastMatchedLeft,  out)    
                       ) {
-                      (out.elementAt(lastMatchedLeft.getLine()))
+                      (out.get(lastMatchedLeft.getLine()))
                           .remove(lastMatchedLeft.getColumn());
                       /*
                        * Set lastLine to the last non-empty line of out, then
                        * delete its last element.
                        */
-                      Vector<MappingObject> lastLine = outLine;
+                      List<MappingObject> lastLine = outLine;
                       int lastLineNum = out.size()-1;
                       while (lastLine.size() == 0) {
                           lastLineNum--;
-                          lastLine = out.elementAt(lastLineNum);
+                          lastLine = out.get(lastLineNum);
                       }
                       lastLine.remove(lastLine.size()-1);
                   }
@@ -948,7 +950,7 @@ public class TLAtoPCalMapping implements Serializable {
                   lastAddedRight = new PCalLocation(i, j);
               }
               
-              outLine.addElement(inObj);
+              outLine.add(inObj);
               j++;
           }
           
@@ -968,14 +970,14 @@ public class TLAtoPCalMapping implements Serializable {
    * @param vec
    * @return
    */
-  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, Vector<Vector<MappingObject>> vec) {
+  private static boolean IsNextIn(PCalLocation locA, PCalLocation locB, ArrayList<ArrayList<MappingObject>> vec) {
       return     (locA != null)
               && (locB != null)
               && (   (   (locA.getLine() == locB.getLine())
                       && (locA.getColumn()+1 == locB.getColumn())
                      )
                   || (   (locA.getLine() == locB.getLine()-1)
-                      && (locA.getColumn() == vec.elementAt(locA.getLine()).size())
+                      && (locA.getColumn() == vec.get(locA.getLine()).size())
                       && (locB.getColumn() == 0)
                      )
                  );

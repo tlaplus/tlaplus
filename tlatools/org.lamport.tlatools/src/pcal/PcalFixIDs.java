@@ -18,7 +18,8 @@
 
 package pcal;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import pcal.exception.PcalFixIDException;
 import pcal.exception.TLAExprException;
@@ -90,28 +91,28 @@ public class PcalFixIDs {
 
     private static void FixUniprocess (AST.Uniprocess ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
-            FixVarDecl((AST.VarDecl) ast.decls.elementAt(i), "");
+            FixVarDecl((AST.VarDecl) ast.decls.get(i), "");
         for (int i = 0; i < ast.prcds.size(); i++)
-            FixProcedure((AST.Procedure) ast.prcds.elementAt(i), "");
+            FixProcedure((AST.Procedure) ast.prcds.get(i), "");
         for (int i =0; i < ast.body.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.body.elementAt(i), "");
+            FixLabeledStmt((AST.LabeledStmt) ast.body.get(i), "");
     }
         
     private static void FixMultiprocess (AST.Multiprocess ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
-            FixVarDecl((AST.VarDecl) ast.decls.elementAt(i), "");
+            FixVarDecl((AST.VarDecl) ast.decls.get(i), "");
         
         // procedureNames and proceduresCalled represents the mapping
         // from procedure Names to the set of names of procedures that
         // they call.
-        Vector  procedureNames = new Vector();   // Vector of Strings
-        Vector  proceduresCalled = new Vector(); // Vector of Vectors of Strings
+        ArrayList<String>  procedureNames = new ArrayList<String>();   // Vector of Strings
+        ArrayList<List<String>>  proceduresCalled = new ArrayList<List<String>>(); // Vector of Vectors of Strings
         for (int i = 0; i < ast.prcds.size(); i++) {
-            AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
+            AST.Procedure prcd = (AST.Procedure) ast.prcds.get(i);
             FixProcedure(prcd, "");
 // System.out.println("Start\n" + prcd.toString());
-            procedureNames.addElement(prcd.name);
-            proceduresCalled.addElement(prcd.proceduresCalled);
+            procedureNames.add(prcd.name);
+            proceduresCalled.add(prcd.proceduresCalled);
         }
         // We now use the Floyd-Warshall algorithm to compute the transitive
         //  closure of the procedures' call graph, as represented by
@@ -138,8 +139,8 @@ public class PcalFixIDs {
                 // path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(j)));
                 
                 // following added 2 Apr 2013
-                String nm = (String) procedureNames.elementAt(j);
-                path[i][j] = (-1 != nameToNum(nm, (Vector) proceduresCalled.elementAt(i)));
+                String nm = (String) procedureNames.get(j);
+                path[i][j] = (-1 != nameToNum(nm, proceduresCalled.get(i)));
             }
         }
         
@@ -156,11 +157,11 @@ public class PcalFixIDs {
         // set of procedures called directly or indirectly.  This is
         // unnecessary, and should be commented out.
         for (int i = 0; i < ast.prcds.size(); i++) {
-            AST.Procedure prcd = (AST.Procedure) ast.prcds.elementAt(i);
-            Vector pCalled = new Vector();
+            AST.Procedure prcd = (AST.Procedure) ast.prcds.get(i);
+            List<String> pCalled = new ArrayList<String>();
             for (int j = 0; j < n; j++) {
                 if (path[i][j]) {
-                    pCalled.addElement(procedureNames.elementAt(j));
+                    pCalled.add(procedureNames.get(j));
                 }
             }
             prcd.proceduresCalled = pCalled;
@@ -168,16 +169,16 @@ public class PcalFixIDs {
         }
         
         for (int i = 0; i < ast.procs.size(); i++) {
-            AST.Process proc = (AST.Process) ast.procs.elementAt(i);
+            AST.Process proc = (AST.Process) ast.procs.get(i);
             FixProcess(proc, "");
             
             // We now fix proc.proceduresCalled by, for each procedure p in
             // it, we add all the procedures that p calls.
-            Vector pCalled = proc.proceduresCalled;
+            List<String> pCalled = proc.proceduresCalled;
             for (int j = 0; j < pCalled.size(); j++) {
                 // Set idx to the value such that pCalled.elementAt(j)
                 // is the name of the idx-th element in procedureNames.
-                String pName = (String) pCalled.elementAt(j);
+                String pName = (String) pCalled.get(j);
                 int pNum = nameToNum(pName, procedureNames);
                 if (pNum == -1) {
                 	// For some reason, this originally called PcalDebug.ReportBug.
@@ -209,9 +210,9 @@ public class PcalFixIDs {
                 // if it is not already in it.
                 for (int k = 0; k < n; k++) {
                   if (path[pNum][k]) {
-                      String callee = (String) procedureNames.elementAt(k);
+                      String callee = (String) procedureNames.get(k);
                       if (! InVector(callee, proc.proceduresCalled)) {
-                          proc.proceduresCalled.addElement(callee); 
+                          proc.proceduresCalled.add(callee); 
                       }
                   }
                 }
@@ -225,9 +226,9 @@ public class PcalFixIDs {
      * return -1 if nm is not any element of names.
      * @return
      */
-    private static int nameToNum(String nm, Vector names) {
+    private static int nameToNum(String nm, List<String> names) {
         for (int i = 0; i < names.size(); i++) {
-            if (names.elementAt(i).equals(nm)) {
+            if (names.get(i).equals(nm)) {
                 return i;
             }
         }
@@ -243,23 +244,23 @@ public class PcalFixIDs {
      */
     private static void FixProcedure (AST.Procedure ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
-            FixPVarDecl((AST.PVarDecl) ast.decls.elementAt(i), ast.name);
+            FixPVarDecl((AST.PVarDecl) ast.decls.get(i), ast.name);
         for (int i = 0; i < ast.params.size(); i++)
-            FixPVarDecl((AST.PVarDecl) ast.params.elementAt(i), ast.name);
+            FixPVarDecl((AST.PVarDecl) ast.params.get(i), ast.name);
         for (int i = 0; i < ast.body.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.body.elementAt(i), ast.name);
+            FixLabeledStmt((AST.LabeledStmt) ast.body.get(i), ast.name);
         PcalSymTab.ProcedureEntry p = 
             (PcalSymTab.ProcedureEntry)
-            st.procs.elementAt(st.FindProc(ast.name));
+            st.procs.get(st.FindProc(ast.name));
         for (int i = 0; i < ast.plusLabels.size(); i++) {
-        	String lbl = (String) ast.plusLabels.elementAt(i);
+        	String lbl = (String) ast.plusLabels.get(i);
         	String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
-        	ast.plusLabels.setElementAt(newLbl, i) ;
+        	ast.plusLabels.set(i, newLbl) ;
         }
        for (int i = 0; i < ast.minusLabels.size(); i++) {
-	       String lbl = (String) ast.minusLabels.elementAt(i);
+	       String lbl = (String) ast.minusLabels.get(i);
 	       String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
-	       ast.minusLabels.setElementAt(newLbl, i) ;
+	       ast.minusLabels.set(i, newLbl) ;
          }
         p.iPC = st.UseThis(PcalSymTab.LABEL, p.iPC, ast.name);
         ast.name = st.UseThis(PcalSymTab.PROCEDURE, ast.name, "");
@@ -275,21 +276,21 @@ public class PcalFixIDs {
      */
     private static void FixProcess(AST.Process ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.decls.size(); i++)
-            FixVarDecl((AST.VarDecl) ast.decls.elementAt(i), ast.name);
+            FixVarDecl((AST.VarDecl) ast.decls.get(i), ast.name);
         for (int i = 0; i < ast.body.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.body.elementAt(i), ast.name);
+            FixLabeledStmt((AST.LabeledStmt) ast.body.get(i), ast.name);
         PcalSymTab.ProcessEntry p = 
             (PcalSymTab.ProcessEntry)
-            st.processes.elementAt(st.FindProcess(ast.name));
+            st.processes.get(st.FindProcess(ast.name));
         for (int i = 0; i < ast.plusLabels.size(); i++) {
-        	String lbl = (String) ast.plusLabels.elementAt(i);
+        	String lbl = (String) ast.plusLabels.get(i);
         	String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
-        	ast.plusLabels.setElementAt(newLbl, i) ;
+        	ast.plusLabels.set(i, newLbl) ;
         }
        for (int i = 0; i < ast.minusLabels.size(); i++) {
-         String lbl = (String) ast.minusLabels.elementAt(i);
+         String lbl = (String) ast.minusLabels.get(i);
          String newLbl = st.UseThis(PcalSymTab.LABEL, lbl, ast.name);
-         ast.minusLabels.setElementAt(newLbl, i) ;
+         ast.minusLabels.set(i, newLbl) ;
          }
         p.iPC = st.UseThis(PcalSymTab.LABEL, p.iPC, ast.name);
         ast.name = st.UseThis(PcalSymTab.PROCESS, ast.name, "");
@@ -309,14 +310,14 @@ public class PcalFixIDs {
     private static void FixLabeledStmt(AST.LabeledStmt ast, String context) throws PcalFixIDException {
         ast.label = st.UseThis(PcalSymTab.LABEL, ast.label, context);
         for (int i = 0; i < ast.stmts.size(); i++)
-            FixSym((AST) ast.stmts.elementAt(i), context);
+            FixSym((AST) ast.stmts.get(i), context);
     }
 
     private static void FixWhile(AST.While ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.unlabDo.size(); i++)
-            FixSym((AST) ast.unlabDo.elementAt(i), context);
+            FixSym((AST) ast.unlabDo.get(i), context);
         for (int i = 0; i < ast.labDo.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.labDo.elementAt(i), context);
+            FixLabeledStmt((AST.LabeledStmt) ast.labDo.get(i), context);
         /*******************************************************************
         * The following statement added by LL on 24 Jan 2006.              *
         *******************************************************************/
@@ -325,7 +326,7 @@ public class PcalFixIDs {
 
     private static void FixAssign(AST.Assign ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.ass.size(); i++)
-            FixSingleAssign((AST.SingleAssign) ast.ass.elementAt(i), context);
+            FixSingleAssign((AST.SingleAssign) ast.ass.get(i), context);
     }
 
     private static void FixSingleAssign(AST.SingleAssign ast, String context) throws PcalFixIDException {
@@ -340,16 +341,16 @@ public class PcalFixIDs {
 
     private static void FixIf(AST.If ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.Then.size(); i++)
-            FixSym((AST) ast.Then.elementAt(i), context);
+            FixSym((AST) ast.Then.get(i), context);
         for (int i = 0; i < ast.Else.size(); i++)
-            FixSym((AST) ast.Else.elementAt(i), context);
+            FixSym((AST) ast.Else.get(i), context);
         FixExpr((TLAExpr) ast.test, context);
    }
 
     private static void FixWith(AST.With ast, String context) throws PcalFixIDException {
         FixExpr(ast.exp, context);
         for (int i = 0; i < ast.Do.size(); i++)
-            FixSym((AST) ast.Do.elementAt(i), context);
+            FixSym((AST) ast.Do.get(i), context);
     }
 
     private static void FixWhen(AST.When ast, String context) throws PcalFixIDException {
@@ -370,20 +371,20 @@ public class PcalFixIDs {
     private static void FixLabelIf(AST.LabelIf ast, String context) throws PcalFixIDException {
         FixExpr(ast.test, context);
         for (int i = 0 ; i < ast.unlabThen.size(); i++)
-            FixSym((AST) ast.unlabThen.elementAt(i), context);
+            FixSym((AST) ast.unlabThen.get(i), context);
         for (int i = 0; i < ast.labThen.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.labThen.elementAt(i), context);
+            FixLabeledStmt((AST.LabeledStmt) ast.labThen.get(i), context);
         for (int i = 0; i < ast.unlabElse.size(); i++)
-            FixSym((AST) ast.unlabElse.elementAt(i), context);
+            FixSym((AST) ast.unlabElse.get(i), context);
         for (int i = 0;  i < ast.labElse.size(); i++)
-            FixLabeledStmt((AST.LabeledStmt) ast.labElse.elementAt(i), context);
+            FixLabeledStmt((AST.LabeledStmt) ast.labElse.get(i), context);
     }
 
     private static void FixCall(AST.Call ast, String context) throws PcalFixIDException {
         ast.returnTo = st.UseThis(PcalSymTab.PROCEDURE, ast.returnTo, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
-            FixExpr((TLAExpr) ast.args.elementAt(i), context);
+            FixExpr((TLAExpr) ast.args.get(i), context);
     }
 
     private static void FixReturn(AST.Return ast, String context) {
@@ -394,14 +395,14 @@ public class PcalFixIDs {
         ast.from = st.UseThis(PcalSymTab.PROCEDURE, ast.from, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
-            FixExpr((TLAExpr) ast.args.elementAt(i), context);
+            FixExpr((TLAExpr) ast.args.get(i), context);
     }
 
     private static void FixCallGoto(AST.CallGoto ast, String context) throws PcalFixIDException {
         ast.after = st.UseThis(PcalSymTab.PROCEDURE, ast.after, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
-            FixExpr((TLAExpr) ast.args.elementAt(i), context);
+            FixExpr((TLAExpr) ast.args.get(i), context);
     }
 
     private static void FixGoto(AST.Goto ast, String context) throws PcalFixIDException {
@@ -423,20 +424,20 @@ public class PcalFixIDs {
     ***********************************************************************/
     private static void FixEither(AST.Either ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.ors.size(); i++)
-              { Vector orClause = (Vector) ast.ors.elementAt(i) ;
+              { List orClause = (List) ast.ors.get(i) ;
                 for (int j = 0; j < orClause.size(); j++)
-                  FixSym((AST) orClause.elementAt(j), context);
+                  FixSym((AST) orClause.get(j), context);
                } ;
     }
 
     private static void FixLabelEither(AST.LabelEither ast, String context) throws PcalFixIDException {
         for (int i = 0; i < ast.clauses.size(); i++)
-              { AST.Clause orClause = (AST.Clause) ast.clauses.elementAt(i) ;
+              { AST.Clause orClause = (AST.Clause) ast.clauses.get(i) ;
                 for (int j = 0; j < orClause.unlabOr.size(); j++)
-                  FixSym((AST) orClause.unlabOr.elementAt(j), context);
+                  FixSym((AST) orClause.unlabOr.get(j), context);
                 for (int j = 0; j < orClause.labOr.size(); j++)
                   FixLabeledStmt((AST.LabeledStmt) 
-                                   orClause.labOr.elementAt(j), 
+                                   orClause.labOr.get(j), 
                                   context);
                } ;
 
@@ -449,27 +450,27 @@ public class PcalFixIDs {
          * contains a single token whose string is the identifier substituted for the
          * corresponding identifier of stringVec.
         */
-        Vector exprVec = new Vector();   // the substituting exprs
-        Vector stringVec = new Vector(); // the substituted  ids
-        Vector tokenVec = new Vector();  // the 
+        ArrayList<TLAExpr> exprVec = new ArrayList<TLAExpr>();   // the substituting exprs
+        ArrayList<String> stringVec = new ArrayList<String>(); // the substituted  ids
+        // Vector tokenVec = new Vector();  // the 
 
         for (int i = 0; i < expr.tokens.size(); i++) {
-            Vector tv = (Vector) expr.tokens.elementAt(i);
+            List tv = (List) expr.tokens.get(i);
             String useMe = null;
             for (int j = 0; j < tv.size(); j++) {
                 int shift = 0;
-                TLAToken tok = (TLAToken) tv.elementAt(j);
+                TLAToken tok = (TLAToken) tv.get(j);
                 tok.column = tok.column + shift;
                 if (tok.type == TLAToken.IDENT) {
                     useMe = st.UseThisVar(tok.string, context);
                     if (InVector(tok.string, stringVec)
                         || useMe.equals(tok.string)) continue;
-                    stringVec.addElement(tok.string);
+                    stringVec.add(tok.string);
                     TLAExpr exp = new TLAExpr();
                     exp.addLine();
                     exp.addToken(new TLAToken(useMe, 0, TLAToken.IDENT));
                     exp.normalize();
-                    exprVec.addElement(exp);
+                    exprVec.add(exp);
                 }
             }
         }
@@ -486,9 +487,9 @@ public class PcalFixIDs {
     /****************************************************************/
     /* Returns whether the string is present in a vector of string. */
     /****************************************************************/
-    private static boolean InVector(String var, Vector v) {
+    private static boolean InVector(String var, List<String> v) {
         for (int i = 0; i < v.size(); i++)
-            if (var.equals((String) v.elementAt(i))) return true;
+            if (var.equals((String) v.get(i))) return true;
         return false;
     }
 
