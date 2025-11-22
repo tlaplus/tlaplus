@@ -1403,7 +1403,7 @@ public class ParseAlgorithm
 		try {
 		       result.setOrigin(new Region(begLoc, 
 		               ((AST) result.Do.get(result.Do.size()-1)).getOrigin().getEnd())) ;
-		} catch (ArrayIndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			throw new ParseAlgorithmException("Missing body of with statement", result);
 		}
 	       return result ;
@@ -4439,4 +4439,3 @@ public class ParseAlgorithm
    }
 
  }
-

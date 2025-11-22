@@ -622,20 +622,34 @@ public class TLAExpr
 //        this.renormalize() ;
 //      }  
 
-    private IntPair findNextInstanceIn(String id, IntPair next) {
-        int line = next.one;
-        int item = next.two;
-        while (line < tokens.size()) {
-            List<TLAToken> curLine = tokens.get(line);
-            while (item < curLine.size()) {
-                TLAToken tok = (TLAToken) curLine.get(item);
-                if (tok.type == TLAToken.IDENT && tok.string.equals(id)) {
-                    return new IntPair(line, item);
-                }
-                item++;
+    private IntPair findNextInstanceIn(String id, IntPair start) {
+        /*
+         * Returns the coordinates of the first token at or after `start` whose
+         * string equals `id` and that is not obviously a record label. This mirrors
+         * the original Vector-based implementation, but uses Lists.
+         */
+        IntPair result = new IntPair(start.one, start.two);
+        if (this.isEmpty()) {
+            return null;
+        }
+        while (result != null) {
+            TLAToken tok = this.tokenAt(result);
+            if (tok.type == TLAToken.STRING) {
+                result = this.stepCoord(result, 1);
+            } else if (tok.string.equals(".")) {
+                result = this.stepCoord(result, 2);
+            } else if ((tok.string.equals("[") || tok.string.equals(","))
+                    && (this.stepCoord(result, 2) != null)
+                    && (this.tokenAt(this.stepCoord(result, 2)).type != TLAToken.STRING)
+                    && (this.tokenAt(this.stepCoord(result, 2)).string.equals(":")
+                        || this.tokenAt(this.stepCoord(result, 2)).string.equals("|->")
+                        || this.tokenAt(this.stepCoord(result, 2)).string.equals("↦"))) {
+                result = this.stepCoord(result, 3);
+            } else if (tok.string.equals(id)) {
+                return result;
+            } else {
+                result = this.stepCoord(result, 1);
             }
-            line++;
-            item = 0;
         }
         return null;
     }
