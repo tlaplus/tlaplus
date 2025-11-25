@@ -19,16 +19,6 @@
 	<!-- setup classpath -->
 	<path id="project.classpath" />
 
-	<!-- Provide the JUnit Ant tasks even when optional Ant libraries (ant-junit.jar) are not installed system-wide. -->
-	<path id="ant.junit.classpath">
-		<pathelement location="lib/ant-junit-1.10.14.jar" />
-		<pathelement location="lib/ant-junit4-1.10.14.jar" />
-		<pathelement location="lib/junit-4.12.jar" />
-		<pathelement location="lib/hamcrest-core-1.3.jar" />
-	</path>
-	<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpathref="ant.junit.classpath" />
-	<taskdef name="junitreport" classname="org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator" classpathref="ant.junit.classpath" />
-
 	<!-- timestamp -->
 	<tstamp>
 		<format property="TODAY" pattern="yyyy-MM-dd" locale="en,US" />
@@ -518,8 +508,8 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
-				<pathelement path="${test.class.dir}" />
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
 			</classpath>
 			<formatter type="xml" />
@@ -580,8 +570,8 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
-				<pathelement path="${test.class.dir}" />
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
 			</classpath>
 			<formatter type="xml" />
@@ -737,8 +727,9 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
-				<pathelement path="${test.class.dir}" />
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
 			</classpath>
 
@@ -791,8 +782,9 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
-				<pathelement path="${test.class.dir}" />
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
 			</classpath>
 
@@ -1172,8 +1164,8 @@
 				<pathelement location="lib/hamcrest-core-1.3.jar" />
 				<pathelement location="lib/jpf.jar" />
 				<pathelement location="lib/jpf-classes.jar" />
-				<pathelement path="${test.class.dir}" />
 				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
 			</classpath>
 
 			<formatter type="xml" />
