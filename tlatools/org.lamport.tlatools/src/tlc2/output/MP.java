@@ -531,7 +531,7 @@ public class MP
         case EC.TLC_INVARIANT_CONSTANT_LEVEL:
 		b.append(
 				"The invariant %1% is a constant-level formula (i.e., it contains no variables, primes, or temporal operators) and evaluates to %2%. "
-				+ "To assert constant-level formulas in your spec, use ASSUME ConstInv, or to give the assumption a name such as YourAssumption, use ASSUME YourAssumption == ConstInv. "
+				+ "To assert constant-level formulas in your spec, use ASSUME ConstInv. If you optionally want to give the assumption a name, write ASSUME YourAssumption == ConstInv instead. "
 				+ "See https://explain.tlapl.us/assumptions-and-invariants for additional details.");
             break;
 
