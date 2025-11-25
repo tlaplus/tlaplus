@@ -112,20 +112,19 @@ jobs:
       ## Sign Toolbox macOS zip file.
       ##
     - name: Set up Apple Certs
-      # Forked PRs do not have access to macOS signing secrets.
-      if: matrix.operating-system == 'macos-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      if: matrix.operating-system == 'macos-latest'
       run: 'echo "$APPLE_CODESIGN_CERTS" > certs.pem'
       shell: bash
       env:
         APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
     - name: Set up Apple Key (dev)
-      if: matrix.operating-system == 'macos-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      if: matrix.operating-system == 'macos-latest'
       run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
       shell: bash
       env:
         APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
     - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
-      if: matrix.operating-system == 'macos-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      if: matrix.operating-system == 'macos-latest'
       run: |
            ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
            openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
@@ -241,3 +240,4 @@ jobs:
           --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions                                             \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
+
