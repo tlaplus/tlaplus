@@ -17,7 +17,7 @@ import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import util.UniqueString;
 
 // A context contains def/declNodes only.
@@ -246,13 +246,13 @@ public class Context implements ExploreNode {
    * Returns a Vector of those SymbolNodes in this Context that are
    * instances of class "template" (or one of its subclasses)
    */
-  public <T> Vector<T> getByClass(Class<T> template) {
-    final Vector<T> result = new Vector<>();
+  public <T> ArrayList<T> getByClass(Class<T> template) {
+    final ArrayList<T> result = new ArrayList<>();
     Enumeration<Pair> list = table.elements();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (template.isInstance(elt.info)) {
-        result.addElement(template.cast(elt.info));
+        result.add(template.cast(elt.info));
       }
     }
     return result;
@@ -263,17 +263,17 @@ public class Context implements ExploreNode {
    * instances of class OpDefNode and that are NOT of kind BuiltInKind
    * or ModuleInstanceKind
    */
-  public Vector<OpDefNode> getOpDefs() {
+  public ArrayList<OpDefNode> getOpDefs() {
       // SZ Apr 21, 2009: not used instance
       // Class template = OpDefNode.class;
     Pair nextPair = lastPair;
 
-    final Vector<OpDefNode> result = new Vector<>();
+    final ArrayList<OpDefNode> result = new ArrayList<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof OpDefNode &&     // true for superclasses too.
            ((OpDefNode)nextPair.info).getKind() != ASTConstants.ModuleInstanceKind &&
            ((OpDefNode)nextPair.info).getKind() != ASTConstants.BuiltInKind  )
-        result.addElement( (OpDefNode)(nextPair.info) );
+        result.add( (OpDefNode)(nextPair.info) );
       nextPair = nextPair.link;
     }
     return result;
@@ -284,15 +284,15 @@ public class Context implements ExploreNode {
   * instances of class ThmOrAssumpDefNode or ModuleInstanceKind            *
   * Code copied from getOpDefs().                                          *
   *************************************************************************/
-  public Vector<ThmOrAssumpDefNode> getThmOrAssDefs() {
+  public ArrayList<ThmOrAssumpDefNode> getThmOrAssDefs() {
       // SZ Apr 21, 2009: not used instance
       // Class template = ThmOrAssumpDefNode.class;
     Pair nextPair = lastPair;
 
-    final Vector<ThmOrAssumpDefNode> result = new Vector<>();
+    final ArrayList<ThmOrAssumpDefNode> result = new ArrayList<>();
     while (nextPair != null) {
       if ( nextPair.info instanceof ThmOrAssumpDefNode)
-        { result.addElement( (ThmOrAssumpDefNode)(nextPair.info) );} ;
+        { result.add( (ThmOrAssumpDefNode)(nextPair.info) );} ;
       nextPair = nextPair.link;
     }
     return result;
@@ -301,32 +301,32 @@ public class Context implements ExploreNode {
   /**
    * Returns vector of OpDeclNodes that represent CONSTANT declarations
    */
-  public Vector<OpDeclNode> getConstantDecls() {
+  public ArrayList<OpDeclNode> getConstantDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
     Enumeration<Pair> list = table.elements();
 
-    final Vector<OpDeclNode> result = new Vector<>();
+    final ArrayList<OpDeclNode> result = new ArrayList<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
          ((OpDeclNode)elt.info).getKind() == ASTConstants.ConstantDeclKind  )
-        result.addElement( (OpDeclNode)(elt.info) );
+        result.add( (OpDeclNode)(elt.info) );
 
     }
     return result;
   }
 
   /* Returns vector of OpDeclNodes that represent VARIABLE declarations  */
-  public Vector<OpDeclNode> getVariableDecls() {
+  public ArrayList<OpDeclNode> getVariableDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
     Enumeration<Pair> list = table.elements();
 
-    final Vector<OpDeclNode> result = new Vector<>();
+    final ArrayList<OpDeclNode> result = new ArrayList<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
            ((OpDeclNode)elt.info).getKind() == ASTConstants.VariableDeclKind  )
-        result.addElement( (OpDeclNode)(elt.info) );
+        result.add( (OpDeclNode)(elt.info) );
     }
     return result;
   }
@@ -334,15 +334,15 @@ public class Context implements ExploreNode {
   /**
    * Returns a Vector {@link ModuleNode} instances in this context.
    */
-  public Vector<ModuleNode> getModDefs() {
+  public ArrayList<ModuleNode> getModDefs() {
     Class<? extends SemanticNode> template = ModuleNode.class;
     Enumeration<Pair> list = table.elements();
 
-    final Vector<ModuleNode> result = new Vector<>();
+    final ArrayList<ModuleNode> result = new ArrayList<>();
     while (list.hasMoreElements()) {
       Pair elt = list.nextElement();
       if (template.isInstance(elt.info))    // true for superclasses too.
-        result.addElement( (ModuleNode)(elt.info) );
+        result.add( (ModuleNode)(elt.info) );
     }
     return result;
   }
@@ -488,8 +488,8 @@ public class Context implements ExploreNode {
   * comment in the walkGraph method of this file for a bit more            *
   * information.                                                           
   *************************************************************************/
-  public Vector<String> getContextEntryStringVector(int depth, boolean b, Errors errors) {
-    final Vector<String> ctxtEntries = new Vector<>(100);
+  public ArrayList<String> getContextEntryStringVector(int depth, boolean b, Errors errors) {
+    final ArrayList<String> ctxtEntries = new ArrayList<>(100);
     Context naturalsContext =
                exMT.getContext(UniqueString.uniqueStringOf("Naturals"));
 
@@ -505,7 +505,7 @@ public class Context implements ExploreNode {
 		(naturalsContext == null ||
 		 !naturalsContext.table.containsKey(key)))) {
         SymbolNode symbNode  = ((Pair)(table.get(key))).info;
-	ctxtEntries.addElement("\nContext Entry: " + key.toString() + "  "
+	ctxtEntries.add("\nContext Entry: " + key.toString() + "  "
                     + String.valueOf(((SemanticNode)symbNode).myUID).toString() + " "
                     + Strings.indentSB(2,(symbNode.toString(depth-1, errors))));
       }
@@ -516,9 +516,9 @@ public class Context implements ExploreNode {
     String obj;
     int n = ctxtEntries.size();
     for (int i = 0; i < n/2; i++) {
-      obj = ctxtEntries.elementAt(i);
-      ctxtEntries.setElementAt(ctxtEntries.elementAt(n-1-i),i);
-      ctxtEntries.setElementAt(obj, n-1-i);
+      obj = ctxtEntries.get(i);
+      ctxtEntries.set(i, ctxtEntries.get(n-1-i));
+      ctxtEntries.set(n-1-i, obj);
     }
     return ctxtEntries;
   }

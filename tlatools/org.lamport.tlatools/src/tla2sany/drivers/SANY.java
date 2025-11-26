@@ -279,7 +279,7 @@ public class SANY {
       // so that is A depends on B, then B has a lower index in the
       // Vector than A.
       for (int i = 0; i < spec.semanticAnalysisVector.size(); i++) {
-        moduleStringName = (String)spec.semanticAnalysisVector.elementAt(i);  
+        moduleStringName = (String)spec.semanticAnalysisVector.get(i);  
 
         // if semantic analysis has not already been done on this module
         if (externalModuleTable.getContext( UniqueString.uniqueStringOf( moduleStringName)) == null ) {
