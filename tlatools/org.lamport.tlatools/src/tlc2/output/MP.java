@@ -1297,6 +1297,31 @@ public class MP
                     + "\nbut TLC can only handle behaviors of length up to 65535 states. The last\n"
                     + "state in the behavior is:\n%1%");
         	break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_AND_STUTTERING_SENSITIVE:
+            b.append("The formula %1% is an action-level formula (i.e., it contains no temporal operators), "
+            		+ "but it was used as a PROPERTY, where a temporal formula is normally required. "
+            		+ "Interpreting an action-level formula as a PROPERTY amounts to asserting that it holds "
+            		+ "only for the first step (i.e., the initial action) of every behavior, which is typically "
+            		+ "not what is intended. For this reason, TLC does not support checking action-level "
+            		+ "formulas as properties.\n"
+            		+ "If your intention is to check that the action formula %1% holds on every step of every "
+            		+ "behavior, you should wrap it with the \"always\" operator (□), which asserts that %1% holds "
+            		+ "in all steps of all behaviors. Additionally, the formula %1% is stuttering sensitive, which "
+            		+ "TLA does not allow. To make it stuttering insensitive, you must wrap it in [%1%]_v, where "
+            		+ "v is an appropriate state-level predicate. Thus, the property should likely be written as "
+            		+"□[%1%]_v.");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL:
+            b.append("The formula %1% is an action-level formula (i.e., it contains no temporal operators), "
+            		+ "but it was used as a PROPERTY, where a temporal formula is normally required. "
+            		+ "Interpreting an action-level formula as a PROPERTY amounts to asserting that it holds "
+            		+ "only for the first step (i.e., the initial action) of every behavior, which is typically "
+            		+ "not what is intended. For this reason, TLC does not support checking action-level "
+            		+ "formulas as properties.\n"
+            		+ "If your intention is to check that the action formula %1% holds on every step of every "
+            		+ "behavior, you should wrap it with the \"always\" operator (□), which asserts that %1% holds "
+            		+ "in all steps of all behaviors.");
+            break;
         case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
             b.append("The property %1% is not correctly defined.");
             break;

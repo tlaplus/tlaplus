@@ -1691,8 +1691,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
             this.impliedTemporalNameVec.addElement(name);
+        } else if (level == 2)
+        {
+			if (pred instanceof OpApplNode
+					&& BuiltInOPs.getOpCode(((OpApplNode) pred).getOperator().getName()) == OPCODE_sa) {
+        		// [A]_v is a stuttering insensitive action.
+        		Assert.fail(EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL, name);
+        	} else {
+				// Arbitrary action-level formulas are stuttering sensitive. Although some
+				// action-level formulas such as (A \/ UNCHANGED vars) or (x' \in {x, x + 1})
+				// are stuttering insensitive, TLA requires user to write such formulas in terms
+				// of [A]_v. Thus, we issue an error message here saying that action-level
+				// properties are a) not supported, and b) should be stuttering insensitive.
+        		Assert.fail(EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_AND_STUTTERING_SENSITIVE, name);
+        	}
         } else
         {
+        	// There is no other level beyond 0..3, but let's keep this branch to be on the safe side.
             Assert.fail(EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED, name);
         }
     }
