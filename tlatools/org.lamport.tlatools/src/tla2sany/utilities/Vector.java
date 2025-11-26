@@ -16,8 +16,6 @@ import java.util.Iterator;
  * are audited for identity-based membership checks.
  */
 public class Vector<E> extends ArrayList<E> {
-  private static final long serialVersionUID = 5334890925756142170L;
-
   static int defaultSize = 10;
 
   public Vector() {
@@ -69,8 +67,8 @@ public class Vector<E> extends ArrayList<E> {
 
   @Override
   public final boolean contains(Object obj) {
-    for (Iterator<E> iterator = super.iterator(); iterator.hasNext();) {
-      if (iterator.next() == obj) {
+    for (E value : this) {
+      if (value == obj) {
         return true;
       }
     }
