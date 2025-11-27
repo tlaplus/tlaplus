@@ -1,25 +1,21 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.utilities;
+
 import java.util.Enumeration;
+import java.util.Iterator;
 
 final class VectorEnumeration<E> implements Enumeration<E> {
-  int index = 0;
-  Object data[];
+  private final Iterator<E> iterator;
 
-  VectorEnumeration( Object info[], int size ) {
-    data = new Object[ size ];
-    System.arraycopy( info, 0, data, 0, size );
+  VectorEnumeration(Iterator<E> iterator) {
+    this.iterator = iterator;
   }
 
   public final boolean hasMoreElements() {
-    return index < data.length;
+    return iterator.hasNext();
   }
 
-  @SuppressWarnings("unchecked")
   public final E nextElement() {
-    if (index < data.length)
-      return (E)data[index++];
-    else
-      throw new java.util.NoSuchElementException();
+    return iterator.next();
   }
 }
