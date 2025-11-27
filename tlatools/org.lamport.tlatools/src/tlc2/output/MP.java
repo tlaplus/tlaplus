@@ -1297,6 +1297,28 @@ public class MP
                     + "\nbut TLC can only handle behaviors of length up to 65535 states. The last\n"
                     + "state in the behavior is:\n%1%");
         	break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_SQUARE_A_SUB_V:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that action %1% holds in *every* step of the behavior, define a temporal property "
+            		+ "by applying the \"always\" temporal operator ([]) to the formula at %2% (compare page 90 of "
+            		+ "Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_ANGLE_A_SUB_V:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that infinitely many %1% steps occur, define a temporal property by applying "
+            		+ "the \"always eventually\" temporal operator combination ([]<>) to the formula at "
+            		+ "%2% (compare page 91 of Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that action %1% holds in *every* step of the behavior, define a temporal property: "
+            		+ "Let A be the formula at %2%; rewrite A as [][A]_v, where v is a state function (typically "
+            		+ "the tuple of variables) (compare page 90 of Specifying Systems at "
+            		+ "https://lamport.azurewebsites.net/tla/book.html).");
+            break;
         case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
             b.append("The property %1% is not correctly defined.");
             break;

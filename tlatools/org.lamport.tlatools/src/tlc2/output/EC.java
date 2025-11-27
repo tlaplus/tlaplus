@@ -321,6 +321,9 @@ public interface EC
     public static final int TLC_CANT_HANDLE_CONJUNCT = 2239;
     public static final int TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS = 2240;
     public static final int TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED = 2241;
+    public static final int TLC_CONFIG_PROPERTY_ACTION_LEVEL = 2272;
+    public static final int TLC_CONFIG_PROPERTY_ACTION_LEVEL_SQUARE_A_SUB_V = 2273;
+    public static final int TLC_CONFIG_PROPERTY_ACTION_LEVEL_ANGLE_A_SUB_V = 2274;
     public static final int TLC_CONFIG_OP_ARITY_INCONSISTENT = 2242;
     public static final int TLC_CONFIG_NO_STATE_TYPE = 2243;
     public static final int TLC_CANT_HANDLE_REAL_NUMBERS = 2244;
@@ -439,6 +442,9 @@ public interface EC
 	        case TLC_CANT_HANDLE_CONJUNCT:
 	        case TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS:
 	        case TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
+	        case TLC_CONFIG_PROPERTY_ACTION_LEVEL:
+	        case TLC_CONFIG_PROPERTY_ACTION_LEVEL_SQUARE_A_SUB_V:
+	        case TLC_CONFIG_PROPERTY_ACTION_LEVEL_ANGLE_A_SUB_V:
 	        case TLC_CONFIG_OP_ARITY_INCONSISTENT:
 	        case TLC_CONFIG_NO_STATE_TYPE:
 	        case TLC_CANT_HANDLE_REAL_NUMBERS: // might also be in the spec
