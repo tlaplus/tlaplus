@@ -922,7 +922,7 @@ public class MP
 					+ "where a temporal formula is typically expected. State-level formulas used as PROPERTY "
 					+ "or PROPERTIES are only checked in the initial state. To verify that the formula %1% "
 					+ "holds in all states of every behavior, use INVARIANT %1% instead. Alternatively, "
-					+ "applying the \"always\" temporal operator (□) to the state-level formula %1% changes it "
+					+ "applying the \"always\" temporal operator ([]) to the state-level formula %1% changes it "
 					+ "into a temporal formula, asserting that %1% holds in all states of every behavior. "
 					+ "See https://explain.tlapl.us/invariants-and-properties for additional details.");
 			break;
