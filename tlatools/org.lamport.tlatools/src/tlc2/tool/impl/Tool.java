@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2022, 2023, Oracle and/or its affiliates.
+// Copyright (c) 2022, 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Thu  2 Aug 2007 at 10:25:48 PST by lamport
 //      modified on Fri Jan  4 22:46:57 PST 2002 by yuanyu
@@ -44,6 +44,7 @@ import tlc2.tool.IContextEnumerator;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
+import tlc2.tool.FalseExpressionWithDetails;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
@@ -3485,9 +3486,112 @@ public abstract class Tool
         return this.enabled(acts, s0, s1, cm);
   }
 
+    @Override
+    public FalseExpressionWithDetails checkValidity(Action act, TLCState s0, TLCState s1) {
+      return checkValidity(
+              act.pred,
+              act.con,
+              s0,
+              s1,
+              act.cm,
+              act.con);
+    }
+
+    /**
+     * Helper for {@link ITool#checkValidity(Action, TLCState, TLCState)}.
+     */
+    private FalseExpressionWithDetails checkValidity(SemanticNode expr, Context c, TLCState s0, TLCState s1, CostModel cm, Context relevantAssignments) {
+        if (expr.getKind() == OpApplKind) {
+            OpApplNode appl = (OpApplNode) expr;
+            ExprOrOpArgNode[] args = appl.getArgs();
+            SymbolNode opNode = appl.getOperator();
+            int opcode = BuiltInOPs.getOpCode(opNode.getName());
+
+            switch (opcode) {
+                case 0: { // User-defined operator, maybe substituted
+                    if (args.length == 0) {
+                        Object val = this.lookup(opNode, c, s0, false);
+                        if (val instanceof LazyValue) {
+                            LazyValue lv = (LazyValue) val;
+                            if (coverage) {
+                                cm = cm.getAndIncrement(expr);
+                            }
+                            return checkValidity(lv.expr, lv.con, s0, s1, cm, relevantAssignments);
+                        } else if (val instanceof OpDefNode) {
+                            OpDefNode opDef = (OpDefNode) val;
+                            opcode = BuiltInOPs.getOpCode(opDef.getName());
+                            if (opcode == 0) {
+                                if (coverage) {
+                                    cm = cm.getAndIncrement(expr);
+                                }
+                                Context c1 = this.getOpContext(opDef, args, c, true, cm, toolId);
+                                return checkValidity(opDef.getBody(), c1, s0, s1, cm, relevantAssignments);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case OPCODE_bf: { // BoundedForall
+                    if (coverage) {
+                        cm = cm.getAndIncrement(expr);
+                    }
+                    ContextEnumerator Enum = this.contexts(appl, c, s0, s1, EvalControl.Clear, cm);
+                    SemanticNode body = args[0];
+                    Context c1;
+                    while ((c1 = Enum.nextElement()) != null) {
+                        FalseExpressionWithDetails result = checkValidity(body, c1, s0, s1, cm, c1.withAlternateSuffix(c, relevantAssignments));
+                        if (result != null) {
+                            return result;
+                        }
+                    }
+                    return FalseExpressionWithDetails.NO_VIOLATION;
+                }
+                case OPCODE_cl: // ConjList
+                case OPCODE_land: {
+                    if (coverage) {
+                        cm = cm.getAndIncrement(expr);
+                    }
+                    for (ExprOrOpArgNode arg : args) {
+                        FalseExpressionWithDetails result = checkValidity(arg, c, s0, s1, cm, relevantAssignments);
+                        if (result != FalseExpressionWithDetails.NO_VIOLATION) {
+                            return result;
+                        }
+                    }
+                    return FalseExpressionWithDetails.NO_VIOLATION;
+                }
+                case OPCODE_implies: {
+                    if (coverage) {
+                        cm = cm.getAndIncrement(expr);
+                    }
+                    ExprOrOpArgNode arg0 = args[0];
+                    ExprOrOpArgNode arg1 = args[1];
+
+                    Value val = this.eval(arg0, c, s0, s1, EvalControl.Clear, cm);
+                    if (!(val instanceof BoolValue)) {
+                        Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", arg0.toString()}, arg0, c);
+                    }
+
+                    return ((BoolValue) val).val
+                            ? checkValidity(arg1, c, s0, s1, cm, relevantAssignments)
+                            : FalseExpressionWithDetails.NO_VIOLATION;
+                }
+            }
+
+            // fall thru to default case
+        }
+
+        Value val = this.eval(expr, c, s0, s1, EvalControl.Clear, cm);
+        if (!(val instanceof BoolValue)) {
+            Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", expr.toString()}, expr, c);
+        }
+        return ((BoolValue) val).val
+                ? FalseExpressionWithDetails.NO_VIOLATION
+                : new FalseExpressionWithDetails(expr, relevantAssignments);
+    }
+
   /* This method determines if the action predicate is valid in (s0, s1). */
   @Override
-  public final boolean isValid(Action act, TLCState s0, TLCState s1) {
+  public boolean isValid(Action act, TLCState s0, TLCState s1) {
     Value val = this.eval(act.pred, act.con, s0, s1, EvalControl.Clear, act.cm);
     if (!(val instanceof BoolValue)) {
       Assert.fail(EC.TLC_EXPECTED_VALUE, new String[]{"boolean", act.pred.toString()}, act.pred, act.con);
