@@ -30,13 +30,14 @@
 * Lines and columns are numbered starting from 0.                          *
 ***************************************************************************/
 package pcal;
+import java.util.List;
 import java.util.Vector;
 
 public class PcalCharReader 
   { /***********************************************************************
     * The variables representing the state of the object.                  *
     ***********************************************************************/
-    private Vector<String> vec ;
+    private List<String> vec ;
       /*********************************************************************
       * This is the vector providing the input characters.                 *
       *********************************************************************/
@@ -147,7 +148,7 @@ public class PcalCharReader
             vcolumn     = 0 ;
             if (line >= vec.size())
                  {currentLine = null ;}
-            else {currentLine = stringToCodepoints(vec.elementAt(line)) ;} ;
+            else {currentLine = stringToCodepoints(vec.get(line)) ;} ;
             return '\n' ;
            } ;
   
@@ -188,7 +189,7 @@ public class PcalCharReader
                   "move past beginning of reader");
              } ;
            line = line - 1 ;
-           currentLine = stringToCodepoints(vec.elementAt(line)) ;
+           currentLine = stringToCodepoints(vec.get(line)) ;
            column = 0 ;
            vcolumn = 0 ;
 
@@ -226,7 +227,7 @@ public class PcalCharReader
         return new String(currentLine, column, currentLine.length - column) + '\n' ;
       }
       
-    public PcalCharReader(Vector<String> vector, int firstLine, int firstCol,
+    public PcalCharReader(List<String> vector, int firstLine, int firstCol,
                             int lastLine, int lastCol) 
       /*********************************************************************
       * The class constructor.  The only tricky part is setting vcolumn    *
@@ -243,7 +244,7 @@ public class PcalCharReader
         *******************************************************************/
         if (firstLine < vector.size())
           { int i = 0 ;
-            String ln = (String) vector.elementAt(firstLine) ;
+            String ln = (String) vector.get(firstLine) ;
             while (i < firstCol)
              { if (ln.charAt(i) == '\t')
                  { this.vcolumn = ((this.vcolumn / 8) + 1) * 8 ;}
@@ -256,6 +257,6 @@ public class PcalCharReader
         * Set currentLine.                                                 *
         *******************************************************************/
         if (firstLine < vector.size())
-          { this.currentLine = stringToCodepoints(vector.elementAt(firstLine)) ; } ;
+          { this.currentLine = stringToCodepoints(vector.get(firstLine)) ; } ;
       } ;
   }     

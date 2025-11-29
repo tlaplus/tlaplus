@@ -604,7 +604,7 @@ class trans {
         * translator are copied from inputVec, so any tabs the user wants    *
         * are kept.                                                          *
         *********************************************************************/
-        final Vector<String> untabInputVec = removeTabs(specificationText);
+        final ArrayList<String> untabInputVec = removeTabs(specificationText);
 
         /**
          *  Look through the file for PlusCal options.  They are put anywhere
@@ -718,7 +718,7 @@ class trans {
         boolean foundFairBegin = false;
         while ((algLine < untabInputVec.size()) && !foundBegin)
         {
-            String line = untabInputVec.elementAt(algLine);
+            String line = untabInputVec.get(algLine);
             algCol = line.indexOf(PcalParams.BeginAlg);
             if (algCol != -1)
             {
@@ -773,7 +773,7 @@ class trans {
             int ecCol  = algCol ;
             boolean notFound = true ;
             while (notFound && ecLine < untabInputVec.size()) {
-            	char[] line = ((String) untabInputVec.elementAt(ecLine)).toCharArray();
+            	char[] line = ((String) untabInputVec.get(ecLine)).toCharArray();
             	
                 // check current line 
                 while (notFound && ecCol < line.length-1)	 {
@@ -841,7 +841,7 @@ class trans {
             
             // Report an error  if there's something else on the line that doesn't begin with "\*".  This is probably
             
-            String endStuff = ((String) untabInputVec.elementAt(ecLine)).substring(ecCol).trim() ;
+            String endStuff = ((String) untabInputVec.get(ecLine)).substring(ecCol).trim() ;
             
             if (!endStuff.equals("") && !endStuff.startsWith("\\*")) {
             	PcalDebug.reportError("Text on same line following `*)' that ends the \n   comment containing the algorithm.");
@@ -850,9 +850,9 @@ class trans {
             
 			output.add((ecLine + 1), (PCAL_TRANSLATION_COMMENT_LINE_PREFIX + " "
 					+ String.format(Validator.CHECKSUM_TEMPLATE, "ffffffff", "ffffffff")));
-            untabInputVec.insertElementAt(PCAL_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 1));
+            untabInputVec.add((ecLine + 1), PCAL_TRANSLATION_COMMENT_LINE_PREFIX);
             output.add((ecLine + 2), (TLA_TRANSLATION_COMMENT_LINE_PREFIX + " "));
-            untabInputVec.insertElementAt(TLA_TRANSLATION_COMMENT_LINE_PREFIX, (ecLine + 2));
+            untabInputVec.add((ecLine + 2), TLA_TRANSLATION_COMMENT_LINE_PREFIX);
 
             translationLine = ecLine + 1;
 //System.out.println(ecLine + ", " + ecCol);
@@ -974,7 +974,7 @@ class trans {
         * do the translation by calling TLC. Otherwise, call the ordinary    *
         * Translate method.                                                  *
         *********************************************************************/
-        Vector<String> translation = null;
+        List<String> translation = null;
 
         if (PcalParams.tlcTranslation())
         {
@@ -1035,7 +1035,7 @@ class trans {
         int i = 0;
         while (i < translation.size())
         {
-        	output.add((i + translationLine + 1), translation.elementAt(i));
+        	output.add((i + translationLine + 1), translation.get(i));
             i = i + 1;
         }
 
@@ -1064,14 +1064,14 @@ class trans {
     /********************** Writing the AST ************************************/
     private static boolean WriteAST(AST ast)
     {
-        Vector<String> astFile = new Vector<String>();
-        astFile.addElement("------ MODULE AST -------");
-        astFile.addElement("EXTENDS TLC");
-        astFile.addElement("fairness == \"" + PcalParams.FairnessOption + "\"");
-        astFile.addElement(" ");
-        astFile.addElement("ast == ");
-        astFile.addElement(ast.toString());
-        astFile.addElement("==========================");
+        List<String> astFile = new ArrayList<String>();
+        astFile.add("------ MODULE AST -------");
+        astFile.add("EXTENDS TLC");
+        astFile.add("fairness == \"" + PcalParams.FairnessOption + "\"");
+        astFile.add(" ");
+        astFile.add("ast == ");
+        astFile.add(ast.toString());
+        astFile.add("==========================");
         try
         {
             WriteStringVectorToFile(astFile, "AST.tla");
@@ -1086,7 +1086,7 @@ class trans {
 
     /************************* THE TLC TRANSLATION *****************************/
 
-    private static Vector<String> TLCTranslate(AST ast) throws TLCTranslationException
+    private static List<String> TLCTranslate(AST ast) throws TLCTranslationException
     /***********************************************************************
     * The result is a translation of the algorithm represented by ast      *
     * obtained by using TLC to execute the definition of Translation(ast)  *
@@ -1128,7 +1128,7 @@ class trans {
         {
             try
             {
-				Vector<String> parseFile = PcalResourceFileReader
+				List<String> parseFile = PcalResourceFileReader
 						.ResourceFileToStringVector(PcalParams.SpecFile + TLAConstants.Files.TLA_EXTENSION);
 
 				WriteStringVectorToFile(parseFile, PcalParams.SpecFile + TLAConstants.Files.TLA_EXTENSION);
@@ -1285,8 +1285,8 @@ class trans {
          * Wrap the translated string into approximately 80 character lines *
          *******************************************************************/
         transl = WrapString(transl, 78);
-        Vector<String> result = new Vector<String>();
-        result.addElement(transl);
+        List<String> result = new ArrayList<String>();
+        result.add(transl);
         return result;
     }
 
@@ -1837,7 +1837,7 @@ class trans {
      */
     private static boolean OutputHelpMessage()
     {
-        Vector<String> helpVec = null;
+        List<String> helpVec = null;
         try
         {
             helpVec = PcalResourceFileReader.ResourceFileToStringVector("help.txt");
@@ -1849,7 +1849,7 @@ class trans {
         int i = 0;
         while (i < helpVec.size())
         {
-            ToolIO.out.println((String) helpVec.elementAt(i));
+            ToolIO.out.println((String) helpVec.get(i));
             i = i + 1;
         }
 
@@ -1884,7 +1884,7 @@ class trans {
         return STATUS_EXIT_WITH_ERRORS;
     }
 
-    static int findTokenPair(Vector<String> vec, int lineNum, String tok1, String tok2)
+    static int findTokenPair(List<String> vec, int lineNum, String tok1, String tok2)
     /*********************************************************************
     * Returns the number of the first line at or after lineNum in the    *
     * vector of strings vec containing tok1 followed by 1 or more        *
@@ -1894,7 +1894,7 @@ class trans {
         int i = lineNum;
         while (i < vec.size())
         {
-            String line = vec.elementAt(i);
+            String line = vec.get(i);
             int col = line.indexOf(tok1);
             int nextcol = col + tok1.length();
             if (col != -1)
@@ -1918,7 +1918,7 @@ class trans {
 
     /**************************  RemoveTabs  *********************************/
 
-    public static Vector<String> removeTabs(List<String> input) {
+    public static ArrayList<String> removeTabs(List<String> input) {
         /********************************************************************
         * Returns a string vector obtained from the string vector vec by   *
         * replacing any evil tabs with the appropriate number of spaces,   *
@@ -1928,7 +1928,7 @@ class trans {
         * Emacs does when told to remove tabs, which makes it good enough  *
         * for me.                                                          *
          ********************************************************************/
-        final Vector<String> newVec = new Vector<>();
+        final ArrayList<String> newVec = new ArrayList<>();
         for (final String oldLine : input) {
             String newLine = "";
             int next = 0;

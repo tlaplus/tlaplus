@@ -398,6 +398,8 @@
 *   [OTHER] +                --> EPILOG                                    *
 ***************************************************************************/
 package pcal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import pcal.exception.TokenizerException;
@@ -432,13 +434,13 @@ public class Tokenize
     * Note: This use of static fields makes the class totally thread       *
     * unsafe.                                                              *
     ***********************************************************************/
-    private static Vector<Vector<TLAToken>> vspec = null ;
+    private static List<List<TLAToken>> vspec = null ;
           /*****************************************************************
           * vspec is a vector of vectors in which the TokenizedSpec is     *
           * constructed.  At the end, it is turned into an array.          *
           *****************************************************************/
 
-    private static Vector<TLAToken> linev = new Vector<TLAToken>(30, 30) ;
+    private static List<TLAToken> linev = new ArrayList<TLAToken>(30) ;
           /*****************************************************************
           * Vector linev contains the tokens found so far on the current   *
           * line.                                                          *
@@ -754,7 +756,7 @@ public class Tokenize
                 	    * See the declaration of getLineCorrection for an explanation
                 	    * of its use.
                 	    */
-                     { linev.addElement(new TLAToken(token, col, type, 
+                     { linev.add(new TLAToken(token, col, type, 
                              reader.getLineNumber() + getLineCorrection )); } ;   
                    /********************************************************
                    * Reset token.                                          *
@@ -838,8 +840,8 @@ public class Tokenize
       * Append linev to vspec and reset linev.  This should be called      *
       * whenever a \n character is removed from the input stream.          *
       *********************************************************************/
-      { vspec.addElement(linev)    ;
-        linev = new Vector<TLAToken>(30, 30) ;
+      { vspec.add(linev)    ;
+        linev = new ArrayList<TLAToken>(30) ;
         col = 0 ;
       }
 
@@ -880,7 +882,7 @@ public class Tokenize
         col  = ncol ;
         parseExpression = isExpr ;
         prevToken = " ";
-        vspec = new Vector<Vector<TLAToken>>(4) ;
+        vspec = new ArrayList<List<TLAToken>>(4) ;
           // Changed by LL on 13 Dec 2011 from new Vector(1000, 1000) ;
           // I don't know why such a large vector was being used
         reader = charReader ;
@@ -889,7 +891,7 @@ public class Tokenize
            * (private) methods.                                            *
            ****************************************************************/
 
-        linev = new Vector<TLAToken>() ;
+        linev = new ArrayList<TLAToken>() ;
           /*****************************************************************
           * I don't know where linev is initialized, but adding this       *
           * initialization doesn't seem to make any difference.            *
