@@ -1691,8 +1691,25 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
             this.impliedTemporalNameVec.addElement(name);
+        } else if (level == 2)
+        {
+			if (pred instanceof OpApplNode
+					&& BuiltInOPs.getOpCode(((OpApplNode) pred).getOperator().getName()) == OPCODE_sa) {
+				// PROPERTY A where formula A == [ ... ]_v 
+				Assert.fail(EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_SQUARE_A_SUB_V,
+						new String[] { name, pred.getLocation().toString() });
+			} else if (pred instanceof OpApplNode
+					&& BuiltInOPs.getOpCode(((OpApplNode) pred).getOperator().getName()) == OPCODE_aa) {
+				// PROPERTY A where formula A == << ... >>_v 
+				Assert.fail(EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_ANGLE_A_SUB_V,
+						new String[] { name, pred.getLocation().toString() });				
+			} else {
+				Assert.fail(EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL,
+						new String[] { name, pred.getLocation().toString() });
+        	}
         } else
         {
+        	// There is no other level beyond 0..3, but let's keep this branch to be on the safe side.
             Assert.fail(EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED, name);
         }
     }

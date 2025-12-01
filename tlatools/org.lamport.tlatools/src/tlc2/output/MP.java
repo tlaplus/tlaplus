@@ -529,9 +529,10 @@ public class MP
         	}
             break;
         case EC.TLC_INVARIANT_CONSTANT_LEVEL:
-			b.append(
-					"The invariant %1% is a constant-level formula (i.e., it contains no variables, primes, or temporal operators) and evaluates to %2%. "
-					+ "To assert constant-level formulas in your spec, use ASSUME ConstInv, or to give the assumption a name such as YourAssumption, use ASSUME YourAssumption == ConstInv.");
+		b.append(
+				"The invariant %1% is a constant-level formula (i.e., it contains no variables, primes, or temporal operators) and evaluates to %2%. "
+				+ "To assert constant-level formulas in your spec, use ASSUME ConstInv. If you optionally want to give the assumption a name, write ASSUME YourAssumption == ConstInv instead. "
+				+ "See https://explain.tlapl.us/assumptions-and-invariants for additional details.");
             break;
 
         case EC.TLC_INVARIANT_EVALUATION_FAILED:
@@ -921,7 +922,7 @@ public class MP
 					+ "where a temporal formula is typically expected. State-level formulas used as PROPERTY "
 					+ "or PROPERTIES are only checked in the initial state. To verify that the formula %1% "
 					+ "holds in all states of every behavior, use INVARIANT %1% instead. Alternatively, "
-					+ "applying the \"always\" temporal operator (□) to the state-level formula %1% changes it "
+					+ "applying the \"always\" temporal operator ([]) to the state-level formula %1% changes it "
 					+ "into a temporal formula, asserting that %1% holds in all states of every behavior. "
 					+ "See https://explain.tlapl.us/invariants-and-properties for additional details.");
 			break;
@@ -1296,6 +1297,28 @@ public class MP
                     + "\nbut TLC can only handle behaviors of length up to 65535 states. The last\n"
                     + "state in the behavior is:\n%1%");
         	break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_SQUARE_A_SUB_V:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that action %1% holds in *every* step of the behavior, define a temporal property "
+            		+ "by applying the \"always\" temporal operator ([]) to the formula at %2% (compare page 90 of "
+            		+ "Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL_ANGLE_A_SUB_V:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that infinitely many %1% steps occur, define a temporal property by applying "
+            		+ "the \"always eventually\" temporal operator combination ([]<>) to the formula at "
+            		+ "%2% (compare page 91 of Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+            break;
+        case EC.TLC_CONFIG_PROPERTY_ACTION_LEVEL:
+            b.append("The formula %1% at %2% is an action-level formula (i.e., it contains no temporal operators). "
+            		+ "Only temporal-level (or state-level) formulas are allowed under PROPERTY or PROPERTIES. "
+            		+ "To check that action %1% holds in *every* step of the behavior, define a temporal property: "
+            		+ "Let A be the formula at %2%; rewrite A as [][A]_v, where v is a state function (typically "
+            		+ "the tuple of variables) (compare page 90 of Specifying Systems at "
+            		+ "https://lamport.azurewebsites.net/tla/book.html).");
+            break;
         case EC.TLC_CONFIG_PROPERTY_NOT_CORRECTLY_DEFINED:
             b.append("The property %1% is not correctly defined.");
             break;
