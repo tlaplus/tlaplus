@@ -100,6 +100,22 @@ The setting also helps Eclipse pick up changes as you switch between git branche
 
 For instructions on how to set up Eclipse to develop the Toolbox IDE, read [this](general/ide/README.md).
 
+Developing with VS Code Dev Containers
+--------------------------------------
+This repository includes a VS Code [Dev Container](https://code.visualstudio.com/docs/devcontainers/containers) configuration in `.devcontainer/` for contributors who prefer an isolated, preconfigured toolchain.
+
+Install the following locally:
+ * [Docker](https://www.docker.com/products/docker-desktop/) or another compatible container runtime
+ * [Visual Studio Code](https://code.visualstudio.com/) with the "Dev Containers" extension
+
+To use it:
+ * Open this repository in VS Code and select "Reopen in Container" when prompted (or run "Dev Containers: Reopen in Container" from the Command Palette).
+ * VS Code will build the image from `.devcontainer/Dockerfile`, which layers Java 11, Maven, Git, Ant, and Xvfb onto the `mcr.microsoft.com/devcontainers/base:ubuntu` base image. The build also installs the recommended Java and Maven extensions listed in `.devcontainer/devcontainer.json`.
+ * After the container starts, the `postCreateCommand` runs `ant -version && mvn -version` so you can confirm the toolchain is available inside the container.
+ * Run project commands (e.g., `ant -f customBuild.xml compile` or `mvn verify`) from an integrated terminal in VS Code; they execute inside the container with the workspace mounted.
+
+The Dev Container is a convenience for contributors who do not want to install the Java/Maven/Ant toolchain directly on their host system. It is optional; you may continue using your existing local setup or Eclipse as described above.
+
 Using Git Effectively
 ---------------------
 
