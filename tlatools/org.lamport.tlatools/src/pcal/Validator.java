@@ -123,7 +123,7 @@ public class Validator {
 	 * @return the result of the validation, as enumerated by the inner enum of this class.
 	 */
 	private static Set<ValidationResult>  validate(final List<String> specificationText) {
-        final Vector<String> deTabbedSpecification = trans.removeTabs(specificationText);
+        final List<String> deTabbedSpecification = trans.removeTabs(specificationText);
 		
         final IntPair searchLoc = new IntPair(0, 0);
         boolean notDone = true;
@@ -166,7 +166,7 @@ public class Validator {
         boolean foundBegin = false;
         boolean foundFairBegin = false;
 		while ((algLine < deTabbedSpecification.size()) && !foundBegin) {
-			final String line = deTabbedSpecification.elementAt(algLine);
+			final String line = deTabbedSpecification.get(algLine);
 			final Matcher m = MODULE_CLOSING_PATTERN.matcher(line);
 			if (m.matches()) {
 				break;
@@ -263,7 +263,7 @@ public class Validator {
 	    			}
 	    		}
 	    		if (m.group(Validator.TLA_CHECKSUM) != null) {
-					final Vector<String> translation = new Vector<>(
+					final List<String> translation = new ArrayList<>(
 							specificationText.subList((translationLine + 1), endTranslationLine));
 					final String chksumTLATranslation = Validator.checksum(translation);
 	    			
@@ -279,7 +279,7 @@ public class Validator {
 		return res.isEmpty() ? setOf(ValidationResult.NO_DIVERGENCE) : res;
 	}
     
-    public static String checksum(final Vector<String> lines) {
+    public static String checksum(final List<String> lines) {
     	final StringBuilder sb = new StringBuilder();
     	for (final String str : lines) {
     		sb.append(str);

@@ -5,6 +5,8 @@
 
 package pcal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 public class Changed {
@@ -22,9 +24,9 @@ public class Changed {
 	 *          i-th variable in vars has been changed.
 	 */
     public int[] count; /* number times variable set */
-    public Vector vars; /* list of variables */
+    public List<String> vars; /* list of variables */
 
-    public Changed (Vector vars) {
+    public Changed (List<String> vars) {
 	count = new int[vars.size()];
 	this.vars = vars;
 	for (int i = 0; i < count.length; i++)
@@ -43,7 +45,7 @@ public class Changed {
 	for (int i = 0; i < count.length; i++)
 	    s = s
 		+ ((i == 0) ? "" : ", ")
-		+ ((String) vars.elementAt(i))
+		+ ((String) vars.get(i))
 		+ " "
 		+ count[i];
 	s = s + "]";
@@ -56,7 +58,7 @@ public class Changed {
 
     public boolean IsChanged(String s) {
 	for (int i = 0; i < count.length; i++)
-	    if (s.equals((String) vars.elementAt(i)))
+	    if (s.equals((String) vars.get(i)))
 		return (count[i] > 0);
 	return false;
     }
@@ -69,7 +71,7 @@ public class Changed {
 
     public int Set (String v) {
 	for (int i = 0; i < count.length; i++)
-	    if (v.equals((String) vars.elementAt(i)))
+	    if (v.equals((String) vars.get(i)))
 		return ++count[i];
 	return 0;
     }
@@ -81,7 +83,7 @@ public class Changed {
 	    if (count[i] == 0)
 		s = s
 		    + ((s.length() == 0) ? "" : ", ")
-		    + (String) vars.elementAt(i);
+		    + (String) vars.get(i);
 	return s;
     }
 
@@ -92,7 +94,7 @@ public class Changed {
 	    if ((count[i] == 0) && c.count[i] > 0)
 		s = s
 		    + ((s.length() == 0) ? "" : ", ")
-		    + (String) vars.elementAt(i);
+		    + (String) vars.get(i);
 	return s;
     }
   
@@ -101,44 +103,44 @@ public class Changed {
     /* (except for vars whose length is over ch-1)       */
     /* This method is called only once, from             */
     /* GenLabeledStmt.                                   */
-    public Vector Unchanged (int ch) {
-	Vector sv = new Vector();
+    public List<String> Unchanged (int ch) {
+	List<String> sv = new ArrayList<String>();
 	String s = "";
 	boolean haveOne = false;
 	for (int i = 0; i < count.length; i++)
 	    if (count[i] == 0) {
-		String one = (String) vars.elementAt(i);
+		String one = (String) vars.get(i);
 		if (haveOne) s = s + ", ";
 		else haveOne = true;
 		if (s.length() + one.length() > ch) {
-		    if (s.length() > 0) sv.addElement(s);
+		    if (s.length() > 0) sv.add(s);
 		    s = one;
 		}
 		else s = s + one;
 	    }
-	if  (s.length() > 0) sv.addElement(s);
+	if  (s.length() > 0) sv.add(s);
 	return sv;
     }
 
     /* String of vars that were changed in c but not in this */
     /* Each string is no longer than ch characters           */
     /* (except for vars whose length is over ch-1)           */
-    public Vector Unchanged (Changed c, int ch) {
-	Vector sv = new Vector();
+    public List<String> Unchanged (Changed c, int ch) {
+	List<String> sv = new ArrayList<String>();
 	String s = "";
 	boolean haveOne = false;
 	for (int i = 0; i < count.length; i++)
 	    if ((count[i] == 0) && c.count[i] > 0) {
-		String one = (String) vars.elementAt(i);
+		String one = (String) vars.get(i);
 		if (haveOne) s = s + ", ";
 		else haveOne = true;
 		if (s.length() + one.length() > ch) {
-		    if (s.length() > 0) sv.addElement(s);
+		    if (s.length() > 0) sv.add(s);
 		    s = one;
 		}
 		else s = s + one;
 	    }
-	if  (s.length() > 0) sv.addElement(s);
+	if  (s.length() > 0) sv.add(s);
 	return sv;
     }
   
