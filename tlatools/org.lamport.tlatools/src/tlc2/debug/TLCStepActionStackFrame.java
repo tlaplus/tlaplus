@@ -27,7 +27,6 @@ package tlc2.debug;
 
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.lsp4j.debug.Capabilities;
 import org.eclipse.lsp4j.debug.ContinueResponse;
 
 import tla2sany.st.Location;
@@ -151,17 +150,5 @@ public final class TLCStepActionStackFrame extends TLCActionStackFrame {
 	public void postHalt(final TLCDebugger debugger) {
 		debugger.sendCapabilities(TLCCapabilities.STEP_BACK);
 		debugger.setGranularity(Granularity.Formula);
-	}
-
-	private static class TLCCapabilities extends Capabilities {
-
-		public static final Capabilities STEP_BACK = new TLCCapabilities(true);
-		
-		public static final Capabilities NO_STEP_BACK = new TLCCapabilities(false);
-
-		public TLCCapabilities(boolean reverse) {
-			super();
-			setSupportsStepBack(reverse);
-		}
 	}
 }
