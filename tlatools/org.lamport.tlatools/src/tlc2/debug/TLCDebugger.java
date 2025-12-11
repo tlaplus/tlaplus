@@ -172,7 +172,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// by SANY.
 		capabilities.setSupportsConditionalBreakpoints(true);
 		capabilities.setSupportsLogPoints(false);
-		// TODO: Implement stepping back for model-checking and simulation/generation.
+		// TODO: Implement stepping back for model-checking.
 		// Stepping back would be hugely useful especially because TLC's evaluation behavior might be 
 		// surprising (non-determinism). This can cause users to miss the stack-frame they wish to see.
 		// Implementing arbitrary navigation along stack-frames is impossible unless one implements
@@ -671,6 +671,18 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Reset_Start;
 		this.notify();
 
+		return CompletableFuture.completedFuture(null);
+	}
+	
+	@Override
+	public synchronized CompletableFuture<Void> gotoState(GotoStateArgument args) {
+		LOGGER.finer("selectSuccessor");
+
+		if (!stack.isEmpty() && stack.peek().handle(this)) {
+			return this.stack.peek().gotoState(this, args.getVariablesReference());
+		}
+
+		this.notify();
 		return CompletableFuture.completedFuture(null);
 	}
 

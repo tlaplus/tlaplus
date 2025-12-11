@@ -66,7 +66,7 @@ import org.eclipse.lsp4j.debug.TerminateArguments;
 import org.eclipse.lsp4j.debug.TerminateThreadsArguments;
 import org.eclipse.lsp4j.debug.services.IDebugProtocolServer;
 
-public abstract class AbstractDebugger implements IDebugProtocolServer{
+public abstract class AbstractDebugger implements IDebugProtocolServer, GotoStateEvent {
 
 	@Override
 	public CompletableFuture<SourceResponse> source(SourceArguments args) {

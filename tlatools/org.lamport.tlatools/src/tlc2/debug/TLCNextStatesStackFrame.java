@@ -25,9 +25,12 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.debug.Variable;
 
@@ -43,6 +46,14 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 	public static final String SCOPE = "Successors";
 
 	private transient final INextStateFunctor fun;
+
+	// Maps variable reference IDs to TLC states for successor states.
+	// The mapping would be more robust, if we used the fingerprint instead of the
+	// variable reference ID. In the general case, however, FPs cannot be computed
+	// if the state is only partial, i.e., not all variables have been determined.
+	// Moreover, the DAP's representation of variable references is an integer, not
+	// a long. This is why the front-end uses the DAP's variable references.
+	private transient final Map<Integer, TLCState> idToStateMap = new HashMap<>();
 
 	public TLCNextStatesStackFrame(TLCStackFrame parent, SemanticNode node, Context ctxt, Tool tool,
 			INextStateFunctor fun, TLCState state) {
@@ -81,6 +92,8 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 					RecordValue r = new RecordValue(t);
 					vars[i] = getStateAsVariable(r, t.getLevel() + "." + String.format("%0" + width + "d", i + 1) + ": "
 							+ (t.hasAction() ? t.getAction().getLocation() : "<???>"));
+					// See note about getVariablesReference in the declaration of idToStateMap.
+					idToStateMap.put(vars[i].getVariablesReference(), t);
 				}
 				return vars;
 			});
@@ -90,5 +103,23 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 
 	Set<TLCState> getSuccessors() {
 		return fun.getStates().toSet();
+	}
+
+	@Override
+	public boolean handle(final TLCDebugger debugger) {
+		return debugger.stack.size() == 1;
+	}
+
+	@Override
+	public CompletableFuture<Void> gotoState(final TLCDebugger debugger, int id) {
+		// idToStateMap is populated with the trace from the initial state to the
+		// current state s, and all of s' successor states.
+		final TLCState tlcState = idToStateMap.get(id);
+		if (tlcState != null) {
+			fun.setElement(tlcState);
+			return super.gotoState(debugger, id);
+		}
+		
+		return super.gotoState(debugger, id);
 	}
 }
