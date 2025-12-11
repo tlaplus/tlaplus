@@ -27,6 +27,7 @@
 package tlc2.util;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import tlc2.tool.Action;
 import tlc2.tool.ITool;
@@ -279,5 +280,15 @@ public final class SetOfStates {
 
 	public void resetNext() {
 		iteratorIndex = 0;
+	}
+	
+	public Set<TLCState> toSet() {
+		final HashSet<TLCState> set = new HashSet<>(size());
+		for (int i = 0; i < size(); i++) {
+			set.add(next());
+		}
+		// Always clean-up after ourself!
+		resetNext();
+		return set;
 	}
 }
