@@ -760,6 +760,12 @@ public class TLCStackFrame extends StackFrame {
 		debugger.notify();
 		return CompletableFuture.completedFuture(null);
 	}
+	
+	public CompletableFuture<Void> gotoState(TLCDebugger debugger, int id) {
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
 
 	public boolean handle(final TLCDebugger debugger) {
 		return false;
