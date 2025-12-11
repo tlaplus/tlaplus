@@ -967,16 +967,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		if (matches(step, sourceFrame, frame)) {
 			haltExecution(frame);
 		} else if (matches(frame)) {
-			// Calling pre/postHalt because stack frame decided to halt and might want to do
-			// something specific. It does not giving control to the frame in the if branch
-			// because the frame wasn't involved in the decision to halt.
-			frame.preHalt(this);
 			haltExecution(frame);
-			frame.postHalt(this);
 		}
 	}
 
 	protected void haltExecution(final TLCStackFrame frame) {
+		// Calling pre/postHalt because stack frame decided to halt and might want to do
+		// something specific. It does not giving control to the frame in the if branch
+		// because the frame wasn't involved in the decision to halt.
+		frame.preHalt(this);
+
 		sendStopped(frame);
 
 		try {
@@ -1007,6 +1007,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			// those targets.
 			throw new ResetEvalException(stack.getLast());
 		}
+
+		frame.postHalt(this);
 	}
 
 	protected void sendStopped(final TLCStackFrame frame) {
