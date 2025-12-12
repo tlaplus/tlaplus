@@ -148,9 +148,5 @@ public interface IDebugTarget {
 	
 	IDebugTarget popFrame(TLCState state);
 
-	StepDirection pushFrame(TLCState predecessor, Action a, TLCState state);
-
-	IDebugTarget popFrame(TLCState predecessor, TLCState state);
-
 	IDebugTarget setTool(Tool tool);
 }

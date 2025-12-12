@@ -749,23 +749,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	@Override
-	public synchronized StepDirection pushFrame(TLCState s, Action a, TLCState t) {
-		final TLCStepActionStackFrame frame = new TLCStepActionStackFrame(this.stack.peek(), tool, s, a, t);
-		stack.push(frame);
-		haltExecution(frame, this.stack.size());
-		return frame.getStepDirection(); // Note different return type here!
-	}
-
-	@Override
 	public synchronized IDebugTarget popFrame(TLCState state) {
 		TLCStackFrame f = this.stack.peek();
 		return popFrame(f.getTool(), f.getNode(), f.getContext(), state);
-	}
-
-	@Override
-	public synchronized IDebugTarget popFrame(TLCState s, TLCState t) {
-		//TODO This swallows the predecessor!
-		return popFrame(t);
 	}
 
 	@Override
