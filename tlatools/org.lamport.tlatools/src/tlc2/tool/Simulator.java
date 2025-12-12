@@ -127,7 +127,11 @@ public class Simulator {
 			}
 			
 			final ITool t = i == 0 ? tool : tool.noDebug();
-			if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
+			if (tool.isDebugger()) {
+				this.workers.add(new ExplorationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
+						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
+						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
 				this.workers.add(new RLSimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
 						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));

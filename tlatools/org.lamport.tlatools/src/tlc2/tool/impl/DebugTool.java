@@ -391,6 +391,19 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
+	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+		for (int i = 0; i < actions.length; i++) {
+			this.getNextStates(functor, state, actions[i]);
+		}
+		try {
+			target.pushNextStatesFrame(this, functor, state);
+		} finally {
+			target.popNextStatesFrame(this, functor, state);
+		}
+		return false;
+	}
+
+	@Override
 	protected final TLCState getNextStates(final Action action, final SemanticNode expr, final ActionItemList acts,
 			final Context c, final TLCState s0, final TLCState s1, final INextStateFunctor nss, final CostModel cm) {
 		if (mode == EvalMode.Debugger) {
@@ -694,6 +707,11 @@ public class DebugTool extends Tool {
 		final EvalMode old = this.mode;
 		this.mode = EvalMode.Debugger;
 		return old;
+	}
+
+	@Override
+	public boolean isDebugger() {
+		return true;
 	}
 
 	@Override

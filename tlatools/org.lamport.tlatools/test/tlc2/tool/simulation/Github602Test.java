@@ -40,6 +40,14 @@ public class Github602Test extends ModelCheckerTestCase {
 		super("Github602", new String[] { "-config", "Github602.tla", "-simulate", "num=1" });
 	}
 
+	@Override
+	protected boolean runWithDebugger() {
+		// By design, ExplorationWorker is less optimized than SimulationWorker and
+		// generates a larger number of states. Disable it here to avoid skewing the
+		// results reported by the test case below.
+		return false;
+	}
+
 	@Test
 	public void testSpec() {
 		// Simulation has finished and generated states
