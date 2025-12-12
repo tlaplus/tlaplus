@@ -224,7 +224,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		
 		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 		frame = (TLCStateStackFrame) stackFrames[0];
 		assertEquals(2, frame.state.getLevel());
@@ -234,7 +234,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		SetBreakpointsArguments sba = createBreakpointArgument(RM, 167, "NotNotTypeOK");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(12, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 
 		// Replace the previous breakpoint with the same one except for a hit condition
@@ -275,7 +275,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		sba = createBreakpointArgument(MDL, 38, "View");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 38, 9, 38, 12, MDL, Context.Empty);
 		
 		frame = (TLCStateStackFrame) stackFrames[0];
@@ -333,7 +333,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		ea.setExpression("violate");
 		debugger.evaluate(ea);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCFrame(stackFrames[0], 41, 5, 41, 35, MDL, null); // null instead of Context.Empty to assert that there is some context.
 		final Context context = ((TLCStackFrame) stackFrames[0]).getContext();
 		assertEquals("CounterExample", context.getName().getName().toString());
