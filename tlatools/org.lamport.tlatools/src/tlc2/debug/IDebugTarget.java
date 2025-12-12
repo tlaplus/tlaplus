@@ -129,6 +129,10 @@ public interface IDebugTarget {
 	IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState predecessor, Action a, TLCState state,
 			StatefulRuntimeException e);
 
+	IDebugTarget pushNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state);
+
+	IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state);
+
 	IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode pred, Context c, TLCState predecessor, Action a, TLCState state, StatefulRuntimeException e);
 
 	IDebugTarget markAssumptionViolatedFrame(Tool debugTool, SemanticNode pred, Context c);

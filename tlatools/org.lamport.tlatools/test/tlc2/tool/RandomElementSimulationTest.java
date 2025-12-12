@@ -45,6 +45,14 @@ public class RandomElementSimulationTest extends ModelCheckerTestCase {
 				ExitStatus.VIOLATION_SAFETY);
 	}
 
+	@Override
+	protected boolean runWithDebugger() {
+		// By design, ExplorationWorker is less optimized than SimulationWorker and
+		// generates a larger number of states. Disable it here to avoid skewing the
+		// results reported by the test case below.
+		return false;
+	}
+
 	@Test
 	public void test() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

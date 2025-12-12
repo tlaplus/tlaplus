@@ -85,13 +85,13 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
 
 	// This worker's local source of randomness.
-	private final RandomGenerator localRng;
+	protected final RandomGenerator localRng;
 
 	// The state currently being processed.
-	private TLCState curState;
+	protected TLCState curState;
 
 	// The set of initial states for the spec. 
-	private StateVec initStates;
+	protected StateVec initStates;
 	
 	// The queue that the worker places its results onto.
 	private final BlockingQueue<SimulationWorkerResult> resultQueue;
@@ -104,17 +104,17 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	private final long maxTraceNum;
 	
 	// The maximum length of any generated trace.
-	private final int maxTraceDepth;
+	protected final int maxTraceDepth;
 	
 	// Should this worker check traces for deadlock.
-	private final boolean checkDeadlock;
+	protected final boolean checkDeadlock;
 	
 	// The base name of the file that this worker writes out generated traces to. If it is null,
 	// no trace files are generated.
 	private final String traceFile;
 
 	protected final ITool tool;
-	private final ILiveCheck liveCheck;	
+	protected final ILiveCheck liveCheck;	
 
 	final SimulationWorkerStatistics statistics;
 	
@@ -509,7 +509,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	/**
 	 * Check to see if the worker thread has been interrupted.
 	 */
-	private final void checkForInterrupt() throws InterruptedException {
+	protected final void checkForInterrupt() throws InterruptedException {
 		// MAK 07/2021: This used to be a call to Thread.interrupted instead of the
 		// explicit stopped flag. The former doesn't work anymore because of
 		// SingleThreadedSimulator (with STS, checkForTermination is called from
@@ -534,7 +534,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 * This method returns a state that is randomly chosen from the set of states.
 	 * It returns null if the set of states is empty.
 	 */
-	private final TLCState randomState(RandomGenerator rng, StateVec states) {
+	protected final TLCState randomState(RandomGenerator rng, StateVec states) {
 		final int len = states.size();
 		if (len > 0) {
 			final int index = (int) Math.floor(rng.nextDouble() * len);
@@ -632,7 +632,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return new SetOfStates(nextStates);
 	}
 
-	private final StateVec nextStates = new StateVec(1);
+	protected final StateVec nextStates = new StateVec(1);
 	
 	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {
 		return (int) Math.floor(this.localRng.nextDouble() * actions.length);
@@ -657,7 +657,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 * returns Optional.empty().
 	 *
 	 */
-	private Optional<SimulationWorkerError> simulateRandomTrace() throws Exception {
+	protected Optional<SimulationWorkerError> simulateRandomTrace() throws Exception {
 
 		// a) Randomly select a state from the set of init states.
 		curState = randomState(this.localRng, initStates);

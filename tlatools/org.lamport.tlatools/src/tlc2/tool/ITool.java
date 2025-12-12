@@ -296,6 +296,10 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 		}
 		return this;
 	}
+	
+	default boolean isDebugger() {
+		return false;
+	}
 
 	default ITool noDebug() {
 		return this;

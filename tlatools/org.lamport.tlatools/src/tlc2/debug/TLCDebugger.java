@@ -113,12 +113,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
+		this.haltNext = false;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltNext = halt;
 	}
 
 	/*
@@ -128,6 +130,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltNext = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -272,8 +275,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			violations.setFilter("InvariantBreakpointsFilter");
 			violations.setLabel("Halt (break) on violations");
 			violations.setDescription("TLC will halt when an invariant is violated.");
+			
+			final ExceptionBreakpointsFilter next = new ExceptionBreakpointsFilter();
+			next.setDefault_(this.haltNext);
+			next.setFilter("NextBreakpointsFilter");
+			next.setLabel("Halt (break) after Next");
+			next.setDescription("TLC will halt after the next-state relation has been evaluated.");
 
-			return new ExceptionBreakpointsFilter[] { filter, unsat, violations };
+			return new ExceptionBreakpointsFilter[] { filter, unsat, violations, next };
 		}
 	}
 
@@ -282,6 +291,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Set<String> asSet = Arrays.stream(args.getFilterOptions()).map(fo -> fo.getFilterId()).collect(Collectors.toSet());
 		this.haltExp = asSet.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asSet.contains("InvariantBreakpointsFilter");
+		this.haltNext = asSet.contains("NextBreakpointsFilter");
 
 		this.haltUnsat = Arrays.stream(args.getFilterOptions())
 				.filter(fo -> fo.getFilterId().equals("UnsatisfiedBreakpointsFilter"))
@@ -374,6 +384,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
+		haltNext = false;
 		haltUnsat = null;
 		this.notify();
 		
@@ -679,6 +690,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
+	private volatile boolean haltNext;
 	private volatile TLCSourceBreakpoint haltUnsat;
 
 	private volatile boolean executionIsHalted = false;
@@ -891,6 +903,25 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popExceptionFrame(Tool tool, SemanticNode expr, Context c, TLCState s,
 			Action a, TLCState t, StatefulRuntimeException e) {
 		return popExceptionFrame(tool, expr, c, null, e);
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
+		final Action next = tool.getNextStateSpec();
+		final TLCStackFrame frame = new TLCNextStatesStackFrame(stack.peek(), next.pred, next.con, tool, functor, state); 
+		stack.push(frame);
+		if (haltNext) {
+			haltExecution(frame);
+		}
+		return this;
+	}
+
+	@Override
+	public synchronized IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
+		// There is nothing to be done except popping the frame.  
+		final TLCStackFrame pop = stack.pop();
+		assert pop instanceof TLCNextStatesStackFrame;
+		return this;
 	}
 	
 	@Override
