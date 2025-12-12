@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Supplier;
 
 import tlc2.output.EC;
-import tlc2.tool.SimulationWorker.SimulationWorkerError;
 import tlc2.tool.liveness.ILiveCheck;
 
 public class ExplorationWorker extends SimulationWorker {

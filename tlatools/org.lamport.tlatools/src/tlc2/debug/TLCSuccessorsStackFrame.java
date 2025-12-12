@@ -25,11 +25,8 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-
-import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
@@ -41,72 +38,18 @@ import tlc2.tool.INextStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
-import tlc2.value.impl.RecordValue;
 
-public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
-
-	private transient final INextStateFunctor fun;
-	private transient final Action a;
+public class TLCSuccessorsStackFrame extends TLCNextAndSuccStackFrame {
 	private StepDirection step = StepDirection.Continue;
-	
-	public static final String SCOPE = "Successors";
-
-	@Override
-	protected String getScope() {
-		return SCOPE;
-	}
 
 	public TLCSuccessorsStackFrame(TLCStackFrame parent, OpDefNode node, Context ctxt, Tool tool, TLCState s, Action a,
 			INextStateFunctor fun) {
-		super(parent, node, ctxt, tool, s);
-		this.a = a;
-		this.fun = fun;
-		//TODO Append action name, too? => node.getName().toString()
-		// Overwrite setName from parent that uses HumanReadableImage, which -for an
-		// OpDefNode- is not the location.
-		setName(node.toString());
+		super(parent, node, ctxt, tool, s, a, fun);
 	}
 
 	@Override
-	protected boolean addT() {
-		return true;
-	}
-
-	@Override
-	Variable[] getStateVariables() {
-		return new Variable[] { toVariable() };
-	}
-
-	@Override
-	public Variable[] getVariables(int vr) {
-		if (vr == stateId) {
-			return tool.eval(() -> {
-				// A) Filter those states from fun#getStates that are a-steps where a is the Action
-				// corresponding to this frame.
-				final Set<TLCState> aSteps = getSuccessors();
-				
-				// B) Convert a-steps into the DAP representation.
-				final Variable[] vars = new Variable[aSteps.size()];
-				Iterator<TLCState> itr = aSteps.iterator();
-				for (int i = 0; i < vars.length; i++) {
-					TLCState t = itr.next();
-					RecordValue r = new RecordValue(t);
-					vars[i] = getStateAsVariable(r, t.getLevel() + "." + (i + 1) + ": "
-							+ (t.hasAction() ? t.getAction().getLocation() : "<???>"));
-				}
-				return vars;
-			});
-		}
-		return super.getVariables(vr);
-	}
-
-	Set<TLCState> getSuccessors() {
+	protected Set<TLCState> getSuccessors() {
 		return fun.getStates().getSubSet(a);
-	}
-	
-	@Override
-	protected boolean hasScope() {
-		return !getSuccessors().isEmpty();
 	}
 
 	@Override
@@ -122,11 +65,6 @@ public class TLCSuccessorsStackFrame extends TLCStateStackFrame {
 					&& getSuccessors().size() >= hits && matchesExpression(bp, true);
 		}
 		return false;
-	}
-
-	@Override
-	public boolean handle(final TLCDebugger debugger) {
-		return debugger.stack.size() == 1;
 	}
 
 	@Override

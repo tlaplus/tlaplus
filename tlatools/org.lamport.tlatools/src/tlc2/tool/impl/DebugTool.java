@@ -641,6 +641,11 @@ public class DebugTool extends Tool {
 		}
 
 		@Override
+		public Object setElement(TLCState state) {
+			return functor.setElement(state);
+		}
+
+		@Override
 		public TLCState addUnsatisfiedState(TLCState curState, Action action, TLCState succState, SemanticNode pred,
 				Context c) {
 			return this.functor.addUnsatisfiedState(curState, action, succState, pred, c);
