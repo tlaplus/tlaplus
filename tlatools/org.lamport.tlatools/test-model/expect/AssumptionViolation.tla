@@ -1,0 +1,3 @@
+---- MODULE AssumptionViolation ----
+ASSUME FALSE
+====

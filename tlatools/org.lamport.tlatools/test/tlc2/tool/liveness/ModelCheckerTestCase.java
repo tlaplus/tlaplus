@@ -213,7 +213,7 @@ public abstract class ModelCheckerTestCase extends CommonTestCase {
 		
 			// Run the ModelChecker
 			final int errorCode = tlc.process();
-			actualExitStatus = EC.ExitStatus.errorConstantToExitStatus(errorCode);
+			actualExitStatus = EC.ExitStatus.errorConstantToExitStatus(errorCode, tlc.getExpectedModelResult());
 			
 		} catch (Exception e) {
 			fail(e.getMessage());
