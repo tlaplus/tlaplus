@@ -438,11 +438,6 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(7, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null, vars[0], vars[1]);
 
-		// evaluate the UNCHANGED
-		stackFrames = debugger.stepIn();
-		assertEquals(8, stackFrames.length);
-//		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null);
-
 		// Run to the state-constraint and a hit condition.
 		debugger.unsetBreakpoints();
 		sba = createBreakpointArgument(RM, 148);
@@ -452,12 +447,12 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(8, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
 
-		// Check SendMsg action has expected number of successor states.
-		sba = createBreakpointArgument(RM, 96, 3, 1); // Inline breakpoint set on the LHS of Action definition.
+		// Check Next action has expected number of successor states.
+		sba = createBreakpointArgument(RM, 134);
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
-		assertTLCSuccessorFrame(stackFrames[0], 96, 1, 107, 32, RM, Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne), 1);
+		assertTLCNextStatesFrame(stackFrames[0], 134, 20, 134, 23, RM, Context.Empty, 3);
 		
 		stackFrame = (TLCStackFrame) stackFrames[0];
 		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));

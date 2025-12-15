@@ -38,7 +38,6 @@ import tlc2.TLCGlobals;
 import tlc2.debug.IDebugTarget;
 import tlc2.debug.IDebugTarget.AbortEvalException;
 import tlc2.debug.IDebugTarget.ResetEvalException;
-import tlc2.debug.IDebugTarget.StepDirection;
 import tlc2.debug.TLCDebugger;
 import tlc2.tool.Action;
 import tlc2.tool.EvalControl;
@@ -53,7 +52,6 @@ import tlc2.tool.TLCStateFun;
 import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
-import tlc2.util.SetOfStates;
 import tlc2.value.IValue;
 import tlc2.value.impl.Value;
 import util.Assert.TLCRuntimeException;
@@ -391,12 +389,18 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
-	public boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
-		for (int i = 0; i < actions.length; i++) {
-			this.getNextStates(functor, state, actions[i]);
+	public final boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
+		if (mode == EvalMode.Debugger) {
+			for (int i = 0; i < actions.length; i++) {
+				fastTool.getNextStates(functor, state, actions[i]);
+			}
+			return false;
 		}
 		try {
 			target.pushNextStatesFrame(this, functor, state);
+			for (int i = 0; i < actions.length; i++) {
+				this.getNextStates(functor, state, actions[i]);
+			}
 		} finally {
 			target.popNextStatesFrame(this, functor, state);
 		}
@@ -546,34 +550,7 @@ public class DebugTool extends Tool {
 		}
 		mode = EvalMode.Action;
 		try {
-			if (functor instanceof WrapperNextStateFunctor) {
-				return super.getNextStates(functor, state, action);
-			} else {
-				final WrapperNextStateFunctor wf = new WrapperNextStateFunctor(functor, target);
-				if (action.isDeclared()) {
-					// Breakpoints for the INextStateFunctor frames are in-line breakpoints on
-					// the action declaration. If an action is undeclared, it is impossible to set
-					// the breakpoint.
-					try {
-						final StepDirection d = target.pushFrame(this, action.getOpDef(), action.con, state, action, wf);
-						if (d == StepDirection.Out && !state.isInitial()) {
-							functor.setElement(state.getPredecessor());
-							return false;
-						} else if (d == StepDirection.Over) {
-							// Nothing to be done for the current state when stepping over.
-							return false;
-						}
-						// SD.In, SD.Continue, and stepping out of an initial state are all equivalent
-						// *at the start* of evaluating the next-state relation.
-						super.getNextStates(wf, state, action);
-					} finally {
-						target.popFrame(this, action.getOpDef(), action.con, state, action, wf);
-					}
-				} else {
-					this.getNextStates(wf, state, action);
-				}
-				return false;
-			}
+			return super.getNextStates(functor, state, action);
 		} catch (final ResetEvalException ree) {
 			// This catch block is the safeguard that a ResetEvalException is never
 			// populated up the call stack beyond this top-most call to getNextState(..);
@@ -615,45 +592,6 @@ public class DebugTool extends Tool {
 			} finally {
 				target.popFrame(state);
 			}
-		}
-	}
-
-	private static class WrapperNextStateFunctor implements INextStateFunctor {
-		protected final INextStateFunctor functor;
-
-		WrapperNextStateFunctor(INextStateFunctor functor, IDebugTarget target) {
-			this.functor = functor;
-		}
-
-		@Override
-		public Object addElement(TLCState predecessor, Action a, TLCState state) {
-			return functor.addElement(predecessor, a, state);
-		}
-
-		@Override
-		public boolean hasStates() {
-			return functor.hasStates();
-		}
-
-		@Override
-		public SetOfStates getStates() {
-			return functor.getStates();
-		}
-
-		@Override
-		public Object setElement(TLCState state) {
-			return functor.setElement(state);
-		}
-
-		@Override
-		public TLCState addUnsatisfiedState(TLCState curState, Action action, TLCState succState, SemanticNode pred,
-				Context c) {
-			return this.functor.addUnsatisfiedState(curState, action, succState, pred, c);
-		}
-
-		@Override
-		public TLCState addUnsatisfiedState(TLCState state, SemanticNode pred, Context c) {
-			return this.functor.addUnsatisfiedState(state, pred, c);
 		}
 	}
 

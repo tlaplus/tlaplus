@@ -423,15 +423,15 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		}
 	}
 
-	protected static void assertTLCSuccessorFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+	protected static void assertTLCNextStatesFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
 			final int endLine, final int endColumn, String spec, final Context expectedContext,
 			final int expectedSuccessors, final OpDeclNode... unassigned) {
 		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, expectedContext, unassigned);
 		assertEquals(beginColumn, stackFrame.getColumn());
 		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
 
-		assertTrue(stackFrame instanceof TLCSuccessorsStackFrame);
-		final TLCSuccessorsStackFrame succframe = (TLCSuccessorsStackFrame) stackFrame;
+		assertTrue(stackFrame instanceof TLCNextStatesStackFrame);
+		final TLCNextStatesStackFrame succframe = (TLCNextStatesStackFrame) stackFrame;
 
 		if (!succframe.getSuccessors().isEmpty()) {
 			final Scope succs = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))

@@ -219,12 +219,11 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 
-		final int successors = 1;
-		SetBreakpointsArguments sba = createBreakpointArgument(RM, 25, 3, successors);
+		SetBreakpointsArguments sba = createBreakpointArgument(RM, 68);
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
-		assertTLCSuccessorFrame(stackFrames[0], 25, 1, 31, 25, RM, Context.Empty, successors);
+		assertTLCNextStatesFrame(stackFrames[0], 68, 20, 68, 23, RM, Context.Empty, 3);
 
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
@@ -255,7 +254,6 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[3], 52, 6, 52, 43, RM, context, vars);
 		assertTLCActionFrame(stackFrames[4], 51, 6, 51, 14, RM, context, vars);
 		assertTLCActionFrame(stackFrames[5], 51, 3, 53, 38, RM, context, vars);
-		assertTLCSuccessorFrame(stackFrames[6], 50, 1, 53, 38, RM, context, 1);
 
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

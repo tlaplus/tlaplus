@@ -51,7 +51,7 @@ public class ActionCompositionBTest extends ModelCheckerTestCase {
 
 	@Test
 	public void testSpec() throws IOException {
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "6", "4", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "10", "4", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
 		
 		// Assert it has found the temporal violation and also a counter example

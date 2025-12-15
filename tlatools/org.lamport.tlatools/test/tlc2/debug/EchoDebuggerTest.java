@@ -247,18 +247,19 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
 
-		// Check n0 action has expected number of successor states.
-		sba = createBreakpointArgument(RM, 103, 1, 1, "DebugExpression"); // Inline breakpoint set on the LHS of Action definition.
-		debugger.setBreakpoints(sba);
-		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
-		assertTLCSuccessorFrame(stackFrames[0], 103, 1, 109, 59, RM, null, 1);
-
-		sba = createBreakpointArgument(RM, 103, 1, 1, "DebugExpression2"); // Inline breakpoint set on the LHS of Action definition.
+		sba = createBreakpointArgument(RM, 103, "DebugExpression"); // Inline breakpoint set on the LHS of Action definition.
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
 		assertEquals(2, stackFrames.length);
-		assertTLCSuccessorFrame(stackFrames[1], 103, 1, 109, 59, RM, null, 0);
+		assertTLCActionFrame(stackFrames[0], 103, 13, 109, 59, RM, Context.Empty.cons(null, new StringValue("b"))
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")), getVars());
+
+		sba = createBreakpointArgument(RM, 103, "DebugExpression2"); // Inline breakpoint set on the LHS of Action definition.
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(2, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 103, 13, 109, 59, RM, Context.Empty.cons(null, new StringValue("a"))
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")), getVars());
 
 		sba = createBreakpointArgument(RM, 112, 0, 13);
 		debugger.setBreakpoints(sba);
@@ -304,6 +305,13 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		nested = debugger.variables(args).get().getVariables();
 		assertEquals(1, nested.length);
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
+
+		// Check Next action has expected number of successor states.
+		sba = createBreakpointArgument(RM, 151);
+		debugger.setBreakpoints(sba);
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCNextStatesFrame(stackFrames[0], 151, 20, 151, 23, RM, Context.Empty, 1);
 
 		// Ad-hoc expression-based breakpoint
 		

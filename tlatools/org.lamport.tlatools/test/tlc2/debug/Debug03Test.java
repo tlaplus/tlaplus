@@ -46,12 +46,12 @@ public class Debug03Test extends TLCDebuggerTestCase {
 	@Test
 	public void testSpec() throws Exception {
 
-		// Assert that the inline breakpoint on Next shows 9 successor states.
-		SetBreakpointsArguments sba = createBreakpointArgument(RM, 9, 1, 1);
+		// Assert that the breakpoint on Next shows 9 successor states.
+		SetBreakpointsArguments sba = createBreakpointArgument(RM, 14);
 		debugger.setBreakpoints(sba);
 		StackFrame[] stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
-		assertTLCSuccessorFrame(stackFrames[0], 9, 1, 11, 18, RM, Context.Empty, 9);
+		assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

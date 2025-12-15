@@ -31,11 +31,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.eclipse.lsp4j.debug.EvaluateResponse;
+import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
+import tlc2.util.Context;
 import tlc2.value.impl.BoolValue;
 
 public class Debug02Test extends TLCDebuggerTestCase {
@@ -120,11 +122,11 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals(null, var.getType());
 		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
-		// xx' =~xx
-		debugger.stepIn();
-		TLCStackFrame peek = debugger.stack.peek();
-		assertTrue(peek instanceof TLCActionStackFrame);
-		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
+		StackFrame[] stepIn = debugger.stepIn();
+		assertTLCNextStatesFrame(stepIn[0], 8, 20, 8, 23, RM, Context.Empty, 1);
+		assertTrue(debugger.stack.peek() instanceof TLCNextStatesStackFrame);
+		TLCNextStatesStackFrame peek = (TLCNextStatesStackFrame) debugger.stack.peek();
+		assertTrue(peek.state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
 		assertEquals("TRUE", var.getResult());
@@ -133,20 +135,19 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("TRUE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
-		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
-//		debugger.stepIn();
-//		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-//		assertTrue(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
-//		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-//		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-//		assertEquals("TRUE", var.getResult());
-//		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-//		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-//		assertEquals("TRUE", var.getResult());
-//		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
-//		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-//		assertEquals("FALSE", var.getResult());
+		stepIn = debugger.stepIn();
+		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
+		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
+		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("FALSE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("FALSE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
+		assertEquals(null, var.getType());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
 		// Assert that constants of a single module spec (a spec without instantiation
 		// and variables declared only in one module) gets flattened in the variable view.
