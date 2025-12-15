@@ -41,6 +41,7 @@ import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.ModelConfig.ModelResult;
 import tlc2.tool.impl.ParameterizedSpecObj;
 import tlc2.tool.impl.ParameterizedSpecObj.CompileTimeInvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
@@ -373,7 +374,7 @@ public class TLC {
         }
 
         // Be explicit about tool success.
-        System.exit(EC.ExitStatus.errorConstantToExitStatus(errorCode));
+        System.exit(EC.ExitStatus.errorConstantToExitStatus(errorCode, tlc.getExpectedModelResult()));
     }
     
 	// false if the environment (JVM, OS, ...) makes model checking impossible.
@@ -1804,5 +1805,19 @@ public class TLC {
 	
 	public String getSpecName() {
 		return System.getProperty(MailSender.SPEC_NAME, this.mainFile);
+	}
+
+	/**
+	 * Get the expected result of running TLC on this model. This is encoded
+	 * in the model config file; if parsing the model file fails, the expected
+	 * result is Success by default.
+	 *
+	 * @return The expected result of running TLC on this model.
+	 */
+  public ModelResult getExpectedModelResult() {
+    return
+        this.tool != null
+        ? this.tool.getModelConfig().getExpectedModelResult()
+        : ModelResult.Success;
 	}
 }
