@@ -219,7 +219,6 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(6, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
-//		assertTLCSuccessorFrame(stackFrames[6], 43, 1, 48, 31, RM, Context.Empty.cons(null, IntValue.ValZero).cons(null, IntValue.ValZero), 0);
 		
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
