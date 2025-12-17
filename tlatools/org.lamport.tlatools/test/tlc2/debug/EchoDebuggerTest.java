@@ -307,8 +307,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
 
 		// Check Next action has expected number of successor states.
-		sba = createBreakpointArgument(RM, 151);
-		debugger.setBreakpoints(sba);
+		debugger.setSpecBreakpoint();
 		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 151, 20, 151, 23, RM, Context.Empty, 1);

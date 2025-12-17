@@ -449,8 +449,8 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
 
 		// Check Next action has expected number of successor states.
-		sba = createBreakpointArgument(RM, 134);
-		debugger.setBreakpoints(sba);
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint();
 		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 134, 20, 134, 23, RM, Context.Empty, 3);

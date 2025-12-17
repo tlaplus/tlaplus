@@ -114,12 +114,16 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = Step.In;
 		this.haltExp = true;
 		this.haltInv = true;
+		// Turned off by default due to legacy reasons. Turning it on by default would
+		// require changing almost all test cases.
+		this.haltSpec = false;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltSpec = halt;
 	}
 
 	/*
@@ -129,6 +133,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
+		this.haltSpec = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -261,12 +266,18 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		unsat.setConditionDescription("A constant, state, or action level formula");
 		unsat.setSupportsCondition(true);
 
+		final ExceptionBreakpointsFilter spec = new ExceptionBreakpointsFilter();
+		spec.setDefault_(this.haltSpec);
+		spec.setFilter("SpecBreakpointsFilter");
+		spec.setLabel("Halt (break) after Init and Next");
+		spec.setDescription("TLC will halt after initial- and next-states have been generated.");
+
 		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
 			// See the following two git commits to find out why:
 			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
 			// 42f251546ce99c19f1a7a44310816527a15ade2b
-			return new ExceptionBreakpointsFilter[] { filter, unsat };
+			return new ExceptionBreakpointsFilter[] { filter, unsat, spec };
 		} else {
 			final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
 			violations.setDefault_(this.haltInv);
@@ -274,7 +285,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			violations.setLabel("Halt (break) on violations");
 			violations.setDescription("TLC will halt when an invariant is violated.");
 
-			return new ExceptionBreakpointsFilter[] { filter, unsat, violations };
+			return new ExceptionBreakpointsFilter[] { filter, unsat, violations, spec };
 		}
 	}
 
@@ -283,6 +294,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Set<String> asSet = Arrays.stream(args.getFilterOptions()).map(fo -> fo.getFilterId()).collect(Collectors.toSet());
 		this.haltExp = asSet.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asSet.contains("InvariantBreakpointsFilter");
+		this.haltSpec = asSet.contains("SpecBreakpointsFilter");
 
 		this.haltUnsat = Arrays.stream(args.getFilterOptions())
 				.filter(fo -> fo.getFilterId().equals("UnsatisfiedBreakpointsFilter"))
@@ -375,6 +387,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
+		haltSpec = false;
 		haltUnsat = null;
 		this.notify();
 		
@@ -692,6 +705,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
+	protected volatile boolean haltSpec;
 	private volatile TLCSourceBreakpoint haltUnsat;
 
 	private volatile boolean executionIsHalted = false;
@@ -896,17 +910,19 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
 		final TLCStackFrame frame = stack.peek();
 		assert frame instanceof TLCNextStatesStackFrame;
-		haltExecution(frame, this.stack.size());
+		if (haltSpec) {
+			haltExecution(frame);
+		}
 		stack.pop();
 		return this;
 	}
 	
 	@Override
 	public synchronized IDebugTarget pushInitStatesFrame(Tool tool, IStateFunctor functor) {
-		// A spec with no INIT/NEXT or SPEC (justassumes) has no InitStateSpec. Use the
+		// A spec with no INIT/NEXT or SPEC (just ASSUMEs) has no InitStateSpec. Use the
 		// UNKNOWN action to avoid an NPE.
 		final Action init = tool.getInitStateSpec().isEmpty() ? Action.UNKNOWN
-				: (Action) tool.getInitStateSpec().firstElement(); //TODO handle multiple inits?
+				: (Action) tool.getInitStateSpec().firstElement(); // TODO handle multiple inits?
 		final TLCStackFrame frame = new TLCInitStatesStackFrame(stack.peek(), init.pred, init.con, tool, functor);
 		stack.push(frame);
 		return this;
@@ -916,7 +932,9 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popInitStatesFrame(Tool tool, IStateFunctor functor) {
 		final TLCStackFrame frame = stack.peek();
 		assert frame instanceof TLCInitStatesStackFrame;
-		haltExecution(frame, this.stack.size());
+		if (haltSpec) {
+			haltExecution(frame);
+		}
 		stack.pop();
 		return this;
 	}
