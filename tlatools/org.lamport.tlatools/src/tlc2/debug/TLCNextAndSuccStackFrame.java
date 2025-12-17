@@ -25,20 +25,26 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
+import tlc2.TLCGlobals;
+import tlc2.debug.IDebugTarget.Granularity;
 import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.TLCState;
+import tlc2.tool.TLCStateInfo;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.impl.RecordValue;
@@ -94,6 +100,18 @@ public abstract class TLCNextAndSuccStackFrame extends TLCStateStackFrame {
 	protected boolean hasScope() {
 		return !getSuccessors().isEmpty();
 	}
+	
+	@Override
+	public void preHalt(final TLCDebugger debugger) {
+		debugger.sendCapabilities(TLCCapabilities.NO_STEP_BACK);
+		debugger.setGranularity(Granularity.State);
+	}
+
+	@Override
+	public void postHalt(final TLCDebugger debugger) {
+		debugger.sendCapabilities(TLCCapabilities.STEP_BACK);
+		debugger.setGranularity(Granularity.Formula);
+	}
 
 	protected abstract Collection<? extends TLCState> getSuccessors();
 
@@ -124,7 +142,53 @@ public abstract class TLCNextAndSuccStackFrame extends TLCStateStackFrame {
 				return vars;
 			});
 		}
+		if (vr == stateId + 1) {
+			if (TLCGlobals.simulator != null) {
+				return tool.eval(() -> {					
+					// A) Last state of the trace s_f.
+					final TLCState t = getT();
+					
+					// Filtering allAssigned is expected to remove only the final state from the
+					// trace, which is the state equal to 't'. If other states are also removed, it
+					// indicates an issue, but it is likely preferable to crashing.
+					final TLCStateInfo[] prefix;
+					prefix = TLCGlobals.simulator.getTrace(t).stream().filter(s -> s.allAssigned())
+							.map(s -> new TLCStateInfo(s)).collect(Collectors.toList())
+							.toArray(TLCStateInfo[]::new);
+					
+					// Combine and convert the trace into debugger Variables. It's in
+					// reverse order because the variable view shows the current state in the
+					// "State" node (SCOPE) above Trace; if a user ignores the "State" and "Trace"
+					// nodes, it almost reads like a regular trace.
+					final int width = String.valueOf(prefix.length).length();
+					final Deque<Variable> trace = new ArrayDeque<>();
+					for (int i = prefix.length - 1; i >= 0; i--) {
+						final TLCStateInfo ti = prefix[i];
+						// The name of the variable has to be unique for all states to show up in the
+						// variable view. Otherwise, the variable view will silently discard all but on
+						// of the variable with the same name. Thus, we prepend the state number, which
+						// also make it easier for users to understand how states are ordered.
+						final Variable stateAsVariable = getStateAsVariable(new RecordValue(ti.state),
+								String.format("%0" + width + "d", ti.state.getLevel()) + ": " + ti.info.toString());
+						idToStateMap.put(stateAsVariable.getVariablesReference(), ti.state);
+						trace.add(stateAsVariable);
+					}
+					
+					return trace.toArray(new Variable[trace.size()]);
+				});
+			}
+		}
 		return super.getVariables(vr);
+	}
+
+	@Override
+	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
+		TLCState predecessor = getS().getPredecessor();
+		fun.setElement(predecessor);
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
