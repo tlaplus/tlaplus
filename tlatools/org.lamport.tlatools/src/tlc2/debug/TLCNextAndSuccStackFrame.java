@@ -184,7 +184,11 @@ public abstract class TLCNextAndSuccStackFrame extends TLCStateStackFrame {
 	@Override
 	public CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
 		TLCState predecessor = getS().getPredecessor();
-		fun.setElement(predecessor);
+		if (predecessor == null) {
+			fun.halt();
+		} else {
+			fun.setElement(predecessor);
+		}
 		
 		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
