@@ -901,7 +901,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget pushNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
 		// getNextStateSpec returns null if there is no next-state, i.e., a spec without INIT/NEXT or SPEC.
 		final Action next = tool.getNextStateSpec() == null ? Action.UNKNOWN : tool.getNextStateSpec();
-		final TLCStackFrame frame = new TLCNextStatesStackFrame(stack.peek(), next.pred, next.con, tool, functor, state); 
+		final TLCStackFrame frame = new TLCNextStatesStackFrame(stack.peek(), next.pred, next.con, tool, state, functor,
+				next);
 		stack.push(frame);
 		return this;
 	}
