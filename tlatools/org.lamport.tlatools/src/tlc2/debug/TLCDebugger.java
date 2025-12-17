@@ -930,9 +930,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	@Override
 	public synchronized IDebugTarget popInitStatesFrame(Tool tool, IStateFunctor functor) {
-		final TLCStackFrame frame = stack.peek();
-		assert frame instanceof TLCInitStatesStackFrame;
-		if (haltSpec) {
+		assert stack.peek() instanceof TLCInitStatesStackFrame;
+		final TLCInitStatesStackFrame frame = (TLCInitStatesStackFrame) stack.peek();
+		// The list of Initials is empty when debugging simulation mode and breaking on
+		// `Init` the very first time (reason: IStateFunctor is the StateVec of
+		// Simulator and not the ExplorationWorker instance). Ignore this frame and
+		// continue because the debugger will momentarily hit the next
+		// TLCInitialStatesStackFrame with the ExplorationWorker functor.
+		if (haltSpec && !frame.getStates().isEmpty()) {
 			haltExecution(frame);
 		}
 		stack.pop();

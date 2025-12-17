@@ -33,13 +33,13 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.util.Context;
 
-public class Debug03Test extends TLCDebuggerTestCase {
+public class Debug03SimTest extends TLCDebuggerTestCase {
 
 	private static final String FOLDER = "debug";
 	private static final String RM = "Debug03";
 
-	public Debug03Test() {
-		super(RM, FOLDER, new String[] { "-config", "Debug03.tla" }, EC.ExitStatus.SUCCESS);
+	public Debug03SimTest() {
+		super(RM, FOLDER, new String[] { "-config", "Debug03.tla", "-simulate", "num=1" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -47,6 +47,10 @@ public class Debug03Test extends TLCDebuggerTestCase {
 		debugger.setSpecBreakpoint();
 
 		StackFrame[] stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCInitStatesFrame(stackFrames[0], 7, 5, 7, 9, RM, Context.Empty, 9);
+
+		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 		
