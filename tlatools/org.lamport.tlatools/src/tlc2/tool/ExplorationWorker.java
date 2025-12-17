@@ -36,6 +36,8 @@ import tlc2.tool.liveness.ILiveCheck;
 
 public class ExplorationWorker extends SimulationWorker {
 
+	private volatile boolean halted = false;
+
 	public ExplorationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue, long seed,
 			int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
@@ -70,6 +72,11 @@ public class ExplorationWorker extends SimulationWorker {
 				// getNextState doesn't throw SWE unless SimulationWorker#addElement above
 				// throws it.
 				return Optional.of(swe);
+			}
+
+			if (halted) {
+				halted = false;
+				return Optional.empty();
 			}
 
 			if (nextStates.isEmpty()) {
@@ -118,5 +125,12 @@ public class ExplorationWorker extends SimulationWorker {
 
 		// Finished trace generation without any errors.
 		return Optional.empty();
+	}
+
+	@Override
+	public boolean halt() {
+		boolean old = halted;
+		halted = true;
+		return old;
 	}
 }

@@ -62,4 +62,9 @@ public interface INextStateFunctor extends IStateFunctor {
 
 	default void incrementStatesGenerated(long sz) {
 	}
+
+	default boolean halt() {
+		//no-op
+		return false;		
+	}
 }
