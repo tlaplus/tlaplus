@@ -70,6 +70,10 @@ public class TLCInitStatesStackFrame extends TLCStackFrame {
 		this.functor = functor;
 	}
 
+	protected Set<TLCState> getStates() {
+		return functor.getStates().toSet();
+	}
+
 	@Override
 	public Scope[] getScopes() {
 		final List<Scope> scopes = new ArrayList<>(Arrays.asList(super.getScopes()));

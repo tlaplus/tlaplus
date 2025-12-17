@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
@@ -219,8 +218,8 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 
-		SetBreakpointsArguments sba = createBreakpointArgument(RM, 68);
-		debugger.setBreakpoints(sba);
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint();
 		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 68, 20, 68, 23, RM, Context.Empty, 3);

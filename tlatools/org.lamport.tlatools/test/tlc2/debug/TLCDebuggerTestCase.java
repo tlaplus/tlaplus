@@ -423,6 +423,18 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		}
 	}
 
+	protected static void assertTLCInitStatesFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, String spec, final Context expectedContext,
+			final int expectedSuccessors) {
+		assertTLCFrame(stackFrame, beginLine, endLine, spec, expectedContext);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+
+		assertTrue(stackFrame instanceof TLCInitStatesStackFrame);
+		
+		// TODO assert initials like in assertTLCNextStatesFrame.
+	}
+
 	protected static void assertTLCNextStatesFrame(final StackFrame stackFrame, final int beginLine, final int beginColumn,
 			final int endLine, final int endColumn, String spec, final Context expectedContext,
 			final int expectedSuccessors, final OpDeclNode... unassigned) {
@@ -610,6 +622,11 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 				args.setSource(source);
 				setBreakpoints(args);
 			});
+			this.haltSpec = false;
+		}
+
+		public void setSpecBreakpoint() {
+			this.haltSpec = true;
 		}
 
 		public StackFrame[] stackTrace() throws Exception {

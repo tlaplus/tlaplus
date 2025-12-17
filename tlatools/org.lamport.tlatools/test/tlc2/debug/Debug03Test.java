@@ -27,7 +27,6 @@ package tlc2.debug;
 
 import static org.junit.Assert.assertEquals;
 
-import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.junit.Test;
 
@@ -45,11 +44,13 @@ public class Debug03Test extends TLCDebuggerTestCase {
 
 	@Test
 	public void testSpec() throws Exception {
+		debugger.setSpecBreakpoint();
 
-		// Assert that the breakpoint on Next shows 9 successor states.
-		SetBreakpointsArguments sba = createBreakpointArgument(RM, 14);
-		debugger.setBreakpoints(sba);
 		StackFrame[] stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		assertTLCInitStatesFrame(stackFrames[0], 7, 5, 7, 9, RM, Context.Empty, 9);
+
+		stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 		

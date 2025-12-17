@@ -125,32 +125,19 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// xx' =~xx
 		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
-		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
+		TLCActionStackFrame peek = (TLCActionStackFrame) debugger.stack.peek();
+		assertFalse(peek.state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
 		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-		assertEquals("TRUE", var.getResult());
+		assertEquals("FALSE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
 		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-		assertEquals("TRUE", var.getResult());
+		assertEquals("FALSE", var.getResult());
 		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
 		assertEquals(null, var.getType());
 		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
-		StackFrame[] stepIn = debugger.stepIn();
-		assertTLCNextStatesFrame(stepIn[0], 8, 20, 8, 23, RM, Context.Empty, 1);
-		assertTrue(debugger.stack.peek() instanceof TLCNextStatesStackFrame);
-		TLCNextStatesStackFrame peek = (TLCNextStatesStackFrame) debugger.stack.peek();
-		assertTrue(peek.state.allAssigned());
-		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
-		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
-		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
-		assertEquals("TRUE", var.getResult());
-		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
-		assertEquals(null, var.getType());
-
-		stepIn = debugger.stepIn();
+		debugger.stepIn();
 		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
 		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
 		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
@@ -171,6 +158,21 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals("val", variables[0].getName());
 		assertEquals("42", variables[0].getValue());
 		assertArrayEquals(variables, f.getConstants());
+
+		debugger.setSpecBreakpoint();
+		StackFrame[] stepIn = debugger.continue_();
+		assertTLCNextStatesFrame(stepIn[0], 8, 20, 8, 23, RM, Context.Empty, 1);
+		assertTrue(debugger.stack.peek() instanceof TLCNextStatesStackFrame);
+		TLCNextStatesStackFrame f2 = (TLCNextStatesStackFrame) debugger.stack.peek();
+		assertTrue(f2.state.allAssigned());
+		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("FALSE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("FALSE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
+		assertEquals(null, var.getType());
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
