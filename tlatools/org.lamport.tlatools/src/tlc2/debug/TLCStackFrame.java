@@ -588,7 +588,7 @@ public class TLCStackFrame extends StackFrame {
 			return tool.eval(() -> {
 				return lv.eval(tool);
 			});
-		} catch (TLCRuntimeException | EvalException | FingerprintException e) {
+		} catch (TLCRuntimeException | EvalException | FingerprintException | NullPointerException e) {
 			return fallback == null ? e : fallback;
 		}
 	}
