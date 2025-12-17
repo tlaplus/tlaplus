@@ -122,6 +122,20 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		assertEquals(null, var.getType());
 		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
 
+		// xx' =~xx
+		debugger.stepIn();
+		assertTrue(debugger.stack.peek() instanceof TLCActionStackFrame);
+		assertFalse(((TLCActionStackFrame) debugger.stack.peek()).state.allAssigned());
+		var = debugger.evaluate(RM, "x", 6, 9, 6, 9);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("TRUE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 14, 7, 14);
+		assertEquals(BoolValue.ValTrue.getTypeString(), var.getType());
+		assertEquals("TRUE", var.getResult());
+		var = debugger.evaluate(RM, "x", 7, 9, 7, 10);
+		assertEquals(null, var.getType());
+		assertEquals(DebuggerValue.NOT_EVALUATED, var.getResult());
+
 		StackFrame[] stepIn = debugger.stepIn();
 		assertTLCNextStatesFrame(stepIn[0], 8, 20, 8, 23, RM, Context.Empty, 1);
 		assertTrue(debugger.stack.peek() instanceof TLCNextStatesStackFrame);

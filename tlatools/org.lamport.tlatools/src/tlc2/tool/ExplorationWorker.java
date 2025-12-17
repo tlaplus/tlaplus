@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 
 import tlc2.output.EC;
 import tlc2.tool.liveness.ILiveCheck;
+import tlc2.util.SetOfStates;
 
 public class ExplorationWorker extends SimulationWorker {
 
@@ -47,14 +48,42 @@ public class ExplorationWorker extends SimulationWorker {
 
 	@Override
 	protected Optional<SimulationWorkerError> simulateRandomTrace() throws Exception {
+		
+		// Compared to SimulationWorker, this method is a de-optimization; Instead of
+		// generating all successor states (Next), SW randomly select a subaction of
+		// Next and generates only the successor states of that subaction. It then
+		// randomly selects one of those successor states.
+
+		this.tool.getInitStates(new IStateFunctor() {
+			// Cannot use this (ExplorationWorker) directly as it overlaps with EW also
+			// serving as the INextStateFunctor. Thus, IStateFunctor#getStates returns the
+			// next states, and not the initial states.
+			@Override
+			public Object addElement(TLCState state) {
+				// There is no need to verify the state again as this is already done
+				// during tlc2.tool.Simulator.simulate().
+				if (tool.isInModel(state)) {
+					initStates.addElement(state);
+				}
+				return state;
+			}
+
+			@Override
+			public Object setElement(TLCState state) {
+				initStates.clear();
+				initStates.addElement(state);
+				return state;
+			}
+
+			@Override
+			public SetOfStates getStates() {
+				return new SetOfStates(initStates);
+			}
+		});
+		
 		// a) Randomly select a state from the (remaining) set of init states.
 		curState = randomState(this.localRng, initStates);
 		setCurrentState(curState);
-
-		// This loop is a deoptimization from SimuationWorker; Instead of generating
-		// all successor states (Next), SW randomly select a subaction of Next and
-		// generates only the successor states of that subaction. It then randomly
-		// selects one of those successor states.
 
 		// Simulate a trace up to the maximum specified length.
 		for (int traceIdx = 0; traceIdx < maxTraceDepth; traceIdx++) {

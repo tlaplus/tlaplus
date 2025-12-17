@@ -29,6 +29,7 @@ import tla2sany.semantic.OpDefNode;
 import tla2sany.semantic.SemanticNode;
 import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;
@@ -130,6 +131,10 @@ public interface IDebugTarget {
 	IDebugTarget pushNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state);
 
 	IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state);
+
+	IDebugTarget pushInitStatesFrame(Tool tool, IStateFunctor functor);
+	
+	IDebugTarget popInitStatesFrame(Tool tool, IStateFunctor functor);
 
 	IDebugTarget markInvariantViolatedFrame(Tool debugTool, SemanticNode pred, Context c, TLCState predecessor, Action a, TLCState state, StatefulRuntimeException e);
 

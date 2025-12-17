@@ -389,6 +389,20 @@ public class DebugTool extends Tool {
 	}
 
 	@Override
+	public final void getInitStates(IStateFunctor functor) {
+		if (mode == EvalMode.Debugger) {
+			fastTool.getInitStates(functor);
+			return;
+		}
+		try {
+			target.pushInitStatesFrame(this, functor);
+			super.getInitStates(functor);
+		} finally {
+			target.popInitStatesFrame(this, functor);
+		}
+	}
+
+	@Override
 	public final boolean getNextStates(final INextStateFunctor functor, final TLCState state) {
 		if (mode == EvalMode.Debugger) {
 			for (int i = 0; i < actions.length; i++) {

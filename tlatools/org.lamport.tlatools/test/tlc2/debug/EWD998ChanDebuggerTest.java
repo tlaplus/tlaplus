@@ -207,8 +207,9 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(UTILS, 13);
 		stackFrames = debugger.continue_();
 		
-		int i = 17;
+		int i = 18;
 		assertEquals(i, stackFrames.length);
+		assertTLCFrame(stackFrames[--i], 43, 49, RM);
 		assertTLCStateFrame(stackFrames[--i], 43, 49, RM, vars);
 		assertTLCStateFrame(stackFrames[--i], 43, 43, RM, vars);
 		assertTLCStateFrame(stackFrames[--i], 44, 46, RM, vars[0], vars[1], vars[3]);

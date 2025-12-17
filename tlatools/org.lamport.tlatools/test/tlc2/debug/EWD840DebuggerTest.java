@@ -91,7 +91,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		for (int i = 0; i < 16; i++) { //64
 			stackFrames = debugger.continue_();
 
-			assertEquals(5, stackFrames.length);
+			assertEquals(6, stackFrames.length);
 			assertTLCStateFrame(stackFrames[4], 20, 23, RM, vars);
 			assertTLCStateFrame(stackFrames[3], 20, 20, RM, vars);
 			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[0], vars[2], vars[3]);

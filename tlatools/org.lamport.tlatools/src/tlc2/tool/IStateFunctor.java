@@ -26,6 +26,8 @@
 
 package tlc2.tool;
 
+import tlc2.util.SetOfStates;
+
 /**
  * An {@link IStateFunctor}'s responsibility is to accept generated (init)
  * states via addElement and to process them. As the time of writing, known
@@ -36,5 +38,23 @@ package tlc2.tool;
 public interface IStateFunctor extends INotInModelFunctor {
 
 	Object addElement(TLCState state);
+	
+	/**
+	 * Contrary to {@link INextStateFunctor#addElement(TLCState)} and
+	 * {@link INextStateFunctor#addElement(TLCState, Action, TLCState)}, replaces
+	 * the previously added elements (TLCStates) with this one. Implementations do
+	 * <i>not</i> check that TLCState <code>state</code> violates invariants, state-
+	 * or action-constraints, ... (to check properties, ..., call addElement first).
+	 */
+	default Object setElement(final TLCState state) {
+		throw new UnsupportedOperationException();
+	}
 
+	default boolean hasStates() {
+		throw new UnsupportedOperationException();
+	}
+	
+	default SetOfStates getStates() {
+		return new SetOfStates(0);
+	}
 }

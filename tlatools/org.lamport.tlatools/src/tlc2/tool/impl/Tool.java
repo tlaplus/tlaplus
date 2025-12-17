@@ -431,7 +431,7 @@ public abstract class Tool
   }
 
   @Override
-  public final void getInitStates(IStateFunctor functor) {
+  public void getInitStates(IStateFunctor functor) {
 	  Vect<Action> init = this.getInitStateSpec();
 	  ActionItemList acts = ActionItemListExt.Empty;
       // MAK 09/11/2018: Tail to head iteration order cause the first elem added with
