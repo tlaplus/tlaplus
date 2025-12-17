@@ -93,6 +93,7 @@ import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.tool.Action;
 import tlc2.tool.INextStateFunctor;
+import tlc2.tool.IStateFunctor;
 import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.DebugTool;
@@ -895,6 +896,26 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
 		final TLCStackFrame frame = stack.peek();
 		assert frame instanceof TLCNextStatesStackFrame;
+		haltExecution(frame, this.stack.size());
+		stack.pop();
+		return this;
+	}
+	
+	@Override
+	public synchronized IDebugTarget pushInitStatesFrame(Tool tool, IStateFunctor functor) {
+		// A spec with no INIT/NEXT or SPEC (justassumes) has no InitStateSpec. Use the
+		// UNKNOWN action to avoid an NPE.
+		final Action init = tool.getInitStateSpec().isEmpty() ? Action.UNKNOWN
+				: (Action) tool.getInitStateSpec().firstElement(); //TODO handle multiple inits?
+		final TLCStackFrame frame = new TLCInitStatesStackFrame(stack.peek(), init.pred, init.con, tool, functor);
+		stack.push(frame);
+		return this;
+	}
+	
+	@Override
+	public synchronized IDebugTarget popInitStatesFrame(Tool tool, IStateFunctor functor) {
+		final TLCStackFrame frame = stack.peek();
+		assert frame instanceof TLCInitStatesStackFrame;
 		haltExecution(frame, this.stack.size());
 		stack.pop();
 		return this;

@@ -203,7 +203,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		// Debug type correctness property during Init //
 		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		// Invariants are shown as TLCStateFrames, not TLCActionFrames, which would make
 		// the debugger show a predecessor state.
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
