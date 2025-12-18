@@ -147,4 +147,8 @@ public class TLCInitStatesStackFrame extends TLCStackFrame {
 
 		return super.gotoState(debugger, id);
 	}
+
+	Variable[] getStatesVariables() {
+		return getVariables(stateId);
+	}
 }

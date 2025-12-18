@@ -188,6 +188,14 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 		}
 		return super.getVariables(vr);
 	}
+	
+	Variable[] getTraceVariables() {
+		return getVariables(stateId + 1);
+	}
+	
+	Variable[] getSuccessorVariables() {
+		return getVariables(stateId);
+	}
 
 	@Override
 	public synchronized CompletableFuture<Void> stepOut(final TLCDebugger debugger) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2025 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -30,8 +30,11 @@ import static org.junit.Assert.assertEquals;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.junit.Test;
 
+import tlc2.debug.GotoStateEvent.GotoStateArgument;
 import tlc2.output.EC;
 import tlc2.util.Context;
+import tlc2.value.impl.IntValue;
+import util.UniqueString;
 
 public class Debug03SimTest extends TLCDebuggerTestCase {
 
@@ -39,7 +42,7 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 	private static final String RM = "Debug03";
 
 	public Debug03SimTest() {
-		super(RM, FOLDER, new String[] { "-config", "Debug03.tla", "-simulate", "num=1" }, EC.ExitStatus.SUCCESS);
+		super(RM, FOLDER, new String[] { "-config", "Debug03.tla", "-simulate", "num=2" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -48,12 +51,69 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 
 		StackFrame[] stackFrames = debugger.continue_();
 		assertEquals(1, stackFrames.length);
-		assertTLCInitStatesFrame(stackFrames[0], 7, 5, 7, 9, RM, Context.Empty, 9);
+		assertTLCInitStatesFrame(stackFrames[0], 7, 5, 7, 14, RM, Context.Empty, 2);
+		TLCInitStatesStackFrame init = (TLCInitStatesStackFrame) stackFrames[0];
+		assertEquals(2, init.getStates().size());
 
 		stackFrames = debugger.continue_();
+
+		// construct a trace x=0 .. x=8 by selecting each successor state in turn.
+		for (int i = 0; i < 8; i++) {
+
+			assertEquals(1, stackFrames.length);
+			assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
+
+			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+
+			// Check that the TLC state variable 'x' has the expected value.
+			assertEquals(i, ((IntValue) next.getS().getVals().get(UniqueString.of("x"))).val);
+
+			// Select the i-th successor state to continue the simulation down that path.
+			// This also continues_ the debugger.
+			debugger.gotoState(new GotoStateArgument()
+					.setVariablesReference(next.getSuccessorVariables()[i].getVariablesReference()))
+					.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+
+			stackFrames = debugger.stackTrace();
+		}
+
+		// Reverse direction: back to the initial state.
+		for (int i = 8; i > 0; i--) {
+
+			assertEquals(1, stackFrames.length);
+			assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
+
+			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+
+			// Check that the TLC state variable 'x' has the expected value.
+			assertEquals(i, ((IntValue) next.getS().getVals().get(UniqueString.of("x"))).val);
+
+			// Select the predecessor state to continue the simulation back.
+			// This also continues_ the debugger.
+			debugger.gotoState(
+					new GotoStateArgument().setVariablesReference(next.getTraceVariables()[1].getVariablesReference()))
+					.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+
+			stackFrames = debugger.stackTrace();
+		}
+
+		// Revert (step out of the first TLCNextState...) to the set of initial states
+		// (this spec has two initial state).
+		stackFrames = debugger.stepOut();
+		assertTLCInitStatesFrame(stackFrames[0], 7, 5, 7, 14, RM, Context.Empty, 1);
+		init = (TLCInitStatesStackFrame) stackFrames[0];
+		assertEquals(2, init.getStates().size());
+		
+		debugger.gotoState(
+				new GotoStateArgument().setVariablesReference(init.getStatesVariables()[1].getVariablesReference()))
+				.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+		stackFrames = debugger.stackTrace();
 		assertEquals(1, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
-		
+		final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+		// Check that the TLC state variable 'x' has the expected value.
+		assertEquals(1, ((IntValue) next.getS().getVals().get(UniqueString.of("x"))).val);
+
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();

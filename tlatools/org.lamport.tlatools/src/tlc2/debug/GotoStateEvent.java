@@ -41,8 +41,9 @@ public interface GotoStateEvent {
 			return variablesReference;
 		}
 
-		public void setVariablesReference(Integer variablesReference) {
+		public GotoStateArgument setVariablesReference(Integer variablesReference) {
 			this.variablesReference = variablesReference;
+			return this;
 		}
 	}
 }
