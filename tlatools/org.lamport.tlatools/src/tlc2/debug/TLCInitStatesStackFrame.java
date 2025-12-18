@@ -40,7 +40,6 @@ import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.SemanticNode;
 import tlc2.debug.IDebugTarget.Granularity;
-import tlc2.debug.TLCStateStackFrame.TLCCapabilities;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.Tool;

@@ -150,7 +150,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// The capabilities define customizations how the debugger will interact with
 		// this debuggee. Declaring no capabilities causes the most simple protocol to
 		// be used.
-		final Capabilities capabilities = new Capabilities();
+		final TLCCapabilities capabilities = new TLCCapabilities();
+		capabilities.setSupportsGotoState(TLCGlobals.simulator != null);
 		capabilities.setSupportsEvaluateForHovers(true);
 		capabilities.setSupportsTerminateRequest(true);
 		// Don't support ExceptionInfo requests. The previous git commit of the one that
