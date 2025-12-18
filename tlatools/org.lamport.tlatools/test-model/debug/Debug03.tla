@@ -4,7 +4,7 @@ EXTENDS Naturals
 VARIABLE x
 
 Init ==
-    x = 0
+    x \in 0..1
 
 Next == 
     /\ x < 10
