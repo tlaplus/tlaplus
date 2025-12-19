@@ -30,6 +30,8 @@ import java.util.Random;
 
 import org.eclipse.lsp4j.debug.Variable;
 
+import com.google.gson.annotations.SerializedName;
+
 import tlc2.value.impl.Enumerable;
 import tlc2.value.impl.FcnRcdValue;
 import tlc2.value.impl.RecordValue;
@@ -39,7 +41,10 @@ import tlc2.value.impl.Value;
 import util.UniqueString;
 
 public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVariable, Comparable<DebugTLCVariable> {
-	
+
+	@SerializedName("__vscodeVariableMenuContext")
+	private String vscodeVariableMenuContext;
+
 	private transient Value tlcValue;
 	
 	public DebugTLCVariable(UniqueString lhs) {
@@ -52,6 +57,14 @@ public class DebugTLCVariable extends Variable implements tlc2.value.impl.TLCVar
 	
 	public DebugTLCVariable(Value value) {
 		this.setName(value.toString());
+	}
+
+	public void setVscodeVariableMenuContext(String context) {
+		this.vscodeVariableMenuContext = context;
+	}
+
+	public String getVscodeVariableMenuContext() {
+		return this.vscodeVariableMenuContext;
 	}
 
 	@Override
