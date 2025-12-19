@@ -231,8 +231,11 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	}
 
 	@Override
-	protected Variable getStateAsVariable(final IValue value, String varName) {
-		final Variable variable = getVariable(value, UniqueString.of(varName));
+	protected DebugTLCVariable getStateAsVariable(final IValue value, String varName) {
+		final DebugTLCVariable variable = getVariable(value, UniqueString.of(varName));
+		
+		variable.setVscodeVariableMenuContext("state");
+		
 		// Because we convert the TLCState (getT) to a RecordValue to re-use the
 		// getVariable(..) implementation, the type (shown when hovering over the
 		// variable in the debugger's variable view) would be RecordValue. This would be

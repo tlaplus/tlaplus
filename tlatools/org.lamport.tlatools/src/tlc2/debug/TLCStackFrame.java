@@ -195,14 +195,17 @@ public class TLCStackFrame extends StackFrame {
 		this(parent, node, ctxt, tool, null);
 	}
 
-	protected Variable getStateAsVariable(final IValue value, String varName) {
-		final Variable variable = getVariable(value, UniqueString.of(varName));
+	protected DebugTLCVariable getStateAsVariable(final IValue value, String varName) {
+		final DebugTLCVariable variable = getVariable(value, UniqueString.of(varName));
 		// Because we convert the TLCState (getT) to a RecordValue to re-use the
 		// getVariable(..) implementation, the type (shown when hovering over the
 		// variable in the debugger's variable view) would be RecordValue. This would be
 		// bogus and is, thus, corrected to TLCState here.
 		//TODO: Is it useful to report the level, action, ... here?
 		variable.setType("State");
+		
+		variable.setVscodeVariableMenuContext("state");
+
 		return variable;
 	}
 
@@ -221,7 +224,7 @@ public class TLCStackFrame extends StackFrame {
 		return getVariable(value, UniqueString.of(varName));
 	}
 	
-	protected Variable getVariable(final IValue value, UniqueString varName) {
+	protected DebugTLCVariable getVariable(final IValue value, UniqueString varName) {
 		DebugTLCVariable variable = (DebugTLCVariable) value.toTLCVariable(new DebugTLCVariable(varName), rnd);
 		nestedVariables.put(variable.getVariablesReference(), variable);
 		return variable;
