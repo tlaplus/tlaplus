@@ -266,11 +266,25 @@
 							<arch>x86_64</arch>
 						</environment>
 
-						<!-- Mac -->
+						<!-- Mac x86_64 -->
 						<environment>
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
+						</environment>
+
+						<!-- Mac ARM64 (Apple Silicon) -->
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>aarch64</arch>
+						</environment>
+
+						<!-- Linux ARM64 -->
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>aarch64</arch>
 						</environment>
 
 					</environments>
