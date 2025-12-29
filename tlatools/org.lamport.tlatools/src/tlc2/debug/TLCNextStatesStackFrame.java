@@ -214,6 +214,21 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
+	public CompletableFuture<Void> stepOver(TLCDebugger debugger) {
+		final Action a = getS().hasAction() ? getS().getAction() : Action.UNKNOWN;
+
+		// Find some successor state t s.t. the action from s -> t is not an 'a' action.
+		// Fall back to any successor state if no such state exists.
+		fun.getStates().toSet().stream().filter(s -> s.getAction() != a).findFirst().ifPresent(s -> {
+			fun.setElement(s);
+		});
+		
+		debugger.setGranularity(Granularity.Formula);
+		debugger.notify();
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
 	public synchronized CompletableFuture<Void> stepOut(final TLCDebugger debugger) {
 		TLCState predecessor = getS().getPredecessor();
 		if (predecessor == null) {
