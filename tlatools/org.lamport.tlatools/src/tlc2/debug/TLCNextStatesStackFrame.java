@@ -124,6 +124,13 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 
 				// Sort lexicographically by state representation for stable order.
 				final Set<TLCState> successors = new TreeSet<>((s1, s2) -> {
+					// Cluster by action (location) first, then lexicographically by state.
+					final String a1 = s1.hasAction() ? s1.getAction().getLocation() : "<???>";
+					final String a2 = s2.hasAction() ? s2.getAction().getLocation() : "<???>";
+					final int cmp = a1.compareTo(a2);
+					if (cmp != 0) {
+						return cmp;
+					}
 					return s1.toString().compareTo(s2.toString());
 				});
 				successors.addAll(getSuccessors());
