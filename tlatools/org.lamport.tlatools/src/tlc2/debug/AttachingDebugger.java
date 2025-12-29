@@ -124,6 +124,20 @@ public class AttachingDebugger extends TLCDebugger {
 					launcher = DSPLauncher.createServerLauncher(this, inputStream, outputStream);
 					launcher.startListening().get(); // This blocks until the front-end disconnects.
 				}
+			} catch (NoClassDefFoundError e) {
+				// If the bundle o.e.lsp4j.jsonrpc.debug is missing from the Eclipse launch
+				// configuration (i.e., when debugging in Eclipse),
+				// DSPLauncher.createServerLauncher throws a NoClassDefFoundError. This causes
+				// the debugger frontend to hang immediately after startup. Unfortunately, the
+				// backend suppresses this exception, making it difficult to diagnose why the
+				// frontend stalls. To address this, emit a diagnostic hint that clearly
+				// explains the root cause to the developer.
+				e.printStackTrace();
+				System.err.println(
+						"Verify that the three bundles o.e.lsp4j.debug, o.e.lsp4j.jsonrpc, and o.e.lsp4j.jsonrpc.debug are included in "
+						+ "your launch configuration. In particular, o.e.lsp4j.jsonrpc.debug is often missing because it is not included "
+						+ "automatically.");
+				throw e;
 			}
 		});
 		return this;
