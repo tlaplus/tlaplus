@@ -93,7 +93,7 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 
 	@Override
 	public boolean handle(final TLCDebugger debugger) {
-		return debugger.stack.size() == 1;
+		return true;
 	}
 	
 	@Override

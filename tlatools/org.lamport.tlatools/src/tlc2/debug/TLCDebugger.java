@@ -514,6 +514,27 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			res.setTotalFrames(0);
 			return CompletableFuture.completedFuture(res);
 		}
+		
+		// TLCSyntheticStateStackFrame are pushed onto the stack to display the current
+		// execution trace in the frontend's Call Stack. The Call Stack begins with the
+		// initial state, continues through the current state, and is then followed by
+		// the regular Call Stack frames (for example, those corresponding to the
+		// currently evaluated formula). These stack frames are pushed and popped
+		// (see haltExecution below) manually rather than being managed automatically by
+		// DebugTool like ordinary TLCStackFrames. The reason is compatibility with BFS
+		// mode. In BFS mode, TLC evicts TLCState instances from memory (for example,
+		// via the StateQueue) to conserve memory. If these states were pushed onto the
+		// debugger's stack, they would be retained indefinitely, preventing eviction
+		// and causing unnecessary memory growth.
+		// Moreover, the TLCSyntheticStateStackFrame are only created when the frontend
+		// requests the Call Stack via this method. In other words, if the frontend never
+		// requests the stack frames, these stack frames are never created.
+		// Peeking the last frame makes stackTrace(..) idempotent. 
+		if (!(stack.peekLast() instanceof TLCSyntheticStateStackFrame) && stack.peek() instanceof TLCStateStackFrame) {
+			// A TLCStateStackFrame gives us the current state from which we can obtain the
+			// trace.
+			stack.addAll(((TLCStateStackFrame) stack.peek()).getTraceAsStackFrames());
+		}
 
 		int from = 0;
 		if (args.getStartFrame() != null) {
@@ -1047,6 +1068,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		} catch (InterruptedException notExpectedToHappen) {
 			notExpectedToHappen.printStackTrace();
 			java.lang.Thread.currentThread().interrupt();
+		}
+		
+		// Remove all "virtual" frames that were added to show the trace of states (see
+		// stackTrace above).
+		while (!stack.isEmpty() && stack.peekLast() instanceof TLCSyntheticStateStackFrame) {
+			final TLCStackFrame f = stack.pollLast();
+			assert f instanceof TLCSyntheticStateStackFrame;
 		}
 		
 		if (Step.Reset == step) {
