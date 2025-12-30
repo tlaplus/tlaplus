@@ -92,7 +92,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		for (int i = 0; i < 16; i++) { //64
 			stackFrames = debugger.continue_();
 
-			assertEquals(6, stackFrames.length);
+			assertEquals(7, stackFrames.length);
 			assertTLCStateFrame(stackFrames[4], 20, 23, RM, vars);
 			assertTLCStateFrame(stackFrames[3], 20, 20, RM, vars);
 			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[0], vars[2], vars[3]);
@@ -105,25 +105,25 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 
 		// First frame captures the complete action.
-		assertEquals(2, stackFrames.length);
+		assertEquals(3, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 26, 31, RM, vars);
 
 		// Second frame captures the first line.
 		stackFrames = debugger.stepIn();
-		assertEquals(3, stackFrames.length);
+		assertEquals(4, stackFrames.length);
 		assertTLCActionFrame(stackFrames[1], 26, 31, RM, vars);
 		assertTLCActionFrame(stackFrames[0], 26, 26, RM, vars);
 
 		// Third frame.
 		stackFrames = debugger.stepIn();
-		assertEquals(4, stackFrames.length);
+		assertEquals(5, stackFrames.length);
 		assertTLCActionFrame(stackFrames[2], 26, 31, RM, vars);
 		assertTLCActionFrame(stackFrames[1], 26, 26, RM, vars);
 		assertTLCActionFrame(stackFrames[0], 26, 26, RM, vars);
 
 		// Fourth frame.
 		stackFrames = debugger.stepIn(2);
-		assertEquals(4, stackFrames.length);
+		assertEquals(5, stackFrames.length);
 		assertTLCActionFrame(stackFrames[2], 26, 31, RM, vars);
 		assertTLCActionFrame(stackFrames[1], 26, 26, RM, vars);
 		assertTLCActionFrame(stackFrames[0], 27, 27, RM, vars);
@@ -131,7 +131,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		// Debug the SendMsg action of the next-state relation.
 		debugger.replaceAllBreakpointsWith(RM, 46);
 		stackFrames = debugger.continue_();
-		assertEquals(5, stackFrames.length);
+		assertEquals(6, stackFrames.length);
 		Context context = Context.Empty.cons(null, IntValue.ValZero).cons(null, IntValue.ValZero);
 		/*
 		  /\ active[i]
@@ -162,7 +162,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
         		/\ active' = [active EXCEPT ![j] = TRUE]
 		 */
 		stackFrames = debugger.stepIn();
-		assertEquals(6, stackFrames.length);
+		assertEquals(7, stackFrames.length);
 		context = Context.Empty.cons(null, IntValue.ValZero).cons(null, IntValue.ValZero);
 		assertTLCActionFrame(stackFrames[4], 44, 48, RM, context, vars);
 		assertTLCActionFrame(stackFrames[3], 44, 44, RM, context, vars);
@@ -177,20 +177,20 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 				takes precedence.
 		 */
 		stackFrames = debugger.stepIn();
-		assertEquals(7, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 46, 46, RM, context, vars);
 		/*
 		        /\ color' = [color EXCEPT ![i] = IF j>i THEN "black" ELSE @]
 		 */
 		stackFrames = debugger.stepIn(5);
-		assertEquals(8, stackFrames.length);
+		assertEquals(9, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[0], vars[2], vars[3]);
 
 		/*
   				/\ UNCHANGED <<tpos, tcolor>>
 		 */
 		stackFrames = debugger.stepIn(7);
-		assertEquals(8, stackFrames.length);
+		assertEquals(9, stackFrames.length);
 		context = Context.Empty.cons(null, IntValue.ValZero).cons(null, IntValue.ValZero);
 		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[0], vars[2]);
 		
@@ -198,7 +198,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(MDL, 16);
 		stackFrames = debugger.continue_();
 		stackFrames = debugger.stepIn(13);
-		assertEquals(11, stackFrames.length);
+		assertEquals(13, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 16, 54, 16, 64, MDL, Context.Empty.cons(null, IntValue.ValZero));
 		Variable[] contextVariables = ((TLCStateStackFrame) stackFrames[0]).getVariables();
 		assertNotNull(contextVariables);
@@ -211,20 +211,25 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Action Constraint 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(MDL, 19);
 		stackFrames = debugger.continue_();
-		assertEquals(9, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 19, 21, MDL);
 		
 		// 8888888888888888888 Invariant Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(RM, 94);
 		stackFrames = debugger.continue_();
-		assertEquals(6, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 		
 		// 8888888888888888888 Spec Breakpoint 8888888888888888888 //
 		debugger.unsetBreakpoints();
 		debugger.setSpecBreakpoint("TLCGet(\"level\") > 3");
 		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
+		assertEquals(5, stackFrames.length);
+		
+		for (int j = 1; j < 5; j++) {
+			assertTrue(stackFrames[j] instanceof TLCSyntheticStateStackFrame);
+			assertEquals(5 - j, ((TLCSyntheticStateStackFrame) stackFrames[j]).getS().getLevel());
+		}
 		
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
@@ -232,18 +237,23 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		
 		// Continue to when TLC finds a violation of the Stop invariant.
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(15, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 31, 18, 31, 23, RM, Context.Empty);
 		TLCActionStackFrame actionStackFrame = (TLCActionStackFrame) stackFrames[0];
 		assertTrue(actionStackFrame.exception instanceof InvariantViolatedException);
 		assertEquals("Invariant Stop is violated.", actionStackFrame.exception.getMessage());
 		
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < 5; i++) {
 			stackFrames = debugger.continue_();
-			assertEquals(2, stackFrames.length);
+			// i is number of states in the trace.
+			assertEquals(3 + i, stackFrames.length);
 			assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
 			assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 		}
+		stackFrames = debugger.continue_();
+		assertEquals(7, stackFrames.length);
+		assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL);
+		assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL);
 
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();

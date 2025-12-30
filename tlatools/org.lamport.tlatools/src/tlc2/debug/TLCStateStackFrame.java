@@ -45,6 +45,7 @@ import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
+import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.TLCStateMutExt;
@@ -120,6 +121,23 @@ public class TLCStateStackFrame extends TLCStackFrame {
 	@Override
 	protected TLCState getT() {
 		return state;
+	}
+	
+	List<TLCStackFrame> getTraceAsStackFrames() {
+		return ((DebugTool) tool).eval(() -> {
+			final List<TLCStackFrame> frames = new ArrayList<>();
+			if (TLCGlobals.simulator != null) {
+				final StateVec trace = TLCGlobals.simulator.getUncompressedTrace(getS());
+				for (int i = trace.size() - 1; i >= 0; i--) {
+					final TLCState state = trace.elementAt(i);
+					frames.add(new TLCSyntheticStateStackFrame(tool, new TLCStateInfo(state),
+							String.valueOf(trace.size()).length()));
+				}
+			} else {
+				// TODO: Implement for model checking (BFS mode) runs.
+			}
+			return frames;
+		});
 	}
 
 	Variable[] getTrace() {

@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.junit.Test;
@@ -60,7 +61,8 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 		// construct a trace x=0 .. x=8 by selecting each successor state in turn.
 		for (int i = 0; i < 8; i++) {
 
-			assertEquals(1, stackFrames.length);
+			// i is number of states in the trace.
+			assertEquals(2 + i, stackFrames.length);
 			assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 
 			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
@@ -68,6 +70,19 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 			// Check that the TLC state variable 'x' has the expected value.
 			assertEquals(i, ((IntValue) next.getS().getVals().get(UniqueString.of("x"))).val);
 
+			// Assert that the stack frames that have been manually pushed onto the
+			// debugger's stack, represent the correct TLC states, i.e., the trace that is
+			// constructed.
+			for (int j = 0; j < stackFrames.length - 1; j++) {
+				final StackFrame frame = stackFrames[stackFrames.length - 1 - j];
+
+				assertTrue(frame instanceof TLCSyntheticStateStackFrame);
+				final TLCSyntheticStateStackFrame f = (TLCSyntheticStateStackFrame) frame;
+
+				// Check that the TLC state variable 'x' has the expected value.
+				assertEquals(j, ((IntValue) f.getS().getVals().get(UniqueString.of("x"))).val);
+			}
+			
 			// Select the i-th successor state to continue the simulation down that path.
 			// This also continues_ the debugger.
 			debugger.gotoState(new GotoStateArgument()
@@ -80,13 +95,27 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 		// Reverse direction: back to the initial state.
 		for (int i = 8; i > 0; i--) {
 
-			assertEquals(1, stackFrames.length);
+			// i is number of states in the trace.
+			assertEquals(2 + i, stackFrames.length);
 			assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 
 			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
 
 			// Check that the TLC state variable 'x' has the expected value.
 			assertEquals(i, ((IntValue) next.getS().getVals().get(UniqueString.of("x"))).val);
+			
+			// Assert that the stack frames that have been manually pushed onto the
+			// debugger's stack, represent the correct TLC states, i.e., the trace that is
+			// deconstructed.
+			for (int j = 0; j < stackFrames.length - 1; j++) {
+				final StackFrame frame = stackFrames[stackFrames.length - 1 - j];
+
+				assertTrue(frame instanceof TLCSyntheticStateStackFrame);
+				final TLCSyntheticStateStackFrame f = (TLCSyntheticStateStackFrame) frame;
+
+				// Check that the TLC state variable 'x' has the expected value.
+				assertEquals(j, ((IntValue) f.getS().getVals().get(UniqueString.of("x"))).val);
+			}
 
 			// Select the predecessor state to continue the simulation back.
 			// This also continues_ the debugger.
@@ -108,7 +137,7 @@ public class Debug03SimTest extends TLCDebuggerTestCase {
 				new GotoStateArgument().setVariablesReference(init.getStatesVariables()[1].getVariablesReference()))
 				.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
 		stackFrames = debugger.stackTrace();
-		assertEquals(1, stackFrames.length);
+		assertEquals(2, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 14, 16, 14, 19, RM, Context.Empty, 9);
 		final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
 		// Check that the TLC state variable 'x' has the expected value.
