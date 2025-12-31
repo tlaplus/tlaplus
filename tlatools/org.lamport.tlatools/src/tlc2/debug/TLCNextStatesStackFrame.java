@@ -252,4 +252,12 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 		}
 		return super.gotoState(debugger, id);
 	}
+
+	@Override
+	protected boolean matchesExpression(final TLCSourceBreakpoint bp, boolean fire) {
+		// For each successor state t of the current state s, check if any of the pair
+		// of states s -> t matches the breakpoint condition.
+		return fun.getStates().toSet().stream().filter(t -> bp.matchesExpression(tool, getS(), t, getContext(), fire))
+				.findAny().isPresent();
+	}
 }

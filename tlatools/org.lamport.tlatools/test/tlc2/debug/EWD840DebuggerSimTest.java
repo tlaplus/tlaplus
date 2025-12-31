@@ -220,6 +220,12 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		assertEquals(6, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 94, 3, 96, 26, RM, Context.Empty);
 		
+		// 8888888888888888888 Spec Breakpoint 8888888888888888888 //
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("TLCGet(\"level\") > 3");
+		stackFrames = debugger.continue_();
+		assertEquals(1, stackFrames.length);
+		
 		// 8888888888888888888 ALIAS Alias 8888888888888888888 //
 
 		debugger.replaceAllBreakpointsWith(MDL, 33);
