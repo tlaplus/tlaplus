@@ -234,14 +234,10 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 	}
 
 	@Override
-	public CompletableFuture<Void> stepOver(TLCDebugger debugger) {
-		final Action a = getS().hasAction() ? getS().getAction() : Action.UNKNOWN;
-
-		// Find some successor state t s.t. the action from s -> t is not an 'a' action.
-		// Fall back to any successor state if no such state exists.
-		fun.getStates().toSet().stream().filter(s -> s.getAction() != a).findFirst().ifPresent(s -> {
-			fun.setElement(s);
-		});
+	public synchronized CompletableFuture<Void> stepOver(TLCDebugger debugger) {
+		// Select a successor state whose Hamming distance to the current state is maximal.
+		fun.setElement(fun.getStates().toSet().stream().max(Comparator.comparingInt(s -> hammingDistance(getS(), s)))
+				.orElseThrow());
 		
 		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
