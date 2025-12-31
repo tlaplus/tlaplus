@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import java.io.IOException;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -321,20 +320,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			if ("violate".equalsIgnoreCase(args.getExpression())) {
 				DebugTool.setForceViolation();
 				return CompletableFuture.completedFuture(new EvaluateResponse());
-			}
-			// TODO: Users can enter (arbitrary) expressions in the front-end's "Debug
-			// Console". We could try to handle valid TLA+ expressions here, but SANY
-			// unfortunately lacks incremental parsing.  Study related discussion started
-			// in http://discuss.tlapl.us/msg01427.html and continued offline in the involved
-			// inboxes.
-			// This is a poor-man's version of debugger commands:
-			// https://github.com/microsoft/debug-adapter-protocol/issues/231
-			// https://github.com/microsoft/debug-adapter-protocol/issues/216
-			try {
-				pipedOutputStream.write((args.getExpression() + "\n").getBytes());
-			} catch (IOException notExpectedToHappen) {
-				notExpectedToHappen.printStackTrace();
-			}
+			};
+
+			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
+					.findAny().map(f -> f.evaluate(args.getExpression())).orElse(new EvaluateResponse()));
 		} else if ("variables".equals(args.getContext())) {
 			// The front-end passes "variables" as the context when users select a variable
 			// in the variables view and invoke the copy-to-clipboard action. Since the

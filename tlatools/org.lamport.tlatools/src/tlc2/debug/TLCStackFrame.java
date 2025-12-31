@@ -53,6 +53,7 @@ import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.NumeralNode;
 import tla2sany.semantic.OpApplNode;
@@ -772,5 +773,55 @@ public class TLCStackFrame extends StackFrame {
 
 	public boolean handle(final TLCDebugger debugger) {
 		return false;
+	}
+
+	public EvaluateResponse evaluate(String expression) {
+		if (expression == null) {
+			return new EvaluateResponse();
+		}
+		try {
+			final SpecProcessor proc = tool.getSpecProcessor();
+
+			// Parse the expression.
+			final OpDefNode expr = TLCDebuggerExpression.process(proc, proc.getRootModule(), expression);
+			if (expr == null) {
+				final EvaluateResponse er = new EvaluateResponse();
+				er.setResult(expression);
+				return er;
+			}
+
+			Context ctxt = getEvaluateContext();
+
+			// Resolve any formal parameters of the expression.
+			for (FormalParamNode p : expr.getParams()) {
+				ctxt = ctxt.cons(p, getContext().lookup(sn -> sn.getName().equals(p.getName())));
+			}
+
+			// Evaluate the expression.
+			final IValue eval = evaluate(expr.getBody(), ctxt);
+
+			// Convert the result to a DAP Variable.
+			final Variable variable = getVariable(eval, expr.getName());
+			final EvaluateResponse er = new EvaluateResponse();
+			er.setResult(variable.getValue());
+			er.setVariablesReference(variable.getVariablesReference());
+			return er;
+		} catch (Exception e) {
+			final Variable variable = getVariable(new StringValue(e.getMessage() == null ? "" : e.getMessage()), expression);
+			final EvaluateResponse er = new EvaluateResponse();
+			er.setResult(variable.getValue());
+			er.setVariablesReference(variable.getVariablesReference());
+			return er;
+		}
+	}
+
+	protected IValue evaluate(SemanticNode expr, Context ctxt) throws Exception {
+		return tool.eval(() -> {
+			return tool.noDebug().eval(expr, ctxt);
+		});
+	}
+	
+	protected Context getEvaluateContext() {
+		return Context.Empty;
 	}
 }

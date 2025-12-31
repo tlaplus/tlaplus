@@ -43,6 +43,7 @@ import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.TLCGlobals;
+import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
@@ -128,10 +129,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			final List<TLCStackFrame> frames = new ArrayList<>();
 			if (TLCGlobals.simulator != null) {
 				final StateVec trace = TLCGlobals.simulator.getUncompressedTrace(getS());
+				TLCState successor = getS(); // Loop at the end of the trace.
 				for (int i = trace.size() - 1; i >= 0; i--) {
 					final TLCState state = trace.elementAt(i);
-					frames.add(new TLCSyntheticStateStackFrame(tool, new TLCStateInfo(state),
+					frames.add(new TLCSyntheticStateStackFrame(tool, new TLCStateInfo(state), successor,
 							String.valueOf(trace.size()).length()));
+					successor = state;
 				}
 			} else {
 				// TODO: Implement for model checking (BFS mode) runs.
@@ -396,5 +399,12 @@ public class TLCStateStackFrame extends TLCStackFrame {
 
 	protected boolean matchesExpression(final TLCSourceBreakpoint bp, boolean fire) {
 		return bp.matchesExpression(tool, getS(), getT(), getContext(), fire);
+	}
+
+	@Override
+	protected IValue evaluate(SemanticNode expr, Context ctxt) throws Exception {
+		return tool.eval(() -> {
+			return tool.noDebug().eval(expr, ctxt, getS(), getS(), EvalControl.Clear);
+		});
 	}
 }
