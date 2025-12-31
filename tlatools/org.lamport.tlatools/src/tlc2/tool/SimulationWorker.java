@@ -803,6 +803,17 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		return new StateVec(trace.toArray(TLCState[]::new));
 	}
 
+	public synchronized final StateVec getUncompressedTrace(TLCState t) {
+		final LinkedList<TLCState> trace = new LinkedList<>();
+
+		while (t != null) {
+			trace.addFirst(t);
+			t = t.getPredecessor();
+		}	
+		
+		return new StateVec(trace.toArray(TLCState[]::new));
+	}
+
 	public void setInitialStates(StateVec initStates) {
 		this.initStates = initStates;
 	}

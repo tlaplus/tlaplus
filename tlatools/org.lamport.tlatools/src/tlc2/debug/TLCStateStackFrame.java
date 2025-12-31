@@ -159,7 +159,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 						// Filtering allAssigned is expected to remove only the final state from the
 						// trace, which is the state equal to 't'. If other states are also removed, it
 						// indicates an issue, but it is likely preferable to crashing.
-						prefix = TLCGlobals.simulator.getTrace(t).stream().filter(s -> s.allAssigned())
+						prefix = TLCGlobals.simulator.getUncompressedTrace(t).stream().filter(s -> s.allAssigned())
 								.map(s -> new TLCStateInfo(s)).collect(Collectors.toList())
 								.toArray(TLCStateInfo[]::new);
 					} else {
