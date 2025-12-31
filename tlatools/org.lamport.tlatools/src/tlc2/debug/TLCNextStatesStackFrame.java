@@ -26,6 +26,7 @@
 package tlc2.debug;
 
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -197,16 +198,35 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 		return getVariables(stateId);
 	}
 
+	/**
+	 * Compute the Hamming distance between two TLCStates based on their string
+	 * representations. Counts the number of character positions at which the
+	 * strings differ.
+	 * 
+	 * TODO: This is a simplistic approach. For example, adding an element to a
+	 * function will boost a distance much more compared to change the value of a
+	 * counter. Semantically, however, both should have the same distance; a more
+	 * sophisticated method could consider the distance of each IValue in the
+	 * states.
+	 */
+	private static int hammingDistance(TLCState s1, TLCState s2) {
+	    final char[] a = s1.toString().toCharArray();
+	    final char[] b = s2.toString().toCharArray();
+
+	    final int minLen = Math.min(a.length, b.length);
+	    int distance = Math.abs(a.length - b.length);
+
+	    for (int i = 0; i < minLen; i++) {
+	        distance += (a[i] ^ b[i]) == 0 ? 0 : 1;
+	    }
+	    return distance;
+	}
+
 	@Override
-	public CompletableFuture<Void> stepIn(TLCDebugger debugger) {
-		final Action a = getS().hasAction() ? getS().getAction() : Action.UNKNOWN;
-		
-		// Find a successor state t of state s such that the transition s --a--> t
-		// corresponds to an action a step. If no such successor exists, fall back
-		// to an arbitrary successor state.
-		fun.getStates().getSubSet(a).stream().findFirst().ifPresent(s -> {
-			fun.setElement(s);
-		});
+	public synchronized CompletableFuture<Void> stepIn(TLCDebugger debugger) {
+		// Select a successor state whose Hamming distance to the current state is minimal.
+		fun.setElement(fun.getStates().toSet().stream().min(Comparator.comparingInt(s -> hammingDistance(getS(), s)))
+				.orElseThrow());
 		
 		debugger.setGranularity(Granularity.Formula);
 		debugger.notify();
