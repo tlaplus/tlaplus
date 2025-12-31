@@ -812,6 +812,16 @@ public class Simulator {
 		}
 	}
 	
+	public final StateVec getUncompressedTrace(final TLCState s) {
+		if (Thread.currentThread() instanceof SimulationWorker) {
+			final SimulationWorker w = (SimulationWorker) Thread.currentThread();
+			return w.getUncompressedTrace(s);
+		} else {
+			assert numWorkers == 1 && workers.size() == numWorkers;
+			return workers.get(0).getUncompressedTrace(s);
+		}
+	}
+	
 	public void stop() {
 		for (SimulationWorker worker : workers) {
 			worker.setStopped();

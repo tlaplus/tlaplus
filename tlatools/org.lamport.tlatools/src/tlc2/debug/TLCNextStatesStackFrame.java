@@ -161,7 +161,7 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 					// trace, which is the state equal to 't'. If other states are also removed, it
 					// indicates an issue, but it is likely preferable to crashing.
 					final TLCStateInfo[] prefix;
-					prefix = TLCGlobals.simulator.getTrace(t).stream().filter(s -> s.allAssigned())
+					prefix = TLCGlobals.simulator.getUncompressedTrace(t).stream().filter(s -> s.allAssigned())
 							.map(s -> new TLCStateInfo(s)).collect(Collectors.toList())
 							.toArray(TLCStateInfo[]::new);
 					
