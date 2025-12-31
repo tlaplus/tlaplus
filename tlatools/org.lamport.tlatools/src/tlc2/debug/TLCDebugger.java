@@ -116,14 +116,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.haltInv = true;
 		// Turned off by default due to legacy reasons. Turning it on by default would
 		// require changing almost all test cases.
-		this.haltSpec = false;
 	}
 
 	public TLCDebugger(final Step s, final boolean halt) {
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltSpec = halt;
 	}
 
 	/*
@@ -133,7 +131,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		this.step = s;
 		this.haltExp = halt;
 		this.haltInv = halt;
-		this.haltSpec = halt;
 		this.executionIsHalted = executionIsHalted;
 	}
 
@@ -268,10 +265,12 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		unsat.setSupportsCondition(true);
 
 		final ExceptionBreakpointsFilter spec = new ExceptionBreakpointsFilter();
-		spec.setDefault_(this.haltSpec);
+		spec.setDefault_(this.haltSpec != null);
 		spec.setFilter("SpecBreakpointsFilter");
 		spec.setLabel("Halt (break) after Init and Next");
 		spec.setDescription("TLC will halt after initial- and next-states have been generated.");
+		spec.setConditionDescription("Init: constant or state formula. Next: constant, state, or action-level formula.");
+		spec.setSupportsCondition(true);
 
 		if (this.tool.getMode() == Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
@@ -295,7 +294,13 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		final Set<String> asSet = Arrays.stream(args.getFilterOptions()).map(fo -> fo.getFilterId()).collect(Collectors.toSet());
 		this.haltExp = asSet.contains("ExceptionBreakpointsFilter");
 		this.haltInv = asSet.contains("InvariantBreakpointsFilter");
-		this.haltSpec = asSet.contains("SpecBreakpointsFilter");
+
+		this.haltSpec = Arrays.stream(args.getFilterOptions())
+				.filter(fo -> fo.getFilterId().equals("SpecBreakpointsFilter"))
+				.map(fo -> new TLCSourceBreakpoint(tool.getSpecProcessor(),
+						fo.getCondition() != null && !fo.getCondition().isBlank() ? fo.getCondition() : "TRUE"))
+				.findAny().orElse(null);
+
 
 		this.haltUnsat = Arrays.stream(args.getFilterOptions())
 				.filter(fo -> fo.getFilterId().equals("UnsatisfiedBreakpointsFilter"))
@@ -388,7 +393,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		step = Step.Continue;
 		haltExp = false;
 		haltInv = false;
-		haltSpec = false;
+		haltSpec = null;
 		haltUnsat = null;
 		this.notify();
 		
@@ -706,7 +711,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	
 	private volatile boolean haltExp;
 	private volatile boolean haltInv;
-	protected volatile boolean haltSpec;
+	
+	private volatile TLCSourceBreakpoint haltSpec;
 	private volatile TLCSourceBreakpoint haltUnsat;
 
 	private volatile boolean executionIsHalted = false;
@@ -912,7 +918,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	public synchronized IDebugTarget popNextStatesFrame(Tool tool, INextStateFunctor functor, TLCState state) {
 		final TLCStackFrame frame = stack.peek();
 		assert frame instanceof TLCNextStatesStackFrame;
-		if (haltSpec) {
+		if (haltSpec != null && frame.matches(haltSpec)) {
 			haltExecution(frame);
 		}
 		stack.pop();
@@ -939,7 +945,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		// Simulator and not the ExplorationWorker instance). Ignore this frame and
 		// continue because the debugger will momentarily hit the next
 		// TLCInitialStatesStackFrame with the ExplorationWorker functor.
-		if (haltSpec && !frame.getStates().isEmpty()) {
+		if (haltSpec != null && !frame.getStates().isEmpty() && frame.matches(haltSpec)) {
 			haltExecution(frame);
 		}
 		stack.pop();

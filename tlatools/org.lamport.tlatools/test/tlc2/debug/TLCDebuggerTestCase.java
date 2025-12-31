@@ -55,10 +55,12 @@ import org.eclipse.lsp4j.debug.ContinueArguments;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
+import org.eclipse.lsp4j.debug.ExceptionFilterOptions;
 import org.eclipse.lsp4j.debug.NextArguments;
 import org.eclipse.lsp4j.debug.ReverseContinueArguments;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
+import org.eclipse.lsp4j.debug.SetExceptionBreakpointsArguments;
 import org.eclipse.lsp4j.debug.Source;
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 import org.eclipse.lsp4j.debug.StackFrame;
@@ -622,11 +624,37 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 				args.setSource(source);
 				setBreakpoints(args);
 			});
-			this.haltSpec = false;
+			
+			final SetExceptionBreakpointsArguments args = new SetExceptionBreakpointsArguments();
+			
+			final ExceptionFilterOptions[] filterOptions = new ExceptionFilterOptions[2];
+			filterOptions[0] = new ExceptionFilterOptions();
+			filterOptions[0].setFilterId("InvariantBreakpointsFilter");
+			filterOptions[1] = new ExceptionFilterOptions();
+			filterOptions[1].setFilterId("ExceptionBreakpointsFilter");
+			args.setFilterOptions(filterOptions);
+
+			setExceptionBreakpoints(args);
 		}
 
 		public void setSpecBreakpoint() {
-			this.haltSpec = true;
+			setSpecBreakpoint(null);
+		}
+
+		public void setSpecBreakpoint(final String condition) {
+			final SetExceptionBreakpointsArguments args = new SetExceptionBreakpointsArguments();
+
+			final ExceptionFilterOptions[] filterOptions = new ExceptionFilterOptions[3];
+			filterOptions[0] = new ExceptionFilterOptions();
+			filterOptions[0].setFilterId("InvariantBreakpointsFilter");
+			filterOptions[1] = new ExceptionFilterOptions();
+			filterOptions[1].setFilterId("ExceptionBreakpointsFilter");
+			filterOptions[2] = new ExceptionFilterOptions();
+			filterOptions[2].setFilterId("SpecBreakpointsFilter");
+			filterOptions[2].setCondition(condition);
+			args.setFilterOptions(filterOptions);
+
+			setExceptionBreakpoints(args);
 		}
 
 		public StackFrame[] stackTrace() throws Exception {
