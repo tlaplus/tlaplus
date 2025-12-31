@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.debug.Variable;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tlc2.tool.Action;
+import tlc2.tool.EvalControl;
 import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.TLCState;
@@ -122,6 +123,13 @@ public class TLCActionStackFrame extends TLCStateStackFrame {
 			} catch (TLCRuntimeException | EvalException | FingerprintException e) {
 				return fallback == null ? e : fallback;
 			}
+		});
+	}
+
+	@Override
+	protected IValue evaluate(SemanticNode expr, Context ctxt) throws Exception {
+		return tool.eval(() -> {
+			return tool.noDebug().eval(expr, ctxt, getS(), getT(), EvalControl.Clear);
 		});
 	}
 }

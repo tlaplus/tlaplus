@@ -25,8 +25,13 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import tla2sany.semantic.SemanticNode;
+import tlc2.tool.EvalControl;
+import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
+import tlc2.value.IValue;
 
 /**
  * This class represents a stack frame that is not managed by DebugTool in the
@@ -38,8 +43,18 @@ import tlc2.tool.impl.Tool;
  */
 public class TLCSyntheticStateStackFrame extends TLCStateStackFrame {
 
-	public TLCSyntheticStateStackFrame(Tool tool, TLCStateInfo ti, int width) {
+	private final transient TLCState successor;
+
+	public TLCSyntheticStateStackFrame(Tool tool, TLCStateInfo ti, TLCState successor, int width) {
 		super(null, ti.getAction().pred, ti.getAction().con, tool, ti.state);
+		this.successor = successor;
 		setName(String.format("%0" + width + "d", ti.state.getLevel()) + ": " + ti.info.toString());
+	}
+
+	@Override
+	protected IValue evaluate(SemanticNode expr, Context ctxt) throws Exception {
+		return tool.eval(() -> {
+			return tool.noDebug().eval(expr, ctxt, state, successor, EvalControl.Clear);
+		});
 	}
 }

@@ -30,6 +30,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.StackFrame;
 import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
@@ -37,7 +39,6 @@ import org.junit.Test;
 import tlc2.debug.GotoStateEvent.GotoStateArgument;
 import tlc2.output.EC;
 import tlc2.util.Context;
-import tlc2.value.IValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
 import util.UniqueString;
@@ -63,6 +64,18 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		TLCInitStatesStackFrame init = (TLCInitStatesStackFrame) stackFrames[0];
 		assertEquals(3, init.getStates().size());
 
+		// Debug Expressions initial frame (no action level)
+		EvaluateArguments ea = new EvaluateArguments();
+		ea.setFrameId(stackFrames[0].getId());
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("x"); // State-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(// Only prefix bc the name of the on-the-fly
+				// generated debug module is not known.
+				"In evaluation, the identifier x is either undefined or not an operator."));
+		ea.setExpression("x'"); // Action-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
+				"In evaluation, the identifier x is either undefined or not an operator."));
+
 		// Goto the first A state (rely on the fact that states are sorted
 		// lexicographically, making A the first state. However, assert it).
 		final Variable[] statesVariables = init.getStatesVariables();
@@ -72,10 +85,10 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 				.setVariablesReference(aState.getVariablesReference()))
 				.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
 		stackFrames = debugger.stackTrace();
-		
+
 		// idempotence check
 		assertArrayEquals(stackFrames, debugger.stackTrace());
-		
+
 		// Construct a trace x=A, x=A, ..., x=A by stepping into.
 		for (int i = 0; i < 8; i++) {
 
@@ -84,10 +97,20 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
 
 			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+			assertTrue(next.getS().allAssigned());
 
 			// Check that the TLC state variable 'x' has the expected value.
 			assertEquals(new StringValue("A"), next.getS().getVals().get(UniqueString.of("x")));
 
+			// Debug Expressions next frame (no action level)
+			ea = new EvaluateArguments();
+			ea.setFrameId(stackFrames[0].getId());
+			ea.setContext(EvaluateArgumentsContext.REPL);
+			ea.setExpression("x"); // State-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			
 			// Assert that the stack frames that have been manually pushed onto the
 			// debugger's stack, represent the correct TLC states, i.e., the trace that is
 			// constructed.
@@ -96,6 +119,7 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 
 				assertTrue(frame instanceof TLCSyntheticStateStackFrame);
 				final TLCSyntheticStateStackFrame f = (TLCSyntheticStateStackFrame) frame;
+				assertTrue(f.getS().allAssigned());
 
 				// Check that the TLC state variable 'x' has the expected value.
 				assertEquals(new StringValue("A"), f.getS().getVals().get(UniqueString.of("x")));
@@ -112,9 +136,19 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
 
 			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+			assertTrue(next.getS().allAssigned());
 
 			// Check that the TLC state variable 'x' has the expected value.
 			assertEquals(new StringValue("A"), next.getS().getVals().get(UniqueString.of("x")));
+
+			// Debug Expressions next frame (no action level)
+			ea = new EvaluateArguments();
+			ea.setFrameId(stackFrames[0].getId());
+			ea.setContext(EvaluateArgumentsContext.REPL);
+			ea.setExpression("x"); // State-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
 
 			// Assert that the stack frames that have been manually pushed onto the
 			// debugger's stack, represent the correct TLC states, i.e., the trace that is
@@ -124,9 +158,19 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 
 				assertTrue(frame instanceof TLCSyntheticStateStackFrame);
 				final TLCSyntheticStateStackFrame f = (TLCSyntheticStateStackFrame) frame;
+				assertTrue(f.getS().allAssigned());
 
 				// Check that the TLC state variable 'x' has the expected value.
 				assertEquals(new StringValue("A"), f.getS().getVals().get(UniqueString.of("x")));
+				
+				// Debug Expressions (action level)
+				ea = new EvaluateArguments();
+				ea.setFrameId(frame.getId());
+				ea.setContext(EvaluateArgumentsContext.REPL);
+				ea.setExpression("x"); // State-level
+				assertEquals("A", debugger.evaluate(ea).get().getResult());
+				ea.setExpression("x'"); // Action-level
+				assertEquals("A", debugger.evaluate(ea).get().getResult());
 			}
 
 			// Select the predecessor state to continue the simulation back.
@@ -145,15 +189,27 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		init = (TLCInitStatesStackFrame) stackFrames[0];
 		assertEquals(3, init.getStates().size());
 
+		// Debug Expressions initial frame (no action level)
+		ea = new EvaluateArguments();
+		ea.setFrameId(stackFrames[0].getId());
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("x"); // State-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
+				"In evaluation, the identifier x is either undefined or not an operator."));
+		ea.setExpression("x'"); // Action-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
+				"In evaluation, the identifier x is either undefined or not an operator."));
+
 		debugger.gotoState(new GotoStateArgument()
 				.setVariablesReference(init.getStatesVariables()[0].getVariablesReference()))
 				.whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
 		stackFrames = debugger.stackTrace();
+		
 		// idempotence check
 		assertArrayEquals(stackFrames, debugger.stackTrace());
 
 		assertTrue(stackFrames[0] instanceof TLCStateStackFrame);
-		IValue oldVal = null;
+		StringValue oldVal = null;
 		
 		for (int i = 0; i < 8; i++) {
 
@@ -162,10 +218,20 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
 
 			final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+			assertTrue(next.getS().allAssigned());
 
 			// Check that the TLC state variable 'x' has the expected value.
 			assertNotEquals(oldVal, next.getS().getVals().get(UniqueString.of("x")));
-			oldVal = ((TLCStateStackFrame) stackFrames[0]).getS().getVals().get(UniqueString.of("x"));
+			oldVal = (StringValue) ((TLCStateStackFrame) stackFrames[0]).getS().getVals().get(UniqueString.of("x"));
+			
+			// Debug Expressions next frame (no action level)
+			ea = new EvaluateArguments();
+			ea.setFrameId(stackFrames[0].getId());
+			ea.setContext(EvaluateArgumentsContext.REPL);
+			ea.setExpression("x"); // State-level
+			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
 			
 			stackFrames = debugger.next();
 		}
@@ -179,6 +245,7 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
 		final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+		assertTrue(next.getS().allAssigned());
 
 		// Check that the TLC state variable 'x' has the expected value.
 		assertEquals(new StringValue("A"), next.getS().getVals().get(UniqueString.of("x")));
