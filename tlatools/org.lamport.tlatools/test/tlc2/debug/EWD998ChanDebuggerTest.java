@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -48,7 +47,6 @@ import org.eclipse.lsp4j.debug.Variable;
 import org.junit.Test;
 
 import tla2sany.semantic.OpDeclNode;
-import tla2sany.semantic.OpDefNode;
 import tlc2.debug.TLCStateStackFrame.DebuggerValue;
 import tlc2.output.EC;
 import tlc2.util.Context;
@@ -90,22 +88,18 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(2, constants.length);
 		
 		// Check Watch expressions
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
-		EvaluateResponse expected = new EvaluateResponse();
-		expected.setResult("Does not exist");
-		assertEquals(expected, stackFrame.getWatchWithFallback("Does not exist"));
+		assertEquals(new EvaluateResponse(), stackFrame.evaluate((String) null));
+		assertEquals("Does not exist", stackFrame.evaluate("Does not exist").getResult());
 		
 		assertEquals(
 				"In evaluation, the identifier counter is either undefined or not an operator.\\nline 43, col 6 to line 43, col 12 of module EWD998Chan",
-				stackFrame.getWatch("Init").getResult());
+				stackFrame.evaluate("Init").getResult());
 		assertEquals(
 				"In evaluation, the identifier inbox is either undefined or not an operator.\\nline 53, col 22 to line 53, col 26 of module EWD998Chan",
-				stackFrame.getWatch("InitiateProbe").getResult());
+				stackFrame.evaluate("InitiateProbe").getResult());
 		assertEquals(
 				"In evaluation, the identifier inbox is either undefined or not an operator.\\nline 53, col 22 to line 53, col 26 of module EWD998Chan",
-				stackFrame.getWatch("System").getResult());
+				stackFrame.evaluate("System").getResult());
 		
 		// High-level spec constants (expected to be ordered lexicographically)
 		Variable[] consts = stackFrame.getVariables(constants[0].getVariablesReference());
@@ -456,25 +450,21 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCNextStatesFrame(stackFrames[0], 134, 20, 134, 23, RM, Context.Empty, 3);
 		
 		stackFrame = (TLCStackFrame) stackFrames[0];
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch((OpDefNode) null));
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch((String) null));
-		assertEquals(new EvaluateResponse(), stackFrame.getWatch("Does not exist"));
-		expected = new EvaluateResponse();
-		expected.setResult("Does not exist");
-		assertEquals(expected, stackFrame.getWatchWithFallback("Does not exist"));
+		assertEquals(new EvaluateResponse(), stackFrame.evaluate((String) null));
+		assertEquals("Does not exist", stackFrame.evaluate("Does not exist").getResult());
 		
-		assertEquals("FALSE", stackFrame.getWatch("Init").getResult());
-		assertEquals("FALSE", stackFrame.getWatch("InitiateProbe").getResult());
-		assertEquals("FALSE", stackFrame.getWatch("System").getResult());
-		assertEquals("FALSE", stackFrame.getWatch("Environment").getResult());
-		assertEquals("FALSE", stackFrame.getWatch("Next").getResult());
-		assertEquals("FALSE", stackFrame.getWatch("Spec").getResult());
-		assertEquals("TRUE", stackFrame.getWatch("StateConstraint").getResult());
-		assertEquals("2", stackFrame.getWatch("tpos").getResult());
-		assertEquals("TRUE", stackFrame.getWatch("Stop").getResult());
-		assertEquals("TRUE", stackFrame.getWatch("ActionConstraint").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("Init").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("InitiateProbe").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("System").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("Environment").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("Next").getResult());
+		assertEquals("FALSE", stackFrame.evaluate("Spec").getResult());
+		assertEquals("TRUE", stackFrame.evaluate("StateConstraint").getResult());
+		assertEquals("2", stackFrame.evaluate("tpos").getResult());
+		assertEquals("TRUE", stackFrame.evaluate("Stop").getResult());
+		assertEquals("TRUE", stackFrame.evaluate("ActionConstraint").getResult());
 		
-		final EvaluateResponse er = stackFrame.getWatch("EnabledAlias");
+		final EvaluateResponse er = stackFrame.evaluate("EnabledAlias");
 		assertNotNull(er);
 		assertEquals(
 				"[InitiateProbe |-> FALSE, PassToken |-> TRUE, SendMsg |-> TRUE, RecvMsg |-> FALSE, Deactivate |-> TRUE]",
@@ -494,9 +484,8 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("TRUE", frob[4].getValue());
 
 		// Dynamic watch expressions		
-		assertNull(stackFrame.getWatch("").getResult());
-		assertEquals("<<FALSE, FALSE>>", stackFrame.getWatch("[i \\in Nodes \\ {0} |-> PassToken(i)]").getResult());
-		assertEquals("<<FALSE, TRUE>>", stackFrame.getWatch("[i \\in Nodes \\ {0} |-> ENABLED PassToken(i)]").getResult());
+		assertEquals("<<FALSE, FALSE>>", stackFrame.evaluate("[i \\in Nodes \\ {0} |-> PassToken(i)]").getResult());
+		assertEquals("<<FALSE, TRUE>>", stackFrame.evaluate("[i \\in Nodes \\ {0} |-> ENABLED PassToken(i)]").getResult());
 		
 		// POSTCONDITION
 		debugger.unsetBreakpoints();
