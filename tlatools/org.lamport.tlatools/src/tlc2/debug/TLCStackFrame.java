@@ -531,20 +531,6 @@ public class TLCStackFrame extends StackFrame {
 		return TLCState.Empty;
 	}
 
-	public EvaluateResponse getWatchWithFallback(final String name) {
-		if (name == null) {
-			return new EvaluateResponse();
-		} 
-		final ModuleNode module = tool.getSpecProcessor().getRootModule();
-		final OpDefNode opDef = module.getOpDef(name);
-		if (opDef == null) {
-			final EvaluateResponse er = new EvaluateResponse();
-			er.setResult(name);
-			return er;
-		}
-		return getWatch(opDef);
-	}
-
 	public EvaluateResponse getWatch(final String name) {
 		if (name == null) {
 			return new EvaluateResponse();

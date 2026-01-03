@@ -91,6 +91,13 @@ public abstract class TLCDebuggerExpression {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
+		
+		// Check if we have already parsed this expression before, or if it refers to an
+		// existing operator.
+		OpDefNode bpOp = semanticRoot.getOpDef(conditionExpr);
+		if (bpOp != null) {
+			return bpOp;
+		}
 
 		final String rootModName = semanticRoot.getName().toString();
 		final String bpModName = semanticRoot.generateUnusedName("__DebuggerModule__%s");
@@ -136,7 +143,7 @@ public abstract class TLCDebuggerExpression {
 			return null;
 		}
 		
-		OpDefNode bpOp = bpModule.getOpDef(bpOpName);
+		bpOp = bpModule.getOpDef(bpOpName);
 		if (null == bpOp) {
 			ToolIO.err.println("ERROR: unable to find debugger expression op " + bpOpName);
 			return null;

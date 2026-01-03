@@ -34,7 +34,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
@@ -298,24 +297,6 @@ public class TLCStateStackFrame extends TLCStackFrame {
 			return variable;
 		}
 		return super.getVariable(path);
-	}
-	
-	@Override
-	public EvaluateResponse getWatch(final String name) {
-		if (name == null) {
-			return new EvaluateResponse();
-		} 
-
-		final IValue lookup = getT().lookup(name);
-		if (lookup != null) { // null when there is no such variable or the value of the variable has not yet been determined.
-			final Variable variable = getVariable(lookup, name);
-			final EvaluateResponse er = new EvaluateResponse();
-			er.setResult(variable.getValue());
-			er.setVariablesReference(variable.getVariablesReference());
-			return er;
-		}
-		
-		return super.getWatch(name);
 	}
 	
 	protected boolean isPrimeScope(LinkedList<SemanticNode> path) {

@@ -340,10 +340,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return CompletableFuture.completedFuture(response);
 		} else if (EvaluateArgumentsContext.CLIPBOARD.equals(args.getContext())) {
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
-					.findAny().map(f -> f.getWatchWithFallback(args.getExpression())).orElse(new EvaluateResponse()));
+					.findAny().map(f -> f.evaluate(args.getExpression())).orElse(new EvaluateResponse()));
 		} else if ("watch".equals(args.getContext())) {
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
-					.findAny().map(f -> f.getWatch(args.getExpression())).orElse(new EvaluateResponse()));
+					.findAny().map(f -> f.evaluate(args.getExpression())).orElse(new EvaluateResponse()));
 		}
 		return CompletableFuture.completedFuture(new EvaluateResponse());
 	}

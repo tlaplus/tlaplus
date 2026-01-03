@@ -110,7 +110,16 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertEquals("A", debugger.evaluate(ea).get().getResult());
 			ea.setExpression("x'"); // Action-level
 			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			// assert that watch and repl are equivalent.
+			ea.setContext("watch");
+			ea.setExpression("x"); // State-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
 			
+			ea.setExpression("TLCGet(\"level\")");
+			assertEquals(Integer.toString(i + 1), debugger.evaluate(ea).get().getResult());
+
 			// Assert that the stack frames that have been manually pushed onto the
 			// debugger's stack, represent the correct TLC states, i.e., the trace that is
 			// constructed.
@@ -149,6 +158,14 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertEquals("A", debugger.evaluate(ea).get().getResult());
 			ea.setExpression("x'"); // Action-level
 			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			// assert that watch and repl are equivalent.
+			ea.setContext("watch");
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals("A", debugger.evaluate(ea).get().getResult());
+
+			ea.setExpression("TLCGet(\"level\")");
+			assertEquals(Integer.toString(i + 1), debugger.evaluate(ea).get().getResult());
 
 			// Assert that the stack frames that have been manually pushed onto the
 			// debugger's stack, represent the correct TLC states, i.e., the trace that is
@@ -199,6 +216,17 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		ea.setExpression("x'"); // Action-level
 		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
 				"In evaluation, the identifier x is either undefined or not an operator."));
+		// assert that watch and repl are equivalent.
+		ea.setContext("watch");
+		ea.setExpression("x"); // State-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
+				"In evaluation, the identifier x is either undefined or not an operator."));
+		ea.setExpression("x'"); // Action-level
+		assertTrue(debugger.evaluate(ea).get().getResult().startsWith(
+				"In evaluation, the identifier x is either undefined or not an operator."));
+
+		ea.setExpression("TLCGet(\"level\")");
+		assertEquals(Integer.toString(1), debugger.evaluate(ea).get().getResult());
 
 		debugger.gotoState(new GotoStateArgument()
 				.setVariablesReference(init.getStatesVariables()[0].getVariablesReference()))
@@ -232,7 +260,17 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
 			ea.setExpression("x'"); // Action-level
 			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
-			
+
+			// assert that watch and repl are equivalent.
+			ea.setContext("watch");
+			ea.setExpression("x"); // State-level
+			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
+			ea.setExpression("x'"); // Action-level
+			assertEquals(oldVal.val.toString(), debugger.evaluate(ea).get().getResult());
+
+			ea.setExpression("TLCGet(\"level\")");
+			assertEquals(Integer.toString(i + 1), debugger.evaluate(ea).get().getResult());
+
 			stackFrames = debugger.next();
 		}
 		
