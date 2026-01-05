@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import tla2sany.modanalyzer.ModulePointer;
 import tla2sany.modanalyzer.ParseUnit;
@@ -98,10 +99,8 @@ public class ParameterizedSpecObj extends SpecObj {
 			final ModuleNode moduleNode = mt.getModuleNode(pc.module);
 			final OpDefNode opDef = moduleNode.getOpDef(pc.operator);
 
-			for (Map.Entry<String, String> entry : pc.redefinitions.entrySet()) {
-				final OpDefNode redefined = moduleNode.getOpDef(entry.getKey());
-				redefined.setToolObject(spec.getId(), new StringValue(entry.getValue()));
-			}
+			Stream.of(moduleNode.getConstantDecls()).forEach(decl -> decl.setToolObject(spec.getId(),
+					new StringValue(pc.constDecls.get(decl.getName().toString()))));
 
 			res.add(opDef.getBody());
 		}
@@ -111,22 +110,22 @@ public class ParameterizedSpecObj extends SpecObj {
 	public static class PostCondition {
 		public final String module;
 		public final String operator;
-		public final Map<String, String> redefinitions;
+		public final Map<String, String> constDecls;
 		
 		public PostCondition(String module, String operator) {
 			this(module, operator, new HashMap<>());
 		}
 		
-		public PostCondition(final String module, final String operator, final String def, final String redef) {
+		public PostCondition(final String module, final String operator, final String def, final String constDef) {
 			this(module, operator);
-			this.redefinitions.put(def, redef);
+			this.constDecls.put(def, constDef);
 		}
 
-		public PostCondition(String module, String operator, Map<String, String> redefinitions) {
+		public PostCondition(String module, String operator, Map<String, String> constDecls) {
 			super();
 			this.module = module;
 			this.operator = operator;
-			this.redefinitions = redefinitions;
+			this.constDecls = constDecls;
 		}
 	}
 

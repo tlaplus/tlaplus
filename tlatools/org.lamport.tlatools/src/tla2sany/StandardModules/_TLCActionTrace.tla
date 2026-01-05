@@ -18,7 +18,7 @@ LOCAL _next ==
         ToDisjunct(i, r) == "\\/ " \o ToString(i) \o " = _idx /\\ " \o Signature(r) \o "\n"
     IN FoldSet(LAMBDA a, acc: acc \o ToDisjunct(a[1][1], a[2]), "", CounterExample.action)
 
-LOCAL _TLCTraceFile == "TLCActionTrace.tla"
+CONSTANT _TLCTraceFile
 
 LOCAL _TLCTraceModule ==
 	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) 

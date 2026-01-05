@@ -17,8 +17,7 @@ LOCAL _Vars ==
 LOCAL _ToConjunt(v, prime, idx) ==
     "/\\ " \o v \o prime \o " = Trace[" \o idx \o "]." \o v \o "\n"
 
-LOCAL _TLCTraceFile ==
-    "CounterExample.tlc"
+CONSTANT _TLCTraceFile
 
 LOCAL _conjunct(prime, idx) ==
     FoldSet(LAMBDA v, acc: acc \o _ToConjunt(v, prime, idx), "", _Vars)

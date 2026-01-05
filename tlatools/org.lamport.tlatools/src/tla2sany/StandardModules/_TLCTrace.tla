@@ -6,8 +6,7 @@ LOCAL INSTANCE Sequences
 LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
     TRUE
 
-LOCAL _TLCTraceFile ==
-    "CounterExample.tlc"
+CONSTANT _TLCTraceFile
 
 LOCAL _TLCTraceSilent ==
     IF CounterExample.state = {} THEN TRUE ELSE
