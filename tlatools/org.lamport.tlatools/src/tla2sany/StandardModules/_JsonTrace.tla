@@ -4,8 +4,7 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Json
 LOCAL INSTANCE Sequences
 
-LOCAL _JsonTraceFile ==
-    "CounterExample.json"
+CONSTANT _JsonTraceFile
 
 LOCAL _JsonTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE

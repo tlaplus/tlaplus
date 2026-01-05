@@ -5,8 +5,7 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Sequences
 LOCAL INSTANCE SequencesExt
 
-LOCAL _TLCTraceFile ==
-    "CounterExample.tlc"
+CONSTANT _TLCTraceFile
 
 LOCAL _TLCTraceModule ==
 	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) IN

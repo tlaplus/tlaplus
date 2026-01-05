@@ -6,8 +6,7 @@ LOCAL INSTANCE IOUtils
 LOCAL INSTANCE Sequences
 LOCAL INSTANCE Functions
 
-LOCAL _DotTraceFile ==
-    "CounterExample.Dot"
+CONSTANT _DotTraceFile
 
 LOCAL _DotTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
