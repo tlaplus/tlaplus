@@ -49,7 +49,7 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 	private static final String RM = "Debug04";
 
 	public Debug04SimTest() {
-		super(RM, FOLDER, new String[] { "-config", "Debug04.tla", "-simulate", "num=2" }, EC.ExitStatus.SUCCESS);
+		super(RM, FOLDER, new String[] { "-config", "Debug04.tla", "-simulate", "num=4" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -282,7 +282,7 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		debugger.setSpecBreakpoint("x = \"A\" /\\ x' = \"B\"");
 		stackFrames = debugger.continue_();
 		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
-		final TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
+		TLCNextStatesStackFrame next = (TLCNextStatesStackFrame) stackFrames[0];
 		assertTrue(next.getS().allAssigned());
 
 		// Check that the TLC state variable 'x' has the expected value.
@@ -303,8 +303,36 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_(51);
 		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 0);
 
-		// Remove all breakpoints and run the spec to completion.
+		// 88888888888888888 Run to next set of initial states 88888888888888 //
 		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("TLCGet(\"level\") = 1");
+		stackFrames = debugger.continue_();
+		assertTLCInitStatesFrame(stackFrames[0], 6, 9, 6, 29, RM, Context.Empty, 3);
+
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("TLCGet(\"level\") = 2");
+		stackFrames = debugger.continue_();
+		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
+		next = (TLCNextStatesStackFrame) stackFrames[0];
+		assertEquals(2, next.getS().getLevel());
+
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("TLCGet(\"level\") = 3");
+		stackFrames = debugger.continue_();
+		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
+		next = (TLCNextStatesStackFrame) stackFrames[0];
+		assertEquals(3, next.getS().getLevel());
+
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("TLCGet(\"level\") = 4");
+		stackFrames = debugger.continue_();
+		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 3);
+		next = (TLCNextStatesStackFrame) stackFrames[0];
+		assertEquals(4, next.getS().getLevel());
+
+		// 88888888888888888 FALSE should never fire 88888888888888 //
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint("FALSE");
 		debugger.continue_();
 	}
 }

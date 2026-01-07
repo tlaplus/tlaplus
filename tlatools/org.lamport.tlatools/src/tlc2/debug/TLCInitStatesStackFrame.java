@@ -150,4 +150,15 @@ public class TLCInitStatesStackFrame extends TLCStackFrame {
 	Variable[] getStatesVariables() {
 		return getVariables(stateId);
 	}
+	
+	@Override
+	public boolean matches(final TLCSourceBreakpoint bp) {
+		if (super.matches(bp)) {
+			// Compare TLCNextStatesStackFrame.matches().
+			return functor.getStates().toSet().stream()
+					.filter(t -> bp.matchesExpression(tool, t, TLCState.Empty, getContext(), true)).findAny()
+					.isPresent();
+		}
+		return false;
+	}
 }
