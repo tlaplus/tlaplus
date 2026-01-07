@@ -397,7 +397,7 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			assertTrue(trace.size() > 0);
 						
 			// Assert that the last state is an initial state.
-			assertTrue(trace.get(trace.size() - 1).getName().startsWith("1: "));
+			assertTrue(trace.get(trace.size() - 1).getName().matches("0*1: .*"));
 			
 			// Reverse the trace to traverse from initial to end in the following loops
 			Collections.reverse(trace);
@@ -405,7 +405,8 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// Assert that the variables' numbers in trace are strictly monotonic for all
 			// but the last state.
 			for (int i = 0; i < trace.size() - 1; i++) {
-				assertTrue(trace.get(i).getName().startsWith(Integer.toString(i + 1) + ":"));
+			    final String regex = "0*" + (i + 1) + ":.*";
+			    assertTrue(trace.get(i).getName().matches(regex));
 			}
 
 			// Assert TLCState#allAssigned for all but the last state.
