@@ -26,16 +26,22 @@
  ******************************************************************************/
 package tlc2.debug;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tla2sany.output.SilentSanyOutput;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.LetInNode;
@@ -48,7 +54,9 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.st.Location;
 import tlc2.tool.impl.SpecProcessor;
+import util.TLAConstants;
 import util.ToolIO;
+import util.UniqueString;
 
 public abstract class TLCDebuggerExpression {
 	
@@ -116,9 +124,20 @@ public abstract class TLCDebuggerExpression {
 			ToolIO.err.println("Syntax error while parsing breakpoint expression \"" + conditionExpr + "\"");
 			return null;
 		}
+		
+		final ExternalModuleTable emt = processor.getModuleTbl();
+		try {
+			// Resolve dependencies not already resolved.
+			resolveDependencies(processor, emt, Stream.of(parser.dependencies())
+					.filter(dep -> emt.getModuleNode(dep) == null).collect(Collectors.toList()));
+		} catch (AbortException e) {
+			ToolIO.err.print(e.toString());
+			ToolIO.err.println("Dependency error while parsing breakpoint expression \"" + conditionExpr + "\"");
+			return null;
+		}
 
 		Errors semanticLog = new Errors();
-		Generator semanticChecker = new Generator(processor.getModuleTbl(), semanticLog);
+		Generator semanticChecker = new Generator(emt, semanticLog);
 		ModuleNode bpModule = null;
 		try {
 			bpModule = semanticChecker.generate(syntaxRoot);
@@ -158,9 +177,51 @@ public abstract class TLCDebuggerExpression {
 
 		processor.processConstantsDynamicExtendee(bpModule);
 		
+		processor.processModuleOverrides(bpModule, emt);
+		
 		return bpOp;
 	}
 	
+	private static ExternalModuleTable resolveDependencies(final SpecProcessor processor, final ExternalModuleTable emt,
+			final List<String> dependencies) throws AbortException {
+		for (String moduleName : dependencies) {
+			try (final InputStream moduleSource = new FileInputStream(
+					ToolIO.getDefaultResolver().resolve(moduleName + TLAConstants.Files.TLA_EXTENSION, false))) {
+				final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), moduleSource);
+
+				boolean syntaxParseSuccess = parser.parse();
+				SyntaxTreeNode syntaxRoot = parser.ParseTree;
+				if (!syntaxParseSuccess || null == syntaxRoot) {
+					ToolIO.err.println("Syntax error while parsing breakpoint expression's dependency \"" + moduleName + "\"");
+					continue;
+				}
+
+		        // Transitively resolve dependencies.
+				for (String dep : parser.dependencies()) {
+					if (emt.getModuleNode(dep) == null) {
+						resolveDependencies(processor, emt, List.of(dep));
+					}
+				}
+
+				final Errors log = new Errors();
+				final Generator semanticParser = new Generator(emt, log);
+				final ModuleNode module = semanticParser.generate(parser.rootNode());
+				if (log.isFailure()) {
+					ToolIO.err.print(log.toString());
+					ToolIO.err.println("Semantic error while parsing breakpoint expression's dependency \"" + moduleName + "\"");
+					continue;
+				}
+				module.levelCheck(log);
+				// Process module's constants like numerals, strings, ...
+				processor.processConstantsDynamicExtendee(module);
+				emt.put(UniqueString.of(moduleName), semanticParser.getSymbolTable().getExternalContext(), module);
+			} catch (IOException e) {
+				throw new RuntimeException("ERROR: Unable to read module " + moduleName);
+			}
+		}
+		return emt;
+	}
+
 	/**
 	 * The expression operator can accept parameters; for example if we want
 	 * to add a breakpoint at the following location:

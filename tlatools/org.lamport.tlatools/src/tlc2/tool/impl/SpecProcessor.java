@@ -568,218 +568,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             }
         }
 
-        // Apply module overrides:
-        for (int i = 0; i < mods.length; i++)
-        {
-        	
-        	final UniqueString modName = mods[i].getName();
-            final Class<?> userModule = this.tlaClass.loadClass(modName.toString());
-            if (userModule != null)
-            {
-            	final Map<UniqueString, Integer> opname2arity = new HashMap<>();
-            	if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
-					// Remember arity for non built-in overrides to later match with java override
-					// when loading.
-            		for (OpDefNode opDefNode : rootOpDefs) {
-            			if (opDefNode.getOriginallyDefinedInModuleNode().getName().equals(modName)) {
-            				opname2arity.put(opDefNode.getName(), opDefNode.getArity());
-            			}
-            		}
-            	}
-                // Override with a user defined Java class for the TLA+ module.
-                // Collects new definitions:
-                final Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
-                final Method[] mds = userModule.getDeclaredMethods();
-                for (int j = 0; j < mds.length; j++)
-                {
-                	final Method method = mds[j];
-                    int mdf = method.getModifiers();
-                    if (Modifier.isPublic(mdf) && Modifier.isStatic(mdf))
-                    {
-                        String name = TLARegistry.mapName(method.getName());
-                        UniqueString uname = UniqueString.uniqueStringOf(name);
-						if (method.getAnnotation(TLAPlusOperator.class) != null
-								|| method.getAnnotation(Evaluation.class) != null) {
-							// Skip, handled below with annotation based mechanism.
-							continue;
-						}
-                    	final int acnt = method.getParameterCount();
-                    	final Value val = MethodValue.get(method);
-                        
-                        if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
-                    		final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
-                    		// Print success or failure of loading the module override (arity mismatch).
-							final Integer arity = opname2arity.get(uname);
-							if (arity == null || arity != acnt) {
-								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH, uname.toString(),
-										resource.toExternalForm(), val.toString());
-							} else {
-		                        javaDefs.put(uname, val);
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED, uname.toString(),
-										resource.toExternalForm(), val.toString());
-							}
-                        } else {
-                            javaDefs.put(uname, val);
-                        }
-                    }
-                }
-                // Adds/overrides new definitions:
-                //TODO This loop could be merged with the previous loop
-                // by using mods[i].getOpDef(UniqueString) right away
-                // without javaDefns.
-                OpDefNode[] opDefs = mods[i].getOpDefs();
-                for (int j = 0; j < opDefs.length; j++)
-                {
-                    UniqueString uname = opDefs[j].getName();
-                    Object val = javaDefs.get(uname);
-                    if (val != null)
-                    {
-                        opDefs[j].getBody().setToolObject(toolId, val);
-                        this.defns.put(uname, val);
-                    }
-                }
-            }
-        }
-		// Load override definitions through user-provided index class. In other words,
-		// a user creates a class that implements the interface ITLCOverrides.
-		// ITLCOverride defines a single method that returns an array of classes which
-		// define Java overrides (this approach is simpler and faster than scanning
-		// the complete classpath). To load user-provided index classes, pass the
-        // -Dtlc2.overrides.TLCOverrides property with a list of index classes
-        // separated by the system's path separator (":", ";").  If no property is given,
-        // the default is to load the first class on the classpath with name tlc2.overrides.TLCOverrides
-        // that implements tlc2.overrides.ITLCOverrides.  This is usually the tlc2.overrides.TLCOverrides
-        // provided by the CommunityModules.
-        boolean hasCallableValue = false;
-		final String tlcOverrides = TLCBuiltInOverrides.class.getName() + File.pathSeparator
-				+ System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
-		for (String ovrde : tlcOverrides.split(File.pathSeparator)) {
-			final Class<?> idx = this.tlaClass.loadClass(ovrde);
-			if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
-				try {
-					final ITLCOverrides index = (ITLCOverrides) idx.newInstance();
-					final Class<?>[] candidateClasses = index.get();
-					for (Class<?> c : candidateClasses) {
-						final Method[] candidateMethods = c.getDeclaredMethods();
-						LOOP: for (Method m : candidateMethods) {
-							
-							
-							final Evaluation evaluation = m.getAnnotation(Evaluation.class);
-							if (evaluation != null) {
-								final ModuleNode moduleNode = modSet.get(evaluation.module());
-								if (moduleNode == null) {
-									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
-											evaluation.module() + "!" + evaluation.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
-									continue LOOP;
-								}
-								final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
-								if (opDef == null) {
-									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
-											evaluation.module() + "!" + evaluation.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
-									continue LOOP;
-								}
-								
-								// Either load the first EvaluatingValue or combine multiple EvaluatingValues for this operator into
-								// a PriorityEvaluatingValue that -given by the EVs priority- keeps evaluating every EV until one returns
-								// a Value.
-								final Object toolObject = opDef.getBody().getToolObject(toolId);
-								if (toolObject instanceof EvaluatingValue) {
-									final Value val = new PriorityEvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef, (EvaluatingValue) toolObject);
-									opDef.getBody().setToolObject(toolId, val);
-				                    this.defns.put(evaluation.definition(), val);
-								} else if (toolObject instanceof PriorityEvaluatingValue) {
-									final PriorityEvaluatingValue mev = (PriorityEvaluatingValue) toolObject;
-									mev.add(new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef));
-								} else {
-									final Value val = new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef);
-									opDef.getBody().setToolObject(toolId, val);
-				                    this.defns.put(evaluation.definition(), val);
-								}
-			                    
-								// Print success of loading the module override.
-			                    if (!evaluation.silent()) {
-			                    	MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-			                    			evaluation.module() + "!" + evaluation.definition(),
-			                    			c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
-			                    }
-			                    
-			                    // continue with next method (don't try to also load Execution annotation below).
-			                    continue LOOP;
-							}
-							
-							final TLAPlusCallable jev = m.getAnnotation(TLAPlusCallable.class);
-							if (jev != null) {
-								
-								final ModuleNode moduleNode = modSet.get(jev.module());
-								if (moduleNode == null) {
-									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
-											jev.module() + "!" + jev.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
-									continue LOOP;
-								}
-								final OpDefNode opDef = moduleNode.getOpDef(jev.definition());
-								if (opDef == null) {
-									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
-											jev.module() + "!" + jev.definition(),
-											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
-									continue LOOP;
-								}
-								
-								final Value val = new CallableValue(m, jev.minLevel(), opDef);
-								opDef.getBody().setToolObject(toolId, val);
-			                    this.defns.put(jev.definition(), val);
-			                    hasCallableValue = true;
-			                    
-								// Print success of loading the module override.
-								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-										jev.module() + "!" + jev.definition(),
-										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
-			                    
-			                    // continue with next method (don't try to also load Execution annotation below).
-			                    continue LOOP;
-							}
-							
-							final TLAPlusOperator opOverrideCandidate = m.getAnnotation(TLAPlusOperator.class);
-							if (opOverrideCandidate != null) {
-								final ModuleNode moduleNode = modSet.get(opOverrideCandidate.module());
-								if (moduleNode == null) {
-									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
-											opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
-									continue LOOP;
-								}
-								final OpDefNode opDef = moduleNode.getOpDef(opOverrideCandidate.identifier());
-								if (opDef == null) {
-									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
-											opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
-									continue LOOP;
-								}
-
-								final Value val = MethodValue.get(m, opOverrideCandidate.minLevel());
-								if (opDef.getArity() != m.getParameterCount()) {
-									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
-											opDef.getName().toString(), c.getName(), val.toString());
-									continue LOOP;
-								} else {
-									if (opOverrideCandidate.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
-											opDef.getName().toString(), c.getName(),
-											val instanceof MethodValue ? val.toString() : val.getClass().getName()); // toString of non-MethodValue instances can be expensive.
-								}
-
-								opDef.getBody().setToolObject(toolId, val);
-								this.defns.put(opOverrideCandidate.identifier(), val);
-							}
-						}
-					}
-				} catch (InstantiationException | IllegalAccessException e) {
-					// TODO Specific error code.
-					Assert.fail(EC.GENERAL);
-					return;
-				}
-	        }
-		}
-        
+        boolean hasCallableValue = processModuleOverrides(mods, rootOpDefs, modSet, overrides);
 
         Set<String> overriden = new HashSet<String>();
         // Apply config file overrides to constants:
@@ -2026,6 +1815,230 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
 
+    public boolean processModuleOverrides(ModuleNode module, final ExternalModuleTable moduleTbl) {
+		final ModuleNode[] mods = moduleTbl.getModuleNodes();
+		final Map<String, ModuleNode> modSet = new HashMap<String, ModuleNode>();
+		for (int i = 0; i < mods.length; i++) {
+			modSet.put(mods[i].getName().toString(), mods[i]);
+		}
+		return processModuleOverrides(mods, module.getOpDefs(), modSet, new Hashtable());
+    }
+
+    public boolean processModuleOverrides(final ModuleNode[] mods, final OpDefNode[] rootOpDefs, Map<String, ModuleNode> modSet, Hashtable overrides) {
+        // Apply module overrides:
+        for (int i = 0; i < mods.length; i++)
+        {
+        	
+        	final UniqueString modName = mods[i].getName();
+            final Class<?> userModule = this.tlaClass.loadClass(modName.toString());
+            if (userModule != null)
+            {
+            	final Map<UniqueString, Integer> opname2arity = new HashMap<>();
+            	if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+					// Remember arity for non built-in overrides to later match with java override
+					// when loading.
+            		for (OpDefNode opDefNode : rootOpDefs) {
+            			if (opDefNode.getOriginallyDefinedInModuleNode().getName().equals(modName)) {
+            				opname2arity.put(opDefNode.getName(), opDefNode.getArity());
+            			}
+            		}
+            	}
+                // Override with a user defined Java class for the TLA+ module.
+                // Collects new definitions:
+                final Hashtable<UniqueString, IValue> javaDefs = new Hashtable<UniqueString, IValue>();
+                final Method[] mds = userModule.getDeclaredMethods();
+                for (int j = 0; j < mds.length; j++)
+                {
+                	final Method method = mds[j];
+                    int mdf = method.getModifiers();
+                    if (Modifier.isPublic(mdf) && Modifier.isStatic(mdf))
+                    {
+                        String name = TLARegistry.mapName(method.getName());
+                        UniqueString uname = UniqueString.uniqueStringOf(name);
+						if (method.getAnnotation(TLAPlusOperator.class) != null
+								|| method.getAnnotation(Evaluation.class) != null) {
+							// Skip, handled below with annotation based mechanism.
+							continue;
+						}
+                    	final int acnt = method.getParameterCount();
+                    	final Value val = MethodValue.get(method);
+                        
+                        if (!BuiltInModuleHelper.isBuiltInModule(userModule)) {
+                    		final URL resource = userModule.getResource(userModule.getSimpleName() + ".class");
+                    		// Print success or failure of loading the module override (arity mismatch).
+							final Integer arity = opname2arity.get(uname);
+							if (arity == null || arity != acnt) {
+								MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH, uname.toString(),
+										resource.toExternalForm(), val.toString());
+							} else {
+		                        javaDefs.put(uname, val);
+								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED, uname.toString(),
+										resource.toExternalForm(), val.toString());
+							}
+                        } else {
+                            javaDefs.put(uname, val);
+                        }
+                    }
+                }
+                // Adds/overrides new definitions:
+                //TODO This loop could be merged with the previous loop
+                // by using mods[i].getOpDef(UniqueString) right away
+                // without javaDefns.
+                OpDefNode[] opDefs = mods[i].getOpDefs();
+                for (int j = 0; j < opDefs.length; j++)
+                {
+                    UniqueString uname = opDefs[j].getName();
+                    Object val = javaDefs.get(uname);
+                    if (val != null)
+                    {
+                        opDefs[j].getBody().setToolObject(toolId, val);
+                        this.defns.put(uname, val);
+                    }
+                }
+            }
+        }
+		// Load override definitions through user-provided index class. In other words,
+		// a user creates a class that implements the interface ITLCOverrides.
+		// ITLCOverride defines a single method that returns an array of classes which
+		// define Java overrides (this approach is simpler and faster than scanning
+		// the complete classpath). To load user-provided index classes, pass the
+        // -Dtlc2.overrides.TLCOverrides property with a list of index classes
+        // separated by the system's path separator (":", ";").  If no property is given,
+        // the default is to load the first class on the classpath with name tlc2.overrides.TLCOverrides
+        // that implements tlc2.overrides.ITLCOverrides.  This is usually the tlc2.overrides.TLCOverrides
+        // provided by the CommunityModules.
+        boolean hasCallableValue = false;
+		final String tlcOverrides = TLCBuiltInOverrides.class.getName() + File.pathSeparator
+				+ System.getProperty("tlc2.overrides.TLCOverrides", "tlc2.overrides.TLCOverrides");
+		for (String ovrde : tlcOverrides.split(File.pathSeparator)) {
+			final Class<?> idx = this.tlaClass.loadClass(ovrde);
+			if (idx != null && ITLCOverrides.class.isAssignableFrom(idx)) {
+				try {
+					final ITLCOverrides index = (ITLCOverrides) idx.newInstance();
+					final Class<?>[] candidateClasses = index.get();
+					for (Class<?> c : candidateClasses) {
+						final Method[] candidateMethods = c.getDeclaredMethods();
+						LOOP: for (Method m : candidateMethods) {
+							
+							
+							final Evaluation evaluation = m.getAnnotation(Evaluation.class);
+							if (evaluation != null) {
+								final ModuleNode moduleNode = modSet.get(evaluation.module());
+								if (moduleNode == null) {
+									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+											evaluation.module() + "!" + evaluation.definition(),
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
+									continue LOOP;
+								}
+								final OpDefNode opDef = moduleNode.getOpDef(evaluation.definition());
+								if (opDef == null) {
+									if (evaluation.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+											evaluation.module() + "!" + evaluation.definition(),
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
+									continue LOOP;
+								}
+								
+								// Either load the first EvaluatingValue or combine multiple EvaluatingValues for this operator into
+								// a PriorityEvaluatingValue that -given by the EVs priority- keeps evaluating every EV until one returns
+								// a Value.
+								final Object toolObject = opDef.getBody().getToolObject(toolId);
+								if (toolObject instanceof EvaluatingValue) {
+									final Value val = new PriorityEvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef, (EvaluatingValue) toolObject);
+									opDef.getBody().setToolObject(toolId, val);
+				                    this.defns.put(evaluation.definition(), val);
+								} else if (toolObject instanceof PriorityEvaluatingValue) {
+									final PriorityEvaluatingValue mev = (PriorityEvaluatingValue) toolObject;
+									mev.add(new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef));
+								} else {
+									final Value val = new EvaluatingValue(m, evaluation.minLevel(), evaluation.priority(), opDef);
+									opDef.getBody().setToolObject(toolId, val);
+				                    this.defns.put(evaluation.definition(), val);
+								}
+			                    
+								// Print success of loading the module override.
+			                    if (!evaluation.silent()) {
+			                    	MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+			                    			evaluation.module() + "!" + evaluation.definition(),
+			                    			c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
+			                    }
+			                    
+			                    // continue with next method (don't try to also load Execution annotation below).
+			                    continue LOOP;
+							}
+							
+							final TLAPlusCallable jev = m.getAnnotation(TLAPlusCallable.class);
+							if (jev != null) {
+								
+								final ModuleNode moduleNode = modSet.get(jev.module());
+								if (moduleNode == null) {
+									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+											jev.module() + "!" + jev.definition(),
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
+									continue LOOP;
+								}
+								final OpDefNode opDef = moduleNode.getOpDef(jev.definition());
+								if (opDef == null) {
+									if (jev.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+											jev.module() + "!" + jev.definition(),
+											c.getResource(c.getSimpleName() + ".class").toExternalForm(), "<Java Method: " + m + ">");
+									continue LOOP;
+								}
+								
+								final Value val = new CallableValue(m, jev.minLevel(), opDef);
+								opDef.getBody().setToolObject(toolId, val);
+			                    this.defns.put(jev.definition(), val);
+			                    hasCallableValue = true;
+			                    
+								// Print success of loading the module override.
+								MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+										jev.module() + "!" + jev.definition(),
+										c.getResource(c.getSimpleName() + ".class").toExternalForm(), val.toString());
+			                    
+			                    // continue with next method (don't try to also load Execution annotation below).
+			                    continue LOOP;
+							}
+							
+							final TLAPlusOperator opOverrideCandidate = m.getAnnotation(TLAPlusOperator.class);
+							if (opOverrideCandidate != null) {
+								final ModuleNode moduleNode = modSet.get(opOverrideCandidate.module());
+								if (moduleNode == null) {
+									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MODULE_MISMATCH,
+											opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
+									continue LOOP;
+								}
+								final OpDefNode opDef = moduleNode.getOpDef(opOverrideCandidate.identifier());
+								if (opDef == null) {
+									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_IDENTIFIER_MISMATCH,
+											opOverrideCandidate.identifier(), opOverrideCandidate.module(), m.toString());
+									continue LOOP;
+								}
+
+								final Value val = MethodValue.get(m, opOverrideCandidate.minLevel());
+								if (opDef.getArity() != m.getParameterCount()) {
+									if (opOverrideCandidate.warn()) MP.printWarning(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_MISMATCH,
+											opDef.getName().toString(), c.getName(), val.toString());
+									continue LOOP;
+								} else {
+									if (opOverrideCandidate.warn()) MP.printMessage(EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE_LOADED,
+											opDef.getName().toString(), c.getName(),
+											val instanceof MethodValue ? val.toString() : val.getClass().getName()); // toString of non-MethodValue instances can be expensive.
+								}
+
+								opDef.getBody().setToolObject(toolId, val);
+								this.defns.put(opOverrideCandidate.identifier(), val);
+							}
+						}
+					}
+				} catch (InstantiationException | IllegalAccessException e) {
+					// TODO Specific error code.
+					Assert.fail(EC.GENERAL);
+					return hasCallableValue;
+				}
+	        }
+		}
+		return hasCallableValue;
+   }
+    
 	/**
 	 * Processes the constants of a dynamically generated TLA+ module `S`.
 	 * 

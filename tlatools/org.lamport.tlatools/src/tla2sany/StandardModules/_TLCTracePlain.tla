@@ -16,7 +16,7 @@ LOCAL _TLCTraceModule ==
 	ToString(ToTrace(CounterExample)) \o
     "\n\n===="
 
-LOCAL _TLCTrace ==
+_TLCTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
     			_TLCTraceFile,
