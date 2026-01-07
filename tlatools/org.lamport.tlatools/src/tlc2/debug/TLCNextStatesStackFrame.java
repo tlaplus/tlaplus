@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.debug.Variable;
 
@@ -47,6 +48,7 @@ import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
+import tlc2.util.SetOfStates;
 import tlc2.value.impl.RecordValue;
 
 public class TLCNextStatesStackFrame extends TLCStateStackFrame {
@@ -271,9 +273,16 @@ public class TLCNextStatesStackFrame extends TLCStateStackFrame {
 
 	@Override
 	protected boolean matchesExpression(final TLCSourceBreakpoint bp, boolean fire) {
-		// For each successor state t of the current state s, check if any of the pair
-		// of states s -> t matches the breakpoint condition.
-		return fun.getStates().toSet().stream().filter(t -> bp.matchesExpression(tool, getS(), t, getContext(), fire))
-				.findAny().isPresent();
+		// If there are no successor states, the next-state relation evaluates to FALSE.
+		// The breakpoint expression is then evaluated in the empty state, which—for
+		// example—causes ~ENABLED Next to fire. This is exactly the intended behavior.
+		//
+		// Note that if deadlock checking is enabled, TLC will report a counterexample
+		// and terminate as soon as execution resumes from the breakpoint.
+		final SetOfStates states = fun.getStates();
+		return (states.size() == 0 ? Stream.of(TLCState.Empty) : states.toSet().stream())
+				// For each successor state t of the current state s, check if any of the pair
+				// of states s -> t matches the breakpoint condition.
+				.filter(t -> bp.matchesExpression(tool, getS(), t, getContext(), fire)).findAny().isPresent();
 	}
 }

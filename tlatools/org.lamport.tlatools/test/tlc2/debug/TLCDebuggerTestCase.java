@@ -447,6 +447,8 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 
 		assertTrue(stackFrame instanceof TLCNextStatesStackFrame);
 		final TLCNextStatesStackFrame succframe = (TLCNextStatesStackFrame) stackFrame;
+		
+		assertEquals(expectedSuccessors, succframe.getSuccessors().size());
 
 		if (!succframe.getSuccessors().isEmpty()) {
 			final Scope succs = Arrays.asList(succframe.getScopes()).stream().filter(s -> s.getName().equals("Successors"))
@@ -704,6 +706,14 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 		public StackFrame[] continue_() throws Exception {
 			// Convenience methods
 			continue_(new ContinueArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+			return stackTrace();
+		}
+
+		public StackFrame[] continue_(final int steps) throws Exception {
+			// Convenience methods
+			for (int i = 0; i < steps; i++) {
+				continue_(new ContinueArguments()).whenComplete((a, b) -> phase.arriveAndAwaitAdvance());
+			}
 			return stackTrace();
 		}
 

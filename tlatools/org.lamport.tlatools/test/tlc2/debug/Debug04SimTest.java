@@ -290,6 +290,19 @@ public class Debug04SimTest extends TLCDebuggerTestCase {
 		assertTrue(next.getSuccessors().stream()
 				.anyMatch(s -> new StringValue("B").equals(s.getVals().get(UniqueString.of("x")))));
 
+		// 88888888888888888 ENABLED Next = FALSE with condition 88888888888888 //
+		debugger.setSpecBreakpoint("~ENABLED Next");
+		stackFrames = debugger.continue_();
+		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 0);
+		
+		// 88888888888888888 ENABLED Next = FALSE with no condition 88888888888888 //
+		debugger.unsetBreakpoints();
+		debugger.setSpecBreakpoint();
+		// "manually" hit continue until we reach ~ENABLED Next. Compare Debug04.tla
+		// where level is set to 50 (+1 for the init state).
+		stackFrames = debugger.continue_(51);
+		assertTLCNextStatesFrame(stackFrames[0], 16, 20, 16, 23, RM, Context.Empty, 0);
+
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
 		debugger.continue_();
