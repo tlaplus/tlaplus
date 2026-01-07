@@ -1,5 +1,5 @@
 --------------------------------- MODULE Debug04 ---------------------------------
-EXTENDS TLC \* Needed for debugger watch expressions.
+EXTENDS TLC, Naturals \* Needed for debugger watch expressions.
 
 VARIABLES x
 
@@ -11,7 +11,7 @@ B == x' = "B"
 
 C == x' = "C"
 
-Next == A \/ B \/ C
+Next == IF TLCGet("level") >= 50 THEN FALSE ELSE A \/ B \/ C
 
 Spec == Init /\ [][Next]_x
 
