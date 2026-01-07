@@ -87,7 +87,7 @@ public class ParameterizedSpecObj extends SpecObj {
 	}
 
 	@Override
-	public List<ExprNode> getPostConditionSpecs() {
+	public List<ExprNode> getPostConditionSpecs(final Map<String, String> overrides) {
 		final List<ExprNode> res = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
@@ -101,6 +101,13 @@ public class ParameterizedSpecObj extends SpecObj {
 			for (Map.Entry<String, String> entry : pc.redefinitions.entrySet()) {
 				final OpDefNode redefined = moduleNode.getOpDef(entry.getKey());
 				redefined.setToolObject(spec.getId(), new StringValue(entry.getValue()));
+			}
+			for (Map.Entry<String, String> entry : overrides.entrySet()) {
+				final OpDefNode redefined = moduleNode.getOpDef(entry.getKey());
+				if (redefined != null) {
+					// The PostCondition may not declare or define the redefined OpDefNode.
+					redefined.setToolObject(spec.getId(), new StringValue(entry.getValue()));
+				}
 			}
 
 			res.add(opDef.getBody());

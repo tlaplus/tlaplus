@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import pcal.Validator;
@@ -1056,7 +1057,7 @@ public class SpecObj
 		return this.parseUnitContext.get(this.getName());
 	}
 
-	public List<ExprNode> getPostConditionSpecs() {
+	public List<ExprNode> getPostConditionSpecs(final Map<String, String> params) {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}
