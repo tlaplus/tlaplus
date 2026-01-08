@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.debug.Scope;
 import org.eclipse.lsp4j.debug.Variable;
 
 import tla2sany.semantic.ASTConstants;
+import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SymbolNode;
@@ -53,6 +54,7 @@ import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.util.Context;
 import tlc2.value.IValue;
+import tlc2.value.impl.CounterExample;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
@@ -387,5 +389,23 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		return tool.eval(() -> {
 			return tool.noDebug().eval(expr, ctxt, getS(), getS(), EvalControl.Clear);
 		});
+	}
+
+	@Override
+	protected Context getEvaluateContext() {
+		final ModuleNode tlcExt = tool.getModule("TLCExt");
+		if (tlcExt == null) {
+			// TLCExt module is not extended or instantiated anywhere.
+			return Context.Empty;
+		}
+		// Build a CounterExample from the simulator trace if available.
+		final CounterExample ce;
+		if (TLCGlobals.simulator != null) {
+			ce = new CounterExample(TLCGlobals.simulator.getUncompressedTrace(getS()).stream().map(TLCStateInfo::new)
+					.collect(Collectors.toList()));
+		} else {
+			ce = new CounterExample();
+		}
+		return Context.Empty.cons(tlcExt.getOpDef("CounterExample"), ce);
 	}
 }

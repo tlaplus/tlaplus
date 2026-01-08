@@ -34,6 +34,8 @@ import org.eclipse.lsp4j.debug.StackFrame;
 import org.junit.Test;
 
 import tlc2.output.EC;
+import util.FilenameToStream;
+import util.SimpleFilenameToStream;
 
 public class Debug05SimTest extends TLCDebuggerTestCase {
 
@@ -41,12 +43,17 @@ public class Debug05SimTest extends TLCDebuggerTestCase {
 	private static final String RM = "Debug05";
 
 	public Debug05SimTest() {
-		super(RM, FOLDER, new String[] { "-config", "Debug05.tla", "-simulate", "num=1" }, EC.ExitStatus.ERROR);
+		super(RM, FOLDER, new String[] { "-config", "Debug05.tla", "-simulate", "num=1", "-depth", "25" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Override
 	protected boolean doDumpTrace() {
 		return false;
+	}
+
+	@Override
+	protected FilenameToStream getResolver() {
+		return new SimpleFilenameToStream(new String[] {BASE_DIR});
 	}
 
 	@Test
@@ -80,7 +87,38 @@ public class Debug05SimTest extends TLCDebuggerTestCase {
 		
 		ea.setExpression("LET J == INSTANCE Json IN J!ToJson({1,2,3})");
 		assertEquals("[1,2,3]", debugger.evaluate(ea).get().getResult());
+		
+		// 88888888888888888888888888888888888888888888888888888 //
 
+		debugger.setSpecBreakpoint();
+		debugger.continue_();
+
+		for (int i = 1; i < 20; i++) {
+			stackFrames = debugger.continue_();
+			StackFrame stackFrame = stackFrames[0];
+			ea.setFrameId(stackFrame.getId());
+
+			String traceFile = "Debug05SimTest.json";
+			ea.setExpression(
+					"LET J == INSTANCE _JsonTrace WITH _JsonTraceFile <- \"" + traceFile + "\" IN J!_JsonTrace");
+			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
+
+			// Validate the content of the generated file (by using the very functionality
+			// we are testing).
+			ea.setExpression("LET S == INSTANCE Sequences J == INSTANCE Json T == J!JsonDeserialize(\"" + traceFile
+					+ "\") IN S!Len(T.state) = " + i);
+			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
+
+			// 88888888888888888888888888888888888888888888888888888 //
+			
+			traceFile = "Debug05SimTest.bin";
+			ea.setExpression(
+					"LET J == INSTANCE _TLCTrace WITH _TLCTraceFile <- \"" + traceFile + "\" IN J!_TLCTrace");
+			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
+
+			// 88888888888888888888888888888888888888888888888888888 //
+		}
+		
 		debugger.unsetBreakpoints();
 		debugger.continue_();
 	}

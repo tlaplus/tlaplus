@@ -37,6 +37,8 @@ junit[0-9]*.properties
 junitvmwatcher[0-9]*.properties
 test.jfr
 *.jfr
+Debug05SimTest.json
+Debug05SimTest.bin
 tlatools/org.lamport.tlatools/test-model/test.out
 .tlacache/
 .Rproj.user

@@ -15,7 +15,7 @@ LOCAL _TLAPlusCounterExampleModule ==
     ToString(CounterExample) \o 
     "\n\n===="
 
-LOCAL _TLAPlusCounterExample ==
+_TLAPlusCounterExample ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ Serialize(_TLAPlusCounterExampleModule,
     			_TLAPlusCounterExampleFile,

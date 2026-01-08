@@ -33,7 +33,7 @@ LOCAL _TLCTraceModule ==
     "_next(LET T == INSTANCE TLC IN T!TLCGet(\"level\"))\n" \o
     "\n===="
 
-LOCAL _TLCTrace ==
+_TLCTrace ==
     IF CounterExample.action = {} THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
     			_TLCTraceFile,
