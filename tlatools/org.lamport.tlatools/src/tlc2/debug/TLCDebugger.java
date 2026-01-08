@@ -95,7 +95,6 @@ import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.StatefulRuntimeException;
 import tlc2.tool.TLCState;
-import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
@@ -317,11 +316,6 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
 					.findAny().map(f -> f.get(args)).orElse(new EvaluateResponse()));
 		} else if (EvaluateArgumentsContext.REPL.equals(args.getContext())) {
-			if ("violate".equalsIgnoreCase(args.getExpression())) {
-				DebugTool.setForceViolation();
-				return CompletableFuture.completedFuture(new EvaluateResponse());
-			};
-
 			return CompletableFuture.completedFuture(this.stack.stream().filter(f -> f.getId() == args.getFrameId())
 					.findAny().map(f -> f.evaluate(args.getExpression())).orElse(new EvaluateResponse()));
 		} else if ("variables".equals(args.getContext())) {

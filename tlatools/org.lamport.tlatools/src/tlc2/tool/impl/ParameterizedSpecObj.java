@@ -151,31 +151,6 @@ public class ParameterizedSpecObj extends SpecObj {
 		}
 	}	
 	
-	// Note: There is exactly one instance of CompileTimeInvariantTemplate, which is
-	// specifically created for the TLA+ Debugger. Unfortunately, I couldn't find a
-	// way to implement this using RuntimeInvariantTemplate—which would eliminate
-	// the need for this separation—because it requires a Java module override.
-	// The Java module override is matched and connected to its TLA+ counterpart
-	// before the RuntimeInvariantTemplate is processed.  Thus, without the
-	// CompileTimeInvariantTemplate, the connection between the Java module override
-	// and its TLA+ counterpart would not be established.
-	public static class CompileTimeInvariantTemplate extends InvariantTemplate {
-		private final String operator;
-		
-		public CompileTimeInvariantTemplate(String module, String operator) {
-			super(Set.of(module));
-			this.operator = operator;
-		}
-
-		@Override
-		public Action getAction(final SpecProcessor spec) {
-			final ExternalModuleTable mt = spec.getModuleTbl();
-			final ModuleNode moduleNode = mt.getModuleNode(modules.iterator().next());
-			final OpDefNode opDef = moduleNode.getOpDef(operator);			
-			return new Action(opDef.getBody(), Context.Empty, opDef, false, true);
-		}
-	}
-	
 	public static class RuntimeInvariantTemplate extends InvariantTemplate {
 		private final String expr;
 

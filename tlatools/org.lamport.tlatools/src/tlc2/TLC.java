@@ -42,7 +42,6 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ParameterizedSpecObj;
-import tlc2.tool.impl.ParameterizedSpecObj.CompileTimeInvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.ParameterizedSpecObj.RuntimeInvariantTemplate;
@@ -531,10 +530,6 @@ public class TLC {
             } else if (args[index].equals("-debugger"))
             {
 				index++;
-				@SuppressWarnings("unchecked")
-				final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.computeIfAbsent(ParameterizedSpecObj.INVARIANT,
-						k -> new ArrayList<InvariantTemplate>());
-				invs.add(new CompileTimeInvariantTemplate("_TLAPlusDebugger", "_TLAPlusDebuggerInvariant"));
 				debugPort = 4712; // standard port.
 				if ((index < args.length) && (args[index].contains("port=") || args[index].contains("nosuspend")
 						|| args[index].contains("nohalt") || args[index].contains("suspend")

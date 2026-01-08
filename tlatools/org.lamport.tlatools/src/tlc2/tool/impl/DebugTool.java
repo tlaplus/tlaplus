@@ -59,16 +59,6 @@ import util.Assert.TLCRuntimeException;
 @SuppressWarnings("serial")
 public class DebugTool extends Tool {
 	
-	private static volatile boolean forceViolation = false;
-	
-	public static boolean forceViolation() {
-		return forceViolation;
-	}
-	
-	public static void setForceViolation() {
-		forceViolation = true;
-	}
-	
 	private static final Set<Integer> KINDS = new HashSet<>(
 			Arrays.asList(ASTConstants.NumeralKind, ASTConstants.DecimalKind, ASTConstants.StringKind));
 	
