@@ -12,7 +12,7 @@ LOCAL _TLCTraceSilent ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
 
-LOCAL _TLCTrace ==
+_TLCTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
         /\ PrintT("CounterExample written: " \o _TLCTraceFile)

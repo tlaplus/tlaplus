@@ -6,7 +6,7 @@ LOCAL INSTANCE Sequences
 
 CONSTANT _JsonTraceFile
 
-LOCAL _JsonTrace ==
+_JsonTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ JsonSerialize(_JsonTraceFile, CounterExample)
         /\ PrintT("CounterExample written: " \o _JsonTraceFile)

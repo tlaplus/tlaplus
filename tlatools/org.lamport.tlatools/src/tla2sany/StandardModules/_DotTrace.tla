@@ -8,7 +8,7 @@ LOCAL INSTANCE Functions
 
 CONSTANT _DotTraceFile
 
-LOCAL _DotTrace ==
+_DotTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ LET N == CounterExample.state
                E == { <<e[1], e[3], e[2]>> : e \in CounterExample.action }

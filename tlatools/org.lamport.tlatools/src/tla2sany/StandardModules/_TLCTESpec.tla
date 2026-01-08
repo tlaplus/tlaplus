@@ -44,7 +44,7 @@ LOCAL _TLCTraceModule ==
     "\n===="
     \* TODO: Append in-file config here.
 
-LOCAL _TLCTrace ==
+_TLCTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
     			_TLCTraceFile,
