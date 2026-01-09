@@ -386,7 +386,7 @@ public class FileUtil
             {
                 NamedInputStream nis = new NamedInputStream(sourceFileName, sourceModuleName, sourceFile);
                 return nis;
-            } catch (FileNotFoundException e)
+            } catch (IOException e)
             {
                 ToolIO.out.println("***Internal error: Unable to create NamedInputStream in toIStream method");
             }
