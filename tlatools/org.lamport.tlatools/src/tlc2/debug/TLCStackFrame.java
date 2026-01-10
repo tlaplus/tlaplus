@@ -556,7 +556,16 @@ public class TLCStackFrame extends StackFrame {
 		Variable variable;
 		try {
 			variable = tool.eval(() -> {
-				return getVariable(tool.eval(odn.getBody(), getContext(), getS(), getT(), EvalControl.Clear),
+				// Create evaluation context with parameter bindings from the current context.
+				// This mirrors how TLCSourceBreakpoint.matchesExpression() handles parameter binding.
+				// For generated debug expressions (from TLCDebuggerExpression), the parameters
+				// represent scoped identifiers (operator params, LET bindings, quantified vars)
+				// that need to be resolved from the stack frame's context.
+				Context evalCtxt = Context.Empty;
+				for (FormalParamNode p : odn.getParams()) {
+					evalCtxt = evalCtxt.cons(p, getContext().lookup(sn -> sn.getName().equals(p.getName())));
+				}
+				return getVariable(tool.eval(odn.getBody(), evalCtxt, getS(), getT(), EvalControl.Clear),
 						odn.getName());
 			});
 		} catch (TLCRuntimeException | EvalException | FingerprintException e) {
