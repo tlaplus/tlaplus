@@ -396,7 +396,7 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		final ModuleNode tlcExt = tool.getModule("TLCExt");
 		if (tlcExt == null) {
 			// TLCExt module is not extended or instantiated anywhere.
-			return Context.Empty;
+			return this.ctxt;
 		}
 		// Build a CounterExample from the simulator trace if available.
 		final CounterExample ce;
@@ -406,6 +406,6 @@ public class TLCStateStackFrame extends TLCStackFrame {
 		} else {
 			ce = new CounterExample();
 		}
-		return Context.Empty.cons(tlcExt.getOpDef("CounterExample"), ce);
+		return this.ctxt.cons(tlcExt.getOpDef("CounterExample"), ce);
 	}
 }

@@ -40,6 +40,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.eclipse.lsp4j.debug.EvaluateArguments;
+import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
 import org.eclipse.lsp4j.debug.SetBreakpointsArguments;
 import org.eclipse.lsp4j.debug.StackFrame;
@@ -241,6 +243,18 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		allVariables.put("i", "2");
 		assertTLCStateFrame(stackFrames[--i], 12, 13, UTILS, allVariables);
 		assertTLCStateFrame(stackFrames[--i], 13, 13, UTILS, allVariables);
+		
+		// *********************************************************** //
+		
+		debugger.replaceAllBreakpointsWith(RM, 63);
+		stackFrames = debugger.continue_();
+		assertTLCActionFrame(stackFrames[0], 63, 67, RM, Context.Empty.cons(null, IntValue.ValOne), vars[0], vars[1],
+				vars[2], vars[3]);
+		EvaluateArguments ea = new EvaluateArguments();
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("j");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("1", debugger.evaluate(ea).get().getResult());
 		
 		// 88888888888888888888888 Check Stack Variables 888888888888888888888888 //
 		
@@ -487,6 +501,31 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("<<FALSE, FALSE>>", stackFrame.evaluate("[i \\in Nodes \\ {0} |-> PassToken(i)]").getResult());
 		assertEquals("<<FALSE, TRUE>>", stackFrame.evaluate("[i \\in Nodes \\ {0} |-> ENABLED PassToken(i)]").getResult());
 		
+		// *********************************************************** //
+		
+		// Some parameter (ibx) of an operator.
+		debugger.replaceAllBreakpointsWith(RM, 142);
+		stackFrames = debugger.continue_();
+		ea = new EvaluateArguments();
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("ibx");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("<<>>", debugger.evaluate(ea).get().getResult());
+		
+		// Expressions that reference the @ of an EXCEPT are not supported. The @ symbol
+		// is a syntactic component of EXCEPT and cannot be used independently. More
+		// importantly, @ is merely a shorthand, and users can readily eliminate it by
+		// expanding the expression explicitly.
+		ea.setExpression("@");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("@", debugger.evaluate(ea).get().getResult());
+		
+		// An expression involving a free-standing (non-constant) operator that doesn't
+		// occur in the scope of the breakpoint.
+		ea.setExpression("tpos");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("2", debugger.evaluate(ea).get().getResult());
+
 		// POSTCONDITION
 		debugger.unsetBreakpoints();
 		sba = createBreakpointArgument(MDL, 212);

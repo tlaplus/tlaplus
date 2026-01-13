@@ -769,7 +769,8 @@ public class TLCStackFrame extends StackFrame {
 			final SpecProcessor proc = tool.getSpecProcessor();
 
 			// Parse the expression.
-			final OpDefNode expr = TLCDebuggerExpression.process(proc, proc.getRootModule(), expression);
+			final OpDefNode expr = TLCDebuggerExpression.process(proc, proc.getRootModule(), this.node.getLocation(),
+					expression);
 			if (expr == null) {
 				final EvaluateResponse er = new EvaluateResponse();
 				er.setResult(expression);
@@ -808,6 +809,6 @@ public class TLCStackFrame extends StackFrame {
 	}
 	
 	protected Context getEvaluateContext() {
-		return Context.Empty;
+		return ctxt;
 	}
 }
