@@ -49,7 +49,7 @@ import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tla2sany.xml.SymbolContext;
 import tlc2.tool.BuiltInOPs;
 import util.UniqueString;
@@ -909,12 +909,12 @@ public class OpDefNode extends OpDefOrDeclNode
     * `labels'.                                                            *
     ***********************************************************************/
     if (labels == null) {return new LabelNode[0];} ;
-    Vector<LabelNode> v = new Vector<>() ;
+    ArrayList<LabelNode> v = new ArrayList<>() ;
     Enumeration<LabelNode> e = labels.elements() ;
-    while (e.hasMoreElements()) { v.addElement(e.nextElement()); } ;
+    while (e.hasMoreElements()) { v.add(e.nextElement()); } ;
     LabelNode[] retVal = new LabelNode[v.size()] ;
     for (int i = 0 ; i < v.size() ; i++)
-      {retVal[i] = v.elementAt(i); } ;
+      {retVal[i] = v.get(i); } ;
     return retVal ;
    }
 

@@ -14,7 +14,7 @@ import java.util.Hashtable;
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import util.UniqueString;
 
 public class ExternalModuleTable implements ExploreNode {
@@ -87,7 +87,7 @@ public class ExternalModuleTable implements ExploreNode {
   // moduleHashTable), but preserves the order in which they were
   // inserted.  If module A depends on module B, then A has a HIGHER
   // index than B.
-  public final Vector<ModuleNode> moduleNodeVector = new Vector<>();
+  public final ArrayList<ModuleNode> moduleNodeVector = new ArrayList<>();
 
   // The nodule node of the root module
   public ModuleNode rootModule;
@@ -117,7 +117,7 @@ public class ExternalModuleTable implements ExploreNode {
   public ModuleNode[] getModuleNodes() {
     ModuleNode [] mods = new ModuleNode[moduleNodeVector.size()];
     for (int i = 0; i < mods.length; i++) {
-      mods[i] = moduleNodeVector.elementAt(i);
+      mods[i] = moduleNodeVector.get(i);
     }
     return mods;
   }
@@ -136,7 +136,7 @@ public class ExternalModuleTable implements ExploreNode {
     ExternalModuleTableEntry c = moduleHashTable.get( key );
     if (c == null) {
       moduleHashTable.put( key, new ExternalModuleTableEntry(ctxt, moduleNode) );
-      moduleNodeVector.addElement(moduleNode);
+      moduleNodeVector.add(moduleNode);
     }
   }
 
@@ -156,7 +156,7 @@ public class ExternalModuleTable implements ExploreNode {
     System.out.print("\nExternal Module Table:");
 
     for (int i = 0; i < moduleNodeVector.size(); i++) {
-      ModuleNode mn = moduleNodeVector.elementAt(i);
+      ModuleNode mn = moduleNodeVector.get(i);
 
       if (mn != null) {
         System.out.print(Strings.indent(2, "\nModule: ")); 
@@ -179,7 +179,7 @@ public class ExternalModuleTable implements ExploreNode {
 
     String ret = "";
     for (int i = 0; i < moduleNodeVector.size(); i++) {
-      ModuleNode mn = moduleNodeVector.elementAt(i);
+      ModuleNode mn = moduleNodeVector.get(i);
       if (mn != null) {
         ret += Strings.indent(2, "\nModule: " + Strings.indent(2, mn.toString(depth, errors)) );
       } else {

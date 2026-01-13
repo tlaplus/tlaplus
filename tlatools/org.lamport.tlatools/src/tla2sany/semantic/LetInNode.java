@@ -14,7 +14,7 @@ import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tla2sany.xml.SymbolContext;
 
 public class LetInNode extends ExprNode
@@ -271,7 +271,7 @@ implements ExploreNode, LevelConstants {
     /***********************************************************************
     * Print context.                                                       *
     ***********************************************************************/
-    final Vector<String> contextEntries = context.getContextEntryStringVector(1,false, errors);
+    final ArrayList<String> contextEntries = context.getContextEntryStringVector(1,false, errors);
       /*********************************************************************
       * The depth argument 1 of getContextEntryStringVector causes only    *
       * the name and node uid of the entry and not the node itself to be   *
@@ -279,8 +279,8 @@ implements ExploreNode, LevelConstants {
       *********************************************************************/
     if (contextEntries != null) {
       for (int i = 0; i < contextEntries.size(); i++) {
-        if (contextEntries.elementAt(i) != null) {
-          ret += Strings.indent(2, contextEntries.elementAt(i));
+        if (contextEntries.get(i) != null) {
+          ret += Strings.indent(2, contextEntries.get(i));
         }
         else {
           ret += "*** null ***"; };
