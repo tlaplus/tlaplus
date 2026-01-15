@@ -103,13 +103,13 @@ public class GetScopedIdentifiersTests {
       new TestCase("op ≜ ∀ i, j ∈ {} :", "", "i", "j"),
       new TestCase("op ≜ ∀ ⟨i, j, k⟩ ∈ {} :", "", "i", "j", "k"),
       new TestCase("op(i, j) ≜ LET k == TRUE l == TRUE IN", "", "i", "j", "k", "l"),
-      new TestCase("op ≜ LET i(j, k) == ", " IN TRUE", "i", "j", "k"),
+      new TestCase("op ≜ LET i(j, k) == ", " IN TRUE", "i(_,_)", "j", "k"),
       new TestCase("op ≜ LET RECURSIVE i i == TRUE IN", "", "i"),
       new TestCase("op ≜ LET i == TRUE j ==", " IN TRUE", "i", "j"),
       new TestCase("op(i) ≜ [j, k ∈ {} ↦", "]", "i", "j", "k"),
       new TestCase("op ≜ [⟨i, j, k⟩ ∈ {} ↦", "]", "i", "j", "k"),
       new TestCase("op(i, j) ≜ {k ∈ {} :", "}", "i", "j", "k"),
-      new TestCase("RECURSIVE op(_, _) op(f(_,_), i) ≜ op(LAMBDA j, k : ", ", TRUE)", "f", "i", "j", "k"),
+      new TestCase("RECURSIVE op(_, _) op(f(_,_), i) ≜ op(LAMBDA j, k : ", ", TRUE)", "f(_,_)", "i", "j", "k"),
       new TestCase("op ≜ {⟨i, j, k⟩ ∈ {} : ", "}", "i", "j", "k"),
       new TestCase("op(i) ≜ {j ∈ {} : ", "}", "i", "j"),
       new TestCase("op ≜ {", ": i, j ∈ {}}", "i", "j"),
@@ -118,7 +118,7 @@ public class GetScopedIdentifiersTests {
       // when support is added to the semantic checker to introduce "ghost"
       // expressions at arbitrary points in the semantic tree, rendering all
       // of this functionality redundant.
-      new TestCase("op(_+_) ≜", "", "+"),
+      new TestCase("op(_+_) ≜", "", "+(_,_)"),
     };
   }
 

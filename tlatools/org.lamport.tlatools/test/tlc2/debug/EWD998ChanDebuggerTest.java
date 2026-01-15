@@ -162,8 +162,32 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("TokenMsg", consts[5].getName());
 		assertEquals("SetOfRcdsValue: a set of the form [d1 : S1, ... , dN : SN]", consts[5].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[5].getValue());
+
+		debugger.replaceAllBreakpointsWith(UTILS, 13);
+		stackFrames = debugger.continue_();
+		EvaluateArguments ea = new EvaluateArguments();
+		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setFrameId(stackFrames[0].getId());
+		ea.setExpression("i");
+		assertEquals("2", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("op(6,7)");
+		assertEquals("13", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("reduced");
+		assertEquals("(0 :> 0 @@ 1 :> 1 @@ 2 :> 3)", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("reduced[i-1]");
+		assertEquals("1", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("fun");
+		assertEquals("(0 :> 0 @@ 1 :> 1 @@ 2 :> 2)", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("fun[i]");
+		assertEquals("2", debugger.evaluate(ea).get().getResult());
+		ea.setExpression("op(reduced[i - 1], fun[i])");
+		assertEquals("3", debugger.evaluate(ea).get().getResult());
 		
-		
+		stackFrames = debugger.stepIn(); // advance to the LAMBDA expression frame.
+		ea.setExpression("<<b, a>>");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("<<2, 1>>", debugger.evaluate(ea).get().getResult());
+
 		// *********************************************************** //
 		
 		// Assert breakpoints are correctly verified, which indicates to users where
@@ -250,7 +274,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertTLCActionFrame(stackFrames[0], 63, 67, RM, Context.Empty.cons(null, IntValue.ValOne), vars[0], vars[1],
 				vars[2], vars[3]);
-		EvaluateArguments ea = new EvaluateArguments();
+		ea = new EvaluateArguments();
 		ea.setContext(EvaluateArgumentsContext.REPL);
 		ea.setExpression("j");
 		ea.setFrameId(stackFrames[0].getId());

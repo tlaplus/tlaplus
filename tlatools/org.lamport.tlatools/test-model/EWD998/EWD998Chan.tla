@@ -12,7 +12,7 @@ ASSUME NAssumption == N \in Nat \ {0} \* At least one node.
 
 Nodes == 0 .. N-1
 Color == {"white", "black"}
-
+ASSUME Reduce(LAMBDA a,b : a + b, [i \in Nodes |-> i], 0, N-1, 0) = 3
 VARIABLES 
  active,
  color,
