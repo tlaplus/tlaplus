@@ -30,7 +30,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -72,14 +72,12 @@ public abstract class TLCDebuggerExpression {
 	 *
 	 * @param processor     Processes expression within the model context.
 	 * @param semanticRoot  The root of the spec's semantic parse tree.
-	 * @param location      The breakpoint location.
 	 * @param conditionExpr The unparsed  expression.
 	 * @return An expression, or null if parsing failed.
 	 */
 	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final Location location, final String conditionExpr) {
-		final Set<String> paramNames = getScopedIdentifiers(semanticRoot, location);
-		return process(processor, semanticRoot, paramNames, conditionExpr);
+			final String conditionExpr) {
+		return process(processor, semanticRoot, Location.nullLoc, conditionExpr);
 	}
 
 	/**
@@ -88,16 +86,12 @@ public abstract class TLCDebuggerExpression {
 	 *
 	 * @param processor     Processes expression within the model context.
 	 * @param semanticRoot  The root of the spec's semantic parse tree.
+	 * @param location      The breakpoint location.
 	 * @param conditionExpr The unparsed  expression.
 	 * @return An expression, or null if parsing failed.
 	 */
 	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final String conditionExpr) {
-		return process(processor, semanticRoot, new HashSet<>(), conditionExpr);
-	}
-
-	private static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final Set<String> paramNames, final String conditionExpr) {
+			final Location location, final String conditionExpr) {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
@@ -109,14 +103,118 @@ public abstract class TLCDebuggerExpression {
 			return bpOp;
 		}
 
+		/*
+		 * The *list scope* contains all semantic nodes from the user’s current location
+		 * up to the root of module **M**. From these nodes, we extract the identifiers
+		 * that may legally appear in the user’s debug expression and make them
+		 * available to an expression that will be generated in a separate module **D**.
+		 * 
+		 * This extraction proceeds in two stages.
+		 * 
+		 * Stage 1: Identifiers requiring special handling (LET definitions)
+		 * 
+		 * In the first stage, we collect identifiers that require special treatment —
+		 * specifically, `LET` definitions. Consider the following specification
+		 * snippet. The user places a breakpoint on the line containing `IN` and wants
+		 * to evaluate the debug expression `foo(2)`:
+		 * 
+		 *        ---- MODULE M ----
+		 *        
+		 *        VARIABLE v
+		 *        
+		 *        SomeAction(p, Op(_,_)) ==
+		 *           LET foo(idx) == v[idx]
+		 *           IN foo(1) + Op(6,7) ...
+		 *           
+		 *        ====
+		 * 
+		 * If we handled LET definitions in the same way as all other identifiers, we
+		 * would turn foo into a parameter of the generated debug expression. However,
+		 * this would require manually wiring the FormalParameterNode of __DebugExpr
+		 * to the OpDefNode of the `foo(idx)` definition. This approach is error-prone
+		 * and brittle.
+		 * 
+		 *        ---- MODULE D ----
+		 *        EXTENDS M
+		 *        
+		 *        __DebugExpr(foo(_)) ==
+		 *            foo(2)
+		 *        
+		 *        ====
+		 * 
+		 * Instead, we take a different approach. We generate a *stub definition* for
+		 * the foo(idx) function directly in module **D**. This stub allows the
+		 * OpDefNode of __DebugExpr to be cleanly connected to the original
+		 * OpDefNode of foo(idx). This solution is straightforward, robust, and
+		 * reuses existing infrastructure (specifically, ModuleNode#substituteFor,
+		 * described below).
+		 * 
+		 * To avoid polluting the global scope or introducing naming conflicts, the stub
+		 * definition is declared LOCAL to module D. Its body is simply TRUE, which
+		 * makes the definition syntactically valid. The body itself is never evaluated.
+		 * Interestingly, using a new LET definition instead of a LOCAL definition does 
+		 * not work, presumably due to limitations in ModuleNode#substituteFor.
+		 * 
+		 *        ---- MODULE D ----
+		 *        EXTENDS M
+		 *        
+		 *        LOCAL foo(idx) == TRUE
+		 *        
+		 *        __DebugExpr ==
+		 *           foo(2)
+		 *           
+		 *        ====
+		 */ 
+		final List<SemanticNode> scope = semanticRoot.pathTo(location, false);
+		
+		// LET definitions for scoped identifiers.
+		final Set<OpDefNode> letDefs = scope.stream().filter(LetInNode.class::isInstance).map(LetInNode.class::cast)
+				.flatMap(node -> Arrays.stream(node.getLets())).collect(Collectors.toSet());
+
+		// Build LET expression stubs: LOCAL foo(idx) == TRUE
+		final String letExpr = letDefs.isEmpty() ? ""
+				: letDefs.stream().map(def -> "LOCAL " + def.getSignature() + " == TRUE")
+						.collect(Collectors.joining("\n", "", "\n"));
+
+		/*
+		 * Stage 2: All remaining identifiers
+		 * 
+		 * In the second stage, we collect all other identifiers that may appear in the
+		 * user’s expression and add them as parameters to the FormalParameterNode of
+		 * __DebugExpr.
+		 * 
+		 * This step is mostly straightforward, with one important caveat: we must
+		 * preserve the arity of the original definitions (e.g., operators with
+		 * parameters).
+		 * 
+		 * Variables and constants require no special handling, since they are global
+		 * and module D extends module M.
+		 * 
+		 *       ---- MODULE D ----
+		 *       EXTENDS M
+		 *       
+		 *       LOCAL foo(idx) == TRUE
+		 *       
+		 *       __DebugExpr(p, Op(_,_)) == 
+		 *           foo(2)
+		 *     
+		 *       ====
+		 */		
+		final Set<SymbolNode> identifiers = getScopedSymbols(semanticRoot, scope);
+		final Set<UniqueString> letNames = letDefs.stream().map(OpDefNode::getName).collect(Collectors.toSet());
+		identifiers.removeIf(id -> letNames.contains(id.getName()));
+		final Set<String> paramNames = identifiers.stream().map(node -> node.getName().toString()
+				+ (node.getArity() == 0 ? "" : "(" + String.join(",", Collections.nCopies(node.getArity(), "_")) + ")"))
+				.collect(Collectors.toSet());
+
 		final String rootModName = semanticRoot.getName().toString();
 		final String bpModName = semanticRoot.generateUnusedName("__DebuggerModule__%s");
 		final String bpOpName = semanticRoot.generateUnusedName("__DebuggerExpr__%s");
 		final String params = paramNames.size() > 0 ? "(" + String.join(", ", paramNames) + ")" : "";
-		final String bpOpDef = bpOpName + params;
-
-		final String wrapper = "---- MODULE %s ----\nEXTENDS %s\n%s == %s\n====";
-		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, bpOpDef, conditionExpr);
+		final String bpOpDef = bpOpName + params;		
+		
+		final String wrapper = "---- MODULE %s ----\nEXTENDS %s\n%s\n%s == %s\n====";
+		String wrappedConditionExpr = String.format(wrapper, bpModName, rootModName, letExpr, bpOpDef, conditionExpr);
 		byte[] wrappedConditionExprBytes = wrappedConditionExpr.getBytes(StandardCharsets.UTF_8);
 		TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), wrappedConditionExprBytes);
 		boolean syntaxParseSuccess = parser.parse();
@@ -180,6 +278,12 @@ public abstract class TLCDebuggerExpression {
 		processor.processConstantsDynamicExtendee(bpModule);
 		
 		processor.processModuleOverrides(bpModule, emt);
+
+		// See above for explanation. This can only be done after the module has been
+		// fully processed (parsed, ...).
+		for (OpDefNode def : letDefs) {
+			bpModule.substituteFor(def, bpModule.getOpDef(def.getName()));
+		}
 		
 		return bpOp;
 	}
@@ -287,10 +391,6 @@ public abstract class TLCDebuggerExpression {
 	 */
 	static Set<String> getScopedIdentifiers(ModuleNode semanticRoot, Location location) {
 		final List<SemanticNode> path = semanticRoot.pathTo(location, false);
-		return  getScopedIdentifiers(semanticRoot, path);
-	}
-
-	static Set<String> getScopedIdentifiers(ModuleNode semanticRoot, final List<SemanticNode> path) {
 		final Set<SymbolNode> ids = getScopedSymbols(semanticRoot, path);
 		// TLA+ does not support operator overloading, so an operator is uniquely
 		// identified by its name alone. However, in our module generation logic, we
@@ -321,7 +421,7 @@ public abstract class TLCDebuggerExpression {
 				.collect(Collectors.toSet());
 	}
 
-	static Set<SymbolNode> getScopedSymbols(ModuleNode semanticRoot, final List<SemanticNode> path) {
+	private static Set<SymbolNode> getScopedSymbols(ModuleNode semanticRoot, final List<SemanticNode> path) {
 		final Set<SymbolNode> identifiers = new HashSet<>();
 		// pathTo starts at breakpoint location then goes up to module root
 		for (SemanticNode current : path) {

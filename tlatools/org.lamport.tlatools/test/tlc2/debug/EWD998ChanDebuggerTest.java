@@ -163,10 +163,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals("SetOfRcdsValue: a set of the form [d1 : S1, ... , dN : SN]", consts[5].getType());
 		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]", consts[5].getValue());
 
-		debugger.replaceAllBreakpointsWith(UTILS, 13);
+		debugger.replaceAllBreakpointsWith(RM, 12);
 		stackFrames = debugger.continue_();
 		EvaluateArguments ea = new EvaluateArguments();
 		ea.setContext(EvaluateArgumentsContext.REPL);
+		ea.setExpression("x+1"); // x is a LET def
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("3", debugger.evaluate(ea).get().getResult());
+
+		debugger.replaceAllBreakpointsWith(UTILS, 13);
+		stackFrames = debugger.continue_();
 		ea.setFrameId(stackFrames[0].getId());
 		ea.setExpression("i");
 		assertEquals("2", debugger.evaluate(ea).get().getResult());
@@ -535,6 +541,11 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		ea.setExpression("ibx");
 		ea.setFrameId(stackFrames[0].getId());
 		assertEquals("<<>>", debugger.evaluate(ea).get().getResult());
+
+		debugger.replaceAllBreakpointsWith(RM, 84);
+		stackFrames = debugger.continue_();
+		ea = new EvaluateArguments();
+		ea.setContext(EvaluateArgumentsContext.REPL);
 		
 		// Expressions that reference the @ of an EXCEPT are not supported. The @ symbol
 		// is a syntactic component of EXCEPT and cannot be used independently. More
@@ -550,6 +561,18 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		ea.setFrameId(stackFrames[0].getId());
 		assertEquals("2", debugger.evaluate(ea).get().getResult());
 
+		// A LET definition (tkn).
+		ea.setExpression("tkn.color"); // tkn is a LET def
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("white", debugger.evaluate(ea).get().getResult());
+	
+		// A non-zero arity LET definition.
+		ea.setExpression("ccounter(0)+1");
+		ea.setFrameId(stackFrames[0].getId());
+		assertEquals("1", debugger.evaluate(ea).get().getResult());
+
+		// *********************************************************** //
+		
 		// POSTCONDITION
 		debugger.unsetBreakpoints();
 		sba = createBreakpointArgument(MDL, 212);
