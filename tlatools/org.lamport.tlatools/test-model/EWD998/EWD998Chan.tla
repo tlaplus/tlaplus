@@ -9,7 +9,7 @@ EXTENDS Integers, Sequences, FiniteSets, Utils
 
 CONSTANT N
 ASSUME NAssumption == N \in Nat \ {0} \* At least one node.
-
+ASSUME LET x == 1 + 1 IN x = 2
 Nodes == 0 .. N-1
 Color == {"white", "black"}
 ASSUME Reduce(LAMBDA a,b : a + b, [i \in Nodes |-> i], 0, N-1, 0) = 3
@@ -76,7 +76,7 @@ PassToken(i) ==
   /\ \E j \in 1..Len(inbox[i]) : 
           /\ inbox[i][j].type = "tok"
           \* the machine nr.i+1 transmits the token to machine nr.i under q := q + c[i+1]
-          /\ LET tkn == inbox[i][j]
+          /\ LET tkn == inbox[i][j]  ccounter(idx) == counter[idx]
              IN  inbox' = [inbox EXCEPT ![i-1] = 
                                        Append(@, [tkn EXCEPT !.q = tkn.q + counter[i],
                                                              !.color = IF color[i] = "black"
