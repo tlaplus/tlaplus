@@ -30,6 +30,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -284,31 +286,66 @@ public abstract class TLCDebuggerExpression {
 	 * @return A list of local identifiers accessible at the given location.
 	 */
 	static Set<String> getScopedIdentifiers(ModuleNode semanticRoot, Location location) {
-		Set<String> identifiers = new HashSet<String>();
+		final List<SemanticNode> path = semanticRoot.pathTo(location, false);
+		return  getScopedIdentifiers(semanticRoot, path);
+	}
+
+	static Set<String> getScopedIdentifiers(ModuleNode semanticRoot, final List<SemanticNode> path) {
+		final Set<SymbolNode> ids = getScopedSymbols(semanticRoot, path);
+		// TLA+ does not support operator overloading, so an operator is uniquely
+		// identified by its name alone. However, in our module generation logic, we
+		// must also take the operator’s arity into account.
+		//
+		// Consider the following TLA+ snippet:
+		//
+		//		     SomeContext ==
+		//		         LET max(a, b) == IF a > b THEN a ELSE b
+		//		         IN max(1, 2) = 2
+		//
+		// Now assume the following breakpoint expression:
+		//
+		//		     max(3, 4) = 4
+		//
+		// When generating a module for the breakpoint expression, we must produce:
+		//
+		//		     __DebuggerExpr__123(max(_, _)) == max(3, 4) = 4
+		//
+		// If we were to generate:
+		//
+		//		     __DebuggerExpr__123(max) == max(3, 4) = 4
+		//
+		// this would result in a parse error, because the operator reference does not
+		// specify the required arity.
+		return ids.stream().map(node -> node.getName().toString()
+				+ (node.getArity() == 0 ? "" : "(" + String.join(",", Collections.nCopies(node.getArity(), "_")) + ")"))
+				.collect(Collectors.toSet());
+	}
+
+	static Set<SymbolNode> getScopedSymbols(ModuleNode semanticRoot, final List<SemanticNode> path) {
+		final Set<SymbolNode> identifiers = new HashSet<>();
 		// pathTo starts at breakpoint location then goes up to module root
-		List<SemanticNode> path = semanticRoot.pathTo(location, false);
 		for (SemanticNode current : path) {
 			// Extract i from LET i == 5 IN ...
 			if (current instanceof LetInNode) {
 				LetInNode node = (LetInNode)current;
 				for (OpDefNode def : node.getLets()) {
-					identifiers.add(def.getName().toString());
+					identifiers.add(def);
 				}
 			// Extract op, i, j, k from op(i, j, k) == ...
 			// Note: will not extract "op" if is top-level definition
 			} else if (current instanceof OpDefNode) {
 				OpDefNode node = (OpDefNode)current;
 				if (null == semanticRoot.getOpDef(node.getName())) {
-					identifiers.add(node.getName().toString());
+					identifiers.add(node);
 				}
 				for (FormalParamNode param : node.getParams()) {
-					identifiers.add(param.getName().toString());
+					identifiers.add(param);
 				}
 			// Extract i, j from \A i, j \in Nat : ...
 			} else if (current instanceof OpApplNode) {
 				OpApplNode node = (OpApplNode)current;
 				for (FormalParamNode param : node.getQuantSymbolLists()) {
-					identifiers.add(param.getName().toString());
+					identifiers.add(param);
 				}
 			// Extract i, j from LAMBDA i, j : ...
 			} else if (current instanceof OpArgNode) {
@@ -317,7 +354,7 @@ public abstract class TLCDebuggerExpression {
 				if (opSymbol instanceof OpDefNode) {
 					OpDefNode op = (OpDefNode)opSymbol;
 					for (FormalParamNode param : op.getParams()) {
-						identifiers.add(param.getName().toString());
+						identifiers.add(param);
 					}
 				}
 			}
