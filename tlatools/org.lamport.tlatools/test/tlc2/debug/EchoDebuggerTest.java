@@ -200,7 +200,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		// Debug type correctness property during Init //
 		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
-		assertEquals(12, stackFrames.length);
+		assertEquals(13, stackFrames.length);
 		// Invariants are shown as TLCStateFrames, not TLCActionFrames, which would make
 		// the debugger show a predecessor state.
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
@@ -211,27 +211,31 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) trace[0]).getTLCValue());
 		assertEquals("1: <Init line 95, col 9 to line 101, col 43 of module Echo>", trace[trace.length - 1].getName());
 
+		assertTLCSyntheticStateStackFrame(stackFrames[12], 95, 9, 101, 43, RM, Context.Empty, 1);
+		
 		// Debug type correctness property during n0 (next-state relation)
 		// (Run to n0, then run to TypeOK)
 		debugger.unsetBreakpoints();
 		debugger.replaceAllBreakpointsWith(RM, 104);
 		stackFrames = debugger.continue_();
-		assertEquals(4, stackFrames.length);
+		assertEquals(5, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
+		assertTLCSyntheticStateStackFrame(stackFrames[4], 95, 9, 101, 43, RM, Context.Empty, 1);
 		
 		debugger.replaceAllBreakpointsWith(RM, 167);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 		frame = (TLCStateStackFrame) stackFrames[0];
 		assertEquals(2, frame.state.getLevel());
+		assertTLCSyntheticStateStackFrame(stackFrames[10], 95, 9, 101, 43, RM, Context.Empty, 1);
 		
 		// Debug TypeOK with a debug expression breakpoint that is referencing TypeOK via NotTypeOK.
 		debugger.unsetBreakpoints();
 		SetBreakpointsArguments sba = createBreakpointArgument(RM, 167, "NotNotTypeOK");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(11, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 167, 6, 167, 63, RM, Context.Empty);
 
 		// Replace the previous breakpoint with the same one except for a hit condition
@@ -241,39 +245,42 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		sba.getBreakpoints()[0].setHitCondition("5");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(4, stackFrames.length);
+		assertEquals(7, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 104, 16, 107, 40, RM, (Context) null, getVars());
+		assertTLCSyntheticStateStackFrame(stackFrames[4], 103, 13, 109, 59, RM, (Context) null, 3);
+		assertTLCSyntheticStateStackFrame(stackFrames[5], 103, 13, 109, 59, RM, (Context) null, 2);
+		assertTLCSyntheticStateStackFrame(stackFrames[6], 95, 9, 101, 43, RM, Context.Empty, 1);
 
 		sba = createBreakpointArgument(RM, 103, "DebugExpression"); // Inline breakpoint set on the LHS of Action definition.
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(2, stackFrames.length);
+		assertEquals(5, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 103, 13, 109, 59, RM, Context.Empty.cons(null, new StringValue("b"))
 				.cons(null, new StringValue("b")).cons(null, new StringValue("b")), getVars());
 
 		sba = createBreakpointArgument(RM, 103, "DebugExpression2"); // Inline breakpoint set on the LHS of Action definition.
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(2, stackFrames.length);
+		assertEquals(5, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 103, 13, 109, 59, RM, Context.Empty.cons(null, new StringValue("a"))
 				.cons(null, new StringValue("a")).cons(null, new StringValue("a")), getVars());
 
 		sba = createBreakpointArgument(RM, 112, 0, 13);
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(4, stackFrames.length);
+		assertEquals(15, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 112, 16, 129, 71, RM, (Context) null, getVars());
 		
 		sba = createBreakpointArgument(RM, 133, "DebugExpression");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(4, stackFrames.length);
+		assertEquals(15, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 133, 16, 138, 40, RM, (Context) null, getVars());
 
 		sba = createBreakpointArgument(MDL, 38, "View");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(22, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 38, 9, 38, 12, MDL, Context.Empty);
 		
 		frame = (TLCStateStackFrame) stackFrames[0];
@@ -303,11 +310,65 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, nested.length);
 		assertEquals(new RecordValue(frame.state), ((DebugTLCVariable) nested[0]).getTLCValue());
 
+		assertTLCSyntheticStateStackFrame(stackFrames[10], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				12);
+		assertTLCSyntheticStateStackFrame(stackFrames[11], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				11);
+		assertTLCSyntheticStateStackFrame(stackFrames[12], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")).cons(null, new StringValue("a")),
+				10);
+		assertTLCSyntheticStateStackFrame(stackFrames[13], 132, 13, 140, 59, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 9);
+		assertTLCSyntheticStateStackFrame(stackFrames[14], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 8);
+		assertTLCSyntheticStateStackFrame(stackFrames[15], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 7);
+		assertTLCSyntheticStateStackFrame(stackFrames[16], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 6);
+		assertTLCSyntheticStateStackFrame(stackFrames[17], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 5);
+		assertTLCSyntheticStateStackFrame(stackFrames[18], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 4);
+		assertTLCSyntheticStateStackFrame(stackFrames[19], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 3);
+		assertTLCSyntheticStateStackFrame(stackFrames[20], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")).cons(null, new StringValue("a")), 2);
+		assertTLCSyntheticStateStackFrame(stackFrames[21], 95, 9, 101, 43, RM, Context.Empty, 1);
+
 		// Check Next action has expected number of successor states.
 		debugger.setSpecBreakpoint();
 		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
+		assertEquals(13, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 151, 20, 151, 23, RM, Context.Empty, 1);
+
+		assertTLCSyntheticStateStackFrame(stackFrames[1], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				12);
+		assertTLCSyntheticStateStackFrame(stackFrames[2], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				11);
+		assertTLCSyntheticStateStackFrame(stackFrames[3], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")).cons(null, new StringValue("a")),
+				10);
+		assertTLCSyntheticStateStackFrame(stackFrames[4], 132, 13, 140, 59, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 9);
+		assertTLCSyntheticStateStackFrame(stackFrames[5], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 8);
+		assertTLCSyntheticStateStackFrame(stackFrames[6], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 7);
+		assertTLCSyntheticStateStackFrame(stackFrames[7], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 6);
+		assertTLCSyntheticStateStackFrame(stackFrames[8], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 5);
+		assertTLCSyntheticStateStackFrame(stackFrames[9], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 4);
+		assertTLCSyntheticStateStackFrame(stackFrames[10], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 3);
+		assertTLCSyntheticStateStackFrame(stackFrames[11], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")).cons(null, new StringValue("a")), 2);
+		assertTLCSyntheticStateStackFrame(stackFrames[12], 95, 9, 101, 43, RM, Context.Empty, 1);
 
 		// Ad-hoc expression-based breakpoint
 		
@@ -315,14 +376,41 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		sba = createBreakpointArgument(RM, 133, 19, 1, "\\E n \\in Node: inbox[n] = {}"); // Ad-hoc defined expression built from constant and variable value. // TODO Support ctxt, i.e., self!
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(5, stackFrames.length);
+		assertEquals(16, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 133, 19, 133, 34, RM, (Context) null, getVars());
+
+		// The last three frames differ from the previous breakpoint hit because BFS
+		// advanced to a different part of the state graph.
+		assertTLCSyntheticStateStackFrame(stackFrames[5], 132, 13, 140, 59, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				11);
+		assertTLCSyntheticStateStackFrame(stackFrames[6], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")),
+				10);
+		assertTLCSyntheticStateStackFrame(stackFrames[7], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 9);
+
+		assertTLCSyntheticStateStackFrame(stackFrames[8], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 8);
+		assertTLCSyntheticStateStackFrame(stackFrames[9], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 7);
+		assertTLCSyntheticStateStackFrame(stackFrames[10], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 6);
+		assertTLCSyntheticStateStackFrame(stackFrames[11], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("c")).cons(null, new StringValue("c")).cons(null, new StringValue("c")), 5);
+		assertTLCSyntheticStateStackFrame(stackFrames[12], 111, 13, 130, 27, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 4);
+		assertTLCSyntheticStateStackFrame(stackFrames[13], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("b")).cons(null, new StringValue("b")).cons(null, new StringValue("b")), 3);
+		assertTLCSyntheticStateStackFrame(stackFrames[14], 103, 13, 109, 59, RM, Context.Empty
+				.cons(null, new StringValue("a")).cons(null, new StringValue("a")).cons(null, new StringValue("a")), 2);
+		assertTLCSyntheticStateStackFrame(stackFrames[15], 95, 9, 101, 43, RM, Context.Empty, 1);
 
 		debugger.unsetBreakpoints();
 		sba = createBreakpointArgument(RM, 140, 16, 1, "\\E n \\in Node: inbox'[n] = {}"); // Ad-hoc defined expression built from constant and variable value. // TODO Support ctxt, i.e., self!
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(9, stackFrames.length);
+		assertEquals(20, stackFrames.length);
 		final OpDeclNode[] vars = getVars();
 		assertTLCActionFrame(stackFrames[0], 140, 16, 140, 59, RM, (Context) null, vars[1], vars[2], vars[3], vars[4]);
 		

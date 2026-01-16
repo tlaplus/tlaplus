@@ -471,7 +471,20 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			assertTrue(o.isEmpty());
 		}
 	}
-	
+
+	protected static void assertTLCSyntheticStateStackFrame(final StackFrame stackFrame, final int beginLine,
+			final int beginColumn, final int endLine, final int endColumn, String spec, Context c,
+			final int expectedLevel) {
+		assertTLCStateFrame(stackFrame, beginLine, endLine, spec, c);
+		assertEquals(beginColumn, stackFrame.getColumn());
+		assertEquals(endColumn + 1, (int) stackFrame.getEndColumn());
+		assertTrue(stackFrame instanceof TLCSyntheticStateStackFrame);
+		final TLCSyntheticStateStackFrame f = (TLCSyntheticStateStackFrame) stackFrame;
+
+		assertEquals(expectedLevel, f.state.getLevel());
+		assertTrue(f.state.allAssigned());
+	}
+
 	private static void assertStateVars(TLCStateStackFrame frame, final TLCState st) {
 		final Map<Integer, DebugTLCVariable> old = new HashMap<>(frame.nestedVariables);
 		try {
