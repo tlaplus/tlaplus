@@ -222,6 +222,11 @@ public final class ValueInputStream implements ValueConstants, IValueInputStream
 	public final UniqueString getValue(int idx) {
 		return (UniqueString) this.handles.getValue(idx);
 	}
+	
+	@Override
+	public final boolean atEOF() {
+		return dis.atEOF();
+	}
 
   // @see ValueOutputStream#put
   private static class HandleTable {
