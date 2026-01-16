@@ -6,8 +6,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 
 import tlc2.TLCGlobals;
@@ -212,8 +213,10 @@ public class MP
 	private static BroadcastMessagePrinterRecorder recorder = new BroadcastMessagePrinterRecorder();
     private final Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //$NON-NLS-1$ 
-	private static final DecimalFormat df = new DecimalFormat("###,###.###");
+    // Thread-safe date/number formatting to avoid races across worker threads.
+    private static final DateTimeFormatter SDF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    		.withZone(ZoneId.systemDefault()); //$NON-NLS-1$
+	private static final ThreadLocal<DecimalFormat> DF = ThreadLocal.withInitial(() -> new DecimalFormat("###,###.###"));
 	
 	private static final java.util.Set<Integer> SUPPRESSED = new HashSet<>();
 	
@@ -1888,10 +1891,10 @@ public class MP
 			// multiple executions.
     		return "NOW";
     	}
-		return SDF.format(new Date());
+		return SDF.format(Instant.now());
 	}
 
 	public static String format(final long l) {
-		return df.format(l);
+		return DF.get().format(l);
 	}
 }
