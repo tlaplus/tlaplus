@@ -138,7 +138,76 @@ public class TLCStateStackFrame extends TLCStackFrame {
 					successor = state;
 				}
 			} else {
-				// TODO: Implement for model checking (BFS mode) runs.
+				final TLCState t = getS();
+
+				if (t.isInitial()) {
+					if (t.allAssigned()) {
+						// Only one state in the trace.
+						frames.add(new TLCSyntheticStateStackFrame(tool, new TLCStateInfo(t), t, 1));
+					}
+					return frames;
+				}
+
+				// B) Build suffix: walk backwards through predecessors from s_f to s_d.
+				// Use ArrayList to allow indexed access for reverse iteration.
+				final List<TLCStateInfo> suffix = new ArrayList<>();
+				if (addT()) {
+					suffix.add(new TLCStateInfo(t));
+				}
+				TLCState last = t;
+				TLCState s = t;
+				while ((s = s.getPredecessor()) != null) {
+					if (s.isInitial()) {
+						// Reached initial state, add it and we're done.
+						suffix.add(new TLCStateInfo(s));
+						// Convert to stack frames in reverse order (newest first).
+						final int traceLength = suffix.size();
+						TLCState successor = getS();
+						for (int i = 0; i < suffix.size(); i++) {
+							final TLCStateInfo ti = suffix.get(i);
+							frames.add(new TLCSyntheticStateStackFrame(tool, ti, successor,
+									String.valueOf(traceLength).length()));
+							successor = ti.state;
+						}
+						return frames;
+					}
+					suffix.add(new TLCStateInfo(s));
+					last = s;
+				}
+
+				// C) Get prefix from disk: from initial state s_i to predecessor of s_d.
+				try {
+					final TLCStateInfo[] prefix = TLCGlobals.mainChecker.getTraceInfo(last);
+
+					// Combine prefix and suffix. Build full trace in chronological order.
+					final List<TLCStateInfo> fullTrace = new ArrayList<>(prefix.length + suffix.size());
+					for (TLCStateInfo ti : prefix) {
+						fullTrace.add(ti);
+					}
+					// suffix is in reverse chronological order (newest first), so reverse it.
+					for (int i = suffix.size() - 1; i >= 0; i--) {
+						fullTrace.add(suffix.get(i));
+					}
+
+					// Convert to stack frames in reverse chronological order (newest first).
+					// Iterate backwards through fullTrace to match the simulator's iteration
+					// pattern.
+					final int traceLength = fullTrace.size();
+					TLCState successor = getS();
+					for (int i = fullTrace.size() - 1; i >= 0; i--) {
+						final TLCStateInfo ti = fullTrace.get(i);
+						frames.add(new TLCSyntheticStateStackFrame(tool, ti, successor,
+								String.valueOf(traceLength).length()));
+						successor = ti.state;
+					}
+				} catch (IOException ignored) {
+					// During state-space exploration, there are several scenarios in which the code
+					// above may fail to construct a trace—for example, when states have not yet
+					// been serialized or when the starting state (T) of the trace has not been
+					// fully determined. In such cases, we choose to display no trace rather than
+					// risk presenting an incorrect or misleading one.
+					frames.clear();
+				}
 			}
 			return frames;
 		});

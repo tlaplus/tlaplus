@@ -233,8 +233,9 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		debugger.replaceAllBreakpointsWith(UTILS, 13);
 		stackFrames = debugger.continue_();
 		
-		int i = 18;
+		int i = 19;
 		assertEquals(i, stackFrames.length);
+		i--;
 		assertTLCFrame(stackFrames[--i], 43, 49, RM);
 		assertTLCStateFrame(stackFrames[--i], 43, 49, RM, vars);
 		assertTLCStateFrame(stackFrames[--i], 43, 43, RM, vars);
@@ -329,16 +330,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// Step through the evaluation of a mildly complex expression. 
 		debugger.replaceAllBreakpointsWith(RM, 119);
 		stackFrames = debugger.continue_();
-		assertEquals(9, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		Context context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
 		assertTLCActionFrame(stackFrames[0], 119, 119, RM, context, vars[3]);
 
 		stackFrames = debugger.stepIn();
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 119, 119, RM, context, vars[3]);
 
 		stackFrames = debugger.stepIn(3);
-		assertEquals(11, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		Set<Variable> variables = new HashSet<>();
 		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
@@ -346,12 +347,12 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertTLCActionFrame(stackFrames[0], 119, 44, 119, 57, RM, variables, vars[3]);
 
 		stackFrames = debugger.stepIn();
-		assertEquals(12, stackFrames.length);
+		assertEquals(13, stackFrames.length);
 		variables.add(createVariable("s","<<[type |-> \"pl\"]>>",TupleValue.EmptyTuple.getTypeString()));
 		assertTLCActionFrame(stackFrames[0], 29, 29, UTILS, variables, vars[3]);
 
 		stackFrames = debugger.stepIn(13);
-		assertEquals(10, stackFrames.length);
+		assertEquals(11, stackFrames.length);
 		variables = new HashSet<>();
 		variables.add(createVariable("i","1",IntValue.ValZero.getTypeString()));
 		variables.add(createVariable("j","1",IntValue.ValZero.getTypeString()));
@@ -360,13 +361,13 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// 8888888888888888888 Invariant TypeOK 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(RM, 29);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 29, 3, 37, 25, RM, Context.Empty);
 		
 		// 8888888888888888888 Invariant EWD998!Inv 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(FOLDER, 150);
 		stackFrames = debugger.continue_();
-		assertEquals(10, stackFrames.length);
+		assertEquals(12, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 150, 3, 162, 34, FOLDER, (Context) null); //TODO Assert context that contains the refinement mapping
 		
 		// 8888888888888888888 Test resolving a location (e.g. editor hovering) to a value 888888888888888 //
@@ -474,7 +475,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// before the UNCHANGED is evaluated
 		stackFrames = debugger.continue_();
-		assertEquals(7, stackFrames.length);
+		assertEquals(8, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 107, 6, 107, 32, RM, (Context) null, vars[0], vars[1]);
 
 		// Run to the state-constraint and a hit condition.
@@ -483,14 +484,14 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		sba.getBreakpoints()[0].setHitCondition("3");
 		debugger.setBreakpoints(sba);
 		stackFrames = debugger.continue_();
-		assertEquals(8, stackFrames.length);
+		assertEquals(10, stackFrames.length);
 		assertTLCStateFrame(stackFrames[0], 148, 3, 153, 45, RM, Context.Empty);
 
 		// Check Next action has expected number of successor states.
 		debugger.unsetBreakpoints();
 		debugger.setSpecBreakpoint();
 		stackFrames = debugger.continue_();
-		assertEquals(1, stackFrames.length);
+		assertEquals(3, stackFrames.length);
 		assertTLCNextStatesFrame(stackFrames[0], 134, 20, 134, 23, RM, Context.Empty, 3);
 		
 		stackFrame = (TLCStackFrame) stackFrames[0];

@@ -59,8 +59,9 @@ public class EWD840ErrorDebuggerTest extends TLCDebuggerTestCase {
 		debugger.unsetBreakpoints();
 		stackFrames = debugger.continue_();
 		// Error occurs after TLC generated the first initial state.
-		int i = 8;
+		int i = 9;
 		assertEquals(i, stackFrames.length);
+		i--;
 		assertTLCFrame(stackFrames[--i], 20, 3, 23, 21, RM);
 		assertTLCStateFrame(stackFrames[--i], 20, 3, 23, 21, RM, Context.Empty, vars);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
