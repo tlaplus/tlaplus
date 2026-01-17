@@ -20,6 +20,7 @@ import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Context;
 import tla2sany.semantic.Errors;
+import tla2sany.semantic.Errors.ErrorDetails;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
@@ -214,14 +215,14 @@ public class SANY {
       try 
       {
           // Actual parsing method called from inside loadSpec()
-          if (!spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, out)) 
-          {
-              // dead code SZ 02. Aug 2009
-              /*
-        spec.parseErrors.addError(
-            Location.nullLoc,
-            "Parsing failed; semantic analysis not started");
-               */
+          spec.loadSpec(spec.getFileName(), spec.parseErrors, validatePCalTranslation, out);
+
+          List<ErrorDetails> warnings = spec.parseErrors.getWarningDetails();
+          if (!warnings.isEmpty()) {
+            out.log(LogLevel.WARNING, "Warnings (%d) during syntax parsing of %s:\n\n", warnings.size(), spec.getFileName());
+            for (ErrorDetails warning : warnings) {
+              out.log(LogLevel.WARNING, "%s\n\n\n", warning);
+            }
           }
 
           if (!spec.parseErrors.isSuccess()) 
