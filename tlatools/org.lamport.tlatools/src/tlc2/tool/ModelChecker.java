@@ -559,15 +559,15 @@ public class ModelChecker extends AbstractChecker
         return false;
 	}
 
-	final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
+	final boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String... params) throws IOException, WorkerException {
 		synchronized (this)
 		{
 		    if (this.setErrState(curState, succState, keep, ec))
 		    {
-		    	if (param == null) {
+		    	if (params == null) {
 		    		MP.printError(ec);
 		    	} else {
-		    		MP.printError(ec, param);
+		    		MP.printError(ec, params);
 		    	}
 				this.trace.printTrace(curState, succState);
 				this.theStateQueue.finishAll();
@@ -1181,10 +1181,11 @@ public class ModelChecker extends AbstractChecker
 				// Check properties of the state:
 				if (!seen || forceChecks) {
 					for (int j = 0; j < tool.getInvariants().length; j++) {
-						if (!tool.isValid(tool.getInvariants()[j], curState)) {
+						FalseExpressionWithDetails falseExpr = this.tool.checkValidity(this.tool.getInvariants()[j], curState, TLCState.Empty);
+						if (falseExpr != null) {
 							// We get here because of invariant violation:
 							MP.printError(EC.TLC_INVARIANT_VIOLATED_INITIAL,
-									new String[] { tool.getInvNames()[j].toString(), tool.evalAlias(curState, curState).toString() });
+									new String[] { tool.getInvNames()[j].toString(), tool.evalAlias(curState, curState).toString(), falseExpr.prettyPrint() });
 							if (!TLCGlobals.continuation) {
 								this.errState = curState;
 								returnValue = EC.TLC_INVARIANT_VIOLATED_INITIAL;
