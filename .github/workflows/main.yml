@@ -204,6 +204,11 @@ jobs:
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=p2repository.zip --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/org.lamport.tla.toolbox.product.product-1.4.0-SNAPSHOT.zip
 
+           ## Linux ARM64
+           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.8.0-linux.gtk.aarch64.zip") | .id')
+           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.8.0-linux.gtk.aarch64.zip --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-linux.gtk.aarch64.zip
+
            ## Generate changelog
            cd general/docs/changelogs
            ## Append sha1 sum to changelog (last line of changelog has the table header).
@@ -338,6 +343,15 @@ jobs:
            ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "${{ matrix.TOOLBOX_PRODUCT_ZIP }}") | .id')
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
-           ## Upload p2 and apt repository to INRIA machine.
+           ## Sign, notarize and upload macOS ARM64 version (keychain already set up above).
+           rm -rf "TLA+ Toolbox.app"
+           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip
+           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
+           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip
+           xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip"
+           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip") | .id')
+           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip --upload-file TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip
+           ## Upload x86_64 and ARM64 zips to INRIA machine.
            rsync --version
-           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} github@upload.tlapl.us:products/
+           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip github@upload.tlapl.us:products/
