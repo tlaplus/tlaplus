@@ -27,6 +27,9 @@ package tlc2.debug;
 
 import org.eclipse.lsp4j.debug.SourceBreakpoint;
 
+import tla2sany.drivers.SemanticException;
+import tla2sany.parser.ParseException;
+import tla2sany.semantic.AbortException;
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefNode;
@@ -46,7 +49,8 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	private final int hits;
 	private final Location location;
-	private final OpDefNode condition;
+	private OpDefNode condition;
+	private Exception conditionException;
 	
 	public TLCSourceBreakpoint(final SpecProcessor processor, final String s) {
 		this.location = Location.nullLoc;
@@ -60,7 +64,11 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 			// Use existing definition.
 			condition = odn;
 		} else {
-			condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s);
+			try {
+				condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s);
+			} catch (ParseException | SemanticException | AbortException e) {
+				conditionException = e;
+			}
 		}
 	}
 	
@@ -94,7 +102,11 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 				// Use existing definition.
 				condition = odn;
 			} else {
-				condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s.getCondition());
+				try {
+					condition = TLCDebuggerExpression.process(processor, semanticRoot, location, s.getCondition());
+				} catch (ParseException | SemanticException | AbortException e) {
+					conditionException = e;
+				}
 			}
 		} else {
 			condition = null;
@@ -118,6 +130,10 @@ public class TLCSourceBreakpoint extends SourceBreakpoint {
 
 	public Location getLocation() {
 		return location;
+	}
+	
+	public Exception getConditionException() {
+		return conditionException;
 	}
 	
 	protected boolean matchesExpression(final Tool tool, final TLCState s, final TLCState t, final Context c,

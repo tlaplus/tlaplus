@@ -531,23 +531,6 @@ public class TLCStackFrame extends StackFrame {
 		return TLCState.Empty;
 	}
 
-	public EvaluateResponse getWatch(final String name) {
-		if (name == null) {
-			return new EvaluateResponse();
-		} 
-		
-		// 1) Try to resolve the name to an existing expression.
-		final ModuleNode module = tool.getSpecProcessor().getRootModule();
-
-		// 2) Expression doesn't exist. Check if name is an ad-hoc expression.
-		OpDefNode odn = module.getOpDef(name);
-		if (odn == null) {
-			odn = TLCDebuggerExpression.process(tool.getSpecProcessor(), module, name);
-		}
-
-		return getWatch(odn);
-	}
-
 	public EvaluateResponse getWatch(final OpDefNode odn) {
 		if (odn == null) {
 			return new EvaluateResponse();

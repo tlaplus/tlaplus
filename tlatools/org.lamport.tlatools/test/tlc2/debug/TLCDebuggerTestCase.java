@@ -626,9 +626,18 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			// Set new breakpoint.
 			return setBreakpoints(rootModule, line);
 		}
+		public Breakpoint[] replaceAllBreakpointsWith(final String rootModule, int line, String expr) throws Exception {
+			unsetBreakpoints();
+			// Set new breakpoint.
+			return setBreakpoints(rootModule, line, expr);
+		}
 		
 		public Breakpoint[] setBreakpoints(final String rootModule, int line) throws Exception {
 			return setBreakpoints(createBreakpointArgument(rootModule, line)).get().getBreakpoints();
+		}
+
+		public Breakpoint[] setBreakpoints(final String rootModule, int line, final String expr) throws Exception {
+			return setBreakpoints(createBreakpointArgument(rootModule, line, expr)).get().getBreakpoints();
 		}
 
 		public void unsetBreakpoints() {
