@@ -351,6 +351,7 @@ jobs:
            codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --display --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -h -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
            ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
            xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}"
+           ## Upload signed TLAToolbox zip to Github release.
            ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}") | .id')
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}} --upload-file ${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
