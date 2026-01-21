@@ -460,15 +460,10 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 					breakpoint.setMessage("A Next breakpoint does not support a hit condition.");
 				}
 				
-				if (moduleNode != null && sbp.getCondition() != null && !sbp.getCondition().isEmpty()) {
-					// see tlc2.debug.TLCStateStackFrame.matches(TLCSourceBreakpoint)
-					final OpDefNode odn = moduleNode.getOpDef(sbp.getCondition());
-					if (odn == null) {
-						breakpoint.setVerified(false);
-						breakpoint.setMessage(String.format(
-								"The  %s  definition, used as the breakpoint expression, could not be found in the specification  %s.",
-								sbp.getCondition(), module));
-					}
+				if (moduleNode != null && sbp.getCondition() != null && !sbp.getCondition().isEmpty()
+						&& sbp.getConditionException() != null) {
+					breakpoint.setVerified(false);
+					breakpoint.setMessage(sbp.getConditionException().getMessage());
 				}
 				
 				final Source source = args.getSource();

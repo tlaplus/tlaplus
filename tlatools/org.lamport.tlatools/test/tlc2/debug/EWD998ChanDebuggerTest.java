@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.eclipse.lsp4j.debug.Breakpoint;
 import org.eclipse.lsp4j.debug.EvaluateArguments;
 import org.eclipse.lsp4j.debug.EvaluateArgumentsContext;
 import org.eclipse.lsp4j.debug.EvaluateResponse;
@@ -91,7 +92,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		// Check Watch expressions
 		assertEquals(new EvaluateResponse(), stackFrame.evaluate((String) null));
-		assertEquals("Does not exist", stackFrame.evaluate("Does not exist").getResult());
+		assertEquals("Syntax error while parsing breakpoint expression \\\"Does not exist\\\"", stackFrame.evaluate("Does not exist").getResult());
 		
 		assertEquals(
 				"In evaluation, the identifier counter is either undefined or not an operator.\\nline 43, col 6 to line 43, col 12 of module EWD998Chan",
@@ -212,6 +213,16 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		});
 
 		assertTrue(debugger.replaceAllBreakpointsWith(RM, 102)[0].isVerified());
+		assertTrue(debugger.replaceAllBreakpointsWith(RM, 102, "")[0].isVerified());
+		Breakpoint breakpoint = debugger.replaceAllBreakpointsWith(RM, 102, "garbled input not parsable")[0];
+		assertFalse(breakpoint.isVerified());
+		assertEquals("Syntax error while parsing breakpoint expression \"garbled input not parsable\"",
+				breakpoint.getMessage());
+		breakpoint = debugger.replaceAllBreakpointsWith(RM, 102, "LET T == INSTANCE DoesNotExist IN T!YOLO")[0];
+		assertFalse(breakpoint.isVerified());
+		assertEquals("line 103, col 0 to line 102, col 1 of module EWD998Chan\n"
+				+ "\nSemantic error while parsing breakpoint expression \"LET T == INSTANCE DoesNotExist IN T!YOLO\"",
+				breakpoint.getMessage());
 		assertFalse(debugger.replaceAllBreakpointsWith(RM, 103)[0].isVerified());
 		assertTrue(debugger.replaceAllBreakpointsWith(RM, 104)[0].isVerified());
 		assertFalse(debugger.replaceAllBreakpointsWith(RM, 105)[0].isVerified());
@@ -496,7 +507,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		stackFrame = (TLCStackFrame) stackFrames[0];
 		assertEquals(new EvaluateResponse(), stackFrame.evaluate((String) null));
-		assertEquals("Does not exist", stackFrame.evaluate("Does not exist").getResult());
+		assertEquals("Syntax error while parsing breakpoint expression \\\"Does not exist\\\"", stackFrame.evaluate("Does not exist").getResult());
 		
 		assertEquals("FALSE", stackFrame.evaluate("Init").getResult());
 		assertEquals("FALSE", stackFrame.evaluate("InitiateProbe").getResult());
@@ -554,7 +565,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// expanding the expression explicitly.
 		ea.setExpression("@");
 		ea.setFrameId(stackFrames[0].getId());
-		assertEquals("@", debugger.evaluate(ea).get().getResult());
+		assertEquals("line 84, col 77 to line 84, col 85 of module EWD998Chan\\n\\nSemantic error while parsing breakpoint expression \\\"@\\\"", debugger.evaluate(ea).get().getResult());
 		
 		// An expression involving a free-standing (non-constant) operator that doesn't
 		// occur in the scope of the breakpoint.

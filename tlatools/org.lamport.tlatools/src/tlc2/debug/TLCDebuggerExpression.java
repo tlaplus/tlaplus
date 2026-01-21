@@ -38,10 +38,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tla2sany.drivers.SemanticException;
 import tla2sany.output.SilentSanyOutput;
+import tla2sany.parser.ParseException;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.AbortException;
+import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.FormalParamNode;
@@ -74,9 +77,13 @@ public abstract class TLCDebuggerExpression {
 	 * @param semanticRoot  The root of the spec's semantic parse tree.
 	 * @param conditionExpr The unparsed  expression.
 	 * @return An expression, or null if parsing failed.
+	 * @throws ParseException if syntax parsing fails.
+	 * @throws SemanticException if semantic analysis or level-checking fails.
+	 * @throws AbortException if dependency resolution fails.
 	 */
 	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final String conditionExpr) {
+			final String conditionExpr) 
+			throws ParseException, SemanticException, AbortException {
 		return process(processor, semanticRoot, Location.nullLoc, conditionExpr);
 	}
 
@@ -89,9 +96,13 @@ public abstract class TLCDebuggerExpression {
 	 * @param location      The breakpoint location.
 	 * @param conditionExpr The unparsed  expression.
 	 * @return An expression, or null if parsing failed.
+	 * @throws ParseException if syntax parsing fails.
+	 * @throws SemanticException if semantic analysis or level-checking fails.
+	 * @throws AbortException if dependency resolution fails.
 	 */
 	public static OpDefNode process(final SpecProcessor processor, final ModuleNode semanticRoot,
-			final Location location, final String conditionExpr) {
+			final Location location, final String conditionExpr) 
+			throws ParseException, SemanticException, AbortException {
 		if (null == conditionExpr || conditionExpr.isBlank()) {
 			return null;
 		}
@@ -220,36 +231,20 @@ public abstract class TLCDebuggerExpression {
 		boolean syntaxParseSuccess = parser.parse();
 		SyntaxTreeNode syntaxRoot = parser.ParseTree;
 		if (!syntaxParseSuccess || null == syntaxRoot) {
-			// Parse error is output to ToolIO.out
-			ToolIO.err.println("Syntax error while parsing breakpoint expression \"" + conditionExpr + "\"");
-			return null;
+			throw new ParseException("Syntax error while parsing breakpoint expression \"" + conditionExpr + "\"");
 		}
 		
+		final Errors semanticLog = new Errors();
 		final ExternalModuleTable emt = processor.getModuleTbl();
-		try {
-			// Resolve dependencies not already resolved.
-			resolveDependencies(processor, emt, Stream.of(parser.dependencies())
-					.filter(dep -> emt.getModuleNode(dep) == null).collect(Collectors.toList()));
-		} catch (AbortException e) {
-			ToolIO.err.print(e.toString());
-			ToolIO.err.println("Dependency error while parsing breakpoint expression \"" + conditionExpr + "\"");
-			return null;
-		}
+		// Resolve dependencies not already resolved.
+		resolveDependencies(processor, emt, Stream.of(parser.dependencies())
+				.filter(dep -> emt.getModuleNode(dep) == null).collect(Collectors.toList()), semanticLog);
 
-		Errors semanticLog = new Errors();
 		Generator semanticChecker = new Generator(emt, semanticLog);
-		ModuleNode bpModule = null;
-		try {
-			bpModule = semanticChecker.generate(syntaxRoot);
-		} catch (AbortException e) {
-			ToolIO.err.print(e.toString());
-			ToolIO.err.println("Semantic error while parsing breakpoint expression \"" + conditionExpr + "\"");
-			return null;
-		}
+		ModuleNode bpModule = semanticChecker.generate(syntaxRoot);
 		if (null == bpModule || semanticLog.isFailure()) {
-			ToolIO.err.print(semanticLog.toString());
-			ToolIO.err.println("Semantic error while parsing breakpoint expression \"" + conditionExpr + "\"");
-			return null;
+			throw new SemanticException(semanticLog.addMessage(ErrorCode.GENERAL, location,
+					"Semantic error while parsing breakpoint expression \"%s\"", conditionExpr));
 		}
 
 		// Run level-checking. The operator should be restricted to
@@ -257,22 +252,22 @@ public abstract class TLCDebuggerExpression {
 		Errors levelCheckingErrors = new Errors();
 		boolean levelCheckingSuccess = bpModule.levelCheck(levelCheckingErrors);
 		if (!levelCheckingSuccess || levelCheckingErrors.isFailure() || !bpModule.levelCorrect) {
-			ToolIO.err.println(levelCheckingErrors.toString());
-			ToolIO.err.println("Level-checking error while parsing breakpoint expression \"" + conditionExpr + "\"");
-			return null;
+			throw new SemanticException(levelCheckingErrors.addMessage(ErrorCode.GENERAL, location,
+					"Level-checking error while parsing breakpoint expression \"%s\"", conditionExpr));
 		}
 		
 		bpOp = bpModule.getOpDef(bpOpName);
 		if (null == bpOp) {
-			ToolIO.err.println("ERROR: unable to find debugger expression op " + bpOpName);
-			return null;
+			throw new SemanticException(
+					semanticLog.addMessage(ErrorCode.GENERAL, location,
+							"Unable to find debugger expression op %s", bpOpName));
 		}
 
 		if (!(LevelConstants.ConstantLevel == bpOp.getLevel() || LevelConstants.VariableLevel == bpOp.getLevel()
 				|| LevelConstants.ActionLevel == bpOp.getLevel())) {
-			ToolIO.err.println("ERROR: Debug expressions must be action-level or below; actual level: "
-					+ SemanticNode.levelToString(bpOp.getLevel()));
-			return null;
+			throw new SemanticException(semanticLog.addMessage(ErrorCode.OPERATOR_LEVEL_CONSTRAINTS_EXCEEDED, location,
+					"Debug expressions must be action-level or below; actual level: %s",
+					SemanticNode.levelToString(bpOp.getLevel())));
 		}
 
 		processor.processConstantsDynamicExtendee(bpModule);
@@ -289,7 +284,7 @@ public abstract class TLCDebuggerExpression {
 	}
 	
 	private static ExternalModuleTable resolveDependencies(final SpecProcessor processor, final ExternalModuleTable emt,
-			final List<String> dependencies) throws AbortException {
+			final List<String> dependencies, final Errors log) throws AbortException, ParseException, SemanticException {
 		for (String moduleName : dependencies) {
 			try (final InputStream moduleSource = new FileInputStream(
 					ToolIO.getDefaultResolver().resolve(moduleName + TLAConstants.Files.TLA_EXTENSION, false))) {
@@ -298,23 +293,19 @@ public abstract class TLCDebuggerExpression {
 				boolean syntaxParseSuccess = parser.parse();
 				SyntaxTreeNode syntaxRoot = parser.ParseTree;
 				if (!syntaxParseSuccess || null == syntaxRoot) {
-					ToolIO.err.println("Syntax error while parsing breakpoint expression's dependency \"" + moduleName + "\"");
-					continue;
+					throw new ParseException("Syntax error while parsing breakpoint expression's dependency \"" + moduleName + "\"");
 				}
 
 		        // Transitively resolve dependencies.
 				for (String dep : parser.dependencies()) {
 					if (emt.getModuleNode(dep) == null) {
-						resolveDependencies(processor, emt, List.of(dep));
+						resolveDependencies(processor, emt, List.of(dep), log);
 					}
 				}
 
-				final Errors log = new Errors();
 				final Generator semanticParser = new Generator(emt, log);
 				final ModuleNode module = semanticParser.generate(parser.rootNode());
 				if (log.isFailure()) {
-					ToolIO.err.print(log.toString());
-					ToolIO.err.println("Semantic error while parsing breakpoint expression's dependency \"" + moduleName + "\"");
 					continue;
 				}
 				module.levelCheck(log);
@@ -322,7 +313,8 @@ public abstract class TLCDebuggerExpression {
 				processor.processConstantsDynamicExtendee(module);
 				emt.put(UniqueString.of(moduleName), semanticParser.getSymbolTable().getExternalContext(), module);
 			} catch (IOException e) {
-				throw new RuntimeException("ERROR: Unable to read module " + moduleName);
+				log.addMessage(ErrorCode.MODULE_FILE_CANNOT_BE_FOUND, Location.nullLoc,
+						"IO error while reading module \"%s\": %s", moduleName, e.getMessage());
 			}
 		}
 		return emt;

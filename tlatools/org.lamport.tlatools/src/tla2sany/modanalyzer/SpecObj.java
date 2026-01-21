@@ -14,13 +14,16 @@ import java.util.Set;
 
 import pcal.Validator;
 import pcal.Validator.ValidationResult;
+import tla2sany.drivers.SemanticException;
 import tla2sany.output.SanyOutput;
+import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.ErrorCode;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
@@ -1069,7 +1072,12 @@ public class SpecObj
 		return new ArrayList<>();
 	}
 
-	public List<Action> getInvariants(SpecProcessor specProcessor) {
+	public List<Action> getInvariants(SpecProcessor specProcessor) throws ParseException, SemanticException, AbortException {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
+
+	public List<OpDefNode> getConstraints() {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}

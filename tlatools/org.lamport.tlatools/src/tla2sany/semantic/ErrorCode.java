@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import tlc2.output.EC;
+
 /**
  * An enumeration of standardized codes for errors during semantic checking.
  * Recorded in the {@link Errors} class. Since the error codes are standard
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
  * documented here with comments.
  */
 public enum ErrorCode {
+
+  GENERAL (EC.GENERAL, ErrorLevel.ERROR, ErrorCode.VARIADIC_PARAMETERS),
 
   /**
    * Used for internal errors that function more like assertions; should

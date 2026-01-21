@@ -32,10 +32,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.ModulePointer;
 import tla2sany.modanalyzer.ParseUnit;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.SanyOutput;
+import tla2sany.parser.ParseException;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
@@ -137,7 +139,7 @@ public class ParameterizedSpecObj extends SpecObj {
 			this.modules = modules;
 		}
 		
-		public abstract Action getAction(final SpecProcessor spec);
+		public abstract Action getAction(final SpecProcessor spec) throws ParseException, SemanticException, AbortException;
 
 		public Set<String> getModules() {
 			// TODO:
@@ -153,24 +155,20 @@ public class ParameterizedSpecObj extends SpecObj {
 	public static class RuntimeInvariantTemplate extends InvariantTemplate {
 		private final String expr;
 
-		public RuntimeInvariantTemplate(final String expr) {
-			this(Set.of(), expr);
-		}
-
 		public RuntimeInvariantTemplate(final Set<String> modules, final String expr) {
 			super(modules);
 			this.expr = expr;
 		}
 
 		@Override
-		public Action getAction(final SpecProcessor spec) {
+		public Action getAction(final SpecProcessor spec) throws ParseException, SemanticException, AbortException {
 			final OpDefNode opDef = TLCDebuggerExpression.process(spec, spec.getRootModule(), expr);
 			return new Action(opDef.getBody(), Context.Empty, opDef, false, true);
 		}
 	}
 
 	@Override
-	public List<Action> getInvariants(final SpecProcessor specProcessor) {
+	public List<Action> getInvariants(final SpecProcessor specProcessor) throws ParseException, SemanticException, AbortException {
 		final List<Action> res = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")

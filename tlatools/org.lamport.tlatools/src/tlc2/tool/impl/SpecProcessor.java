@@ -43,11 +43,14 @@ import java.util.stream.Collectors;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
 import tla2sany.output.SimpleSanyOutput;
+import tla2sany.parser.ParseException;
 import tla2sany.semantic.APSubstInNode;
+import tla2sany.semantic.AbortException;
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.DecimalNode;
 import tla2sany.semantic.ExprNode;
@@ -902,15 +905,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		// class of Tool) is still null at this point; the implementation of
 		// getInvariants requires access to SpecProcessor in order to process
 		// RuntimeInvariantTemplates.
-        final java.util.List<Action> overrides = specObj.getInvariants(this);
+		try {
+			java.util.List<Action> overrides = specObj.getInvariants(this);
 
-        final ArrayList<Action> a = new ArrayList<>(Arrays.asList(this.invariants));
-		a.addAll(overrides);
-        this.invariants = a.toArray(Action[]::new);
+			final ArrayList<Action> a = new ArrayList<>(Arrays.asList(this.invariants));
+			a.addAll(overrides);
+			this.invariants = a.toArray(Action[]::new);
 
-        final ArrayList<String> b = new ArrayList<>(Arrays.asList(this.invNames));
-        b.addAll(overrides.stream().map(act -> act.getNameOfDefault()).collect(Collectors.toList()));
-        this.invNames = b.toArray(String[]::new);
+			final ArrayList<String> b = new ArrayList<>(Arrays.asList(this.invNames));
+			b.addAll(overrides.stream().map(act -> act.getNameOfDefault()).collect(Collectors.toList()));
+			this.invNames = b.toArray(String[]::new);
+		} catch (ParseException | SemanticException | AbortException e) {
+			Assert.fail(EC.TLC_PARSING_FAILED2, e);
+		}
         
 		// Process the model constraints in the config. It's done after all
 		// other config processing because it used to be processed lazy upon the
