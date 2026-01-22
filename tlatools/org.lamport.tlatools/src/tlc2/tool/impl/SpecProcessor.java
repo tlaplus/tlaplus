@@ -1555,6 +1555,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	    final java.util.List<ExprNode> constrList = new ArrayList<>();
 
 	    final Vect<String> names = this.config.getActionConstraints();
+
+	    // Add all constraints defined on the command-line.
+	    final java.util.List<OpDefNode> constraints = specObj.getActionConstraints();
+	    constraints.forEach(def -> this.defns.put(def.getName().toString(), def));
+	    constraints.forEach(def -> names.addElement(def.getName().toString()));
+
 	    for (int i = 0; i < names.size(); i++)
 	    {
 	        String name = (String) names.elementAt(i);
@@ -1593,6 +1599,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	    final java.util.List<ExprNode> constrList = new ArrayList<>();
 
 	    final Vect<String> names = this.config.getConstraints();
+
+	    // Add all constraints defined on the command-line.
+	    final java.util.List<OpDefNode> constraints = specObj.getConstraints();
+	    constraints.forEach(def -> this.defns.put(def.getName().toString(), def));
+	    constraints.forEach(def -> names.addElement(def.getName().toString()));
+
 	    for (int i = 0; i < names.size(); i++)
 	    {
 	        String name = (String) names.elementAt(i);

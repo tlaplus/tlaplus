@@ -21,6 +21,7 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDefNode;
 import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
@@ -1070,6 +1071,16 @@ public class SpecObj
 	}
 
 	public List<Action> getInvariants(SpecProcessor specProcessor) {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
+
+	public List<OpDefNode> getConstraints() {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
+
+	public List<OpDefNode> getActionConstraints() {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}
