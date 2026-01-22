@@ -354,6 +354,15 @@ public class RecordValue extends Value implements FunctionValue {
       }
       // Then, compare values iff domains are equal.
       for (int i = 0; i < len; i++) {
+        // If neither value is a ModelValue, ensure they have the same type
+        // to prevent Assert.fail() in downstream equals() methods
+        // This can happen e.g. with polymorphic records during liveness checking.
+        if (!(this.values[i] instanceof ModelValue || rcd.values[i] instanceof ModelValue)) {
+          if (!this.values[i].getClass().equals(rcd.values[i].getClass())) {
+            return false;
+          }
+        }
+
         if (!(this.values[i].equals(rcd.values[i]))) {
         	  return false;
         }
