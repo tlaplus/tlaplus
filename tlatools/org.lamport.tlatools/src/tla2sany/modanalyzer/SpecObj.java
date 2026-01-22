@@ -1081,4 +1081,9 @@ public class SpecObj
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}
+
+	public List<OpDefNode> getActionConstraints() {
+		// overridden by sub-classes.
+		return new ArrayList<>();
+	}
 }
