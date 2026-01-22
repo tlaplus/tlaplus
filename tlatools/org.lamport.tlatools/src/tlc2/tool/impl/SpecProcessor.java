@@ -1559,9 +1559,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	}
   
 	private void processActionConstraints() {
-	    Vect names = this.config.getActionConstraints();
-	    this.actionConstraints = new ExprNode[names.size()];
-	    int idx = 0;
+	    final java.util.List<ExprNode> constrList = new ArrayList<>();
+
+	    final Vect<String> names = this.config.getActionConstraints();
 	    for (int i = 0; i < names.size(); i++)
 	    {
 	        String name = (String) names.elementAt(i);
@@ -1579,7 +1579,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            // with an Action instance).
 	            assert body.getToolObject(toolId) == null;
 	            body.setToolObject(toolId, def);
-	            this.actionConstraints[idx++] = body;
+	            constrList.add(body);
 	        } else if (constr != null)
 	        {
 	            if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)
@@ -1592,22 +1592,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "action constraint", name });
 	        }
 	    }
-	    // Shrink in case array has been overallocated
-	    if (idx < this.actionConstraints.length)
-	    {
-	        ExprNode[] constrs = new ExprNode[idx];
-	        for (int i = 0; i < idx; i++)
-	        {
-	            constrs[i] = this.actionConstraints[i];
-	        }
-	        this.actionConstraints = constrs;
-	    }
+	    
+	    this.actionConstraints = constrList.toArray(new ExprNode[0]);
 	}
     
 	private final void processModelConstraints() {
-	    Vect names = this.config.getConstraints();
-	    this.modelConstraints = new ExprNode[names.size()];
-	    int idx = 0;
+	    final java.util.List<ExprNode> constrList = new ArrayList<>();
+
+	    final Vect<String> names = this.config.getConstraints();
 	    for (int i = 0; i < names.size(); i++)
 	    {
 	        String name = (String) names.elementAt(i);
@@ -1625,7 +1617,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            // with an Action instance).
 	            assert body.getToolObject(toolId) == null;
 	            body.setToolObject(toolId, def);
-				this.modelConstraints[idx++] = body;
+	            constrList.add(body);
 	        } else if (constr != null)
 	        {
 	            if (!(constr instanceof IBoolValue) || !((BoolValue) constr).val)
@@ -1637,17 +1629,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "constraint", name });
 	        }
 	    }
-		// Shrink modelContraints in case we allocated a too large array. See
-		// nested if block above for why some constraints don't get instantiated.
-	    if (idx < this.modelConstraints.length)
-	    {
-	        ExprNode[] constrs = new ExprNode[idx];
-	        for (int i = 0; i < idx; i++)
-	        {
-	            constrs[i] = this.modelConstraints[i];
-	        }
-	        this.modelConstraints = constrs;
-	    }
+	    
+	    this.modelConstraints = constrList.toArray(new ExprNode[0]);
 	}
 	 
     /*************************************************************************
