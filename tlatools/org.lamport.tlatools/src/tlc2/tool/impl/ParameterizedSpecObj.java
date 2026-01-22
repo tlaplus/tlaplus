@@ -43,15 +43,20 @@ import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
+import tla2sany.semantic.OpDeclNode;
 import tla2sany.semantic.OpDefNode;
 import tlc2.debug.TLCDebuggerExpression;
+import tlc2.output.EC;
 import tlc2.tool.Action;
 import tlc2.util.Context;
 import tlc2.value.impl.StringValue;
+import util.Assert;
 import util.FilenameToStream;
 
 public class ParameterizedSpecObj extends SpecObj {
 
+	public static final String ACTION_CONSTRAINTS = "ACTION_CONSTRAINT";
+	public static final String CONSTRAINTS = "CONSTRAINT";
 	public static final String POST_CONDITIONS = "POST_CONDITIONS";
 	public static final String INVARIANT = "INVARIANT";
 
@@ -84,6 +89,29 @@ public class ParameterizedSpecObj extends SpecObj {
 			final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.get(INVARIANT);
 			for (InvariantTemplate inv : invs) {
 				inv.getModules().forEach(rootModule.getRelatives()::addExtendee);
+			}
+		}
+		// TODO: The current approach forcefully extends the root module with the constraints’
+		// modules. This should be replaced with infrastructure similar to
+		// tlc2.debug.TLCDebuggerExpression.process(SpecProcessor, ModuleNode, Location, String),
+		// which allows the root module’s extendees to remain unchanged. The existing approach
+		// pollutes the module namespace and may introduce cyclic module dependencies.
+		if (firstCall && params.containsKey(CONSTRAINTS)) {
+			final ModulePointer rootModule = pu.getRootModule();
+
+			@SuppressWarnings("unchecked")
+			final List<Constraint> constraints = (List<Constraint>) params.get(CONSTRAINTS);
+			for (Constraint c : constraints) {
+				rootModule.getRelatives().addExtendee(c.module);
+			}
+		}
+		if (firstCall && params.containsKey(ACTION_CONSTRAINTS)) {
+			final ModulePointer rootModule = pu.getRootModule();
+
+			@SuppressWarnings("unchecked")
+			final List<Constraint> constraints = (List<Constraint>) params.get(ACTION_CONSTRAINTS);
+			for (Constraint c : constraints) {
+				rootModule.getRelatives().addExtendee(c.module);
 			}
 		}
 		return pu;
@@ -175,6 +203,64 @@ public class ParameterizedSpecObj extends SpecObj {
 		final List<InvariantTemplate> invs = (List<InvariantTemplate>) params.getOrDefault(INVARIANT, new ArrayList<>());
 		for (InvariantTemplate inv : invs) {
 			res.add(inv.getAction(specProcessor));
+		}
+		return res;
+	}
+
+	public static class Constraint {
+
+		private final String module;
+		private final String operator;
+		private final Map<String, String> constDefs;
+
+		public Constraint(final String module, final String operator, final String def, final String constDef) {
+			this(module, operator, Map.of(def, constDef));
+		}
+
+		public Constraint(final String module, final String operator, Map<String, String> constDefs) {
+			this.module = module;
+			this.operator = operator;
+			this.constDefs = constDefs;
+		}
+	}
+
+	@Override
+	public List<OpDefNode> getConstraints() {
+		@SuppressWarnings("unchecked")
+		final List<OpDefNode> res = getConstraints0(
+				(List<Constraint>) params.getOrDefault(CONSTRAINTS, new ArrayList<>()));
+		return res;
+	}
+
+	@Override
+	public List<OpDefNode> getActionConstraints() {
+		@SuppressWarnings("unchecked")
+		final List<OpDefNode> res = getConstraints0(
+				(List<Constraint>) params.getOrDefault(ACTION_CONSTRAINTS, new ArrayList<>()));
+		return res;
+	}
+
+	private List<OpDefNode> getConstraints0(final List<Constraint> constraints) {
+		final List<OpDefNode> res = new ArrayList<>();
+
+		for (Constraint c : constraints) {
+			final ExternalModuleTable mt = getExternalModuleTable();
+			final ModuleNode moduleNode = mt.getModuleNode(c.module);
+			Assert.check(moduleNode != null, EC.GENERAL, "Could not find module: " + c.module);
+
+			// Set the values of the constant used in the constraint.
+			final OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
+			for (int i = 0; i < constantDecls.length; i++) {
+				final String constName = constantDecls[i].getName().toString();
+				if (c.constDefs.containsKey(constName)) {
+					constantDecls[i].setToolObject(spec.getId(), new StringValue(c.constDefs.get(constName)));
+				}
+			}
+
+			final OpDefNode opDef = moduleNode.getOpDef(c.operator);
+			Assert.check(opDef != null, EC.GENERAL,
+					"Could not find operator: " + c.operator + " in module: " + c.module);
+			res.add(opDef);
 		}
 		return res;
 	}
