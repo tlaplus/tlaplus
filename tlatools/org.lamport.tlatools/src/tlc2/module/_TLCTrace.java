@@ -28,11 +28,23 @@ package tlc2.module;
 import java.io.File;
 import java.io.IOException;
 
+import tla2sany.semantic.ExprOrOpArgNode;
+import tla2sany.semantic.OpDefNode;
+import tlc2.overrides.Evaluation;
 import tlc2.overrides.TLAPlusOperator;
+import tlc2.tool.TLCState;
+import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
 import tlc2.value.IValue;
+import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.TupleValue;
+import tlc2.value.impl.Value;
+import util.UniqueString;
 
 public class _TLCTrace {
 
@@ -50,5 +62,51 @@ public class _TLCTrace {
 			vos.close();
 		}
 		return BoolValue.ValTrue;
+	}
+
+	// _TLCTraceDeserialize is overridden but won't be called except from
+	// _tlcTraceConstraint0 below if _tlcTraceConstraint0 is active.
+	@TLAPlusOperator(identifier = "_TLCTraceDeserialize", module = "_TLCTrace", warn = false)
+	public static final IValue ioDeserialize(final StringValue absolutePath) throws IOException {
+		final ValueInputStream vis = new ValueInputStream(new File(absolutePath.val.toString()), true);
+		try {
+			return vis.read(UniqueString.internTbl.toMap());
+		} finally {
+			vis.close();
+		}
+	}
+
+	// Override the TLA+ operator definition of _TLCTraceConstraint0 for performance
+	// reasons:
+	// - Avoid repeated deserialization of the trace file by caching the
+	// deserialized trace
+	// - Avoid repeated reconstruction of the current trace represented by
+	// TLCExt!Trace
+	// - Is synchronized to be thread-safe when called from multiple workers
+	// - Resulting contention is acceptable because we are recreating a single trace
+	// where multiple workers are of limited use.
+	@Evaluation(definition = "_TLCTraceConstraint0", module = "_TLCTrace", minLevel = 1, warn = false, silent = true)
+	public synchronized static Value tlcTraceConstraint0(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+			final TLCState s0, final TLCState s1, final int control, final CostModel cm) throws IOException {
+
+		// Cache the deserialized trace in the operator definition to avoid repeated IO.
+		final OpDefNode opDef = tool.getSpecProcessor().getModuleTbl().getModuleNode("_TLCTrace")
+				.getOpDef("_TLCTraceDeserialize");
+		IValue trace = (IValue) opDef.getToolObject(tool.getId());
+		if (trace == null) {
+			final Value absoluteFilename = tool.eval(args[0], c, s0, s1, control, cm);
+			trace = ioDeserialize((StringValue) absoluteFilename);
+			trace.deepNormalize();
+			opDef.setToolObject(tool.getId(), trace);
+		}
+
+		// The trace is a TupleValue of RecordValues, where the i-th - 1 element
+		// corresponds to the current state. -1 because Java is 0-based, while TLA+ is
+		// 1-based.
+		if (s0.getLevel() < 1 || s0.getLevel() > ((TupleValue) trace).size()) {
+			return BoolValue.ValTrue;
+		}
+		final RecordValue tr = (RecordValue) ((TupleValue) trace).getElem(s0.getLevel() - 1);
+		return new RecordValue(s0).equals(tr) ? BoolValue.ValTrue : BoolValue.ValFalse;
 	}
 }
