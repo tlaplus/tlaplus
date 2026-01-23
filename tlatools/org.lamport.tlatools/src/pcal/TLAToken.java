@@ -20,7 +20,7 @@
 ***************************************************************************/
 package pcal;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class TLAToken
   /*************************************************************************
@@ -146,21 +146,21 @@ public class TLAToken
      * remove redundant pairs of matching parens (the ones for "b" in the example), and
      * perhaps I'll do that.
      */
-    private Vector beginSubst = new Vector(2) ; // of PCalLocation
-    private Vector endSubst = new Vector(2);    // of PCalLocation
-    public Vector getBeginSubst() {
+    private ArrayList<PCalLocation> beginSubst = new ArrayList<PCalLocation>(2) ; // of PCalLocation
+    private ArrayList<PCalLocation> endSubst = new ArrayList<PCalLocation>(2);    // of PCalLocation
+    public ArrayList<PCalLocation> getBeginSubst() {
         return beginSubst;
     }
 
-    public void setBeginSubst(Vector beginSubst) {
+    public void setBeginSubst(ArrayList<PCalLocation> beginSubst) {
         this.beginSubst = beginSubst;
     }
 
-    public Vector getEndSubst() {
+    public ArrayList<PCalLocation> getEndSubst() {
         return endSubst;
     }
 
-    public void setEndSubst(Vector endSubst) {
+    public void setEndSubst(ArrayList<PCalLocation> endSubst) {
         this.endSubst = endSubst;
     }
     
@@ -274,8 +274,8 @@ public class TLAToken
     public TLAToken(TLAToken other) {
         this(other.string, other.column, other.type);
         this.source = other.source;
-        this.beginSubst = new Vector<>(other.beginSubst);
-        this.endSubst = new Vector<>(other.endSubst);
+        this.beginSubst = new ArrayList<>(other.beginSubst);
+        this.endSubst = new ArrayList<>(other.endSubst);
         this.isAppended = other.isAppended;
     }
 
