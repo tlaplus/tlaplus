@@ -189,6 +189,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		snapshot = defns.snapshot();
 
 		if (opDefEvaluator != null) {
+			specObj.processConstantDefns(this.defns);
+
 			// Pre-evaluate all the definitions in the spec that are constants.
 			processConstantDefns();
 		}

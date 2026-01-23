@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.ModulePointer;
@@ -48,6 +47,7 @@ import tla2sany.semantic.OpDefNode;
 import tlc2.debug.TLCDebuggerExpression;
 import tlc2.output.EC;
 import tlc2.tool.Action;
+import tlc2.tool.Defns;
 import tlc2.util.Context;
 import tlc2.value.impl.StringValue;
 import util.Assert;
@@ -118,6 +118,65 @@ public class ParameterizedSpecObj extends SpecObj {
 	}
 
 	@Override
+	public void processConstantDefns(final Defns defns) {
+		final ExternalModuleTable mt = getExternalModuleTable();
+
+		// Process constants for CONSTRAINT
+		@SuppressWarnings("unchecked")
+		final List<Constraint> constraints = (List<Constraint>) params.getOrDefault(CONSTRAINTS, new ArrayList<>());
+		for (final Constraint c : constraints) {
+			processConstantsForModule(mt, c.module, c.constDefs, defns);
+		}
+
+		// Process constants for ACTION_CONSTRAINT
+		@SuppressWarnings("unchecked")
+		final List<Constraint> actionConstraints = (List<Constraint>) params.getOrDefault(ACTION_CONSTRAINTS,
+				new ArrayList<>());
+		for (final Constraint c : actionConstraints) {
+			processConstantsForModule(mt, c.module, c.constDefs, defns);
+		}
+
+		// Process constants for POST_CONDITIONS
+		@SuppressWarnings("unchecked")
+		final List<PostCondition> postConditions = (List<PostCondition>) params.getOrDefault(POST_CONDITIONS,
+				new ArrayList<>());
+		for (final PostCondition pc : postConditions) {
+			processConstantsForModule(mt, pc.module, pc.constDecls, defns);
+		}
+
+		// Process constants for INVARIANT
+		// Note: InvariantTemplate doesn't currently have constant definitions,
+		// but we check the modules in case they contain constants that need processing
+		@SuppressWarnings("unchecked")
+		final List<InvariantTemplate> invariants = (List<InvariantTemplate>) params.getOrDefault(INVARIANT,
+				new ArrayList<>());
+		for (final InvariantTemplate inv : invariants) {
+			for (final String module : inv.getModules()) {
+				processConstantsForModule(mt, module, new HashMap<>(), defns);
+			}
+		}
+
+		super.processConstantDefns(defns);
+	}
+
+	private void processConstantsForModule(final ExternalModuleTable mt, final String moduleName,
+			final Map<String, String> constDefs, final Defns defns) {
+		final ModuleNode moduleNode = mt.getModuleNode(moduleName);
+		Assert.check(moduleNode != null, EC.GENERAL, "Could not find module: " + moduleName);
+
+		// Set the values of the constants used in the module
+		final OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
+		for (int i = 0; i < constantDecls.length; i++) {
+			final String constName = constantDecls[i].getName().toString();
+			if (constDefs.containsKey(constName)) {
+				final StringValue val = new StringValue(constDefs.get(constName));
+				constantDecls[i].setToolObject(spec.getId(), val);
+				defns.put(constName, val);
+			}
+		}
+	}
+
+	@Override
 	public List<ExprNode> getPostConditionSpecs() {
 		final List<ExprNode> res = new ArrayList<>();
 
@@ -127,11 +186,10 @@ public class ParameterizedSpecObj extends SpecObj {
 			
 			final ExternalModuleTable mt = getExternalModuleTable();
 			final ModuleNode moduleNode = mt.getModuleNode(pc.module);
+			Assert.check(moduleNode != null, EC.GENERAL, "Could not find module: " + pc.module);
 			final OpDefNode opDef = moduleNode.getOpDef(pc.operator);
-
-			Stream.of(moduleNode.getConstantDecls()).forEach(decl -> decl.setToolObject(spec.getId(),
-					new StringValue(pc.constDecls.get(decl.getName().toString()))));
-
+			Assert.check(opDef != null, EC.GENERAL,
+					"Could not find operator: " + pc.operator + " in module: " + pc.module);
 			res.add(opDef.getBody());
 		}
 		return res;
@@ -242,21 +300,11 @@ public class ParameterizedSpecObj extends SpecObj {
 
 	private List<OpDefNode> getConstraints0(final List<Constraint> constraints) {
 		final List<OpDefNode> res = new ArrayList<>();
+		final ExternalModuleTable mt = getExternalModuleTable();
 
 		for (Constraint c : constraints) {
-			final ExternalModuleTable mt = getExternalModuleTable();
 			final ModuleNode moduleNode = mt.getModuleNode(c.module);
 			Assert.check(moduleNode != null, EC.GENERAL, "Could not find module: " + c.module);
-
-			// Set the values of the constant used in the constraint.
-			final OpDeclNode[] constantDecls = moduleNode.getConstantDecls();
-			for (int i = 0; i < constantDecls.length; i++) {
-				final String constName = constantDecls[i].getName().toString();
-				if (c.constDefs.containsKey(constName)) {
-					constantDecls[i].setToolObject(spec.getId(), new StringValue(c.constDefs.get(constName)));
-				}
-			}
-
 			final OpDefNode opDef = moduleNode.getOpDef(c.operator);
 			Assert.check(opDef != null, EC.GENERAL,
 					"Could not find operator: " + c.operator + " in module: " + c.module);

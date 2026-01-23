@@ -28,6 +28,7 @@ import tla2sany.st.Location;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Vector;
 import tlc2.tool.Action;
+import tlc2.tool.Defns;
 import tlc2.tool.impl.SpecProcessor;
 import util.FileUtil;
 import util.FilenameToStream;
@@ -1085,5 +1086,9 @@ public class SpecObj
 	public List<OpDefNode> getActionConstraints() {
 		// overridden by sub-classes.
 		return new ArrayList<>();
+	}
+
+	public void processConstantDefns(final Defns defns) {
+		// overridden by sub-classes.
 	}
 }

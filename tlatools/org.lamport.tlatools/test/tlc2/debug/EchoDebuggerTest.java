@@ -74,7 +74,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		
 		TLCStackFrame f = (TLCStackFrame) stackFrames[0];
 		Variable[] constants = f.getConstants();
-		assertEquals(2, constants.length);
+		assertEquals(3, constants.length);
 		assertEquals("Echo", constants[0].getName());
 		Variable[] nested = f.getVariables(constants[0].getVariablesReference());
 		assertEquals(4, nested.length);
