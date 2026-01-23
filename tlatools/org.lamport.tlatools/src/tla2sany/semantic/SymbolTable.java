@@ -5,7 +5,7 @@ package tla2sany.semantic;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import util.UniqueString;
 
 // The Symbol Table builds the stack of context tables.  The stack
@@ -252,10 +252,10 @@ public class SymbolTable implements ASTConstants {
     String ret = "\n\n***SymbolTable\n\n*** top context";
 
     for (Context ct : contextStack) {
-      final Vector<String> v = ct.getContextEntryStringVector(1,true, errors);
+      final ArrayList<String> v = ct.getContextEntryStringVector(1,true, errors);
 
       for (int i = 0; i < v.size(); i++) {
-        ret += v.elementAt(i);
+        ret += v.get(i);
       }
       ret += "\n\n*** next context\n";
     }

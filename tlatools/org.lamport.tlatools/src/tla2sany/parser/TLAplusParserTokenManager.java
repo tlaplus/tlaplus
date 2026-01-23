@@ -3,7 +3,7 @@ package tla2sany.parser;
 import tla2sany.output.LogLevel;
 import tla2sany.st.ParseTree;
 import tla2sany.st.TreeNode;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tlc2.output.EC;
 import util.Assert;
 import util.TLAConstants;

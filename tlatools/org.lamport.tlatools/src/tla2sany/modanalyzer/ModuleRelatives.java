@@ -2,7 +2,7 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tla2sany.modanalyzer;
 
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 
 /**
  * This class contains fields representing the names of modules that are all related by EXTENDing or INSTANCEing
@@ -22,21 +22,21 @@ public class ModuleRelatives {
   /**
    * Vector of ModulePointers for immediate inner modules
    */
-  final Vector<ModulePointer> directInnerModules = new Vector<>();
+  final ArrayList<ModulePointer> directInnerModules = new ArrayList<>();
 
   /**
    * Vector of String names for modules mentioned in EXTENDS decls by
    * currentModule, whether or not they are resolved within the
    * current ParseUnit
    */
-  final Vector<String> directlyExtendedModuleNames = new Vector<>();
+  final ArrayList<String> directlyExtendedModuleNames = new ArrayList<>();
 
   /**
    * Vector of String names for modules directly instantiated
    * by currentModule, whether or not they are resolved within the
    * current ParseUnit
    */
-  final Vector<String> directlyInstantiatedModuleNames = new Vector<>();
+  final ArrayList<String> directlyInstantiatedModuleNames = new ArrayList<>();
 
   ModuleContext context = new ModuleContext();          // The context that maps module String names known in this module 
                                                         //   (whether or not they are referenced in it) to ModulePointers
@@ -57,17 +57,17 @@ public class ModuleRelatives {
 
     ret += "\ndirectInnerModules: ";
     for (int i = 0; i < directInnerModules.size(); i++) {
-      ret += directInnerModules.elementAt(i).getName() + " ";
+      ret += directInnerModules.get(i).getName() + " ";
     }
 
     ret += "\ndirectlyExtendedModuleNames: ";
     for (int i = 0; i < directlyExtendedModuleNames.size(); i++) {
-      ret += directlyExtendedModuleNames.elementAt(i) + " ";
+      ret += directlyExtendedModuleNames.get(i) + " ";
     }
 
     ret += "\ndirectlyInstantiatedModuleNames: ";
     for (int i = 0; i < directlyInstantiatedModuleNames.size(); i++) {
-      ret += directlyInstantiatedModuleNames.elementAt(i) + " ";
+      ret += directlyInstantiatedModuleNames.get(i) + " ";
     }
 
     ret += "\n" + context.toString();
@@ -75,6 +75,6 @@ public class ModuleRelatives {
   }
 
 	public void addExtendee(final String module) {
-		directlyExtendedModuleNames.addElement(module);
+		directlyExtendedModuleNames.add(module);
 	}
 } // end class

@@ -30,7 +30,7 @@ import tla2sany.parser.TLAplusParserConstants;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
-import tla2sany.utilities.Vector;
+import java.util.ArrayList;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.UniqueString;
@@ -207,7 +207,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * Vector of arguments (ExprNodes and OpArgNodes)
 		 * that are embedded in the generalized identifier
 		 */
-		private final Vector<ExprOrOpArgNode> argsVector = new Vector<>();
+		private final ArrayList<ExprOrOpArgNode> argsVector = new ArrayList<>();
 
 		// The next three fields are null until the finalAppend
 		// method has been called
@@ -239,7 +239,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return args;
 		}
 
-		public final Vector<ExprOrOpArgNode> getArgsVector() {
+		public final ArrayList<ExprOrOpArgNode> getArgsVector() {
 			return argsVector;
 		}
 
@@ -250,7 +250,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		/** Add a new argument to the vector of arguments being constructed */
 		public final void addArg(ExprOrOpArgNode arg) {
-			argsVector.addElement(arg);
+			argsVector.add(arg);
 		}
 
 		/**
@@ -287,7 +287,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			args = new ExprOrOpArgNode[argsVector.size()];
 
 			for (int i = 0; i < args.length; i++) {
-				args[i] = argsVector.elementAt(i);
+				args[i] = argsVector.get(i);
 			}
 		}
 
@@ -356,8 +356,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		/**********************************************************************
 		 * The fields modified by addSelector: *
 		 **********************************************************************/
-		private final Vector<SyntaxTreeNode> opVec = new Vector<>();
-		private final Vector<SyntaxTreeNode> argVec = new Vector<>();
+		private final ArrayList<SyntaxTreeNode> opVec = new ArrayList<>();
+		private final ArrayList<SyntaxTreeNode> argVec = new ArrayList<>();
 
 		/**********************************************************************
 		 * The fields set from opVec and argVec by finalize. *
@@ -389,8 +389,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * entry * it should be the OpArgs node (the "(arg1, ... , argN)") that is *
 			 * used as the second argument. *
 			 ********************************************************************/
-			opVec.addElement(stn);
-			argVec.addElement(opargs);
+			opVec.add(stn);
+			argVec.add(opargs);
 		} // addSelector
 
 		void finish() throws AbortException {
@@ -400,8 +400,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			opsSTN = new SyntaxTreeNode[arrayLen];
 			args = new SyntaxTreeNode[arrayLen];
 			for (int i = 0; i < arrayLen; i++) {
-				args[i] = argVec.elementAt(i);
-				SyntaxTreeNode stn = opVec.elementAt(i);
+				args[i] = argVec.get(i);
+				SyntaxTreeNode stn = opVec.get(i);
 				opsSTN[i] = stn;
 				opNames[i] = stn.getUS();
 				switch (stn.getKind()) {
@@ -641,9 +641,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * figuring out whether * this is actually a bug in selectorToNode. Instead, I
 		 * just kludged * something to handle that case. *
 		 ***********************************************************************/
-		final Vector<SemanticNode> substInPrefix = new Vector<>();
-		final Vector<FormalParamNode> params = new Vector<>();
-		final Vector<ExprOrOpArgNode> allArgs = new Vector<>();
+		final ArrayList<SemanticNode> substInPrefix = new ArrayList<>();
+		final ArrayList<FormalParamNode> params = new ArrayList<>();
+		final ArrayList<ExprOrOpArgNode> allArgs = new ArrayList<>();
 
 		/***********************************************************************
 		 * Local algorithm variables. *
@@ -677,7 +677,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * algorithm's curContext * variable. *
 		 *********************************************************************/
 		int opDefArityFound = 0;
-		Vector<ExprOrOpArgNode> opDefArgs = new Vector<>();
+		ArrayList<ExprOrOpArgNode> opDefArgs = new ArrayList<>();
 		boolean firstFindingOpName = true;
 		SymbolNode subExprOf = null;
 
@@ -719,7 +719,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// Following code changed on 23 Sep 2009 to fix bug, and corrected
 				// on 9 Nov 2009. See description in Subexpression.tla.
 				SymbolNode newSymbolNode = null;
-				final Vector<TreeNode> tempArgs = new Vector<>();
+				final ArrayList<TreeNode> tempArgs = new ArrayList<>();
 				// a vector of SyntaxTreeNode objects, one for each argument
 				// found for an undefined operator name in the following loop
 
@@ -781,7 +781,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							// We add these SyntaxTreeNode objects to tempArgs.
 							int numOfOpArgs = (sel.args[idx].heirs().length - 1) / 2;
 							for (int i = 0; i < numOfOpArgs; i++) {
-								tempArgs.addElement(sel.args[idx].heirs()[2 * i + 1]);
+								tempArgs.add(sel.args[idx].heirs()[2 * i + 1]);
 							}
 						}
 						idx++;
@@ -864,7 +864,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							 **********************************************************/
 							numOfOpArgs = (opArgs.heirs().length - 1) / 2;
 							for (int i = 0; i < numOfOpArgs; i++) {
-								tempArgs.addElement(sel.args[idx].heirs()[2 * i + 1]);
+								tempArgs.add(sel.args[idx].heirs()[2 * i + 1]);
 							}
 							;
 
@@ -897,8 +897,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							 * argument * number i + opDefArityFound of the operator described * by
 							 * curSymbolNode. *
 							 **********************************************************/
-							opDefArgs.addElement(generateExprOrOpArg(curSymbolNode, sel.opsSTN[idx],
-									i + opDefArityFound, tempArgs.elementAt(i), cm));
+							opDefArgs.add(generateExprOrOpArg(curSymbolNode, sel.opsSTN[idx],
+									i + opDefArityFound, tempArgs.get(i), cm));
 						}
 						; // end for
 
@@ -967,7 +967,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							}
 							;
 							for (int i = 0; i < opParams.length; i++) {
-								params.addElement(opParams[i]);
+								params.add(opParams[i]);
 							}
 							; // for
 							curName = null;
@@ -978,11 +978,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							}
 							;
 							for (int i = 0; i < opDefArgs.size(); i++) {
-								allArgs.addElement(opDefArgs.elementAt(i));
+								allArgs.add(opDefArgs.get(i));
 							}
 							; // for
 							opDefArityFound = 0;
-							opDefArgs = new Vector<>();
+							opDefArgs = new ArrayList<>();
 
 							/************************************************************
 							 * If newNode = null, then I think there's an error. It * should be caught
@@ -990,12 +990,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							 ************************************************************/
 							if (newNode != null) {
 								while (newNode.getKind() == SubstInKind) {
-									substInPrefix.addElement(newNode);
+									substInPrefix.add(newNode);
 									newNode = ((SubstInNode) newNode).getBody();
 								}
 								; // while
 								while (newNode.getKind() == APSubstInKind) {
-									substInPrefix.addElement(newNode);
+									substInPrefix.add(newNode);
 									newNode = ((APSubstInNode) newNode).getBody();
 								}
 								; // while
@@ -1073,7 +1073,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					;
 					for (int i = 0; i < newLabelNode.getArity(); i++) {
-						allArgs.addElement(generateExpression(sel.args[idx].heirs()[2 * i + 1], cm));
+						allArgs.add(generateExpression(sel.args[idx].heirs()[2 * i + 1], cm));
 					}
 					;
 				}
@@ -1081,7 +1081,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				for (int i = 0; i < newLabelNode.getArity(); i++) {
 					FormalParamNode pdecl = newLabelNode.params[i];
-					params.addElement(pdecl);
+					params.add(pdecl);
 				}
 				;
 
@@ -1321,7 +1321,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 									 * Add the elements of temp to the params vector. *
 									 *******************************************************/
 									for (int i = 0; i < temp.length; i++) {
-										params.addElement(temp[i]);
+										params.add(temp[i]);
 									}
 									; // for i
 
@@ -1340,7 +1340,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 										}
 										;
 										for (int i = 0; i < numOfArgs; i++) {
-											allArgs.addElement(
+											allArgs.add(
 													generateExpression(sel.args[idx].heirs()[2 * i + 1], cm));
 										}
 										; // for i
@@ -1465,13 +1465,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						}
 						;
 						for (int i = 0; i < numOfArgs; i++) {
-							allArgs.addElement(generateExpression(sel.args[idx].heirs()[2 * i + 1], cm));
+							allArgs.add(generateExpression(sel.args[idx].heirs()[2 * i + 1], cm));
 						}
 						;
 					}
 					; // if (sel.ops[idx] == NullSel)
 					for (int i = 0; i < opDefOpNode.getArity(); i++) {
-						params.addElement(opDefOpNode.getParams()[i]);
+						params.add(opDefOpNode.getParams()[i]);
 					}
 					;
 					curNode = opDefOpNode.getBody();
@@ -1675,7 +1675,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		ExprOrOpArgNode[] opDefArgArray = new ExprOrOpArgNode[opDefArgs.size()];
 		for (int i = 0; i < opDefArgs.size(); i++) {
-			opDefArgArray[i] = opDefArgs.elementAt(i);
+			opDefArgArray[i] = opDefArgs.get(i);
 		}
 		; // for
 
@@ -1704,7 +1704,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			;
 
 			for (int i = 0; i < opDefArgs.size(); i++) {
-				allArgs.addElement(opDefArgArray[i]);
+				allArgs.add(opDefArgArray[i]);
 			}
 			; // for
 
@@ -1733,7 +1733,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				}
 				;
 				temp[i] = eoag;
-				params.addElement(newpm);
+				params.add(newpm);
 			}
 			; // for
 			SymbolNode curSymNode = (SymbolNode) curNode;
@@ -1787,7 +1787,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							new SyntaxTreeNode(temp3), // syntax tree node
 							null, // symbol table
 							cm); // module
-					params.addElement(temp2[i]);
+					params.add(temp2[i]);
 				}
 				; // for
 				curNode = new OpApplNode(curOpArgNode.getOp(), opDefArgArray, sel.selSTN, // TreeNode
@@ -1940,7 +1940,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		while (temp > 0) {
 			// Modified on 13 Nov 2009 by LL to handle the case of a subexpression
 			// of a Theorem or Assumption.
-			Object substOb = substInPrefix.elementAt(temp - 1);
+			Object substOb = substInPrefix.get(temp - 1);
 			if (substOb instanceof SubstInNode) {
 				SubstInNode subst = (SubstInNode) substOb;
 				curExprNode = new SubstInNode(subst, curExprNode, errors);
@@ -1957,7 +1957,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		FormalParamNode[] paramsArray = new FormalParamNode[params.size()];
 		for (int i = 0; i < params.size(); i++) {
-			paramsArray[i] = params.elementAt(i);
+			paramsArray[i] = params.get(i);
 		}
 		;
 
@@ -2030,7 +2030,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		ExprOrOpArgNode[] allArgsArray = new ExprOrOpArgNode[allArgs.size()];
 		for (int i = 0; i < allArgs.size(); i++) {
-			allArgsArray[i] = allArgs.elementAt(i);
+			allArgsArray[i] = allArgs.get(i);
 		}
 		;
 
@@ -2197,7 +2197,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * the current module. *
 				 *******************************************************************/
 				for (int i = 0; i < mn.opDefsInRecursiveSection.size(); i++) {
-					currentModule.opDefsInRecursiveSection.addElement(mn.opDefsInRecursiveSection.elementAt(i));
+					currentModule.opDefsInRecursiveSection.add(mn.opDefsInRecursiveSection.get(i));
 				}
 				;
 				// System.err.println(mn.getName() + " added to SymbolTable for " +
@@ -2275,7 +2275,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	// the ModuleNode to support a getExtends() method that might reasonably
 	// be in the API.
 	private final void processExtendsList(TreeNode treeNodes[], ModuleNode cm) throws AbortException {
-		final Vector<ModuleNode> extendeeVector = new Vector<>(2);
+		final ArrayList<ModuleNode> extendeeVector = new ArrayList<>(2);
 
 		if (treeNodes != null) {
 			// module names in the EXTENDS list are separated by commas; hence incr by 2
@@ -2297,7 +2297,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 				}
 
-				extendeeVector.addElement(extendee);
+				extendeeVector.add(extendee);
 
 				Context context = this.getContext(extendeeID);
 				if (context != null) {
@@ -2430,7 +2430,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * It creates an OpDef node and puts it * in ModuleNode cm's set of definitions.
 	 * *
 	 ************************************************************************/
-	final OpDefNode processOperator(TreeNode treeNode, Vector<SemanticNode> defs, ModuleNode cm) throws AbortException {
+	final OpDefNode processOperator(TreeNode treeNode, ArrayList<SemanticNode> defs, ModuleNode cm) throws AbortException {
 		TreeNode syntaxTreeNode = treeNode;
 		UniqueString name = null;
 		int arity = 0;
@@ -2633,7 +2633,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// defs is non-null iff this definition is in the Let part of a
 		// Let-In expression
 		if (defs != null)
-			defs.addElement((OpDefNode)symbolNode);
+			defs.add((OpDefNode)symbolNode);
 
 		return (OpDefNode)symbolNode;
 	} // processOperator
@@ -2694,7 +2694,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	}
 
 	// Process a function definition
-	private final void processFunction(TreeNode treeNode, final Vector<SemanticNode> defs, ModuleNode cm) throws AbortException {
+	private final void processFunction(TreeNode treeNode, final ArrayList<SemanticNode> defs, ModuleNode cm) throws AbortException {
 		TreeNode syntaxTreeNode = treeNode;
 		boolean local = syntaxTreeNode.zero() != null;
 		TreeNode[] ss = syntaxTreeNode.one();
@@ -2821,7 +2821,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// part of a Let-In expression. If so, then we have to accumulate
 			// these defs in a vector.
 			if (defs != null)
-				defs.addElement(odn);
+				defs.add(odn);
 
 			// Function body must be processed in the scope of the new
 			// context, including the parms
@@ -2883,8 +2883,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 	private final ExprNode processLetIn(TreeNode treeNode, TreeNode[] children, ModuleNode cm) throws AbortException {
 		TreeNode[] syntaxTreeNode = children[1].heirs(); // extract LetDefinitions
-		final Vector<SemanticNode> defVec = new Vector<>(4);
-		final Vector<InstanceNode> instVec = new Vector<>(1);
+		final ArrayList<SemanticNode> defVec = new ArrayList<>(4);
+		final ArrayList<InstanceNode> instVec = new ArrayList<>(1);
 
 		Context letCtxt = new Context(moduleTable);
 		symbolTable.pushContext(letCtxt);
@@ -2962,12 +2962,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		SymbolNode[] opDefs = new SymbolNode[defVec.size()];
 		for (int i = 0; i < opDefs.length; i++) {
-			opDefs[i] = (SymbolNode)defVec.elementAt(i);
+			opDefs[i] = (SymbolNode)defVec.get(i);
 		}
 
 		InstanceNode[] insts = new InstanceNode[instVec.size()];
 		for (int i = 0; i < insts.length; i++) {
-			insts[i] = instVec.elementAt(i);
+			insts[i] = instVec.get(i);
 		}
 		LetInNode letIn = new LetInNode(treeNode, opDefs, insts, body, letCtxt);
 		symbolTable.popContext();
@@ -4625,12 +4625,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Concatenate the list of args in the GenID object to the
 		// primary arg list just created
-		final Vector<ExprOrOpArgNode> genIDArgList = genID.getArgsVector();
+		final ArrayList<ExprOrOpArgNode> genIDArgList = genID.getArgsVector();
 		ExprOrOpArgNode[] finalArgList = new ExprOrOpArgNode[genIDArgList.size() + iarg];
 
 		// Copy the args from the prefix
 		for (int i = 0; i < genIDArgList.size(); i++) {
-			finalArgList[i] = genIDArgList.elementAt(i);
+			finalArgList[i] = genIDArgList.get(i);
 		}
 		// Copy the primary args
 		for (int i = 0, j = genIDArgList.size(); i < iarg; i++, j++) {
@@ -4649,13 +4649,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	/*************************************************************************
 	 * Note: the returned value does not seem to be used. *
 	 *************************************************************************/
-	private final OpDefNode processModuleDefinition(TreeNode treeNode, final Vector<SemanticNode> defs,
+	private final OpDefNode processModuleDefinition(TreeNode treeNode, final ArrayList<SemanticNode> defs,
 			/*******************************************************
 			 * This is non-null when called from inside a LET, in * which case the OpDef
 			 * node is appended to defs. If * null, the OpDef node is appended to the *
 			 * module-level lists of such nodes. *
 			 *******************************************************/
-			final Vector<InstanceNode> insts,
+			final ArrayList<InstanceNode> insts,
 			/*******************************************************
 			 * If non-null, then a vector of InstanceNode objects * to which the current
 			 * instance node is to be * appended. If null, cm.appendInstance is called to *
@@ -4771,13 +4771,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		/***********************************************************************
 		 * I have no idea why the module's getOpDefs method isn't used here. *
 		 ***********************************************************************/
-		final Vector<OpDefNode> elts = instanceeCtxt.getByClass(OpDefNode.class);
+		final ArrayList<OpDefNode> elts = instanceeCtxt.getByClass(OpDefNode.class);
 
 		// For each definition in the instancee module, create a
 		// corresponding definition in the instancer module
 		for (int i = 0; i < elts.size(); i++) {
 			// Find the OpDefNode to be instantiated
-			OpDefNode odn = elts.elementAt(i);
+			OpDefNode odn = elts.get(i);
 
 			/**********************************************************************
 			 * Ignore it if it is local or a builtin def. *
@@ -4844,7 +4844,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (defs == null) {
 					cm.appendDef(newOdn);
 				} else {
-					defs.addElement(newOdn);
+					defs.add(newOdn);
 				}
 			} // if (!odn.isLocal()&& ... )
 		} // for
@@ -4856,13 +4856,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 **********************************************************************/
 		// Create a vector of all of the ThmOrAssumpDefNodes in the
 		// instancee module
-		final Vector<ThmOrAssumpDefNode> taelts = instanceeCtxt.getByClass(ThmOrAssumpDefNode.class);
+		final ArrayList<ThmOrAssumpDefNode> taelts = instanceeCtxt.getByClass(ThmOrAssumpDefNode.class);
 
 		// For each definition in the instancee module, create a
 		// corresponding definition in the instancer module
 		for (int i = 0; i < taelts.size(); i++) {
 			// Find the ThmOrAssumpDefNode to be instantiated
-			ThmOrAssumpDefNode taOdn = taelts.elementAt(i);
+			ThmOrAssumpDefNode taOdn = taelts.get(i);
 
 			/*********************************************************************
 			 * There are no builtin ThmOrAssumpDefNode objects. *
@@ -4933,7 +4933,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (defs == null) {
 					cm.appendDef(newtaOdn);
 				} else {
-					defs.addElement(newtaOdn);
+					defs.add(newtaOdn);
 				}
 			} // if (!taOdn.isLocal()&& ... )
 		} // for
@@ -4947,7 +4947,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (insts == null) {
 			cm.appendInstance(inst);
 		} else {
-			insts.addElement(inst);
+			insts.add(inst);
 		}
 
 		// Create new OpDefNode with ModuleInstanceKind. The reason for
@@ -5147,7 +5147,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// in the context of the module being instantiated (instancee).
 		// These are all the symbols that must have substitutions defined
 		// for them in the instantiation, either explicitly or implicitly.
-		final Vector<OpDeclNode> decls = instanceeCtxt.getByClass(OpDeclNode.class);
+		final ArrayList<OpDeclNode> decls = instanceeCtxt.getByClass(OpDeclNode.class);
 
 		// Create a SubstInNode to be used as a template for the SubstInNodes
 		// in the body of every newly instantiated OpDef in the module.
@@ -5298,7 +5298,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Create a vector of all of the OpDefNodes in the module being
 		// instantiated
-		final Vector<OpDefNode> defs = instanceeCtxt.getByClass(OpDefNode.class);
+		final ArrayList<OpDefNode> defs = instanceeCtxt.getByClass(OpDefNode.class);
 
 		OpDefNode odn; // OpDefNode in module being instantiated (instancee)
 		OpDefNode newOdn; // Its counterpart current module (instancer)
@@ -5307,7 +5307,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Duplicate the OpDef records from the module being INSTANCE'd
 		for (int i = 0; i < defs.size(); i++) {
-			odn = defs.elementAt(i);
+			odn = defs.get(i);
 			// OpDefNode in module being instantiated (instancee)
 
 			// Do not instantiate built-in or local operators, or those
@@ -5404,7 +5404,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * code for doing this was copied and modified without * thinking from the code
 		 * above for OpDefNode objects *
 		 **********************************************************************/
-		final Vector<ThmOrAssumpDefNode> tadefs = instanceeCtxt.getByClass(ThmOrAssumpDefNode.class);
+		final ArrayList<ThmOrAssumpDefNode> tadefs = instanceeCtxt.getByClass(ThmOrAssumpDefNode.class);
 
 		ThmOrAssumpDefNode tadn;
 		// ThmOrAssumpDefNode in module being instantiated (instancee)
@@ -5415,7 +5415,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		// Duplicate the OpDef records from the module being INSTANCE'd
 		for (int i = 0; i < tadefs.size(); i++) {
-			tadn = tadefs.elementAt(i);
+			tadn = tadefs.get(i);
 			// ThmOrAssumpDefNode in module being instantiated (instancee)
 
 			// Following statement added by LL on 30 Oct 2012 to handle locally
@@ -5687,7 +5687,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 		;
 		LevelNode[] steps = new LevelNode[heirs.length - offset];
-		final Vector<InstanceNode> iVec = new Vector<>();
+		final ArrayList<InstanceNode> iVec = new ArrayList<>();
 		/*********************************************************************
 		 * A vector to hold the InstanceNodes generated by steps of the form * Id ==
 		 * INSTANCE ... so they can be level checked. *
@@ -5860,7 +5860,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				for (int j = defOffSet; j < defSTNs.length; j++) {
 					TreeNode defSTN = defSTNs[j];
 					;
-					final Vector<SemanticNode> vec = new Vector<>();
+					final ArrayList<SemanticNode> vec = new ArrayList<>();
 					switch (defSTN.getKind()) {
 					/***************************************************************
 					 * Need to check if it's an operator, function, or module * definition. *
@@ -5876,8 +5876,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * processModuleDefinition would add these definitions to to * the module's list
 						 * of top-level definitions.) *
 						 *************************************************************/
-						final Vector<SemanticNode> defsVec = new Vector<>();
-						vec.addElement(processModuleDefinition(defSTN, defsVec, iVec, cm));
+						final ArrayList<SemanticNode> defsVec = new ArrayList<>();
+						vec.add(processModuleDefinition(defSTN, defsVec, iVec, cm));
 						break;
 					case N_OperatorDefinition:
 					  cm.appendDef(processOperator(defSTN, vec, cm));
@@ -5889,7 +5889,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						break;
 					}
 					; // switch (def.getKind())
-					defs[j - defOffSet] = (OpDefNode)vec.elementAt(0);
+					defs[j - defOffSet] = (OpDefNode)vec.get(0);
 				}
 				; // for j
 				pfNumNode = new DefStepNode(stepBodySTN, stepNum, defs);
@@ -6340,7 +6340,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		; // for i
 		InstanceNode[] insts = new InstanceNode[iVec.size()];
 		for (int i = 0; i < insts.length; i++) {
-			insts[i] = iVec.elementAt(i);
+			insts[i] = iVec.get(i);
 		}
 		;
 
@@ -6451,7 +6451,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			errors.addError(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Empty BY, USE, or HIDE");
 			return new UseOrHideNode(kind, stn, new LevelNode[0], new SymbolNode[0], isOnly);
 		}
-		Vector<LevelNode> vec = new Vector<>();
+		ArrayList<LevelNode> vec = new ArrayList<>();
 		/*********************************************************************
 		 * To hold the facts and then the defs. *
 		 *********************************************************************/
@@ -6481,7 +6481,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				}
 				;
 				if (moduleNode != null) {
-					vec.addElement(moduleNode);
+					vec.add(moduleNode);
 				} else {
 					// BY MODULE Naturals syntax is likely to be removed:
 					// https://github.com/tlaplus/rfcs/issues/18
@@ -6501,12 +6501,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * Here, we are using the fact that a theorem name must be a * GeneralId and not
 					 * something like an N_GenInfixOp. *
 					 *****************************************************************/
-					vec.addElement(
+					vec.add(
 							selectorToNode(genIdToSelector((SyntaxTreeNode) heirs[nextTok]), 0, true, false, cm));
 				} else if (heirs[nextTok].getKind() == N_AssumeProve) {
-					vec.addElement(generateAssumeProve(heirs[nextTok], cm));
+					vec.add(generateAssumeProve(heirs[nextTok], cm));
 				} else {
-					vec.addElement(generateExpression(heirs[nextTok], cm));
+					vec.add(generateExpression(heirs[nextTok], cm));
 				} // else
 			} // else
 			nextTok++;
@@ -6518,7 +6518,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		; // while
 		LevelNode[] facts = new LevelNode[vec.size()];
 		for (int i = 0; i < vec.size(); i++) {
-			facts[i] = vec.elementAt(i);
+			facts[i] = vec.get(i);
 		}
 		;
 
@@ -6529,7 +6529,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (nextTok >= heirs.length) {
 			defs = new SymbolNode[0];
 		} else {
-			vec = new Vector<LevelNode>();
+			vec = new ArrayList<LevelNode>();
 			nextTok++;
 			while (nextTok < heirs.length) {
 				if (heirs[nextTok].getKind() == TLAplusParserConstants.MODULE) {
@@ -6547,7 +6547,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					;
 					if (moduleNode != null) {
-						vec.addElement(moduleNode);
+						vec.add(moduleNode);
 					} else {
 						// BY DEF MODULE Naturals syntax is likely to be removed:
 						// https://github.com/tlaplus/rfcs/issues/18
@@ -6569,7 +6569,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 																										// DEF clause.
 							(((ThmOrAssumpDefNode) selToNd).getName().toString().charAt(0) != '<'))) {
 						SymbolNode def = (SymbolNode) selToNd;
-						vec.addElement(def);
+						vec.add(def);
 					} else {
 						/***************************************************************
 						 * This error is redundant, because it should have been caught * in
@@ -6590,7 +6590,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			; // while
 			defs = new SymbolNode[vec.size()];
 			for (int i = 0; i < vec.size(); i++) {
-				defs[i] = (SymbolNode) vec.elementAt(i);
+				defs[i] = (SymbolNode) vec.get(i);
 			}
 			;
 		} // else of if (nextTok >= heirs.length)
@@ -6651,7 +6651,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * that some operator * has been declared but not defined (by finding
 			 * unresolvedCnt > * 0 when coming to the end of a LET or of the module). *
 			 ******************************************************************/
-			cm.recursiveOpDefNodes.addElement(node);
+			cm.recursiveOpDefNodes.add(node);
 
 		} // for (int i = 1 ...)
 	}
@@ -6827,19 +6827,19 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	} // generateLabel
 
 	/***********************************************************************
-	 * LSlabels.elementAt(i) is a HashTable that represents * LS.labels[i+1]. The
+	 * LSlabels.get(i) is a HashTable that represents * LS.labels[i+1]. The
 	 * values in the Hashtable are LabelNode objects, * where ln.getName() is the
 	 * key of object ln. The empty set is * represented by null. *
 	 ***********************************************************************/
-	final Vector<Hashtable<UniqueString, LabelNode>> LSlabels = new Vector<>();
+	final ArrayList<Hashtable<UniqueString, LabelNode>> LSlabels = new ArrayList<>();
 
-	final Vector<Vector<FormalParamNode[]>> LSparamSeq = new Vector<>();
+	final ArrayList<ArrayList<FormalParamNode[]>> LSparamSeq = new ArrayList<>();
 
 	/***********************************************************************
-	 * LsparamSeq.elementAt(i) is a Vector whose elements are of type *
+	 * LsparamSeq.get(i) is a Vector whose elements are of type *
 	 * FormalParamNode[] that represents LS.paramSeq[i+1]. In particular *
 	 * LS.paramSeq[i+1][j+1] equals * LET foo == (FormalParamNode[]) * ((Vector)
-	 * LsparamSeq.elementAt(i))).elementAt(j) * IN { (FormalParamNode) foo[j] : j
+	 * LsparamSeq.get(i))).get(j) * IN { (FormalParamNode) foo[j] : j
 	 * \in 0 .. foo.length} *
 	 ***********************************************************************/
 
@@ -6848,8 +6848,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * Implements LS' = Append(LS, [labels |-> {}, paramSeq |-> << >>]) * That is,
 		 * it pushes an "empty" record onto the end of LS. *
 		 ***********************************************************************/
-		LSlabels.addElement(null);
-		LSparamSeq.addElement(new Vector<>());
+		LSlabels.add(null);
+		LSparamSeq.add(new ArrayList<>());
 	}
 
 	Hashtable<UniqueString, LabelNode> popLabelNodeSet() {
@@ -6861,9 +6861,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			throw new WrongInvocationException("popLabelNodeSet called on empty stack.");
 		}
 		;
-		final Hashtable<UniqueString, LabelNode> retVal = LSlabels.elementAt(size - 1);
-		LSlabels.removeElementAt(size - 1);
-		LSparamSeq.removeElementAt(size - 1);
+		final Hashtable<UniqueString, LabelNode> retVal = LSlabels.get(size - 1);
+		LSlabels.remove(size - 1);
+		LSparamSeq.remove(size - 1);
 		return retVal;
 	}
 
@@ -6880,10 +6880,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			throw new WrongInvocationException("addLabelNodeToSet called on empty stack.");
 		}
 		;
-		Hashtable<UniqueString, LabelNode> ht = LSlabels.elementAt(size - 1);
+		Hashtable<UniqueString, LabelNode> ht = LSlabels.get(size - 1);
 		if (ht == null) {
 			ht = new Hashtable<>();
-			LSlabels.setElementAt(ht, size - 1);
+			LSlabels.set(size - 1, ht);
 		}
 		boolean retVal = !ht.containsKey(ln.getName());
 		if (retVal) {
@@ -6904,8 +6904,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return;
 		}
 		;
-		final Vector<FormalParamNode[]> lastFormalParams = LSparamSeq.elementAt(LSparamSeq.size() - 1);
-		lastFormalParams.addElement(odns);
+		final ArrayList<FormalParamNode[]> lastFormalParams = LSparamSeq.get(LSparamSeq.size() - 1);
+		lastFormalParams.add(odns);
 	}
 
 	void popFormalParams() {
@@ -6918,13 +6918,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return;
 		}
 		;
-		final Vector<FormalParamNode[]> lastFormalParams = LSparamSeq.elementAt(LSparamSeq.size() - 1);
+		final ArrayList<FormalParamNode[]> lastFormalParams = LSparamSeq.get(LSparamSeq.size() - 1);
 		int size = lastFormalParams.size();
 		if (size == 0) {
 			throw new WrongInvocationException("popFormalParams called on empty stack.");
 		}
 		;
-		lastFormalParams.removeElementAt(size - 1);
+		lastFormalParams.remove(size - 1);
 	}
 
 	boolean formalParamsEqual(LabelNode ln) {
@@ -6949,10 +6949,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			}
 			;
 		} // for ;
-		final Vector<FormalParamNode[]> lastFormalParams = LSparamSeq.elementAt(LSparamSeq.size() - 1);
+		final ArrayList<FormalParamNode[]> lastFormalParams = LSparamSeq.get(LSparamSeq.size() - 1);
 		int size = lastFormalParams.size();
 		for (int i = 0; i < size; i++) {
-			FormalParamNode[] ops = lastFormalParams.elementAt(i);
+			FormalParamNode[] ops = lastFormalParams.get(i);
 			for (int j = 0; j < ops.length; j++) {
 				if (!opParams.remove(ops[j])) {
 					retVal = false;
@@ -7105,7 +7105,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	 * A vector of OpDefNode objects, representing the stack of the Tarjan *
 	 * algorithm. *
 	 ***********************************************************************/
-	final Vector<OpDefNode> nstack = new Vector<>(10);
+	final ArrayList<OpDefNode> nstack = new ArrayList<>(10);
 
 	int moduleNestingLevel = -1;
 
@@ -7133,13 +7133,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 //    unresolvedCnt[curLevel] ++ ;
 //    unresolvedSum = unresolvedSum ++ ;
 
-		oModNode.recursiveDecls.addElement(odn);
+		oModNode.recursiveDecls.add(odn);
 
 		odn.letInLevel = curLevel;
 		odn.inRecursive = true;
 		odn.inRecursiveSection = true;
 		odn.recursiveSection = recursiveSectionCount;
-		oModNode.opDefsInRecursiveSection.addElement(odn);
+		oModNode.opDefsInRecursiveSection.add(odn);
 
 // the participating and nbrs field have been removed from OpDefNode objects
 //    odn.participating      = true ;
@@ -7185,7 +7185,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 //      if (unresolvedSum == 0) {
 //        tarjan() ; 
 //        for (int i = 0 ; i < participants.size(); i++) {        
-//          ((OpDefNode) participants.elementAt(i)).participating = false ;
+//          ((OpDefNode) participants.get(i)).participating = false ;
 //         } ; // for
 //        participants = new Vector(100) ;
 //       } // if (unresolvedSum == 0)
@@ -7210,7 +7210,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 //        OpDefNode odn = (OpDefNode) nd ;
 //        if (odn.participating) {
 //          for (int i = 0 ; i < defStackLen ; i++) {
-//            defStack[i].nbrs.addElement(odn) ;
+//            defStack[i].nbrs.add(odn) ;
 //           } ;
 //         } ; // if
 //     } ; // if
@@ -7246,7 +7246,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (unresolvedSum > 0) {
 			odn.recursiveSection = recursiveSectionCount;
 			odn.inRecursiveSection = (unresolvedCnt[curLevel] > 0);
-			cm.opDefsInRecursiveSection.addElement(odn);
+			cm.opDefsInRecursiveSection.add(odn);
 		}
 
 	}
@@ -7281,7 +7281,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * at the current LET/IN level but not defined. *
 			 *********************************************************************/
 			for (int i = 0; i < cm.recursiveDecls.size(); i++) {
-				OpDefNode odn = cm.recursiveDecls.elementAt(i);
+				OpDefNode odn = cm.recursiveDecls.get(i);
 				if ((odn.letInLevel == curLevel) && odn.inRecursive && (!odn.isDefined)) {
 					errors.addError(ErrorCode.RECURSIVE_OPERATOR_DECLARED_BUT_NOT_DEFINED,
 							odn.getTreeNode().getLocation(),
