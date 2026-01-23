@@ -88,7 +88,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		// Check constant context of ASSUME.
 		TLCStackFrame stackFrame = (TLCStackFrame) stackFrames[1];
 		Variable[] constants = stackFrame.getConstants();
-		assertEquals(2, constants.length);
+		assertEquals(3, constants.length);
 		
 		// Check Watch expressions
 		assertEquals(new EvaluateResponse(), stackFrame.evaluate((String) null));

@@ -25,7 +25,6 @@
  ******************************************************************************/
 package tlc2.debug;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -153,11 +152,12 @@ public class Debug02Test extends TLCDebuggerTestCase {
 		// Assert that constants of a single module spec (a spec without instantiation
 		// and variables declared only in one module) gets flattened in the variable view.
 		final TLCActionStackFrame f = (TLCActionStackFrame) debugger.stack.peek();
-		final Variable[] variables = f.getVariables(f.getConstantsId());
-		assertEquals(1, variables.length);
+		Variable[] variables = f.getVariables(f.getConstantsId());
+		assertEquals(2, variables.length);
+		assertEquals("Debug02", variables[0].getName());
+		variables = f.getVariables(variables[0].getVariablesReference());
 		assertEquals("val", variables[0].getName());
 		assertEquals("42", variables[0].getValue());
-		assertArrayEquals(variables, f.getConstants());
 
 		debugger.setSpecBreakpoint();
 		StackFrame[] stepIn = debugger.continue_();
