@@ -611,10 +611,15 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	private boolean doNextSetErr(TLCState curState, TLCState succState, boolean keep, int ec, String param) throws IOException, WorkerException {
 		synchronized (this.tlc) {
+			final boolean wasAlreadyDone = this.tlc.done;
 			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, keep, ec, param);
 
-			// Invoke PostCondition
-			doPostCondition(curState, succState);
+			// Invoke PostCondition only if we were the first worker to report an error.
+			// This ensures that only one counterexample is serialized with -dumpTrace,
+			// matching the counterexample printed to stdout.
+			if (!wasAlreadyDone) {
+				doPostCondition(curState, succState);
+			}
 			
 			return doNextSetErr;
 		}
@@ -622,10 +627,15 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 	
 	private boolean doNextSetErr(TLCState curState, TLCState succState, Action action) throws IOException, WorkerException {
 		synchronized (this.tlc) {
+			final boolean wasAlreadyDone = this.tlc.done;
 			final boolean doNextSetErr = this.tlc.doNextSetErr(curState, succState, action);
 
-			// Invoke PostCondition
-			doPostCondition(curState, succState);
+			// Invoke PostCondition only if we were the first worker to report an error.
+			// This ensures that only one counterexample is serialized with -dumpTrace,
+			// matching the counterexample printed to stdout.
+			if (!wasAlreadyDone) {
+				doPostCondition(curState, succState);
+			}
 
 			return doNextSetErr;
 		}
