@@ -11,4 +11,12 @@ _JsonTrace ==
         /\ JsonSerialize(_JsonTraceFile, CounterExample)
         /\ PrintT("CounterExample written: " \o _JsonTraceFile)
 
+----------------------------------------------------------------------------
+\* Deserialize a trace created by _JsonTrace above.
+
+LOCAL _JsonTraceConstraint ==
+    LET level == TLCGet("level")
+        dump  == JsonDeserialize(_JsonTraceFile)
+    IN level \in DOMAIN dump.state => Trace[level] = dump.state[level][2]
+
 =============================================================================

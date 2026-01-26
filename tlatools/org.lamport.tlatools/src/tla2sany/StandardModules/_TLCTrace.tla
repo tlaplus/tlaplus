@@ -3,8 +3,16 @@ LOCAL INSTANCE TLC
 LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Sequences
 
+\* This operator has a Java module override (tlc2.module._TLCTrace#ioDeserialize).
+LOCAL _TLCTraceDeserialize(absoluteFilename) ==
+    TRUE
+
+\* This operator has a Java module override (tlc2.module._TLCTrace#ioSerialize).
 LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
     TRUE
+
+----------------------------------------------------------------------------
+\* Serialize a trace to a file.
 
 CONSTANT _TLCTraceFile
 
@@ -18,5 +26,23 @@ LOCAL _TLCTraceSilent ==
 
 _TLCTrace ==
     _TLCTrace0(TRUE)
+
+----------------------------------------------------------------------------
+\* Deserialize a trace created by _TLCTrace above.
+
+LOCAL _TLCTraceFileDeserialized ==
+    _TLCTraceDeserialize(_TLCTraceFile)
+
+LOCAL _TLCTraceConstraint ==
+    LET level == TLCGet("level")
+        dump  == _TLCTraceFileDeserialized
+	\* For liveness properties, TLC trace dumps stop at the state *before* the
+	\* lasso is closed. When replaying such a trace, TLC may request a state with
+	\*   level = Len(dump) + 1,
+	\* which does not exist in the dump. In that case, the constraint
+	\* is intentionally vacuously satisfied.
+	\* Since the names of the spec’s variables are not known, Trace[level] is
+	\* used as a generic reference to the variables of the current state.
+    IN level \in DOMAIN dump => Trace[level] = dump[level]
 
 =============================================================================
