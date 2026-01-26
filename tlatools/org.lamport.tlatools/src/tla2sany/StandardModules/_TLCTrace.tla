@@ -8,13 +8,15 @@ LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
 
 CONSTANT _TLCTraceFile
 
-LOCAL _TLCTraceSilent ==
+LOCAL _TLCTrace0(verbose) ==
     IF CounterExample.state = {} THEN TRUE ELSE
         /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
+        /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceFile) ELSE TRUE
+
+LOCAL _TLCTraceSilent ==
+    _TLCTrace0(FALSE)
 
 _TLCTrace ==
-    IF CounterExample.state = {} THEN TRUE ELSE
-        /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
-        /\ PrintT("CounterExample written: " \o _TLCTraceFile)
+    _TLCTrace0(TRUE)
 
 =============================================================================
