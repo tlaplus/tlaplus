@@ -9,7 +9,7 @@ LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
 CONSTANT _TLCTraceFile
 
 LOCAL _TLCTrace0(verbose) ==
-    IF CounterExample.state = {} THEN TRUE ELSE
+    IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
         /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceFile) ELSE TRUE
 

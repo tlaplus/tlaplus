@@ -7,7 +7,7 @@ LOCAL INSTANCE Sequences
 CONSTANT _JsonTraceFile
 
 _JsonTrace ==
-    IF CounterExample.state = {} THEN TRUE ELSE
+    IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ JsonSerialize(_JsonTraceFile, CounterExample)
         /\ PrintT("CounterExample written: " \o _JsonTraceFile)
 
