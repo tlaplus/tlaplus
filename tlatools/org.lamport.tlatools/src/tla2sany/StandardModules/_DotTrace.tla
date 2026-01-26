@@ -9,7 +9,7 @@ LOCAL INSTANCE Functions
 CONSTANT _DotTraceFile
 
 _DotTrace ==
-    IF CounterExample.state = {} THEN TRUE ELSE
+    IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ LET N == CounterExample.state
                E == { <<e[1], e[3], e[2]>> : e \in CounterExample.action }
                G == [node |-> N, edge |-> E] IN

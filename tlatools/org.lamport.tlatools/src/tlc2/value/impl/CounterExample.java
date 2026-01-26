@@ -39,28 +39,38 @@ public class CounterExample extends RecordValue {
 
 	private static final UniqueString STATES = UniqueString.of("state");
 	private static final UniqueString ACTIONS = UniqueString.of("action");
+	private static final UniqueString CONSOLE = UniqueString.of("console");
 
 	public CounterExample() {
-		this(new ArrayList<>(0), Action.UNKNOWN, 0);
+		this(new ArrayList<>(0), Action.UNKNOWN, 0, true);
 	}
 
 	public CounterExample(final List<TLCStateInfo> trace) {
-		this(trace, Action.UNKNOWN, 0);
+		this(trace, Action.UNKNOWN, 0, true);
+	}
+
+	public CounterExample(final List<TLCStateInfo> trace, boolean isConsole) {
+		this(trace, Action.UNKNOWN, 0, isConsole);
 	}
 
 	public CounterExample(final List<TLCStateInfo> trace, final int loopOrdinal) {
-		this(trace, Action.UNKNOWN, loopOrdinal);
+		this(trace, Action.UNKNOWN, loopOrdinal, true);
 	}
-
+	
+	public CounterExample(final List<TLCStateInfo> trace, final Action action, final int loopOrdinal) {
+		this(trace, action, loopOrdinal, true);
+	}
+		
 	// CounterExample has been modeled as a graph to represent counterexamples
 	// of safety *and* liveness violations. Also, this representation is
 	// suitable once the code is extended to handle TLC's "-continue" parameter,
 	// when there can be many counterexamples.
 	// TODO Include name of definition of the violated property.
-	public CounterExample(final List<TLCStateInfo> trace, final Action action, final int loopOrdinal) {
-		super(new UniqueString[] { ACTIONS, STATES }, new Value[2], false);
+	public CounterExample(final List<TLCStateInfo> trace, final Action action, final int loopOrdinal, final boolean isConsole) {
+		super(isConsole ? new UniqueString[] { ACTIONS, STATES } : new UniqueString[] { ACTIONS, STATES, CONSOLE },
+				new Value[isConsole ? 2 : 3], false);
 
-		final int loopIdx = loopOrdinal - 1;
+ 		final int loopIdx = loopOrdinal - 1;
 		assert loopIdx < trace.size();
 
 		final LinkedList<Value> states = new LinkedList<>();
@@ -88,9 +98,12 @@ public class CounterExample extends RecordValue {
 
 		this.values[0] = new SetEnumValue(actions.toArray(Value[]::new), false);
 		this.values[1] = new SetEnumValue(states.toArray(Value[]::new), false);
+		if (!isConsole) {
+			this.values[2] = BoolValue.ValFalse;
+		}
 	}
 	public CounterExample(TLCState initialState) {
-		this(Arrays.asList(new TLCStateInfo[] { new TLCStateInfo(initialState) }), Action.UNKNOWN, 0);
+		this(Arrays.asList(new TLCStateInfo[] { new TLCStateInfo(initialState) }), Action.UNKNOWN, 0, true);
 	}
 
     public Value toTrace() {

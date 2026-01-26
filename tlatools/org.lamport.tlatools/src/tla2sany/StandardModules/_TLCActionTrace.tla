@@ -34,7 +34,7 @@ LOCAL _TLCTraceModule ==
     "\n===="
 
 _TLCTrace ==
-    IF CounterExample.action = {} THEN TRUE ELSE
+    IF CounterExample.action = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
     			_TLCTraceFile,
     			[

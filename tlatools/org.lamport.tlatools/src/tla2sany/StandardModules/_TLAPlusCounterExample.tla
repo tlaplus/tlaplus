@@ -16,7 +16,7 @@ LOCAL _TLAPlusCounterExampleModule ==
     "\n\n===="
 
 _TLAPlusCounterExample ==
-    IF CounterExample.state = {} THEN TRUE ELSE
+    IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ Serialize(_TLAPlusCounterExampleModule,
     			_TLAPlusCounterExampleFile,
     			[
