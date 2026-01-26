@@ -42,6 +42,7 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.DebugTool;
 import tlc2.tool.impl.FastTool;
 import tlc2.tool.impl.ParameterizedSpecObj;
+import tlc2.tool.impl.ParameterizedSpecObj.Constraint;
 import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.ParameterizedSpecObj.RuntimeInvariantTemplate;
@@ -259,6 +260,8 @@ public class TLC {
      *  o -dfid num: use depth-first iterative deepening with initial depth num
      *  o -cleanup: clean up the states directory
      *  o -dumpTrace format file: dump all counter-examples into file in the given format.
+     *  o -loadTrace format file: load a trace from file in the given format to use as a constraint
+     *      (not supported in simulation mode).
      *  o -dump [dot] file: dump all the states into file. If "dot" as sub-parameter
      *					is given, the output will be in dot notation.
      *  o -postCondition mod!op: Evaluate the operator op in module mod after state-space exploration.
@@ -650,6 +653,31 @@ public class TLC {
                     printErrorMsg("Error: A file name for dumping states required.");
                     return false;
                 }
+            } else if (args[index].equalsIgnoreCase("-loadTrace"))
+            {
+				index++; // consume "-loadTrace".
+				if ((index + 1) < args.length) {
+					final String fmt = args[index++];
+					if ("tlc".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<Constraint> computeIfAbsent = (List<Constraint>) params
+								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
+						computeIfAbsent.add(
+								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceFile", args[index++]));
+					} else if ("json".equalsIgnoreCase(fmt)) {
+						@SuppressWarnings("unchecked")
+						final List<Constraint> computeIfAbsent = (List<Constraint>) params
+								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
+						computeIfAbsent.add(
+								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceFile", args[index++]));
+					} else {
+						printErrorMsg("Error: Unknown format " + fmt + " given to -loadTrace.");
+						return false;
+					}
+				} else {
+					printErrorMsg("Error: A format and a file name for loading traces required.");
+					return false;
+				}
             } else if (args[index].equalsIgnoreCase("-dumpTrace"))
             {
 				index++; // consume "-dumpTrace".
@@ -1676,6 +1704,12 @@ public class TLC {
 														"control if gzip is applied to value input/output streams;\n"
 															+ "defaults to 'off'", true));
     	sharedArguments.add(new UsageGenerator.Argument("-h", "display these help instructions", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-loadTrace", "format file",
+														"load a trace from the specified file in the given format\n"
+    													+ "to use as a constraint. The file is relative to the same\n"
+														+ "directory as the main spec. At the time of writing, TLC\n"
+														+ "supports the \"tlc\" and the \"json\" formats.\n"
+														+ "Note: -loadTrace is not supported in simulation mode.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-maxSetSize", "num",
 														"the size of the largest set which TLC will enumerate; defaults\n"
 															+ "to 1000000 (10^6)", true));

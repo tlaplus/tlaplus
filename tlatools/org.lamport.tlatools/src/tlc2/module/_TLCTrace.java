@@ -30,9 +30,12 @@ import java.io.IOException;
 
 import tlc2.overrides.TLAPlusOperator;
 import tlc2.value.IValue;
+import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import util.UniqueString;
 
 public class _TLCTrace {
 
@@ -50,5 +53,27 @@ public class _TLCTrace {
 			vos.close();
 		}
 		return BoolValue.ValTrue;
+	}
+
+	@TLAPlusOperator(identifier = "_TLCTraceDeserialize", module = "_TLCTrace", warn = false)
+	public static final IValue ioDeserialize(final StringValue absolutePath) throws IOException {
+		final File file = new File(absolutePath.val.toString());
+		if (!file.exists()) {
+			// ioDeserialize is invoked during constant processing even when the user
+			// specifies -dumpTrace but not -loadTrace. In this case, we deliberately return
+			// a value that does not represent a valid trace file to signal that the file
+			// does not exist. The resulting empty record technically violates the assertion
+			// in _TLCTraceConstraint, and the corresponding error message would be
+			// misleading in this context. However, _TLCTraceConstraint won't be evaluated
+			// when the user passes -dumpTrace without -loadTrace, so this violation should
+			// never surface.
+			return RecordValue.EmptyRcd;
+		}
+		final ValueInputStream vis = new ValueInputStream(file, true);
+		try {
+			return vis.read(UniqueString.internTbl.toMap());
+		} finally {
+			vis.close();
+		}
 	}
 }
