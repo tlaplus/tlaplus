@@ -28,13 +28,20 @@ package tlc2.module;
 import java.io.File;
 import java.io.IOException;
 
+import tla2sany.semantic.ExprOrOpArgNode;
+import tlc2.overrides.Evaluation;
 import tlc2.overrides.TLAPlusOperator;
+import tlc2.tool.TLCState;
+import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.ValueInputStream;
 import tlc2.value.ValueOutputStream;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import tlc2.value.impl.Value;
 import util.UniqueString;
 
 public class _TLCTrace {
@@ -75,5 +82,16 @@ public class _TLCTrace {
 		} finally {
 			vis.close();
 		}
+	}
+
+	@Evaluation(definition = "_TLCState", module = "_TLCTrace", warn = false, silent = true, minLevel = 1)
+	public static Value tlcState(final Tool tool, final ExprOrOpArgNode[] args, final Context c,
+			final TLCState s0, final TLCState s1, final int control, final CostModel cm) {
+		// Overrides the TLA+ definition: _TLCState(level) == Trace[level]
+		// The use of TLCExt!Trace is inefficient because it internally reconstructs all
+		// states starting from the initial state. As a result, its cost grows linearly
+		// with the length of the trace. This override directly returns the state at the
+		// current level without reconstruction.
+		return new RecordValue(s0);
 	}
 }

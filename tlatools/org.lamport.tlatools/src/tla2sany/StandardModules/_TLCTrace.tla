@@ -33,6 +33,10 @@ _TLCTrace ==
 LOCAL _TLCTraceFileDeserialized ==
     _TLCTraceDeserialize(_TLCTraceFile)
 
+\* This operator has a Java module override (tlc2.module._TLCTrace#tlcState).
+LOCAL _TLCState(level) ==
+	Trace[level]
+
 LOCAL _TLCTraceConstraint ==
     LET level == TLCGet("level")
         dump  == _TLCTraceFileDeserialized
@@ -43,6 +47,6 @@ LOCAL _TLCTraceConstraint ==
 	\* is intentionally vacuously satisfied.
 	\* Since the names of the spec’s variables are not known, Trace[level] is
 	\* used as a generic reference to the variables of the current state.
-    IN level \in DOMAIN dump => Trace[level] = dump[level]
+    IN level \in DOMAIN dump => _TLCState(level) = dump[level]
 
 =============================================================================
