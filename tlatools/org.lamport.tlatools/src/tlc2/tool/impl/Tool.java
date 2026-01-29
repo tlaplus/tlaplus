@@ -780,6 +780,40 @@ public abstract class Tool
             this.getInitStates(acts, ps, states, cm);
             return;
           }
+        case OPCODE_subseteq: // x' \subseteq S; code largely adapted from OPCODE_in
+          {
+            SymbolNode var = this.getVar(args[0], c, false, toolId);
+            if (var == null || var.getName().getVarLoc() < 0) {
+              Value bval = this.eval(init, c, ps, TLCState.Empty, EvalControl.Init, cm);
+              if (!((BoolValue)bval).val) {
+                return;
+              }
+            }
+            else {
+              UniqueString varName = var.getName();
+              Value lval = (Value) ps.lookup(varName);
+              Value rset = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+              SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
+              rval = (SubsetValue)setSource(args[1], rval);
+              if (lval == null) {
+                ValueEnumeration Enum = rval.elements();
+                Value elem;
+                while ((elem = Enum.nextElement()) != null) {
+                  ps.bind(varName, elem);
+                  this.getInitStates(acts, ps, states, cm);
+                  ps.unbind(varName);
+                }
+                return;
+              }
+              else {
+                if (!rval.member(lval)) {
+                  return;
+                }
+              }
+            }
+            this.getInitStates(acts, ps, states, cm);
+            return;
+          }
         case OPCODE_in:
           {
             SymbolNode var = this.getVar(args[0], c, false, toolId);
@@ -1336,6 +1370,49 @@ public abstract class Tool
 	        return resState;
 	      }
 	      else if (!lval.equals(rval)) {
+	        return resState;
+	      }
+	    }
+	    return this.getNextStates(action, acts, s0, s1, nss, cm);
+	  }
+	case OPCODE_subseteq: // x' \subseteq S; code largely adapted from OPCODE_in
+	  {
+	    SymbolNode var = this.getPrimedVar(args[0], c, false);
+	    if (var == null) {
+	      Value bval = this.eval(pred, c, s0, s1, EvalControl.Clear, cm);
+	      if (!((BoolValue)bval).val) {
+	        return resState;
+	      }
+	    }
+	    else {
+	      UniqueString varName = var.getName();
+	      Value lval = (Value) s1.lookup(varName);
+	      Value rset = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	      SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
+	      if (lval == null) {
+	        if (PROBABILISTIC) {
+	          final ValueEnumeration Enum = rval.elements(Ordering.RANDOMIZED);
+	          Value elem;
+	          while ((elem = Enum.nextElement()) != null) {
+	            resState.bind(varName, elem);
+	            resState = this.getNextStates(action, acts, s0, resState, nss, cm);
+	            resState.unbind(varName);
+	            if (nss.hasStates()) {
+	              return resState;
+	            }
+	          }
+	        }
+
+	        ValueEnumeration Enum = rval.elements();
+	        Value elem;
+	        while ((elem = Enum.nextElement()) != null) {
+	          resState.bind(varName, elem);
+	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
+	          resState.unbind(varName);
+	        }
+	        return resState;
+	      }
+	      else if (!rval.member(lval)) {
 	        return resState;
 	      }
 	    }
@@ -2388,7 +2465,7 @@ public abstract class Tool
             Value rhs = this.eval(args[1], c, s0, s1, control, cm);
             return setSource(expr, new SetOfFcnsValue(lhs, rhs, cm));
           }
-        case OPCODE_sso:    // SubsetOf
+        case OPCODE_sso:    // SubsetOf: {x \in S : P(x)}
           {
             SemanticNode pred = args[0];
             SemanticNode inExpr = expr.getBdedQuantBounds()[0];
@@ -2478,7 +2555,7 @@ public abstract class Tool
             }
             return (((BoolValue)arg).val) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
-        case OPCODE_subset:
+        case OPCODE_subset:  // SUBSET prefix operator (aka powerset)
           {
             Value arg = this.eval(args[0], c, s0, s1, control, cm);
 			return setSource(expr, new SubsetValue(arg, cm));
@@ -2579,7 +2656,7 @@ public abstract class Tool
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
             return arg1.equals(arg2) ? BoolValue.ValFalse : BoolValue.ValTrue;
           }
-        case OPCODE_subseteq:
+        case OPCODE_subseteq:   // P \subseteq Q
           {
             Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
@@ -2589,7 +2666,7 @@ public abstract class Tool
             }
             return ((Enumerable) arg1).isSubsetEq(arg2);
           }
-        case OPCODE_in:
+        case OPCODE_in:  // e \in S
           {
             Value arg1 = this.eval(args[0], c, s0, s1, control, cm);
             Value arg2 = this.eval(args[1], c, s0, s1, control, cm);
@@ -3323,6 +3400,43 @@ public abstract class Tool
           {
             Assert.fail("In computing ENABLED, TLC encountered a temporal formula" + " (a -+-> formula).\n" + pred, pred, c);
             return null; // make compiler happy
+          }
+        case OPCODE_subseteq: // x' \subseteq S; code largely adapted from OPCODE_in
+          {
+            SymbolNode var = this.getPrimedVar(args[0], c, true);
+            if (var == null)
+            {
+                Value bval = this.eval(pred, c, s0, s1, EvalControl.Enabled, cm);
+                if (!((BoolValue) bval).val) {
+                  return null;
+                }
+            } else
+            {
+              UniqueString varName = var.getName();
+              Value lval = (Value) s1.lookup(varName);
+              Value rset = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
+              SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
+              if (lval == null)
+              {
+                ValueEnumeration Enum = rval.elements();
+                Value val;
+                while ((val = Enum.nextElement()) != null)
+                {
+                  TLCState s2 = s1.bind(var, val);
+                  s2 = this.enabled(acts, s0, s2, cm);
+                  if (s2 != null) {
+                    return s2;
+                  }
+                }
+                return null;
+              } else
+              {
+                if (!rval.member(lval)) {
+                  return null;
+                }
+              }
+            }
+            return this.enabled(acts, s0, s1, cm);
           }
         case OPCODE_in:
           {
