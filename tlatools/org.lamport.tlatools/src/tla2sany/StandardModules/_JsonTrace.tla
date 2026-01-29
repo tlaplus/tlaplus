@@ -14,9 +14,13 @@ _JsonTrace ==
 ----------------------------------------------------------------------------
 \* Deserialize a trace created by _JsonTrace above.
 
+\* This operator has a Java module override (tlc2.module._JsonTrace#tlcState).
+LOCAL _TLCState(level) ==
+	Trace[level]
+
 LOCAL _JsonTraceConstraint ==
     LET level == TLCGet("level")
         dump  == JsonDeserialize(_JsonTraceFile)
-    IN level \in DOMAIN dump.state => Trace[level] = dump.state[level][2]
+    IN level \in DOMAIN dump.state => _TLCState(level) = dump.state[level][2]
 
 =============================================================================

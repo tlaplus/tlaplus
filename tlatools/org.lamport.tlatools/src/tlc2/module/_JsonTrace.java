@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -25,16 +25,25 @@
  ******************************************************************************/
 package tlc2.module;
 
-import tlc2.overrides.ITLCOverrides;
+import tla2sany.semantic.ExprOrOpArgNode;
+import tlc2.overrides.Evaluation;
+import tlc2.tool.TLCState;
+import tlc2.tool.coverage.CostModel;
+import tlc2.tool.impl.Tool;
+import tlc2.util.Context;
+import tlc2.value.impl.RecordValue;
+import tlc2.value.impl.Value;
 
-// tlc2.tool.impl.SpecProcessor's "api" only loads class
-// "tlc2.overrides.TLCOverrides".
-public class TLCBuiltInOverrides implements ITLCOverrides {
+public class _JsonTrace {
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Class[] get() {
-		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, _TLCTrace.class,
-				_JsonTrace.class };
+	@Evaluation(definition = "_TLCState", module = "_JsonTrace", warn = false, silent = true, minLevel = 1)
+	public static Value tlcState(final Tool tool, final ExprOrOpArgNode[] args, final Context c, final TLCState s0,
+			final TLCState s1, final int control, final CostModel cm) {
+		// Overrides the TLA+ definition: _TLCState(level) == Trace[level]
+		// The use of TLCExt!Trace is inefficient because it internally reconstructs all
+		// states starting from the initial state. As a result, its cost grows linearly
+		// with the length of the trace. This override directly returns the state at the
+		// current level without reconstruction.
+		return new RecordValue(s0);
 	}
 }
