@@ -280,6 +280,8 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			// See the following two git commits to find out why:
 			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
 			// 42f251546ce99c19f1a7a44310816527a15ade2b
+			// MKU: Unfortunately, the corresponding git commits are nowhere to be found in
+			// the repository.
 			final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
 			violations.setDefault_(this.haltInv);
 			violations.setFilter("InvariantBreakpointsFilter");
