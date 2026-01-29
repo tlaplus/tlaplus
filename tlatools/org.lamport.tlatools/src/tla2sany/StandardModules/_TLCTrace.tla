@@ -18,7 +18,9 @@ CONSTANT _TLCTraceFile
 
 LOCAL _TLCTrace0(verbose) ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
-        /\ _TLCTraceSerialize(ToTrace(CounterExample), _TLCTraceFile)
+        /\ LET trace == ToTrace(CounterExample)
+               vars  == UNION { DOMAIN trace[i] : i \in DOMAIN trace }
+           IN _TLCTraceSerialize([trace |-> trace, vars |-> vars], _TLCTraceFile)
         /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceFile) ELSE TRUE
 
 LOCAL _TLCTraceSilent ==
@@ -40,6 +42,8 @@ LOCAL _TLCState(level) ==
 LOCAL _TLCTraceConstraint ==
     LET level == TLCGet("level")
         dump  == _TLCTraceFileDeserialized
+        trace == dump["trace"]
+        vars  == dump["vars"]
 	\* For liveness properties, TLC trace dumps stop at the state *before* the
 	\* lasso is closed. When replaying such a trace, TLC may request a state with
 	\*   level = Len(dump) + 1,
@@ -47,6 +51,6 @@ LOCAL _TLCTraceConstraint ==
 	\* is intentionally vacuously satisfied.
 	\* Since the names of the spec’s variables are not known, Trace[level] is
 	\* used as a generic reference to the variables of the current state.
-    IN level \in DOMAIN dump => _TLCState(level) = dump[level]
+    IN level \in DOMAIN trace => \A v \in vars: _TLCState(level)[v] = trace[level][v]
 
 =============================================================================
