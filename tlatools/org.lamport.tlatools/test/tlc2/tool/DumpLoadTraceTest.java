@@ -589,6 +589,54 @@ public class DumpLoadTraceTest extends CommonTestCase {
 				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, -1, 13, "auto", "1");
 	}
 
+	@Test
+	public void testSafetyTESpecEqAliasDumpLoadTraceJSON() throws Exception {
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
+				"json", EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+	}
+
+	@Test
+	public void testSafetyTESpecEqAliasDumpLoadTraceTLC() throws Exception {
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
+				"tlc", EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+	}
+
+	@Test
+	public void testSafetyTESpecEqAliasDumpLoadTraceJSONAutoWorkers() throws Exception {
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
+				"json", EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+	}
+
+	@Test
+	public void testSafetyTESpecEqAliasDumpLoadTraceTLCAutoWorkers() throws Exception {
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
+				"tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+	}
+
+	@Test
+	public void testLivenessExample1DumpLoadTraceJSON() throws Exception {
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
+				"json", EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+	}
+
+	@Test
+	public void testLivenessExample1DumpLoadTraceTLC() throws Exception {
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
+				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+	}
+
+	@Test
+	public void testLivenessExample1DumpLoadTraceJSONAutoWorkers() throws Exception {
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
+				"json", EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+	}
+
+	@Test
+	public void testLivenessExample1DumpLoadTraceTLCAutoWorkers() throws Exception {
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
+				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+	}
+
 	/**
 	 * Unregister all TLC-related MBeans from the platform MBeanServer.
 	 * 
