@@ -222,6 +222,106 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	}
 
 	/**
+	 * Parse a TLC state string into a map of variable names to values. State
+	 * format: Single variable: "var = value" Multiple variables: "/\ var1 =
+	 * value1\n/\ var2 = value2\n..."
+	 */
+	private java.util.Map<String, String> parseStateString(String stateStr) {
+		java.util.Map<String, String> vars = new java.util.HashMap<>();
+		String[] lines = stateStr.split("\n");
+		for (String line : lines) {
+			line = line.trim();
+			if (line.isEmpty()) {
+				continue;
+			}
+
+			// Remove leading "/\" if present (multi-variable format)
+			if (line.startsWith("/\\")) {
+				line = line.substring(2).trim();
+			}
+
+			// Parse "var = value"
+			int eqIndex = line.indexOf("=");
+			if (eqIndex > 0) {
+				String varName = line.substring(0, eqIndex).trim();
+				String varValue = line.substring(eqIndex + 1).trim();
+				vars.put(varName, varValue);
+			}
+		}
+		return vars;
+	}
+
+	/**
+	 * Compare two states based on the intersection of their variables. This is
+	 * useful when comparing traces with different variable sets (e.g., due to
+	 * ALIAS). Only variables present in both states are compared.
+	 */
+	private void assertStatesEqualOnIntersection(String stateStr1, String stateStr2, int stateIndex) {
+		java.util.Map<String, String> vars1 = parseStateString(stateStr1);
+		java.util.Map<String, String> vars2 = parseStateString(stateStr2);
+
+		// Find intersection of variable names
+		java.util.Set<String> commonVars = new java.util.HashSet<>(vars1.keySet());
+		commonVars.retainAll(vars2.keySet());
+
+		assertTrue(String.format("At state %d: No common variables found (state1 vars: %s, state2 vars: %s)",
+				stateIndex, vars1.keySet(), vars2.keySet()), !commonVars.isEmpty());
+
+		// Compare values for common variables
+		for (String varName : commonVars) {
+			assertEquals(String.format("At state %d, variable '%s' values differ", stateIndex, varName),
+					vars1.get(varName), vars2.get(varName));
+		}
+	}
+
+	/**
+	 * Compare two traces based on the intersection of their variables. This variant
+	 * is used when dump and load phases use different specs/aliases that result in
+	 * different variable sets in the traces.
+	 */
+	private void assertTracesEqualOnIntersection(List<Object> trace1, List<Object> trace2) throws Exception {
+		assertEquals("Traces must have same length", trace1.size(), trace2.size());
+
+		for (int i = 0; i < trace1.size(); i++) {
+			Object[] state1 = (Object[]) trace1.get(i);
+			Object[] state2 = (Object[]) trace2.get(i);
+
+			// state[0] is TLCStateInfo, state[1] is the state number
+			assertEquals("State numbers should match at position " + i, state1[1], state2[1]);
+
+			// Compare states based on variable intersection
+			String stateStr1 = state1[0].toString().trim();
+			String stateStr2 = state2[0].toString().trim();
+			assertStatesEqualOnIntersection(stateStr1, stateStr2, i);
+		}
+	}
+
+	/**
+	 * Verify that trace2 is a prefix of (or equal to) trace1, comparing only the
+	 * intersection of variables. This is used when dump and load phases use
+	 * different specs/aliases.
+	 */
+	private void assertTraceIsPrefixOnIntersection(List<Object> longerTrace, List<Object> prefixTrace)
+			throws Exception {
+		assertTrue("Prefix trace must not be empty", prefixTrace.size() > 0);
+		assertTrue(String.format("Prefix trace length (%d) should not exceed longer trace length (%d)",
+				prefixTrace.size(), longerTrace.size()), prefixTrace.size() <= longerTrace.size());
+
+		for (int i = 0; i < prefixTrace.size(); i++) {
+			Object[] state1 = (Object[]) longerTrace.get(i);
+			Object[] state2 = (Object[]) prefixTrace.get(i);
+
+			// state[0] is TLCStateInfo, state[1] is the state number
+			assertEquals("State numbers should match at position " + i, state1[1], state2[1]);
+
+			// Compare states based on variable intersection
+			String stateStr1 = state1[0].toString().trim();
+			String stateStr2 = state2[0].toString().trim();
+			assertStatesEqualOnIntersection(stateStr1, stateStr2, i);
+		}
+	}
+
+	/**
 	 * Builds the command-line arguments for running TLC.
 	 * <p>
 	 * Note: The working directory is set via ToolIO.setUserDir() in
@@ -388,6 +488,19 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	private void testDumpLoadTrace(final String spec, final String path, final String[] extraArgs, final String format,
 			final int expectedExitStatus, final int expectedDumpStates, final int expectedLoadStates,
 			final String dumpWorkers, final String loadWorkers) throws Exception {
+		testDumpLoadTrace(spec, spec, path, extraArgs, extraArgs, format, expectedExitStatus, expectedDumpStates,
+				expectedLoadStates, dumpWorkers, loadWorkers);
+	}
+
+	/**
+	 * Test dumpTrace and loadTrace with different specs/configs for dump and load
+	 * phases. This allows testing scenarios where a trace is dumped with an alias
+	 * and loaded with the original spec.
+	 */
+	private void testDumpLoadTrace(final String dumpSpec, final String loadSpec, final String path,
+			final String[] dumpExtraArgs, final String[] loadExtraArgs, final String format,
+			final int expectedExitStatus, final int expectedDumpStates, final int expectedLoadStates,
+			final String dumpWorkers, final String loadWorkers) throws Exception {
 		// Setup temporary directories in target/ to avoid polluting the source tree
 		final File targetDir = new File(BASE_DIR, "target");
 		targetDir.mkdirs();
@@ -396,7 +509,7 @@ public class DumpLoadTraceTest extends CommonTestCase {
 
 		final File metaDump = new File(tempDir, "meta_dump");
 		final File metaLoad = new File(tempDir, "meta_load");
-		final File traceFile = new File(tempDir, spec + "." + format);
+		final File traceFile = new File(tempDir, dumpSpec + "." + format);
 
 		metaDump.mkdirs();
 		metaLoad.mkdirs();
@@ -405,16 +518,17 @@ public class DumpLoadTraceTest extends CommonTestCase {
 		final String workingDir = BASE_PATH + (path.isEmpty() ? "" : path + File.separator);
 
 		// Phase 1: Run TLC with -dumpTrace using isolated class loader
-		final TLCResult dumpResult = runTLCInIsolation(workingDir, metaDump.getAbsolutePath(), spec + ".tla", 4,
-				dumpWorkers, extraArgs, "-dumpTrace", format, traceFile.getAbsolutePath());
+		final TLCResult dumpResult = runTLCInIsolation(workingDir, metaDump.getAbsolutePath(), dumpSpec + ".tla", 4,
+				dumpWorkers, dumpExtraArgs, "-dumpTrace", format, traceFile.getAbsolutePath());
 
 		assertTrue("Trace file should exist after dump phase", traceFile.exists());
 		assertTrue("Trace file should not be empty", traceFile.length() > 0);
 		assertTrue("Dump phase should have recorded TLC_FINISHED", dumpResult.recordedEC(EC.TLC_FINISHED));
 
 		// Phase 2: Run TLC with -loadTrace using a different isolated class loader
-		final TLCResult loadResult = runTLCInIsolation(workingDir, metaLoad.getAbsolutePath(), spec + ".tla", 4,
-				loadWorkers, extraArgs, "-loadTrace", format, traceFile.getAbsolutePath());
+		// This may use a different spec and config than the dump phase
+		final TLCResult loadResult = runTLCInIsolation(workingDir, metaLoad.getAbsolutePath(), loadSpec + ".tla", 4,
+				loadWorkers, loadExtraArgs, "-loadTrace", format, traceFile.getAbsolutePath());
 
 		assertTrue("Load phase should have recorded TLC_FINISHED", loadResult.recordedEC(EC.TLC_FINISHED));
 
@@ -444,16 +558,29 @@ public class DumpLoadTraceTest extends CommonTestCase {
 		final List<Object> dumpTrace = dumpResult.getRecords(EC.TLC_STATE_PRINT2);
 		final List<Object> loadTrace = loadResult.getRecords(EC.TLC_STATE_PRINT2);
 
+		// Determine whether to use intersection-based comparison
+		// When dump and load use different specs (e.g., with/without ALIAS),
+		// the state representations will have different variable sets
+		final boolean useDifferentSpecs = !dumpSpec.equals(loadSpec);
+
 		// When dump and load use different worker counts, the load trace (single
 		// worker)
 		// may be a shorter counterexample (prefix) than the dump trace (multi-worker),
 		// since multi-worker runs don't guarantee finding the shortest counterexample
 		if (!dumpWorkers.equals(loadWorkers)) {
-			assertTraceIsPrefix(dumpTrace, loadTrace);
+			if (useDifferentSpecs) {
+				assertTraceIsPrefixOnIntersection(dumpTrace, loadTrace);
+			} else {
+				assertTraceIsPrefix(dumpTrace, loadTrace);
+			}
 		} else {
 			// Same worker configuration should produce identical traces
 			assertEquals("Both traces should have the same length", dumpTrace.size(), loadTrace.size());
-			assertTracesEqual(dumpTrace, loadTrace);
+			if (useDifferentSpecs) {
+				assertTracesEqualOnIntersection(dumpTrace, loadTrace);
+			} else {
+				assertTracesEqual(dumpTrace, loadTrace);
+			}
 		}
 
 		// Verify the correct number of states were generated
@@ -470,7 +597,7 @@ public class DumpLoadTraceTest extends CommonTestCase {
 		// Verify expected state counts (skip if negative values provided, e.g., for
 		// auto-worker dump phase which is non-deterministic)
 		if (expectedDumpStates >= 0) {
-			assertEquals(String.format("Dump phase should generate expected states (spec: %s)", spec),
+			assertEquals(String.format("Dump phase should generate expected states (dump spec: %s)", dumpSpec),
 					expectedDumpStates, dumpStatesGenerated);
 		}
 		if (expectedLoadStates >= 0) {
@@ -483,10 +610,10 @@ public class DumpLoadTraceTest extends CommonTestCase {
 			// can explore.
 			if (!dumpWorkers.equals(loadWorkers)) {
 				assertTrue(String.format(
-						"Load phase should generate at least expected states (spec: %s, expected: %d, actual: %d)",
-						spec, expectedLoadStates, loadStatesGenerated), loadStatesGenerated >= expectedLoadStates);
+						"Load phase should generate at least expected states (load spec: %s, expected: %d, actual: %d)",
+						loadSpec, expectedLoadStates, loadStatesGenerated), loadStatesGenerated >= expectedLoadStates);
 			} else {
-				assertEquals(String.format("Load phase should generate expected states (spec: %s)", spec),
+				assertEquals(String.format("Load phase should generate expected states (load spec: %s)", loadSpec),
 						expectedLoadStates, loadStatesGenerated);
 			}
 		}
@@ -591,50 +718,74 @@ public class DumpLoadTraceTest extends CommonTestCase {
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceJSON() throws Exception {
-		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
-				"json", EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "json",
+				EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceTLC() throws Exception {
-		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "tlc",
+				EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceJSONAutoWorkers() throws Exception {
-		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
-				"json", EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "json",
+				EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceTLCAutoWorkers() throws Exception {
-		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "tlc",
+				EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceJSON() throws Exception {
-		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
-				"json", EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "json",
+				EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceTLC() throws Exception {
-		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "tlc",
+				EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceJSONAutoWorkers() throws Exception {
-		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
-				"json", EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "json",
+				EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceTLCAutoWorkers() throws Exception {
-		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "tlc",
+				EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSubDumpLoadTraceTLC() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSubDumpLoadTraceTLCAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSupDumpLoadTraceTLC() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSupDumpLoadTraceTLCAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
 	}
 
 	/**

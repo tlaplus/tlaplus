@@ -51,6 +51,13 @@ LOCAL _TLCTraceConstraint ==
 	\* is intentionally vacuously satisfied.
 	\* Since the names of the spec’s variables are not known, Trace[level] is
 	\* used as a generic reference to the variables of the current state.
-    IN level \in DOMAIN trace => \A v \in vars: _TLCState(level)[v] = trace[level][v]
+    IN level \in DOMAIN trace => 
+            \* When loading a trace with a subset of variables, only check the variables
+            \* that exist in both the trace and the current state. This allows trace 
+            \* replay with specs that have different variable sets than the original spec
+            \* that produced the trace. Another scenario is when the spec uses ALIAS
+            \* to rename, add, or remove variables.
+            \A v \in vars \cap DOMAIN _TLCState(level): 
+                    _TLCState(level)[v] = trace[level][v]
 
 =============================================================================
