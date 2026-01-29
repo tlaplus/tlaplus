@@ -290,6 +290,24 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 			baseFilters.add(violations);
 		}
 
+		// Add a warning dummy breakpoint if TLC is running with multiple workers.
+		// The debugger only attaches to one worker, so breakpoints will only fire
+		// for that worker.
+		// NOTE: A similar warning message is also sent to the Debug Console in
+		// AttachingDebugger.launch().
+		if (TLCGlobals.getNumWorkers() > 1) {
+			final ExceptionBreakpointsFilter warning = new ExceptionBreakpointsFilter();
+			warning.setDefault_(false);
+			warning.setFilter("MultiWorkerWarningFilter");
+			warning.setLabel("⚠️  MULTIPLE WORKER WARNING: Breakpoints only fire for one worker (use -workers 1)");
+			warning.setDescription(
+					"The debugger only attaches to one worker thread. With multiple workers, the breakpoints in this list will only fire if they occur in the attached worker. Breakpoint triggers in other workers will be missed. To consistently catch all breakpoint triggers, restart TLC with -workers 1.");
+			warning.setSupportsCondition(false);
+
+			// Prepend the warning filter to the list
+			baseFilters.add(0, warning);
+		}
+
 		return baseFilters.toArray(new ExceptionBreakpointsFilter[0]);
 	}
 

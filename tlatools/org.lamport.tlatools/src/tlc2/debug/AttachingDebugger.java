@@ -39,9 +39,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 
 import org.eclipse.lsp4j.debug.OutputEventArguments;
+import org.eclipse.lsp4j.debug.OutputEventArgumentsCategory;
 import org.eclipse.lsp4j.debug.StoppedEventArguments;
 import org.eclipse.lsp4j.debug.launch.DSPLauncher;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.impl.Tool;
 import util.ToolIO;
 
@@ -158,6 +160,20 @@ public class AttachingDebugger extends TLCDebugger {
 				oea.setOutput(buffer);
 				launcher.getRemoteProxy().output(oea);
 				buffer = "";
+			}
+			
+			// Warn users if TLC is running with multiple workers, as the debugger only
+			// attaches to one worker and breakpoint triggers will only fire for events in
+			// that worker.
+			// NOTE: A similar warning is also shown as a dummy breakpoint filter in
+			// TLCDebugger.getExceptionBreakpointFilters().
+			if (TLCGlobals.getNumWorkers() > 1) {
+				final OutputEventArguments oea = new OutputEventArguments();
+				oea.setOutput(String.format(
+						"Warning: TLC is running with %d workers, but the debugger only attaches to one worker. Breakpoints will only fire if they occur in the attached worker. Breakpoint triggers in other workers will be missed. Consider using -workers 1 for debugging.\n",
+						TLCGlobals.getNumWorkers()));
+				oea.setCategory(OutputEventArgumentsCategory.CONSOLE);
+				launcher.getRemoteProxy().output(oea);
 			}
 			
 			StoppedEventArguments eventArguments = new StoppedEventArguments();
