@@ -248,11 +248,14 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 	}
 
 	private ExceptionBreakpointsFilter[] getExceptionBreakpointFilters() {
+		final List<ExceptionBreakpointsFilter> baseFilters = new ArrayList<>();
+
 		final ExceptionBreakpointsFilter filter = new ExceptionBreakpointsFilter();
 		filter.setDefault_(this.haltExp);
 		filter.setFilter("ExceptionBreakpointsFilter");
 		filter.setLabel("Halt (break) on exceptions");
 		filter.setDescription("TLC will halt when it encounters a silly expression");
+		baseFilters.add(filter);
 
 		final ExceptionBreakpointsFilter unsat = new ExceptionBreakpointsFilter();
 		unsat.setDefault_(this.haltUnsat != null);
@@ -261,6 +264,7 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		unsat.setDescription("TLC will halt when a successor state does not satisfy the next-state relation.");
 		unsat.setConditionDescription("A constant, state, or action level formula");
 		unsat.setSupportsCondition(true);
+		baseFilters.add(unsat);
 
 		final ExceptionBreakpointsFilter spec = new ExceptionBreakpointsFilter();
 		spec.setDefault_(this.haltSpec != null);
@@ -269,22 +273,22 @@ public abstract class TLCDebugger extends AbstractDebugger implements IDebugTarg
 		spec.setDescription("TLC will halt after initial- and next-states have been generated.");
 		spec.setConditionDescription("Init: constant or state formula. Next: constant, state, or action-level formula.");
 		spec.setSupportsCondition(true);
+		baseFilters.add(spec);
 
-		if (this.tool.getMode() == Mode.MC_DEBUG) {
+		if (this.tool.getMode() != Mode.MC_DEBUG) {
 			// Halting on violations/invariants does not work with exhaustive search.
 			// See the following two git commits to find out why:
 			// e81e1e2b19b7a03f74d245cac009e84a0415e45d
 			// 42f251546ce99c19f1a7a44310816527a15ade2b
-			return new ExceptionBreakpointsFilter[] { filter, unsat, spec };
-		} else {
 			final ExceptionBreakpointsFilter violations = new ExceptionBreakpointsFilter();
 			violations.setDefault_(this.haltInv);
 			violations.setFilter("InvariantBreakpointsFilter");
 			violations.setLabel("Halt (break) on violations");
 			violations.setDescription("TLC will halt when an invariant is violated.");
-
-			return new ExceptionBreakpointsFilter[] { filter, unsat, violations, spec };
+			baseFilters.add(violations);
 		}
+
+		return baseFilters.toArray(new ExceptionBreakpointsFilter[0]);
 	}
 
 	@Override
