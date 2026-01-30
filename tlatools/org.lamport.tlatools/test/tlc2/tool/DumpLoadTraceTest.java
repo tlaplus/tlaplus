@@ -765,9 +765,21 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	}
 
 	@Test
+	public void testSafetyDieHardAliasSubDumpLoadTraceJSON() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
+	}
+
+	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
 				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSubDumpLoadTraceJSONAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
 	}
 
 	@Test
@@ -777,9 +789,21 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	}
 
 	@Test
+	public void testSafetyDieHardAliasSupDumpLoadTraceJSON() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+	}
+
+	@Test
 	public void testSafetyDieHardAliasSupDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
 				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSupDumpLoadTraceJSONAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
 	}
 
 	@Test

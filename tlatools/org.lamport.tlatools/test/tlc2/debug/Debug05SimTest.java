@@ -106,7 +106,7 @@ public class Debug05SimTest extends TLCDebuggerTestCase {
 			// Validate the content of the generated file (by using the very functionality
 			// we are testing).
 			ea.setExpression("LET S == INSTANCE Sequences J == INSTANCE Json T == J!JsonDeserialize(\"" + traceFile
-					+ "\") IN S!Len(T.state) = " + i);
+					+ "\") IN S!Len(T.counterexample.state) = " + i);
 			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
 
 			// 88888888888888888888888888888888888888888888888888888 //
