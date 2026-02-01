@@ -414,6 +414,7 @@ public class TLC {
 		boolean generateTESpecBinaryTrace = true;
 		boolean forceGenerateTESpec = false;
 		Path teSpecOut = null;
+		Map<String, PostCondition> seenFormatsAndPostConditions = new LinkedHashMap<>();
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -683,6 +684,7 @@ public class TLC {
 				index++; // consume "-dumpTrace".
 				if ((index + 1) < args.length) {
 					final String fmt = args[index++];
+                    final String dumpTraceFile = "_DumpTraceFile";
 					if ("json".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
@@ -725,6 +727,17 @@ public class TLC {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
 						return false;
 					}
+                    			// A bit crazy part:
+                    			// In some cases args[] may contain multiple -dumpTrace options for the same format,
+                    			// because dumpTrace is enabled by default. However, we only want to keep one instance
+                    			// of it, let's take the substituted one which is the last.
+                    			if (seenFormatsAndPostConditions.containsKey(fmt)) {
+                    			    pcs.remove(seenFormatsAndPostConditions.get(fmt));
+                    			    seenFormatsAndPostConditions.remove(fmt);
+                    			}
+
+                    			seenFormatsAndPostConditions.put(fmt, pc);
+                    			pcs.add(pc);
 				} else {
 					printErrorMsg("Error: A format and a file name for dumping traces required.");
 					return false;
@@ -1647,11 +1660,13 @@ public class TLC {
 															+ "full state descriptions", true));
     	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file",
 														"in case of a property violation, formats the TLA+ error trace\n"
-    													+ "as the given format and dumps the output to the specified\n"
+														+ "as the given format and dumps the output to the specified\n"
 														+ "file.  The file is relative to the same directory as the\n"
 														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
 														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
 														+ "-dumpTrace parameter may appear multiple times.\n"
+														+ "Parameter file may contain %d part, e.g. /tmp/test%d.json\n"
+														+ "when TLC generates multiple traces for counter examples\n"
 														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
 														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-inv", "expr", 

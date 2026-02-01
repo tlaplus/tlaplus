@@ -405,16 +405,21 @@ public class Simulator {
 				}
 				
 				// see tlc2.tool.Worker.doPostCheckAssumption()
-				final SpecObj specObj = this.tool.getSpecProcessor().getSpecObj();
-				if (result.error().hasTrace() && (specObj instanceof ParameterizedSpecObj)) {
-					final String dir = ((ParameterizedSpecObj) specObj)
-						.getPostConditionRedefinition("_DumpTraceFileDirectory");
-					final String file = ((ParameterizedSpecObj) specObj)
-						.getPostConditionRedefinition("_JsonTraceFile");
-				
+				if (result.error().hasTrace()) {
+					String dumpTraceFileFormatted = null;
+					final SpecObj specObj = this.tool.getSpecProcessor().getSpecObj();
+					//if (specObj instanceof ParameterizedSpecObj) {
+					final String dumpTraceFile = ((ParameterizedSpecObj) specObj)
+						.getPostConditionRedefinition("_DumpTraceFile");
+					try {
+						dumpTraceFileFormatted = String.format(dumpTraceFile, numOfGenTraces.get());
+					} catch (Exception e) {
+						dumpTraceFileFormatted = dumpTraceFile;
+					}
+					//}
 					error.errorCode = Math
 							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
-									Map.of("_DumpTraceFilePrefix", String.format("%s_", numOfGenTraces.get()))), error.errorCode);
+									Map.of("_DumpTraceFile", dumpTraceFileFormatted)), error.errorCode);
 				} else {
 					error.errorCode = Math.max(this.tool.checkPostCondition(), error.errorCode);
 				}
