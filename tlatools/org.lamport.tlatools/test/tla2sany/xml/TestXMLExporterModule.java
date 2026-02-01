@@ -178,6 +178,44 @@ public class TestXMLExporterModule {
 	}
 
 	@Test
+	public void testExportCaseOtherModule() throws Exception {
+		String modulePath = BASE_PATH + "CaseOtherXml.tla";
+		int exitCode = XMLExporter.run(modulePath);
+
+		Assert.assertEquals("XMLExporter should exit with code 0", 0, exitCode);
+
+		String xmlOutput = this.outStream.toString();
+		Assert.assertFalse("XML output should not be empty", xmlOutput.trim().isEmpty());
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(xmlOutput)));
+
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+		Assert.assertNotNull("sany.xsd schema file should be found", schemaFile);
+		Schema schema = schemaFactory.newSchema(schemaFile);
+		Validator validator = schema.newValidator();
+		validator.validate(new DOMSource(doc));
+
+		NodeList stringNodes = doc.getElementsByTagName("StringNode");
+		boolean foundOther = false;
+		for (int i = 0; i < stringNodes.getLength(); i++) {
+			Element stringNode = (Element) stringNodes.item(i);
+			NodeList valueNodes = stringNode.getElementsByTagName("StringValue");
+			if (valueNodes.getLength() > 0) {
+				String value = valueNodes.item(0).getTextContent().trim();
+				if ("$Other".equals(value)) {
+					foundOther = true;
+					break;
+				}
+			}
+		}
+		Assert.assertTrue("XML should contain StringNode/StringValue '$Other'", foundOther);
+	}
+
+	@Test
 	public void testExportWithOfflineMode() throws Exception {
 		// Run XMLExporter with offline mode (skip validation)
 		String modulePath = BASE_PATH + "DieHard.tla";

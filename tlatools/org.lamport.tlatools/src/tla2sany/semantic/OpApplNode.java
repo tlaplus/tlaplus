@@ -1362,7 +1362,8 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     for (int i=0; i< operands.length; i++) {
       // dealing with the $Case OTHER null bug
       if (i == 0 && operands[0] == null && context.hasFlag(SymbolContext.OTHER_BUG)) {
-        ope.appendChild(appendText(doc,"StringNode","$Other"));
+        Element otherValue = appendText(doc, "StringValue", "$Other");
+        ope.appendChild(appendElement(doc, "StringNode", otherValue));
       }
       else {
         ope.appendChild(operands[i].export(doc,context, filter));
