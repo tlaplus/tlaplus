@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import tla2sany.drivers.SemanticException;
@@ -312,4 +313,14 @@ public class ParameterizedSpecObj extends SpecObj {
 		}
 		return res;
 	}
+
+	public String getPostConditionRedefinition(final String key) {
+		@SuppressWarnings("unchecked")
+		final List<PostCondition> pcs = (List<PostCondition>) params.getOrDefault(POST_CONDITIONS, List.of());
+		  	return pcs.stream()
+  					.map(pc -> pc.redefinitions.get(key))
+  					.filter(Objects::nonNull)
+  					.findFirst()
+  					.orElse(null);
+  	}
 }

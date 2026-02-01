@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
@@ -37,6 +38,7 @@ import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.SimulationWorker.SimulationWorkerStatistics;
 import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.ParameterizedSpecObj;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -403,7 +405,13 @@ public class Simulator {
 				}
 				
 				// see tlc2.tool.Worker.doPostCheckAssumption()
-				if (result.error().hasTrace()) {
+				final SpecObj specObj = this.tool.getSpecProcessor().getSpecObj();
+				if (result.error().hasTrace() && (specObj instanceof ParameterizedSpecObj)) {
+					final String dir = ((ParameterizedSpecObj) specObj)
+						.getPostConditionRedefinition("_DumpTraceFileDirectory");
+					final String file = ((ParameterizedSpecObj) specObj)
+						.getPostConditionRedefinition("_JsonTraceFile");
+				
 					error.errorCode = Math
 							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
 									Map.of("_DumpTraceFilePrefix", String.format("%s_", numOfGenTraces.get()))), error.errorCode);
