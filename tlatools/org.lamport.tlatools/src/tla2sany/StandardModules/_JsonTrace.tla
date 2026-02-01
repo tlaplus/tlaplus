@@ -4,15 +4,11 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Json
 LOCAL INSTANCE Sequences
 
-LOCAL _DumpTraceFilePrefix == ""
-LOCAL _DumpTraceFileDirectory == ""
-
-LOCAL _JsonTraceFile ==
-    "CounterExample.json"
+LOCAL _DumpTraceFile == ""
 
 LOCAL _JsonTrace ==
     IF CounterExample.state = {} THEN TRUE ELSE
-        /\ JsonSerialize(_DumpTraceFileDirectory \o _DumpTraceFilePrefix \o _JsonTraceFile, CounterExample)
-        /\ PrintT("CounterExample written: " \o _DumpTraceFileDirectory \o _DumpTraceFilePrefix \o _JsonTraceFile)
+        /\ JsonSerialize(_DumpTraceFile, CounterExample)
+        /\ PrintT("CounterExample written: " \o _DumpTraceFile)
 
 =============================================================================

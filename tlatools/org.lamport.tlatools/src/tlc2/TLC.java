@@ -412,6 +412,7 @@ public class TLC {
 		boolean generateTESpecBinaryTrace = true;
 		boolean forceGenerateTESpec = false;
 		Path teSpecOut = null;
+        Map<String, PostCondition> seenFormatsAndPostConditions = new LinkedHashMap<>();
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -665,33 +666,34 @@ public class TLC {
 				index++; // consume "-dumpTrace".
 				if ((index + 1) < args.length) {
 					final String fmt = args[index++];
+                    final String dumpTraceFile = "_DumpTraceFile";
 					if ("json".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]);
+						pc = new PostCondition("_JsonTrace", "_JsonTrace", dumpTraceFile, args[index++]);
 					} else if ("tla".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
-								"_TLAPlusCounterExampleFile", args[index++]);
+						pc = new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample", dumpTraceFile, args[index++]);
 					} else if ("tlc".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]);
+						pc = new PostCondition("_TLCTrace", "_TLCTrace", dumpTraceFile, args[index++]);
 					} else if ("tlcplain".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]);
+						pc = new PostCondition("_TLCTracePlain", "_TLCTrace", dumpTraceFile, args[index++]);
 					} else if ("tlcaction".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]);
+						pc = new PostCondition("_TLCActionTrace", "_TLCTrace", dumpTraceFile, args[index++]);
 					} else if ("dot".equalsIgnoreCase(fmt)) {
-						pc = new PostCondition("_DotTrace", "_DotTrace", "_DotTraceFile", args[index++]);
+						pc = new PostCondition("_DotTrace", "_DotTrace", dumpTraceFile, args[index++]);
 					} else {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
 						return false;
 					}
-                    pcs.add(pc);
-
-                    // Parse the second optional parameter
-                    if ((index + 2) < args.length) {
-                        if ("dumpdir".equalsIgnoreCase(args[index])) {
-                            index++; // consume "-dumpdir".
-                            final String dir = Paths.get(args[index++]).toString() + File.separator;
-                            pcs.add(new PostCondition(pc.module, pc.operator, "_DumpTraceFileDirectory", dir));
-                        }
+                    // A bit crazy part:
+                    // In some cases args[] may contain multiple -dumpTrace options for the same format, 
+                    // because dumpTrace is enabled by default. However, we only want to keep one instance 
+                    // of it, let's take the substituted one which is the last.
+                    if (seenFormatsAndPostConditions.containsKey(fmt)) {
+                        pcs.remove(seenFormatsAndPostConditions.get(fmt));
+                        seenFormatsAndPostConditions.remove(fmt);
                     }
+
+                    seenFormatsAndPostConditions.put(fmt, pc);
+                    pcs.add(pc);
 				} else {
 					printErrorMsg("Error: A format and a file name for dumping traces required.");
 					return false;
@@ -1586,13 +1588,15 @@ public class TLC {
 														"show only the differences between successive states when\n"
 															+ "printing trace information; defaults to printing\n"
 															+ "full state descriptions", true));
-    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file [dumpdir dir]",
+    	sharedArguments.add(new UsageGenerator.Argument("-dumpTrace", "format file",
 														"in case of a property violation, formats the TLA+ error trace\n"
-    													+ "as the given format and dumps the output to the specified\n"
+														+ "as the given format and dumps the output to the specified\n"
 														+ "file.  The file is relative to the same directory as the\n"
 														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
 														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
 														+ "-dumpTrace parameter may appear multiple times.\n"
+														+ "Parameter file may contain %d part, e.g. /tmp/test%d.json\n"
+														+ "when TLC generates multiple traces for counter examples\n"
 														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
 														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-inv", "expr", 

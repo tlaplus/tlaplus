@@ -48,12 +48,16 @@ import util.FileUtil;
 
 public class Github1217Test extends ModelCheckerTestCase {
 
-	private static final Path dumpFilePath = Paths.get(System.getProperty("java.io.tmpdir"), "Github1217.json");
+	private static final Path dumpFilePath = Paths.get(System.getProperty("java.io.tmpdir"), "%d_Github1217.json");
 
 	public Github1217Test() {
-		super("Github1217", new String[] { "-note", "-config", "Github1217.cfg", "-simulate", "-invlevel", "10", "-dumpTrace",
-						"json", "Github1217.json", "dumpdir", System.getProperty("java.io.tmpdir"), "Github1217.tla"},
-		EC.ExitStatus.VIOLATION_SAFETY);
+		super("Github1217",
+			new String[] {
+				"-note", "-config", "Github1217.cfg", "-simulate", "-invlevel", 
+				"10", "-dumpTrace", "json", dumpFilePath.toString(), "Github1217.tla"
+			},
+			EC.ExitStatus.VIOLATION_SAFETY
+		);
 	}
 
 	@Override
