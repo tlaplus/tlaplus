@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
+import tla2sany.modanalyzer.SpecObj;
 import tla2sany.semantic.ExprNode;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
@@ -37,6 +38,7 @@ import tlc2.tool.SimulationWorker.SimulationWorkerResult;
 import tlc2.tool.SimulationWorker.SimulationWorkerStatistics;
 import tlc2.tool.coverage.CostModelCreator;
 import tlc2.tool.impl.FastTool;
+import tlc2.tool.impl.ParameterizedSpecObj;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCheck;
@@ -358,6 +360,8 @@ public class Simulator {
 
 			// If the result is an error, print it.
 			if (result.workerId() == -1) {
+				// This might happen when thread pool fails to spawn a thread.
+				errorCode = EC.GENERAL;
 				runningWorkers.clear();
 				break;
 			} else if (result.isError()) {
@@ -398,10 +402,20 @@ public class Simulator {
 				
 				// see tlc2.tool.Worker.doPostCheckAssumption()
 				if (result.error().hasTrace()) {
+					String dumpTraceFileFormatted = null;
+					final SpecObj specObj = this.tool.getSpecProcessor().getSpecObj();
+					//if (specObj instanceof ParameterizedSpecObj) {
+					final String dumpTraceFile = ((ParameterizedSpecObj) specObj)
+						.getPostConditionRedefinition("_DumpTraceFile");
+					try {
+						dumpTraceFileFormatted = String.format(dumpTraceFile, numOfGenTraces.get());
+					} catch (Exception e) {
+						dumpTraceFileFormatted = dumpTraceFile;
+					}
+					//}
 					error.errorCode = Math
-							//TODO numOfGenTraces is not ideal because it is not monotonically increasing.
 							.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample(),
-									Map.of("_DumpTraceFilePrefix", String.format("%s_", numOfGenTraces.get()))), error.errorCode);
+									Map.of("_DumpTraceFile", dumpTraceFileFormatted)), error.errorCode);
 				} else {
 					error.errorCode = Math.max(this.tool.checkPostCondition(), error.errorCode);
 				}
