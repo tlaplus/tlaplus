@@ -663,13 +663,13 @@ public class TLC {
 						final List<Constraint> computeIfAbsent = (List<Constraint>) params
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
-								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceFile", args[index++]));
+								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceInputFile", args[index++]));
 					} else if ("json".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<Constraint> computeIfAbsent = (List<Constraint>) params
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
-								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceFile", args[index++]));
+								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceInputFile", args[index++]));
 					} else {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -loadTrace.");
 						return false;
@@ -687,7 +687,7 @@ public class TLC {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]));
+						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceOutputFile", args[index++]));
 					} else if ("tla".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
@@ -698,22 +698,22 @@ public class TLC {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pcs.add(new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceOutputFile", args[index++]));
 					} else if ("tlcplain".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pcs.add(new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceOutputFile", args[index++]));
 					} else if ("tlcTESpec".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTESpec", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pcs.add(new PostCondition("_TLCTESpec", "_TLCTrace", "_TLCTraceOutputFile", args[index++]));
 					} else if ("tlcaction".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
+						pcs.add(new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceOutputFile", args[index++]));
 					} else if ("dot".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(

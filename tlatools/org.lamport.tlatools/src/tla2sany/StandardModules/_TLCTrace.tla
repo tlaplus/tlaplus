@@ -14,14 +14,15 @@ LOCAL _TLCTraceSerialize(val, absoluteFilename) ==
 ----------------------------------------------------------------------------
 \* Serialize a trace to a file.
 
-CONSTANT _TLCTraceFile
+CONSTANT _TLCTraceOutputFile  \* Used by -dumpTrace tlc
+CONSTANT _TLCTraceInputFile   \* Used by -loadTrace tlc
 
 LOCAL _TLCTrace0(verbose) ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ LET trace == ToTrace(CounterExample)
                vars  == UNION { DOMAIN trace[i] : i \in DOMAIN trace }
-           IN _TLCTraceSerialize([trace |-> trace, vars |-> vars], _TLCTraceFile)
-        /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceFile) ELSE TRUE
+           IN _TLCTraceSerialize([trace |-> trace, vars |-> vars], _TLCTraceOutputFile)
+        /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceOutputFile) ELSE TRUE
 
 LOCAL _TLCTraceSilent ==
     _TLCTrace0(FALSE)
@@ -33,7 +34,7 @@ _TLCTrace ==
 \* Deserialize a trace created by _TLCTrace above.
 
 LOCAL _TLCTraceFileDeserialized ==
-    _TLCTraceDeserialize(_TLCTraceFile)
+    _TLCTraceDeserialize(_TLCTraceInputFile)
 
 \* This operator has a Java module override (tlc2.module._TLCTrace#tlcState).
 LOCAL _TLCState(level) ==

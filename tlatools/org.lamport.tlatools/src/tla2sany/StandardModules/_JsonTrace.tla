@@ -4,14 +4,15 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Json
 LOCAL INSTANCE Sequences
 
-CONSTANT _JsonTraceFile
+CONSTANT _JsonTraceOutputFile  \* Used by -dumpTrace json
+CONSTANT _JsonTraceInputFile   \* Used by -loadTrace json
 
 _JsonTrace ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ LET trace == ToTrace(CounterExample)
                vars  == UNION { DOMAIN trace[i] : i \in DOMAIN trace }
-           IN JsonSerialize(_JsonTraceFile, [counterexample |-> CounterExample, vars |-> vars])
-        /\ PrintT("CounterExample written: " \o _JsonTraceFile)
+           IN JsonSerialize(_JsonTraceOutputFile, [counterexample |-> CounterExample, vars |-> vars])
+        /\ PrintT("CounterExample written: " \o _JsonTraceOutputFile)
 
 ----------------------------------------------------------------------------
 \* Deserialize a trace created by _JsonTrace above.
@@ -22,7 +23,7 @@ LOCAL _TLCState(level) ==
 
 LOCAL _JsonTraceConstraint ==
     LET level == TLCGet("level")
-        dump  == JsonDeserialize(_JsonTraceFile)
+        dump  == JsonDeserialize(_JsonTraceInputFile)
         trace == dump["counterexample"]["state"]
         \* JSON deserializes sets as tuples, so convert back to a set
         vars  == {dump["vars"][i] : i \in DOMAIN dump["vars"]}

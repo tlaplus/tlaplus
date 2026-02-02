@@ -17,7 +17,7 @@ LOCAL _Vars ==
 LOCAL _ToConjunt(v, prime, idx) ==
     "/\\ " \o v \o prime \o " = Trace[" \o idx \o "]." \o v \o "\n"
 
-CONSTANT _TLCTraceFile
+CONSTANT _TLCTraceOutputFile  \* Used by -dumpTrace tlcTESpec
 
 LOCAL _conjunct(prime, idx) ==
     FoldSet(LAMBDA v, acc: acc \o _ToConjunt(v, prime, idx), "", _Vars)
@@ -26,7 +26,7 @@ LOCAL _subVars ==
     FoldSet(LAMBDA v, acc: acc \o (IF acc = "" THEN "" ELSE ", ") \o v, "", _Vars)
 
 LOCAL _TLCTraceModule ==
-	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) IN
+	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceOutputFile) IN
 	"---- MODULE " \o ModuleName \o " ----\n" \o
 	 \*TODO E.g., model values are typically defined in the MC file.
         _extends \o "\n\n" \o
@@ -47,13 +47,13 @@ LOCAL _TLCTraceModule ==
 _TLCTrace ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
-    			_TLCTraceFile,
+    			_TLCTraceOutputFile,
     			[
     				format |-> "TXT",
     				charset |-> "UTF-8",
     				openOptions |-> <<"WRITE", "CREATE", "TRUNCATE_EXISTING">>
     			]
            ).exitValue = 0
-        /\ PrintT("CounterExample written: " \o _TLCTraceFile)
+        /\ PrintT("CounterExample written: " \o _TLCTraceOutputFile)
 
 =============================================================================

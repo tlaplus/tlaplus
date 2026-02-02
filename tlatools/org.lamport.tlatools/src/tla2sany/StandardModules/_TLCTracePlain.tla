@@ -5,10 +5,10 @@ LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Sequences
 LOCAL INSTANCE SequencesExt
 
-CONSTANT _TLCTraceFile
+CONSTANT _TLCTraceOutputFile  \* Used by -dumpTrace tlcplain
 
 LOCAL _TLCTraceModule ==
-	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) IN
+	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceOutputFile) IN
 	"---- MODULE " \o ModuleName \o " ----\n" \o
     "LOCAL INSTANCE TLC\n\n" \o
     "Trace == \n\t" \o
@@ -18,13 +18,13 @@ LOCAL _TLCTraceModule ==
 _TLCTrace ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
-    			_TLCTraceFile,
+    			_TLCTraceOutputFile,
     			[
     				format |-> "TXT",
     				charset |-> "UTF-8",
     				openOptions |-> <<"WRITE", "CREATE", "TRUNCATE_EXISTING">>
     			]
            ).exitValue = 0
-        /\ PrintT("CounterExample written: " \o _TLCTraceFile)
+        /\ PrintT("CounterExample written: " \o _TLCTraceOutputFile)
 
 =============================================================================

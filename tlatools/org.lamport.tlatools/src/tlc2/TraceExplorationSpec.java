@@ -67,7 +67,7 @@ public class TraceExplorationSpec {
 		// Always dump the trace in binary format in case that the textual trace is
 		// prohibitively large making it infeasible to parse and process with SANY.
 		final Path resolve = this.outputPath.resolve(teSpecModuleName + TLAConstants.Files.TLA_TRACE_EXTENSION);
-		pcs.add(new PostCondition("_TLCTrace", "_TLCTraceSilent", "_TLCTraceFile", resolve.toFile().toString()));
+		pcs.add(new PostCondition("_TLCTrace", "_TLCTraceSilent", "_TLCTraceOutputFile", resolve.toFile().toString()));
 	}
 
 	public void generate(ITool specInfo) {

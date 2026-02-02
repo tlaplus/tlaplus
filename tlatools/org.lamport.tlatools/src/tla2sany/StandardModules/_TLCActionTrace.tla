@@ -18,10 +18,10 @@ LOCAL _next ==
         ToDisjunct(i, r) == "\\/ " \o ToString(i) \o " = _idx /\\ " \o Signature(r) \o "\n"
     IN FoldSet(LAMBDA a, acc: acc \o ToDisjunct(a[1][1], a[2]), "", CounterExample.action)
 
-CONSTANT _TLCTraceFile
+CONSTANT _TLCTraceOutputFile  \* Used by -dumpTrace tlcaction
 
 LOCAL _TLCTraceModule ==
-	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceFile) 
+	LET ModuleName == ReplaceFirstSubSeq("", ".tla", _TLCTraceOutputFile) 
         L == ToString(Cardinality(CounterExample.action)) IN
 	"---- MODULE " \o ModuleName \o " ----\n" \o
 	 \*TODO callsignature symbols may not be defined in the same modules where the actions are defined.
@@ -36,13 +36,13 @@ LOCAL _TLCTraceModule ==
 _TLCTrace ==
     IF CounterExample.action = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ Serialize(_TLCTraceModule,
-    			_TLCTraceFile,
+    			_TLCTraceOutputFile,
     			[
     				format |-> "TXT",
     				charset |-> "UTF-8",
     				openOptions |-> <<"WRITE", "CREATE", "TRUNCATE_EXISTING">>
     			]
            ).exitValue = 0
-        /\ PrintT("CounterExample written: " \o _TLCTraceFile)
+        /\ PrintT("CounterExample written: " \o _TLCTraceOutputFile)
 
 ======
