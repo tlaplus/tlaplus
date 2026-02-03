@@ -663,13 +663,13 @@ public class TLC {
 						final List<Constraint> computeIfAbsent = (List<Constraint>) params
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
-								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceFile", args[index++]));
+								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceInputFile", args[index++]));
 					} else if ("json".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<Constraint> computeIfAbsent = (List<Constraint>) params
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
-								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceFile", args[index++]));
+								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceInputFile", args[index++]));
 					} else {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -loadTrace.");
 						return false;

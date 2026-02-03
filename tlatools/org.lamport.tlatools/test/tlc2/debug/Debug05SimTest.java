@@ -99,8 +99,8 @@ public class Debug05SimTest extends TLCDebuggerTestCase {
 			ea.setFrameId(stackFrame.getId());
 
 			String traceFile = "Debug05SimTest.json";
-			ea.setExpression(
-					"LET J == INSTANCE _JsonTrace WITH _JsonTraceFile <- \"" + traceFile + "\" IN J!_JsonTrace");
+			ea.setExpression("LET J == INSTANCE _JsonTrace WITH _JsonTraceFile <- \"" + traceFile
+					+ "\", _JsonTraceInputFile <- \"" + traceFile + "\" IN J!_JsonTrace");
 			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
 
 			// Validate the content of the generated file (by using the very functionality
@@ -112,8 +112,8 @@ public class Debug05SimTest extends TLCDebuggerTestCase {
 			// 88888888888888888888888888888888888888888888888888888 //
 			
 			traceFile = "Debug05SimTest.bin";
-			ea.setExpression(
-					"LET J == INSTANCE _TLCTrace WITH _TLCTraceFile <- \"" + traceFile + "\" IN J!_TLCTrace");
+			ea.setExpression("LET J == INSTANCE _TLCTrace WITH _TLCTraceFile <- \"" + traceFile
+					+ "\", _TLCTraceInputFile <- \"" + traceFile + "\" IN J!_TLCTrace");
 			assertEquals("TRUE", debugger.evaluate(ea).get().getResult());
 
 			// 88888888888888888888888888888888888888888888888888888 //

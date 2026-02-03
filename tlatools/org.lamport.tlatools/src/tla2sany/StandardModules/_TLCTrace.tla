@@ -32,8 +32,10 @@ _TLCTrace ==
 ----------------------------------------------------------------------------
 \* Deserialize a trace created by _TLCTrace above.
 
+CONSTANT _TLCTraceInputFile   \* Used by -loadTrace tlc
+
 LOCAL _TLCTraceFileDeserialized ==
-    _TLCTraceDeserialize(_TLCTraceFile)
+    _TLCTraceDeserialize(_TLCTraceInputFile)
 
 \* This operator has a Java module override (tlc2.module._TLCTrace#tlcState).
 LOCAL _TLCState(level) ==
