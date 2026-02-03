@@ -64,6 +64,12 @@ jobs:
       with:
           check_name: JUnit Test Report on ${{ matrix.operating-system }}
           report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'
+    - name: Upload tla2tools.jar
+      uses: actions/upload-artifact@v4
+      if: matrix.operating-system == 'ubuntu-latest'
+      with:
+          name: tla2tools
+          path: tlatools/org.lamport.tlatools/dist/tla2tools.jar
     - name: Clone tlaplus/CommunityModules
       uses: actions/checkout@v4
       with:
