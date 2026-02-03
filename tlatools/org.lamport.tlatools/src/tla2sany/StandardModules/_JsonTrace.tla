@@ -16,13 +16,15 @@ _JsonTrace ==
 ----------------------------------------------------------------------------
 \* Deserialize a trace created by _JsonTrace above.
 
+CONSTANT _JsonTraceInputFile   \* Used by -loadTrace json
+
 \* This operator has a Java module override (tlc2.module._JsonTrace#tlcState).
 LOCAL _TLCState(level) ==
 	Trace[level]
 
 LOCAL _JsonTraceConstraint ==
     LET level == TLCGet("level")
-        dump  == JsonDeserialize(_JsonTraceFile)
+        dump  == JsonDeserialize(_JsonTraceInputFile)
         trace == dump["counterexample"]["state"]
         \* JSON deserializes sets as tuples, so convert back to a set
         vars  == {dump["vars"][i] : i \in DOMAIN dump["vars"]}
