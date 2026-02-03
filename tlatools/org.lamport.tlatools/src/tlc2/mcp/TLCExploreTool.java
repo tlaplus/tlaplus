@@ -102,7 +102,7 @@ public class TLCExploreTool extends TLCTool {
 	}
 
 	@Override
-	public JsonObject execute(JsonObject arguments) throws Exception {
+	public JsonObject execute(JsonObject arguments, NotificationSender notificationSender) throws Exception {
 		if (!arguments.has("fileName")) {
 			throw new IllegalArgumentException("Missing required argument: fileName");
 		}
@@ -137,6 +137,7 @@ public class TLCExploreTool extends TLCTool {
 		// Build TLC arguments
 		List<String> tlcArgs = new ArrayList<>();
 		tlcArgs.add("-cleanup");
+		tlcArgs.add("-tool");
 		tlcArgs.add("-simulate");
 		tlcArgs.add("-invlevel");
 		tlcArgs.add(String.valueOf(behaviorLength));
@@ -169,8 +170,8 @@ public class TLCExploreTool extends TLCTool {
 			}
 		}
 
-		// Execute TLC using base class method
-		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts);
+		// Execute TLC using base class method with streaming support
+		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts, notificationSender);
 
 		JsonObject jsonResult = new JsonObject();
 		JsonArray content = new JsonArray();

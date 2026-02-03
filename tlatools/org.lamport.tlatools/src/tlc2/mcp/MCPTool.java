@@ -48,6 +48,18 @@ import com.google.gson.JsonObject;
 public abstract class MCPTool {
 
 	/**
+	 * Interface for sending notifications to the MCP client during tool execution.
+	 */
+	public interface NotificationSender {
+		/**
+		 * Send a notification message to the client.
+		 * 
+		 * @param message The notification message to send
+		 */
+		void sendNotification(String message);
+	}
+
+	/**
 	 * Isolated class loader that reloads all TLC-related classes to ensure static
 	 * state isolation between runs. Based on
 	 * DumpLoadTraceTest.DumpLoadIsolatedClassLoader.
@@ -194,9 +206,35 @@ public abstract class MCPTool {
 	/**
 	 * Execute the tool with the given arguments.
 	 * 
+	 * This is the base method that simple tools should override. Tools that don't
+	 * need notification support can override only this method.
+	 * 
 	 * @param arguments JSON object containing the tool's input parameters
 	 * @return JSON object containing the tool's result
 	 * @throws Exception if tool execution fails
 	 */
-	public abstract JsonObject execute(JsonObject arguments) throws Exception;
+	public JsonObject execute(JsonObject arguments) throws Exception {
+		// This should be overridden by subclasses that don't need notifications
+		throw new UnsupportedOperationException(
+				"Tool must implement either execute(JsonObject) or execute(JsonObject, NotificationSender)");
+	}
+
+	/**
+	 * Execute the tool with the given arguments and a notification sender.
+	 * 
+	 * This method allows tools to send progress notifications during execution.
+	 * Tools that want to stream progress updates should override this method.
+	 * By default, this delegates to the single-parameter version for backwards
+	 * compatibility with tools that only override execute(JsonObject).
+	 * 
+	 * @param arguments          JSON object containing the tool's input parameters
+	 * @param notificationSender Callback for sending progress notifications (may be
+	 *                           null)
+	 * @return JSON object containing the tool's result
+	 * @throws Exception if tool execution fails
+	 */
+	public JsonObject execute(JsonObject arguments, NotificationSender notificationSender) throws Exception {
+		// Default implementation: call the single-parameter version (for backwards compatibility)
+		return execute(arguments);
+	}
 }

@@ -124,7 +124,7 @@ public class TLCTraceTool extends TLCTool {
 	}
 
 	@Override
-	public JsonObject execute(JsonObject arguments) throws Exception {
+	public JsonObject execute(JsonObject arguments, NotificationSender notificationSender) throws Exception {
 		if (!arguments.has("fileName")) {
 			throw new IllegalArgumentException("Missing required argument: fileName");
 		}
@@ -167,6 +167,7 @@ public class TLCTraceTool extends TLCTool {
 		// Build TLC arguments
 		List<String> tlcArgs = new ArrayList<>();
 		tlcArgs.add("-cleanup");
+		tlcArgs.add("-tool");
 
 		// Add fingerprint option if available
 		if (fpValue != null) {
@@ -207,8 +208,8 @@ public class TLCTraceTool extends TLCTool {
 			}
 		}
 
-		// Execute TLC using base class method
-		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts);
+		// Execute TLC using base class method with streaming support
+		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts, notificationSender);
 
 		JsonObject jsonResult = new JsonObject();
 		JsonArray content = new JsonArray();

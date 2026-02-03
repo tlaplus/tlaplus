@@ -26,8 +26,13 @@
 package tlc2.mcp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+
+import tlc2.output.MP;
 
 /**
  * Abstract base class for MCP tools that execute TLC.
@@ -37,6 +42,129 @@ import java.lang.reflect.Method;
  * ensure proper static state isolation between runs.
  */
 public abstract class TLCTool extends MCPTool {
+
+	/**
+	 * Custom output stream that captures output to a buffer while also streaming
+	 * notifications to a callback. When TLC runs in -tool mode, it uses markers
+	 * to delimit messages:
+	 * - Start: @!@!@STARTMSG <code>:<class> @!@!@
+	 * - End: @!@!@ENDMSG <code> @!@!@
+	 * 
+	 * This class parses these markers and sends complete messages (which may span
+	 * multiple lines) as single notifications. The markers themselves are filtered
+	 * out from the final output buffer.
+	 */
+	private static class StreamingOutputStream extends OutputStream {
+		private final ByteArrayOutputStream buffer;
+		private final NotificationSender notificationSender;
+		private final StringBuilder lineBuffer;
+		private final StringBuilder cleanLineBuffer;
+		private final StringBuilder messageBuffer;
+		private boolean insideMessage;
+		private static final String START_MARKER = MP.DELIM + MP.STARTMSG;
+		private static final String END_MARKER = MP.DELIM + MP.ENDMSG;
+
+		public StreamingOutputStream(ByteArrayOutputStream buffer, NotificationSender notificationSender) {
+			this.buffer = buffer;
+			this.notificationSender = notificationSender;
+			this.lineBuffer = new StringBuilder();
+			this.cleanLineBuffer = new StringBuilder();
+			this.messageBuffer = new StringBuilder();
+			this.insideMessage = false;
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			// Buffer bytes for line processing
+			char c = (char) b;
+			if (c == '\n') {
+				// Process complete line
+				String line = lineBuffer.toString();
+				boolean isMarkerLine = processLine(line);
+				
+				// Only write to output buffer if it's not a marker line
+				if (!isMarkerLine) {
+					// Write the accumulated clean line
+					byte[] lineBytes = cleanLineBuffer.toString().getBytes(StandardCharsets.UTF_8);
+					buffer.write(lineBytes);
+					buffer.write('\n');
+				}
+				
+				// Always clear buffers after processing a line
+				cleanLineBuffer.setLength(0);
+				lineBuffer.setLength(0);
+			} else if (c != '\r') {
+				lineBuffer.append(c);
+				cleanLineBuffer.append(c);
+			}
+		}
+
+		private boolean processLine(String line) {
+			if (line.contains(START_MARKER)) {
+				// Start of a new TLC message
+				insideMessage = true;
+				messageBuffer.setLength(0);
+				// Don't include the marker line itself
+				return true; // This is a marker line
+			} else if (line.contains(END_MARKER)) {
+				// End of TLC message - send the accumulated message
+				if (insideMessage && messageBuffer.length() > 0) {
+					String message = messageBuffer.toString().trim();
+					if (!message.isEmpty() && notificationSender != null) {
+						notificationSender.sendNotification(message);
+					}
+				}
+				insideMessage = false;
+				messageBuffer.setLength(0);
+				return true; // This is a marker line
+			} else if (insideMessage) {
+				// Inside a message - accumulate lines
+				if (messageBuffer.length() > 0) {
+					messageBuffer.append('\n');
+				}
+				messageBuffer.append(line);
+				return false; // Not a marker line
+			} else {
+				// Outside markers - send individual line as notification
+				// (for any output that doesn't use -tool markers)
+				if (!line.trim().isEmpty() && notificationSender != null) {
+					notificationSender.sendNotification(line);
+				}
+				return false; // Not a marker line
+			}
+		}
+
+		@Override
+		public void flush() throws IOException {
+			// Process any remaining content in line buffer
+			if (lineBuffer.length() > 0) {
+				String line = lineBuffer.toString();
+				boolean isMarkerLine = processLine(line);
+				
+				// Write to buffer if not a marker line
+				if (!isMarkerLine && cleanLineBuffer.length() > 0) {
+					byte[] lineBytes = cleanLineBuffer.toString().getBytes(StandardCharsets.UTF_8);
+					buffer.write(lineBytes);
+				}
+				
+				// Always clear buffers
+				cleanLineBuffer.setLength(0);
+				lineBuffer.setLength(0);
+			}
+			
+			// Send any remaining message content
+			if (notificationSender != null && messageBuffer.length() > 0) {
+				String message = messageBuffer.toString().trim();
+				if (!message.isEmpty()) {
+					notificationSender.sendNotification(message);
+				}
+				messageBuffer.setLength(0);
+				insideMessage = false;
+			}
+			
+			buffer.flush();
+		}
+	}
 
 	/**
 	 * Execute TLC with the provided arguments and capture its output.
@@ -54,6 +182,28 @@ public abstract class TLCTool extends MCPTool {
 	 * @throws Exception if TLC parameter parsing or execution fails
 	 */
 	protected TLCResult executeTLC(String[] tlcArgs, String[] extraJavaOpts) throws Exception {
+		return executeTLC(tlcArgs, extraJavaOpts, null);
+	}
+
+	/**
+	 * Execute TLC with the provided arguments, capture its output, and stream
+	 * progress notifications.
+	 * 
+	 * This method handles: - Applying Java options from extraJavaOpts - Capturing
+	 * stdout/stderr output - Streaming output line-by-line as notifications -
+	 * Creating an isolated class loader for TLC - Creating and initializing TLC
+	 * instance via reflection - Running TLC and collecting exit code - Restoring
+	 * output streams - Cleaning up isolated class loader and MBeans
+	 * 
+	 * @param tlcArgs            Array of command-line arguments to pass to TLC
+	 * @param extraJavaOpts      Optional array of Java options to apply (e.g.,
+	 *                           ["-Xmx4g", "-Dtlc2.TLC.stopAfter=60"])
+	 * @param notificationSender Optional callback for streaming notifications
+	 * @return TLCResult containing exit code and captured output
+	 * @throws Exception if TLC parameter parsing or execution fails
+	 */
+	protected TLCResult executeTLC(String[] tlcArgs, String[] extraJavaOpts, NotificationSender notificationSender)
+			throws Exception {
 		// Apply Java options if provided
 		for (String optStr : extraJavaOpts) {
 			// Parse Java options like -Dtlc2.TLC.stopAfter=60
@@ -68,9 +218,10 @@ public abstract class TLCTool extends MCPTool {
 		// Create an isolated class loader using base class method
 		IsolatedClassLoader isolatedLoader = createIsolatedClassLoader();
 
-		// Capture output
+		// Capture output with streaming support
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
+		StreamingOutputStream streamingOut = new StreamingOutputStream(baos, notificationSender);
+		PrintStream ps = new PrintStream(streamingOut, true, StandardCharsets.UTF_8);
 		PrintStream oldOut = System.out;
 		PrintStream oldErr = System.err;
 
@@ -97,6 +248,7 @@ public abstract class TLCTool extends MCPTool {
 			int exitCode = (Integer) result;
 
 			ps.flush();
+			streamingOut.flush();
 			String output = baos.toString();
 
 			return new TLCResult(exitCode, output);

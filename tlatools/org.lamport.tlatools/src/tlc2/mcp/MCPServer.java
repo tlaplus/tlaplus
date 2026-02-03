@@ -248,12 +248,41 @@ public class MCPServer {
 		JsonObject arguments = params.has("arguments") ? params.getAsJsonObject("arguments") : new JsonObject();
 
 		try {
-			JsonObject result = tool.execute(arguments);
+			// Create notification sender
+			MCPTool.NotificationSender notificationSender = message -> {
+				sendNotification(message);
+			};
+
+			// Execute with notification support
+			JsonObject result = tool.execute(arguments, notificationSender);
 			return createSuccessResponse(id, result);
 		} catch (Exception e) {
 			String errorMsg = "Tool execution failed: " + e.getMessage();
 			return createErrorResponse(id, -32000, errorMsg);
 		}
+	}
+
+	/**
+	 * Send a notification message to the client.
+	 * 
+	 * Notifications are JSON-RPC messages without an id field, following the MCP
+	 * specification for progress updates.
+	 * 
+	 * @param message The notification message to send
+	 */
+	private synchronized void sendNotification(String message) {
+		JsonObject notification = new JsonObject();
+		notification.addProperty("jsonrpc", "2.0");
+		notification.addProperty("method", "notifications/message");
+
+		JsonObject params = new JsonObject();
+		params.addProperty("level", "info");
+		params.addProperty("data", message);
+
+		notification.add("params", params);
+
+		writer.println(gson.toJson(notification));
+		writer.flush();
 	}
 
 	/**
