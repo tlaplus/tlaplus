@@ -25,9 +25,6 @@
  ******************************************************************************/
 package tlc2.mcp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +38,7 @@ import com.google.gson.JsonObject;
  * output contains all symbol information (constants, variables, operators,
  * etc.)
  */
-public class SANYSymbolTool implements MCPTool {
+public class SANYSymbolTool extends SANYTool {
 
 	@Override
 	public String getDescription() {
@@ -89,17 +86,10 @@ public class SANYSymbolTool implements MCPTool {
 		boolean includeExtended = arguments.has("includeExtendedModules")
 				&& arguments.get("includeExtendedModules").getAsBoolean();
 
-		// Check if file exists
-		File file = new File(fileName);
-		if (!file.exists()) {
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-			contentItem.addProperty("type", "text");
-			contentItem.addProperty("text", "File " + fileName + " does not exist on disk.");
-			content.add(contentItem);
-			result.add("content", content);
-			return result;
+		// Check if file exists using base class method
+		JsonObject errorResponse = checkFileExists(fileName);
+		if (errorResponse != null) {
+			return errorResponse;
 		}
 
 		// Build XMLExporter arguments
@@ -114,39 +104,10 @@ public class SANYSymbolTool implements MCPTool {
 		// Add the filename
 		args.add(fileName);
 
-		// Capture XMLExporter output
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream oldOut = System.out;
-		PrintStream captureStream = new PrintStream(baos);
+		// Execute XMLExporter using base class method
+		String output = executeXMLExporter(args.toArray(new String[0]));
 
-		try {
-			System.setOut(captureStream);
-
-			// Call XMLExporter
-			int exitCode = tla2sany.xml.XMLExporter.run(args.toArray(new String[0]));
-
-			captureStream.flush();
-			String xmlOutput = baos.toString();
-
-			// Return XML output
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-			contentItem.addProperty("type", "text");
-
-			if (exitCode == 0) {
-				contentItem.addProperty("text", "Symbol extraction successful:\n" + xmlOutput);
-			} else {
-				contentItem.addProperty("text", "Symbol extraction failed (exit code " + exitCode + "):\n" + xmlOutput);
-			}
-
-			content.add(contentItem);
-			result.add("content", content);
-			return result;
-
-		} finally {
-			System.setOut(oldOut);
-			captureStream.close();
-		}
+		// Return XML output using base class method
+		return buildTextResponse("Symbol extraction successful:\n" + output);
 	}
 }

@@ -25,22 +25,15 @@
  ******************************************************************************/
 package tlc2.mcp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import tla2sany.drivers.SANY;
-import util.ToolIO;
 
 /**
  * MCP tool for parsing TLA+ modules using SANY.
  * 
  * Thin adapter that translates MCP JSON input to SANY.SANYmain(String[]) call.
  */
-public class SANYParseTool implements MCPTool {
+public class SANYParseTool extends SANYTool {
 
 	@Override
 	public String getDescription() {
@@ -77,49 +70,16 @@ public class SANYParseTool implements MCPTool {
 
 		String fileName = arguments.get("fileName").getAsString();
 
-		// Check if file exists
-		File file = new File(fileName);
-		if (!file.exists()) {
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-			contentItem.addProperty("type", "text");
-			contentItem.addProperty("text", "File " + fileName + " does not exist on disk.");
-			content.add(contentItem);
-			result.add("content", content);
-			return result;
+		// Check if file exists using base class method
+		JsonObject errorResponse = checkFileExists(fileName);
+		if (errorResponse != null) {
+			return errorResponse;
 		}
 
-		// Capture SANY output (redirect ToolIO streams)
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream captureStream = new PrintStream(baos);
-		PrintStream oldOut = ToolIO.out;
-		PrintStream oldErr = ToolIO.err;
+		// Execute SANY using base class method
+		String output = executeSANY(new String[] { fileName });
 
-		try {
-			ToolIO.out = captureStream;
-			ToolIO.err = captureStream;
-
-			// Call SANY main entry point with command-line args
-			SANY.SANYmain(new String[] { fileName });
-
-			captureStream.flush();
-			String output = baos.toString();
-
-			// Return SANY output directly
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-			contentItem.addProperty("type", "text");
-			contentItem.addProperty("text", output);
-			content.add(contentItem);
-			result.add("content", content);
-			return result;
-
-		} finally {
-			ToolIO.out = oldOut;
-			ToolIO.err = oldErr;
-			captureStream.close();
-		}
+		// Return SANY output using base class method
+		return buildTextResponse(output);
 	}
 }

@@ -25,9 +25,7 @@
  ******************************************************************************/
 package tlc2.mcp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,10 +33,8 @@ import java.util.List;
 import java.util.Random;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import tlc2.TLC;
 import tlc2.util.FP64;
 
 /**
@@ -46,7 +42,7 @@ import tlc2.util.FP64;
  * 
  * Performs exhaustive state-space exploration to verify correctness properties.
  */
-public class TLCCheckTool implements MCPTool {
+public class TLCCheckTool extends TLCTool {
 
 	@Override
 	public String getDescription() {
@@ -249,6 +245,8 @@ public class TLCCheckTool implements MCPTool {
 			tlcArgs.add("-dumpTrace");
 			tlcArgs.add("tlc");
 			tlcArgs.add(traceFilePath);
+			
+			tlcArgs.add("-noGenerateSpecTE");
 		}
 
 		// Add config file if provided
@@ -261,78 +259,37 @@ public class TLCCheckTool implements MCPTool {
 		// Add the spec file
 		tlcArgs.add(fileName);
 
-		// Apply Java options if provided
+		// Extract Java options if provided
+		String[] extraJavaOpts = new String[0];
 		if (arguments.has("extraJavaOpts")) {
-			JsonArray extraJavaOpts = arguments.getAsJsonArray("extraJavaOpts");
-			for (JsonElement opt : extraJavaOpts) {
-				String optStr = opt.getAsString();
-				// Parse Java options like -Dtlc2.TLC.stopAfter=60
-				if (optStr.startsWith("-D")) {
-					String[] parts = optStr.substring(2).split("=", 2);
-					if (parts.length == 2) {
-						System.setProperty(parts[0], parts[1]);
-					}
-				}
+			JsonArray javaOptsArray = arguments.getAsJsonArray("extraJavaOpts");
+			extraJavaOpts = new String[javaOptsArray.size()];
+			for (int i = 0; i < javaOptsArray.size(); i++) {
+				extraJavaOpts[i] = javaOptsArray.get(i).getAsString();
 			}
 		}
 
-		// Capture output
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
-		PrintStream oldOut = System.out;
-		PrintStream oldErr = System.err;
+		// Execute TLC using base class method
+		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts);
 
-		try {
-			System.setOut(ps);
-			System.setErr(ps);
+		// Build result message
+		StringBuilder message = new StringBuilder();
+		message.append("TLC model checking completed with exit code ").append(result.exitCode);
+		message.append(":\n\n").append(result.output);
 
-			// Run TLC
-			TLC tlc = new TLC();
-			if (!tlc.handleParameters(tlcArgs.toArray(new String[0]))) {
-				throw new Exception("Failed to parse TLC parameters");
-			}
+		JsonObject jsonResult = new JsonObject();
+		JsonArray content = new JsonArray();
+		JsonObject contentItem = new JsonObject();
+		contentItem.addProperty("type", "text");
+		contentItem.addProperty("text", message.toString());
+		content.add(contentItem);
+		jsonResult.add("content", content);
 
-			int exitCode = tlc.process();
-
-			ps.flush();
-			String output = baos.toString();
-
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-
-			// Build result message
-			StringBuilder message = new StringBuilder();
-			message.append("TLC model checking completed with exit code ").append(exitCode);
-
-			// If trace dumping was enabled and a trace file was generated, mention it
-			if (dumpTrace && traceFilePath != null) {
-				File traceFile = new File(traceFilePath);
-				if (traceFile.exists()) {
-					message.append("\n\nTrace file generated: ").append(traceFilePath);
-					message.append(
-							"\nUse tlaplus_mcp_tlc_trace tool to replay this trace with custom ALIAS expressions.");
-				}
-			}
-
-			message.append(":\n\n").append(output);
-
-			contentItem.addProperty("type", "text");
-			contentItem.addProperty("text", message.toString());
-			content.add(contentItem);
-			result.add("content", content);
-
-			// Add trace file path to result metadata if available
-			if (dumpTrace && traceFilePath != null) {
-				result.addProperty("traceFile", traceFilePath);
-			}
-
-			return result;
-
-		} finally {
-			System.setOut(oldOut);
-			System.setErr(oldErr);
-			ps.close();
+		// Add trace file path to result metadata if available
+		if (dumpTrace && traceFilePath != null) {
+			jsonResult.addProperty("traceFile", traceFilePath);
 		}
+
+		return jsonResult;
 	}
 }

@@ -25,30 +25,171 @@
  ******************************************************************************/
 package tlc2.mcp;
 
+import java.io.File;
+import java.net.URLClassLoader;
+import java.util.Set;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import com.google.gson.JsonObject;
 
 /**
- * Interface for MCP tools.
+ * Abstract base class for MCP tools.
  * 
  * Each tool implementation provides: - A description of what the tool does - An
  * input schema (JSON Schema) defining expected parameters - An execute method
  * that performs the tool's operation
+ * 
+ * This class provides common functionality for isolated class loading, MBean
+ * cleanup, and classpath handling to ensure proper static state isolation
+ * between runs.
  */
-public interface MCPTool {
+public abstract class MCPTool {
+
+	/**
+	 * Isolated class loader that reloads all TLC-related classes to ensure static
+	 * state isolation between runs. Based on
+	 * DumpLoadTraceTest.DumpLoadIsolatedClassLoader.
+	 */
+	protected static class IsolatedClassLoader extends URLClassLoader {
+
+		private final java.util.Map<String, Class<?>> cache = new java.util.HashMap<>();
+		private final java.util.Set<String> packages = new java.util.HashSet<>();
+
+		public IsolatedClassLoader(java.net.URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+
+			// All of TLC's java packages that need isolation
+			packages.add("tla2sany");
+			packages.add("pcal");
+			packages.add("util");
+			packages.add("tla2tex");
+			packages.add("tlc2");
+		}
+
+		@Override
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			// Check if we've already loaded this class in this loader instance
+			synchronized (getClassLoadingLock(name)) {
+				Class<?> c = findLoadedClass(name);
+				if (c != null) {
+					return c;
+				}
+
+				// Check cache
+				if (cache.containsKey(name)) {
+					return cache.get(name);
+				}
+
+				// For classes in our isolated packages, load them ourselves
+				for (final String pkg : packages) {
+					if (name.startsWith(pkg)) {
+						try {
+							c = findClass(name);
+							cache.put(name, c);
+							return c;
+						} catch (LinkageError e) {
+							// If we get a LinkageError, the class might already be loaded by parent
+							// Fall back to parent delegation
+							break;
+						}
+					}
+				}
+
+				// Delegate to parent for all other classes
+				return super.loadClass(name);
+			}
+		}
+	}
+
+	/**
+	 * Extract URLs from the classpath for creating an isolated class loader. Needed
+	 * for Java 9+ where the system class loader is not a URLClassLoader.
+	 * 
+	 * @return Array of URLs from the classpath
+	 * @throws Exception if classpath parsing fails
+	 */
+	protected java.net.URL[] getClasspathURLs() throws Exception {
+		final String classpath = System.getProperty("java.class.path");
+		final String[] entries = classpath.split(File.pathSeparator);
+		final java.net.URL[] urls = new java.net.URL[entries.length];
+		for (int i = 0; i < entries.length; i++) {
+			urls[i] = new File(entries[i]).toURI().toURL();
+		}
+		return urls;
+	}
+
+	/**
+	 * Create an isolated class loader for TLC/SANY execution.
+	 * 
+	 * @return IsolatedClassLoader instance
+	 * @throws Exception if class loader creation fails
+	 */
+	protected IsolatedClassLoader createIsolatedClassLoader() throws Exception {
+		ClassLoader currentLoader = getClass().getClassLoader();
+
+		// Extract URLs for the isolated class loader
+		java.net.URL[] urls;
+		if (currentLoader instanceof URLClassLoader) {
+			// If we have a URLClassLoader, use its URLs
+			urls = ((URLClassLoader) currentLoader).getURLs();
+		} else {
+			// Java 9+: Extract URLs from classpath
+			urls = getClasspathURLs();
+		}
+
+		return new IsolatedClassLoader(urls, currentLoader.getParent());
+	}
+
+	/**
+	 * Unregister all TLC-related MBeans from the platform MBeanServer.
+	 * 
+	 * <p>
+	 * <b>Why this is necessary:</b>
+	 * </p>
+	 * 
+	 * <p>
+	 * TLC/SANY may register MBeans in the <b>JVM-global platform MBeanServer</b>,
+	 * which is a singleton shared across all class loaders. These MBeans persist
+	 * even after the isolated class loader is closed. This method cleans up all TLC
+	 * MBeans after execution to prevent registration conflicts in subsequent runs.
+	 * </p>
+	 */
+	protected void unregisterTLCMBeans() {
+		try {
+			MBeanServer mbs = java.lang.management.ManagementFactory.getPlatformMBeanServer();
+
+			// Find all TLC-related MBeans (they start with "tlc2.")
+			Set<ObjectName> mbeans = mbs.queryNames(new ObjectName("tlc2.*:*"), null);
+
+			for (ObjectName name : mbeans) {
+				try {
+					mbs.unregisterMBean(name);
+				} catch (Exception e) {
+					// Ignore errors during cleanup
+					System.err.println("Warning: Could not unregister MBean: " + name + " - " + e.getMessage());
+				}
+			}
+		} catch (Exception e) {
+			// Ignore errors during cleanup
+			System.err.println("Warning: Error during MBean cleanup: " + e.getMessage());
+		}
+	}
 
 	/**
 	 * Get the human-readable description of this tool.
 	 * 
 	 * @return Tool description
 	 */
-	String getDescription();
+	public abstract String getDescription();
 
 	/**
 	 * Get the JSON Schema for this tool's input parameters.
 	 * 
 	 * @return JSON Schema object describing the input parameters
 	 */
-	JsonObject getInputSchema();
+	public abstract JsonObject getInputSchema();
 
 	/**
 	 * Execute the tool with the given arguments.
@@ -57,5 +198,5 @@ public interface MCPTool {
 	 * @return JSON object containing the tool's result
 	 * @throws Exception if tool execution fails
 	 */
-	JsonObject execute(JsonObject arguments) throws Exception;
+	public abstract JsonObject execute(JsonObject arguments) throws Exception;
 }

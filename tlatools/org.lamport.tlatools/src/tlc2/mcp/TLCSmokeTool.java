@@ -25,9 +25,7 @@
  ******************************************************************************/
 package tlc2.mcp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,15 +33,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import tlc2.TLC;
-
 /**
  * MCP tool for smoke testing TLA+ specifications using TLC simulation mode.
  * 
  * Runs lightweight verification by randomly exploring behaviors within a time
  * limit.
  */
-public class TLCSmokeTool implements MCPTool {
+public class TLCSmokeTool extends TLCTool {
 
 	@Override
 	public String getDescription() {
@@ -150,54 +146,26 @@ public class TLCSmokeTool implements MCPTool {
 		// Add the spec file
 		tlcArgs.add(fileName);
 
-		// Apply Java options if provided
+		// Extract Java options if provided
+		String[] extraJavaOpts = new String[0];
 		if (arguments.has("extraJavaOpts")) {
-			JsonArray extraJavaOpts = arguments.getAsJsonArray("extraJavaOpts");
-			for (JsonElement opt : extraJavaOpts) {
-				String optStr = opt.getAsString();
-				if (optStr.startsWith("-D")) {
-					String[] parts = optStr.substring(2).split("=", 2);
-					if (parts.length == 2) {
-						System.setProperty(parts[0], parts[1]);
-					}
-				}
+			JsonArray javaOptsArray = arguments.getAsJsonArray("extraJavaOpts");
+			extraJavaOpts = new String[javaOptsArray.size()];
+			for (int i = 0; i < javaOptsArray.size(); i++) {
+				extraJavaOpts[i] = javaOptsArray.get(i).getAsString();
 			}
 		}
 
-		// Capture output
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
-		PrintStream oldOut = System.out;
-		PrintStream oldErr = System.err;
+		// Execute TLC using base class method
+		TLCResult result = executeTLC(tlcArgs.toArray(new String[0]), extraJavaOpts);
 
-		try {
-			System.setOut(ps);
-			System.setErr(ps);
-
-			// Run TLC
-			TLC tlc = new TLC();
-			if (!tlc.handleParameters(tlcArgs.toArray(new String[0]))) {
-				throw new Exception("Failed to parse TLC parameters");
-			}
-
-			int exitCode = tlc.process();
-
-			ps.flush();
-			String output = baos.toString();
-
-			JsonObject result = new JsonObject();
-			JsonArray content = new JsonArray();
-			JsonObject contentItem = new JsonObject();
-			contentItem.addProperty("type", "text");
-			contentItem.addProperty("text", "TLC smoke test completed with exit code " + exitCode + ":\n\n" + output);
-			content.add(contentItem);
-			result.add("content", content);
-			return result;
-
-		} finally {
-			System.setOut(oldOut);
-			System.setErr(oldErr);
-			ps.close();
-		}
+		JsonObject jsonResult = new JsonObject();
+		JsonArray content = new JsonArray();
+		JsonObject contentItem = new JsonObject();
+		contentItem.addProperty("type", "text");
+		contentItem.addProperty("text", "TLC smoke test completed with exit code " + result.exitCode + ":\n\n" + result.output);
+		content.add(contentItem);
+		jsonResult.add("content", content);
+		return jsonResult;
 	}
 }

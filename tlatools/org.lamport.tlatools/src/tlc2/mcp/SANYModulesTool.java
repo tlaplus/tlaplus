@@ -40,7 +40,7 @@ import com.google.gson.JsonObject;
  * Retrieves a list of all TLA+ modules that can be imported into a
  * specification.
  */
-public class SANYModulesTool implements MCPTool {
+public class SANYModulesTool extends MCPTool {
 
 	@Override
 	public String getDescription() {
