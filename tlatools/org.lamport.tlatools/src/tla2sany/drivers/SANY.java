@@ -429,11 +429,18 @@ public class SANY {
    * ExternalModuleTable.
    */
   public static void SANYmain(String args[]) {
+    try {
+    	SANYmain0(args);
+    } catch (SANYExitException e) {
+    	System.exit(e.getExitCode());
+    }
+  }
+
+  public static void SANYmain0(String args[]) throws SANYExitException {
     if (args.length == 0) {
       printUsage();
-      System.exit(-1);
+      throw new SANYExitException(-1, "No arguments provided");
     }
-
     int i;
     // Parse and process the command line switches, which are
     // distinguished by the fact that they begin with a '-' character.
@@ -456,18 +463,18 @@ public class SANY {
            doStrictErrorCodes = true;
       else if (args[i].toLowerCase().equals("-help")) {
            printUsage();
-           System.exit(0);
+           return;
       } else {
            ToolIO.out.println("Invalid option: " + args[i]);
            ToolIO.out.println("Try 'SANY -help' for more information.");
-           System.exit(-1);
+           throw new SANYExitException(-1, "Invalid option: " + args[i]);
       }
     }
 
     if (i == args.length) {
       ToolIO.out.println("At least 1 filename is required.");
       ToolIO.out.println("Try 'SANY -help' for more information.");
-      System.exit(-1);
+      throw new SANYExitException(-1, "No filename provided");
     }
 
     final SanyOutput out = new OutErrSanyOutput(
@@ -499,14 +506,14 @@ public class SANY {
           try {
               int ret = frontEndMain(spec, args[i], out);
 			  if (ret != 0) {
-            	  System.exit(ret);
+            	  throw new SANYExitException(ret, "Frontend returned error code: " + ret);
               }
             }
             catch (FrontEndException fe) {
               // For debugging
               fe.printStackTrace();   
               out.log(LogLevel.ERROR, fe.toString());
-              System.exit(-1);
+              throw new SANYExitException(-1, "FrontEndException: " + fe.toString());
             }
 
             if (doDebugging) {
@@ -520,7 +527,7 @@ public class SANY {
       } else 
       {
           out.log(LogLevel.ERROR, "Cannot find the specified file %s.", args[i]);
-          System.exit(-1);
+          throw new SANYExitException(-1, "Cannot find file: " + args[i]);
       }
     }
   }
