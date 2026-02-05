@@ -7,6 +7,7 @@ package tla2sany.xml;
  * a tool for exporting the loaded modules to XML format
  */
 
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public class XMLExporter {
     System.exit(run(args));
   }
 
-  static int run(String... args) throws XMLExportingException {
+  public static int run(String... args) throws XMLExportingException {
     try {
       moduleToXML(args);
       return 0;
@@ -271,8 +272,9 @@ public class XMLExporter {
           SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
           URL schemaFile = XMLExporter.class.getResource("sany.xsd");
           if (null == schemaFile) {
-            ToolIO.err.println("ERROR: Unable to find sany.xsd schema file that is expected to be embedded in the jar.");
-            System.exit(1);
+            throw new XMLExportingException(
+                "Unable to find sany.xsd schema file that is expected to be embedded in the jar.",
+                new FileNotFoundException("Resource sany.xsd not found in classpath"));
           }
           Schema schema = factory.newSchema(schemaFile);
           // create a Validator instance, which can be used to validate an instance document
