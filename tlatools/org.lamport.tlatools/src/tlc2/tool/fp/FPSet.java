@@ -6,9 +6,7 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 import tlc2.tool.TLCTrace;
 import tlc2.tool.distributed.fp.DistributedFPSet;
@@ -23,7 +21,7 @@ import tlc2.util.LongVec;
  * guarantee that their methods are thread-safe.
  */
 @SuppressWarnings("serial")
-public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
+public abstract class FPSet implements FPSetRMI
 {
 	/**
 	 * Size of a Java long in bytes
@@ -214,11 +212,9 @@ public abstract class FPSet extends UnicastRemoteObject implements FPSetRMI
 	}
 
 	/**
-	 * @see UnicastRemoteObject#unexportObject(java.rmi.Remote, boolean)
-	 * @param force
-	 * @throws NoSuchObjectException
+	 * No-op: RMI export/unexport not needed for non-distributed TLC.
 	 */
-	public void unexportObject(boolean force) throws NoSuchObjectException {
-		UnicastRemoteObject.unexportObject(this, force);
+	public void unexportObject(boolean force) {
+		// no-op: RMI not used
 	}
 }
