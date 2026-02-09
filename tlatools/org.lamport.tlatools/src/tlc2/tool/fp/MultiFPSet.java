@@ -5,9 +5,7 @@
 package tlc2.tool.fp;
 
 import java.io.IOException;
-import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -143,11 +141,10 @@ public class MultiFPSet extends FPSet {
 	/* (non-Javadoc)
 	 * @see tlc2.tool.fp.FPSet#unexportObject(boolean)
 	 */
-	public void unexportObject(boolean force) throws NoSuchObjectException {
+	public void unexportObject(boolean force) {
 		for (FPSet fpSet : sets) {
 			fpSet.unexportObject(force);
 		}
-		UnicastRemoteObject.unexportObject(this, force);
 	}
 
 	/* (non-Javadoc)
