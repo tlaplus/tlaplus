@@ -135,7 +135,7 @@ public class IntValue extends Value {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        Assert.fail("Attempted to appy EXCEPT construct to the integer " +
+        Assert.fail("Attempted to apply EXCEPT construct to the integer " +
         Values.ppr(this.toString()) + ".", getSource());
       }
       return ex.value;
