@@ -31,14 +31,14 @@ import util.Assert;
 import util.UniqueString;
 
 public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaValue {
-  public final FcnParams params;       // the function formals
+  private final FcnParams params;      // the function formals
   public final SemanticNode body;      // the function body
-  public ValueExcept[] excepts;  // the EXCEPTs
-  public final ITool tool;
-  public Context con;
-  public final TLCState state;
-  public final TLCState pstate;
-  public int control;
+  private ValueExcept[] excepts;  // the EXCEPTs
+  private final ITool tool;
+  private Context con;
+  private final TLCState state;
+  private final TLCState pstate;
+  private int control;
   public FcnRcdValue fcnRcd;
 
 	/*
