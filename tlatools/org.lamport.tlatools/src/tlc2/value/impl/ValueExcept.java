@@ -33,7 +33,11 @@ public class ValueExcept {
     this.value = rhs;
     this.idx = 0;
   }
-  
+
+  public ValueExcept(ValueExcept ex) {
+    this(ex, ex.idx);
+  }
+
   /**
    * Creates a shallow copy of {@code ex} with {@code idx} set to the given
    * value. Use this to obtain a fresh cursor (idx) into the same path/value pair
