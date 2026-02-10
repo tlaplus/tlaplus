@@ -697,7 +697,15 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
         }
         if (coverage) {cm.incSecondary(sz);}
         if (this.excepts != null) {
-        	// TODO:
+			// Creating fresh ValueExcept instances before takeExcept ensures toFcnRcd() has
+			// no side effects beyond setting fcnRcd. That keeps the FcnLambdaValue safe to
+			// use afterward (e.g. for takeExcept, select, or apply) without its excepts
+			// being mutated by the conversion.
+			final ValueExcept[] excepts = new ValueExcept[this.excepts.length];
+			for (int i = 0; i < this.excepts.length; i++) {
+				excepts[i] = new ValueExcept(this.excepts[i]);
+			}
+			// TODO:
 			// tlc2.tool.simulation.NQSpecTest is the only test in our test suite that
 			// exercises this code path--it works fine. In the general case, however,
 			// it is not clear why the cast to FRV should be safe. As a matter of fact,
@@ -706,7 +714,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
 			// Value#toFcnRcd allows null, the cast could be secured with a conditional
 			// and null returned otherwise. In case of null, toString returns the symbolic
 			// value.
-	        this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(this.excepts);
+	        this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(excepts);
         }
       }
       return this.fcnRcd;
