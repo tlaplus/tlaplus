@@ -9,6 +9,7 @@ package tla2sany.xml;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -36,6 +37,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import pcal.PcalDebug;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.SpecObj;
@@ -174,6 +176,7 @@ public class XMLExporter {
     if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
       try {
         SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
+        PcalDebug.setOutput(new PrintStream(OutputStream.nullOutputStream()));
         SANY.frontEndMain(spec, tla_name, out);
         if (spec.getExternalModuleTable() == null)
           throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);

@@ -1,5 +1,6 @@
 package pcal;
 
+import java.io.PrintStream;
 import java.util.Vector;
 
 import pcal.exception.UnrecoverableException;
@@ -18,6 +19,22 @@ public class PcalDebug
     public static final String UNRECOVERABLE_ERROR = "\nUnrecoverable error:\n -- ";
     public static final String WARNING = "Warning: ";
     public static final String ERROR_POSTFIX = ".\n";
+    private static PrintStream out = ToolIO.out;
+
+    /**
+     * A hack in case some user wants to silence output. The PlusCal parser
+     * is called whenever SANY runs and there are some noisy output messages.
+     * Occasionally this is not desirable. Future work should make this into
+     * a non-static class that is passed around the PlusCal codebase, with
+     * appropriate log level filtering. Ideally it would either implement or
+     * consume the @link{tla2sany.output.SanyOutput} interface.
+     *
+     * @param out The sink to which to write all log output. This is global
+     *            and static.
+     */
+    public static void setOutput(PrintStream out) {
+        PcalDebug.out = out;
+    }
 
     /**
      * Printer for the exceptions
@@ -40,7 +57,7 @@ public class PcalDebug
      */
     public static void reportWarning(String warningText)
     {
-        ToolIO.out.println(new StringBuffer(WARNING).append(warningText));
+        PcalDebug.out.println(new StringBuffer(WARNING).append(warningText));
     }
 
     /**
@@ -49,7 +66,7 @@ public class PcalDebug
      */
     public static void reportInfo(String infoText)
     {
-        ToolIO.out.println(infoText);
+        PcalDebug.out.println(infoText);
     }
 
     /**
@@ -58,7 +75,7 @@ public class PcalDebug
      */
     public static void reportError(String message)
     {
-        ToolIO.out.println(new StringBuffer(UNRECOVERABLE_ERROR).append(message).append(ERROR_POSTFIX).toString());
+        PcalDebug.out.println(new StringBuffer(UNRECOVERABLE_ERROR).append(message).append(ERROR_POSTFIX).toString());
     }
 
     /**
@@ -109,9 +126,9 @@ public class PcalDebug
         sb.append("Send the following information and the\ninput file to the current maintainer(s).\n\n -- ");
         sb.append(msg).append(".");
     	
-        ToolIO.out.println("");
-        ToolIO.out.println(sb.toString());
-        ToolIO.out.println("");
+        PcalDebug.out.println("");
+        PcalDebug.out.println(sb.toString());
+        PcalDebug.out.println("");
         
         throw new Error(sb.toString());
     };
@@ -124,7 +141,7 @@ public class PcalDebug
     {
         if (array == null)
         {
-            ToolIO.out.println(name + " == null");
+            PcalDebug.out.println(name + " == null");
             return;
         }
         ;
@@ -133,17 +150,17 @@ public class PcalDebug
         {
             if (array[i] == null)
             {
-                ToolIO.out.println(name + "[" + i + "] = null");
+                PcalDebug.out.println(name + "[" + i + "] = null");
             } else
             {
-                ToolIO.out.println(name + "[" + i + "] = " + array[i].toString());
+                PcalDebug.out.println(name + "[" + i + "] = " + array[i].toString());
             }
             i = i + 1;
         }
         ;
         if (array.length == 0)
         {
-            ToolIO.out.println(name + " = zero-length array");
+            PcalDebug.out.println(name + " = zero-length array");
         }
         ;
     };
@@ -156,20 +173,20 @@ public class PcalDebug
     {
         if (array == null)
         {
-            ToolIO.out.println(name + " == null");
+            PcalDebug.out.println(name + " == null");
             return;
         }
         ;
         int i = 0;
         while (i < array.length)
         {
-            ToolIO.out.println(name + "[" + i + "] = " + array[i]);
+            PcalDebug.out.println(name + "[" + i + "] = " + array[i]);
             i = i + 1;
         }
         ;
         if (array.length == 0)
         {
-            ToolIO.out.println(name + " = zero-length array");
+            PcalDebug.out.println(name + " = zero-length array");
         }
         ;
     };
@@ -182,7 +199,7 @@ public class PcalDebug
     {
         if (array == null)
         {
-            ToolIO.out.println(name + " == null");
+            PcalDebug.out.println(name + " == null");
             return;
         }
         ;
@@ -192,13 +209,13 @@ public class PcalDebug
             int j = 0;
             while (j < array[i].length)
             {
-                ToolIO.out.println(name + "[" + i + "][" + j + "] = " + array[i][j].toString());
+                PcalDebug.out.println(name + "[" + i + "][" + j + "] = " + array[i][j].toString());
                 j = j + 1;
             }
             ;
             if (array[i].length == 0)
             {
-                ToolIO.out.println(name + "[" + i + "] = null");
+                PcalDebug.out.println(name + "[" + i + "] = null");
             }
             ;
             i = i + 1;
@@ -206,7 +223,7 @@ public class PcalDebug
         ;
         if (array.length == 0)
         {
-            ToolIO.out.println(name + " = zero-length array");
+            PcalDebug.out.println(name + " = zero-length array");
         }
         ;
     };
@@ -219,7 +236,7 @@ public class PcalDebug
     {
         if (vec == null)
         {
-            ToolIO.out.println(name + " == null");
+            PcalDebug.out.println(name + " == null");
             return;
         }
         ;
@@ -228,17 +245,17 @@ public class PcalDebug
         {
             if (vec.elementAt(i) == null)
             {
-                ToolIO.out.println(name + "[" + i + "] = null");
+                PcalDebug.out.println(name + "[" + i + "] = null");
             } else
             {
-                ToolIO.out.println(name + "[" + i + "] = " + vec.elementAt(i).toString());
+                PcalDebug.out.println(name + "[" + i + "] = " + vec.elementAt(i).toString());
             }
             i = i + 1;
         }
         ;
         if (vec.size() == 0)
         {
-            ToolIO.out.println(name + " = zero-length vec");
+            PcalDebug.out.println(name + " = zero-length vec");
         }
         ;
     };
@@ -252,7 +269,7 @@ public class PcalDebug
     {
         if (vec == null)
         {
-            ToolIO.out.println(name + " == null");
+            PcalDebug.out.println(name + " == null");
             return;
         }
         ;
@@ -261,7 +278,7 @@ public class PcalDebug
         {
             if (vec.elementAt(i) == null)
             {
-                ToolIO.out.println(name + "[" + i + "] = null");
+                PcalDebug.out.println(name + "[" + i + "] = null");
             } else
             {
                 printVector((Vector) vec.elementAt(i), name + "[" + i + "]");
@@ -272,7 +289,7 @@ public class PcalDebug
         ;
         if (vec.size() == 0)
         {
-            ToolIO.out.println(name + " = zero-length vec");
+            PcalDebug.out.println(name + " = zero-length vec");
         }
         ;
     };
@@ -290,7 +307,7 @@ public class PcalDebug
     * Just prints "(i, j)".                                              *
     *********************************************************************/
     {
-        ToolIO.out.println(pair(i, j));
+        PcalDebug.out.println(pair(i, j));
     }
 
 }
