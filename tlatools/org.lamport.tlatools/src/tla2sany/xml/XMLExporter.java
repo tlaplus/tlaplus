@@ -38,6 +38,7 @@ import org.xml.sax.SAXException;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SanySettings;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
@@ -174,7 +175,8 @@ public class XMLExporter {
     if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
       try {
         SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
-        SANY.frontEndMain(spec, tla_name, out);
+        SanySettings settings = SanySettings.validAstSettings();
+        SANY.parse(spec, tla_name, out, settings);
         if (spec.getExternalModuleTable() == null)
           throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
         if (spec.getExternalModuleTable().getRootModule() == null)

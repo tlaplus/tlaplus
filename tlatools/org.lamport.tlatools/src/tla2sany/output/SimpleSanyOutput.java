@@ -49,6 +49,10 @@ public class SimpleSanyOutput implements SanyOutput {
    * @param logLevel Output below this level is silenced.
    */
   public SimpleSanyOutput(PrintStream out, LogLevel logLevel) {
+    if (null == out) {
+      throw new IllegalArgumentException("out stream cannot be null");
+    }
+
     this.out = out;
     this.logLevel = logLevel;
   }

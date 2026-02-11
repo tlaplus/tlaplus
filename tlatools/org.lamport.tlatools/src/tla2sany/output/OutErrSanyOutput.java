@@ -51,6 +51,14 @@ public class OutErrSanyOutput implements SanyOutput {
       LogLevel outputLevel,
       LogLevel errorLevel
   ) {
+    if (null == out) {
+      throw new IllegalArgumentException("out stream cannot be null");
+    }
+
+    if (null == err) {
+      throw new IllegalArgumentException("err stream cannot be null");
+    }
+
     for (LogLevel level : LogLevel.values()) {
       this.outStreams[level.ordinal()] =
           level.ordinal() >= outputLevel.ordinal()
