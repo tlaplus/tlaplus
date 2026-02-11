@@ -62,10 +62,6 @@ public class SANY {
   public static String version = 
     "Version 2.2 created " + modDate ; 
 
-  private static boolean doParsing          = true;  
-    // true <=> parsing should be done
-    //          currently there is no way to turn this off
-
   private static boolean doSemanticAnalysis = true;  
     // true <=> semantic analysis should be done
     //          default is true; turned OFF by -S switch
@@ -88,9 +84,16 @@ public class SANY {
     //          return value
 
   /**
-   * Use {@link SANY#frontEndMain(SpecObj, String, SanyOutput)} instead for
-   * greater control of output. This method will print all human-readable log
-   * messages to the provided syserr parameter. It cannot be null.
+   * The default setting of whether to validate the root module's PlusCal
+   * translation and warn if it is out of sync.
+   */
+  private static final boolean doValidatePCalTranslationDefault = true;
+
+  /**
+   * Use {@link SANY#frontEndMain(SpecObj, String, SanyOutput, SanySettings)}
+   * instead for greater control of output and settings. This method will
+   * print all human-readable log messages to the provided syserr parameter.
+   * The syserr parameter cannot be null.
    */
   @Deprecated
   public static final int frontEndMain(
@@ -101,57 +104,76 @@ public class SANY {
   }
 
   /**
-   * The SANY.frontEndMain method Processes an entire TLA+ spec
-   * that starts in the file named in "filename", including all files
-   * it refers to directly or indirectly in EXTENDS or INSTANCE
-   * constructs.  "fileName" is relative to the current directory.  It
-   * is expected to end with the extension ".tla"; if it does not,
-   * then ".tla" is appended before processing it.
-   *
-   * This method does (1) parsing, (2) semantic analysis, and (3)
-   * level-checking, and returns a Specification object, which is the
-   * root of the semantic graph of the specification.
-   *
-   * It also sends progress indications and other log messages to the
-   * {@link SanyOutput} parameter. Errors and warnings (along with machine-
-   * readable metadata) are furthermore saved to an {@link Errors} instance
-   * for later processing. If no human-readable log output is desired, a
-   * {@link tla2sany.output.SilentSanyOutput} instance should be provided.
-   *
-   * This method returns a Specification object, even if warnings,
-   * errors, or aborts occurred during processing.  (But the
-   * Specification may be incomplete, in that not all modules or
-   * definitions are processed.)
-   *
-   * The Specification object returned must be queried by the caller
-   * using getErrorLevel() to see what level of problems, if any,
-   * occurred during the three phases.  Any value from getErrorLevel()
-   * other than 0 is fatal, and the caller should not use the
-   * specification object any more.
-   *
-   * This method throws a FrontEndException if an unexpected runtime
-   * error occurs in the FrontEnd.  This exception is NOT thrown for
-   * ordinary Warning, Error, or Abort conditions detected during
-   * processing--those are reported in the returned specification
-   * object, which must be checked as described above.
+   * Use {@link SANY#frontEndMain(SpecObj, String, SanyOutput, SanySettings)}
+   * instead for greater control of output and settings.
    */
+  @Deprecated
   public static final int frontEndMain(
                              SpecObj spec, 
                              String fileName, 
                              SanyOutput out) throws FrontEndException {
+    SanySettings settings = new SanySettings(
+        doStrictErrorCodes,
+        doSemanticAnalysis,
+        doLevelChecking,
+        doLinting,
+        doValidatePCalTranslationDefault
+      );
+    return parse(spec, fileName, out, settings);
+  }
+
+  /**
+   * This method processes an entire TLA+ spec that starts in the file named
+   * in the "fileName" parameter, including all files it refers to directly
+   * or indirectly in EXTENDS or INSTANCE constructs. "fileName" is relative
+   * to the current working directory. It is expected to end with the
+   * extension ".tla"; if it does not, then ".tla" is appended.
+   *
+   * This method does (1) syntax parsing, (2) semantic analysis, (3) level-
+   * checking, and (4) linting; it modifies the spec object in place to form
+   * the root of the semantic graph of the specification. A nonzero code is
+   * returned in case of error and when {@link SanySettings#doStrictErrorCodes}
+   * is set (which it always will be for external users). The later parser
+   * phases can be optionally disabled using the {@link SanySetting} object.
+   *
+   * This method sends progress indications and other log messages to the
+   * {@link SanyOutput} parameter. Errors and warnings (along with machine-
+   * readable metadata) are furthermore saved to an {@link Errors} instance
+   * in the spec object for later processing. If no human-readable log output
+   * is desired, a {@link tla2sany.output.SilentSanyOutput} instance should
+   * be provided.
+   *
+   * The spec object returned must be queried by the caller using
+   * {@link SpecObj#getErrorLevel()} to see what level of problems, if any,
+   * occurred during the parsing phases. Any value other than 0 is fatal, and
+   * the caller should not use the spec object any more. To see the actual
+   * list of failures tagged with an {@link tla2sany.semantic.ErrorCode},
+   * call {@link SpecObj#getParseErrors()} and {@link SpecObj#getSemanticErrors()}.
+   *
+   * This method throws a {@link FrontEndException} if an unexpected runtime
+   * error occurs during parsing. This exception is NOT thrown for ordinary
+   * {@link tla2sany.semantic.ErrorCode.ErrorLevel.WARNING} or
+   * {@link tla2sany.semantic.ErrorCode.ErrorLevel.ERROR} occurrences, which
+   * are reported through the {@link Errors} instances as explained above.
+   */
+  public static final int parse(
+                             SpecObj spec, 
+                             String fileName, 
+                             SanyOutput out,
+                             SanySettings settings) throws FrontEndException {
     try {
       // **** Initialize the global environment
       frontEndInitialize();
     
       // **** Parsing 
-      if (doParsing) frontEndParse(spec, out);
+      frontEndParse(spec, out, settings.validatePCalTranslation);
     
       // **** Semantic analysis and level checking
-      if (doSemanticAnalysis) 
-            {frontEndSemanticAnalysis(spec, out, doLevelChecking);} ;
+      if (settings.doSemanticAnalysis) 
+            {frontEndSemanticAnalysis(spec, out, settings.doLevelChecking);} ;
 
-      // **** Semantic analysis and level checking
-      if (doLinting) 
+      // **** Linting
+      if (settings.doLinting) 
             {frontEndLinting(spec, out); } ;
 
     }
@@ -165,7 +187,7 @@ public class SANY {
       out.log(LogLevel.ERROR, e.toString());
       throw new FrontEndException(e);
     }
-    if (doStrictErrorCodes) {
+    if (settings.doStrictErrorCodes) {
       return spec.errorLevel;
     } else {
       return 0;
