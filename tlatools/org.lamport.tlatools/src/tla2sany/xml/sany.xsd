@@ -911,6 +911,13 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element ref="uniquename"/>
+        <xs:element name="extends">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="uniquename" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
         <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
           <xs:element ref="OpDeclNodeRef"/>
