@@ -2582,7 +2582,9 @@ Proof() : {
    tn = QEDStep() 
    { addHeir(tn);
      SyntaxTreeNode sn[] = getLastHeirs();
-     tn = new SyntaxTreeNode(mn, N_Proof, sn ); }
+     tn = new SyntaxTreeNode(mn, N_Proof, sn );
+     tn.setProofLevel(this.getProofLevel());
+   }
 )
  { 
    epa(); 
