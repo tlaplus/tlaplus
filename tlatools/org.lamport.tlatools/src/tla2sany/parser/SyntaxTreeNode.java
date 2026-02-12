@@ -148,6 +148,25 @@ public class SyntaxTreeNode implements TreeNode, SyntaxTreeConstants,
     * post-comment.                                                        *
     ***********************************************************************/
 
+  /**
+   * The proof level of this {@link SyntaxTreeNode} instance, if applicable.
+   */
+  private int proofLevel = -1;
+
+  /**
+   * Sets the proof level of the current {@link SyntaxTreeNode} instance.
+   *
+   * @param proofLevel The proof level to set.
+   */
+  void setProofLevel(int proofLevel) {
+    this.proofLevel = proofLevel;
+  }
+
+  @Override
+  public int getProofLevel() {
+    return this.proofLevel;
+  }
+
 	private int level = -1;
 
 	@Override

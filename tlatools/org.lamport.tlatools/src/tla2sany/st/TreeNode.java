@@ -25,4 +25,12 @@ public interface TreeNode {
   public int getLevel();
   public TreeNode getParent();
   public void setParent();
+
+  /**
+   * The proof level of this node, if applicable. Only defined for the
+   * {@link SyntaxTreeConstants#N_Proof} node kind; -1 otherwise.
+   *
+   * @return The proof level of the node; -1 if not applicable.
+   */
+  public int getProofLevel();
 }
