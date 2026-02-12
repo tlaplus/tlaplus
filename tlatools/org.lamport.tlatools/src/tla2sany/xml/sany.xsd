@@ -3,7 +3,7 @@
 <!-- This DTD represents a SANY parsed module, corresponding to an input tla file. -->
 <!-- Elements starting with capital letters correspond to SANY Java classes -->
 <!-- This DTD should encompass all relevant data and later should be matched against actual XMLS to see if there is redundancy (do theorems really have suffices?) -->
-<!-- In addition to the inheritence structure, the DTD should also take into account semantical cosntraints based on kinds. I.e. it is not possible to create certain nodes of certain kinds -->
+<!-- In addition to the inheritance structure, the DTD should also take into account semantical constraints based on kinds. I.e. it is not possible to create certain nodes of certain kinds -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
 
@@ -22,7 +22,7 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- contextes and symbols references -->
+  <!-- context and symbol references -->
   <!-- everything which has a uniquename is defined only once, here, and is referred by its name.
        this element resides within a certain scope and affects only this scope -->
   <xs:element name="context">
@@ -313,6 +313,7 @@
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+        <xs:element minOccurs="0" ref="local"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -476,12 +477,13 @@
     </xs:choice>
   </xs:group>
 
-  <!-- Reprensets the name of an instantiated module -->
+  <!-- Represents the name of an instantiated module -->
   <xs:element name="ModuleInstanceKind">
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element ref="uniquename"/>
+        <xs:element minOccurs="0" ref="local"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -507,11 +509,16 @@
           </xs:complexType>
         </xs:element>
         <xs:element minOccurs="0" ref="recursive"/>
+        <xs:element minOccurs="0" ref="local"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="recursive">
+    <xs:complexType/>
+  </xs:element>
+
+  <xs:element name="local">
     <xs:complexType/>
   </xs:element>
 
@@ -530,7 +537,7 @@
     <xs:complexType/>
   </xs:element>
 
-  <!--  This node represents all builtins, including quantifiers, set operatios, etc. -->
+  <!--  This node represents all builtins, including quantifiers, set operations, etc. -->
   <xs:element name="BuiltInKind">
     <xs:complexType>
       <xs:sequence>
@@ -762,7 +769,7 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- Represents a labelled expression nm(x,y): (ExprNode|AssumeProveNode) -->
+  <!-- Represents a labeled expression nm(x,y): (ExprNode|AssumeProveNode) -->
   <xs:element name="LabelNode">
     <xs:complexType>
       <xs:sequence>
