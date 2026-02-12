@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.w3c.dom.Document;
@@ -1262,6 +1263,19 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
   protected Element getSymbolElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element ret = doc.createElement("ModuleNode");
     ret.appendChild(appendText(doc, "uniquename", getName().toString()));
+
+    // EXTENDS
+    Element ext = doc.createElement("extends");
+    ret.appendChild(ext);
+    List<String> extendedModuleNames =
+          this.getExtendedModuleSet(false)
+          .stream()
+          .map(m -> m.getName().toString())
+          .sorted()
+          .collect(Collectors.toList());
+    for (String moduleName : extendedModuleNames) {
+      ext.appendChild(appendText(doc, "uniquename", moduleName));
+    }
 
     // constants
     //Element constants = doc.createElement("constants");
