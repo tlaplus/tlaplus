@@ -463,6 +463,10 @@ public class InstanceNode extends LevelNode {
       ret.appendChild(appendText(doc, "module", module.getName().toString() ));
       ret.appendChild(sbts);
       ret.appendChild(prms);
+      if (this.isLocal()) {
+        ret.appendChild(doc.createElement("local"));
+      }
+
       return ret;
     }
 

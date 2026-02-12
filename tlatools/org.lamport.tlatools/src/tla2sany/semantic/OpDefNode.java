@@ -1519,8 +1519,15 @@ public class OpDefNode extends OpDefOrDeclNode
             arguments.appendChild(lp);
           }
           ret.appendChild(arguments);
-      }
-        if (inRecursive) ret.appendChild(doc.createElement("recursive"));
+        }
+
+        if (inRecursive) {
+          ret.appendChild(doc.createElement("recursive"));
+        }
+
+        if (this.isLocal()) {
+          ret.appendChild(doc.createElement("local"));
+        }
       break;
       case BuiltInKind:
         ret = doc.createElement("BuiltInKind");
@@ -1540,6 +1547,9 @@ public class OpDefNode extends OpDefOrDeclNode
       case ModuleInstanceKind:
         ret = doc.createElement("ModuleInstanceKind");
         ret.appendChild(appendText(doc,"uniquename",getName().toString()));
+        if (this.isLocal()) {
+          ret.appendChild(doc.createElement("local"));
+        }
         break;
       default: throw new IllegalArgumentException("unsupported kind: " + getKind() + " in xml export");
     }
