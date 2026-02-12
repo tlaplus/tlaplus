@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
+import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -225,6 +226,8 @@ public class NonLeafProofNode extends ProofNode {
   protected Element getLevelElement(Document doc, SymbolContext context, BiPredicate<SemanticNode, SemanticNode> filter) {
     Element e = doc.createElement("steps");
 
+    assert(this.getTreeNode().isKind(SyntaxTreeConstants.N_Proof));
+    e.appendChild(appendText(doc, "proofLevel", Integer.toString(this.getTreeNode().getProofLevel())));
     for (int i=0; i< steps.length; i++) {
       e.appendChild(steps[i].export(doc,context, filter));
     }

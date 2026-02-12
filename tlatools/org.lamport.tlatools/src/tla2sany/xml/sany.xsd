@@ -619,6 +619,7 @@
           <xs:complexType>
             <xs:sequence>
               <xs:group ref="node"/>
+              <xs:element name="proofLevel" type="xs:integer"/>
               <xs:sequence maxOccurs="unbounded">
                 <xs:group ref="step"/>
               </xs:sequence>
