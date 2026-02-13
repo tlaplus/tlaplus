@@ -254,17 +254,17 @@ jobs:
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
 
       ##
-      ## Upload tla2tools.jar to OSS Sonatype.
+      ## Upload tla2tools.jar to Maven Central (via Central Publisher Portal).
       ##
-    - name: Upload to OSS Sonatype
+    - name: Upload to Maven Central
       if: matrix.operating-system == 'ubuntu-latest'
       continue-on-error: true
       run: |
            cd tlatools/org.lamport.tlatools/
            ## Strip packages from the tla2tools.jar fatjar that are declared dependencies of the maven package (see github.xml).
            zip -d dist/tla2tools.jar javax/\* com/\* META-INF/mailcap META-INF/javamail*
-           ## Upload tla2tools.jar maven packages to OSS Sonatype (see ossrh.xml.README).
-           mvn gpg:sign-and-deploy-file -Durl=https://oss.sonatype.org/content/repositories/snapshots -DrepositoryId=ossrh -DpomFile=ossrh.xml -Dfile=dist/tla2tools.jar -f ossrh.xml
+           ## Upload tla2tools.jar maven packages to Maven Central (see ossrh.xml.README).
+           mvn gpg:sign-and-deploy-file -Durl=https://central.sonatype.com/repository/maven-snapshots/ -DrepositoryId=ossrh -DpomFile=ossrh.xml -Dfile=dist/tla2tools.jar -f ossrh.xml
 
       ##
       ## Trigger build of CommunityModule as integration tests, unless it creates and endless 
