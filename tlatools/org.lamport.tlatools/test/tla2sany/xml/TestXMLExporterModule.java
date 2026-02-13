@@ -479,7 +479,7 @@ public class TestXMLExporterModule {
 
 		for (int i = 0; i < preCommentsNodes.getLength(); i++) {
 			Element preComment = (Element) preCommentsNodes.item(i);
-			String commentText = preComment.getTextContent();
+			String commentText = preComment.getTextContent().trim();
 
 			Element parent = (Element) preComment.getParentNode();
 			NodeList uniqueNames = parent.getElementsByTagName("uniquename");
