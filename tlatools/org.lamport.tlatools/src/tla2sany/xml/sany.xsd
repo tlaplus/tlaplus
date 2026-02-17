@@ -756,8 +756,11 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   <xs:element name="DecimalNode">
     <xs:complexType>
       <xs:sequence>
+        <xs:group ref="node"/>
         <xs:element name="mantissa" type="xs:integer"/>
         <xs:element name="exponent" type="xs:integer"/>
+        <xs:element name="integralPart" type="xs:integer"/>
+        <xs:element name="fractionalPart" type="xs:integer"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
