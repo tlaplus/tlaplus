@@ -34,18 +34,20 @@ public class DecimalNode extends ExprNode {
   private long       mantissa;
   private int        exponent;
   private BigDecimal bigVal = null;
-  private String     image;
+  private String integralPart;
+  private String fractionalPart;
 
   // Bug: should remove trailing 0's from b ?
   public DecimalNode(String a, String b, TreeNode stn) {
     super(DecimalKind, stn);
-    image = a + "." + b;
+    this.integralPart = a;
+    this.fractionalPart = b;
     try {
       this.mantissa = Long.parseLong( a + b );
       this.exponent = - b.length();
      }
      catch (NumberFormatException e) {
-      this.bigVal = new BigDecimal( image );
+      this.bigVal = new BigDecimal(this.toString());
     }
    }
 
@@ -72,7 +74,7 @@ public class DecimalNode extends ExprNode {
    * without any normalization, removal of leading or trailing zero's, etc.
    */
   @Override
-  public final String toString() { return this.image; }
+  public final String toString() { return this.integralPart + "." + this.fractionalPart; }
 
   /* Level checking */
   @Override
@@ -136,7 +138,7 @@ public class DecimalNode extends ExprNode {
     return( "\n*DecimalNode" + super.toString(depth, errors) + "Mantissa: "
             + mantissa + "; exponent: " + exponent
             + "; big value: " + (bigVal != null ? bigVal.toString() : "<null>")
-            + "\n; image = " + image
+            + "\n; image = " + this.toString()
           );
   }
 
@@ -151,6 +153,9 @@ public class DecimalNode extends ExprNode {
       e.appendChild(appendText(doc,"mantissa",Long.toString(mantissa)));
       e.appendChild(appendText(doc,"exponent",Integer.toString(exponent)));
     }
+
+    e.appendChild(appendText(doc, "integralPart", this.integralPart));
+    e.appendChild(appendText(doc, "fractionalPart", this.fractionalPart));
     return e;
   }
 }
