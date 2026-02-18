@@ -42,6 +42,7 @@ import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStates;
 import tlc2.util.Context;
+import tlc2.util.FP64;
 import util.UniqueString;
 
 public class FcnLambdaValueTest {
@@ -213,5 +214,116 @@ public class FcnLambdaValueTest {
 				.takeExcept(new ValueExcept(new Value[] { IntValue.gen(1) }, IntValue.gen(8)));
 		// TLA+: updated converted form is <<8, 1>>
 		assertEquals("<<8, 1>>", updated.toFcnRcd().toString());
+	}
+
+	@Test
+	public void testToFcnRcdAssertFail() {
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 2), IntValue.gen(42));
+
+		// v1 = [v EXCEPT ![1] = 99]
+		final ValueExcept ex1 = new ValueExcept(new Value[] { IntValue.gen(1) }, IntValue.gen(99));
+		final FcnLambdaValue flv1 = (FcnLambdaValue) base.takeExcept(ex1);
+
+		// v2 = [v1 EXCEPT ![2] = 100]
+		final ValueExcept ex2 = new ValueExcept(new Value[] { IntValue.gen(2) }, IntValue.gen(100));
+		final FcnLambdaValue flv2 = (FcnLambdaValue) flv1.takeExcept(ex2);
+
+		flv1.toFcnRcd();
+		// util.Assert$TLCRuntimeException: Attempted to apply EXCEPT construct to the
+		// integer 99.
+		flv2.toFcnRcd();
+
+		assertEquals(IntValue.gen(99), flv1.select(IntValue.gen(1)));
+		assertEquals(IntValue.gen(42), flv1.select(IntValue.gen(2)));
+		assertEquals(IntValue.gen(99), flv2.select(IntValue.gen(1)));
+		assertEquals(IntValue.gen(100), flv2.select(IntValue.gen(2)));
+	}
+
+	@Test
+	public void testToFcnRcdClassCastException() {
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 2), IntValue.gen(42));
+
+		// v1 = [v EXCEPT ![1] = 99]
+		final ValueExcept ex1 = new ValueExcept(new Value[] { IntValue.gen(1) }, IntValue.gen(99));
+		final FcnLambdaValue flv1 = (FcnLambdaValue) base.takeExcept(ex1);
+
+		// v2 = [v1 EXCEPT ![2] = 100]
+		final ValueExcept ex2 = new ValueExcept(new Value[] { IntValue.gen(2) }, IntValue.gen(100));
+		final FcnLambdaValue flv2 = (FcnLambdaValue) flv1.takeExcept(ex2);
+
+		flv2.toFcnRcd();
+		// java.lang.ClassCastException: class tlc2.value.impl.IntValue cannot be cast
+		// to class tlc2.value.impl.FcnRcdValue (tlc2.value.impl.IntValue and
+		// tlc2.value.impl.FcnRcdValue ...
+		flv1.toFcnRcd();
+
+		assertEquals(IntValue.gen(99), flv1.select(IntValue.gen(1)));
+		assertEquals(IntValue.gen(42), flv1.select(IntValue.gen(2)));
+		assertEquals(IntValue.gen(99), flv2.select(IntValue.gen(1)));
+		assertEquals(IntValue.gen(100), flv2.select(IntValue.gen(2)));
+	}
+
+	@Test
+	public void testToFcnRcdSilentCorruption() {
+		// TLA+: Base body returns a function: [j \in {1, 2} |-> 0]
+		final FcnRcdValue defaultFcn = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(0), IntValue.gen(0) }, null);
+
+		// TLA+: Base == [i \in 1..2 |-> defaultFcn]
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 2), defaultFcn);
+
+		// TLA+: val1 == [j \in {1, 2} |-> 10 + j] = <<11, 12>>
+		final FcnRcdValue val1 = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(11), IntValue.gen(12) }, null);
+		// TLA+: x == [Base EXCEPT ![1] = val1]
+		final ValueExcept ex1 = new ValueExcept(new Value[] { IntValue.gen(1) }, val1);
+		final FcnLambdaValue flv1 = (FcnLambdaValue) base.takeExcept(ex1);
+
+		// TLA+: val2 == [j \in {1, 2} |-> 20 + j] = <<21, 22>>
+		final FcnRcdValue val2 = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(21), IntValue.gen(22) }, null);
+		// TLA+: y == [x EXCEPT ![2] = val2]
+		final ValueExcept ex2 = new ValueExcept(new Value[] { IntValue.gen(2) }, val2);
+		final FcnLambdaValue flv2 = (FcnLambdaValue) flv1.takeExcept(ex2);
+
+		assertEquals("<<<<11, 12>>, <<0, 0>>>>", flv1.toFcnRcd().toString());
+		// <<11, <<21, 22>>>> without bugfix, i.e, creating fresh ValueEx instances in
+		// FcnLambdaValue#toFcnRcd.
+		assertEquals("<<<<11, 12>>, <<21, 22>>>>", flv2.toFcnRcd().toString());
+	}
+
+	@Test
+	public void testToFcnRcdSilentCorruptionFP() {
+		// TLA+: Base body returns a function: [j \in {1, 2} |-> 0]
+		final FcnRcdValue defaultFcn = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(0), IntValue.gen(0) }, null);
+
+		// TLA+: Base == [i \in 1..2 |-> defaultFcn]
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 2), defaultFcn);
+
+		// TLA+: val1 == [j \in {1, 2} |-> 10 + j] = <<11, 12>>
+		final FcnRcdValue val1 = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(11), IntValue.gen(12) }, null);
+		// TLA+: x == [Base EXCEPT ![1] = val1]
+		final ValueExcept ex1 = new ValueExcept(new Value[] { IntValue.gen(1) }, val1);
+		final FcnLambdaValue flv1 = (FcnLambdaValue) base.takeExcept(ex1);
+
+		// TLA+: val2 == [j \in {1, 2} |-> 20 + j] = <<21, 22>>
+		final FcnRcdValue val2 = new FcnRcdValue(new IntervalValue(1, 2),
+				new Value[] { IntValue.gen(21), IntValue.gen(22) }, null);
+		// TLA+: y == [x EXCEPT ![2] = val2]
+		final ValueExcept ex2 = new ValueExcept(new Value[] { IntValue.gen(2) }, val2);
+		final FcnLambdaValue flv2 = (FcnLambdaValue) flv1.takeExcept(ex2);
+
+		flv1.toFcnRcd();
+		final Value fcnRcd = flv2.toFcnRcd();
+
+		// Freshly create the correct y as a concrete record:
+		// TLA+: [1 |-> val1, 2 |-> val2]
+		final FcnRcdValue freshY = new FcnRcdValue(new IntervalValue(1, 2), new Value[] { val1, val2 }, null);
+
+		// fcnRcd hashes to the same fp as a freshly created correct record.
+		FP64.Init();
+		assertEquals(freshY.fingerPrint(0L), fcnRcd.fingerPrint(0L));
 	}
 }
