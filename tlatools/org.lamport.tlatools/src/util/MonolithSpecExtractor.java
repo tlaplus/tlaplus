@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 public class MonolithSpecExtractor {
 
@@ -61,7 +62,7 @@ public class MonolithSpecExtractor {
 				if (!config.isEmpty() && line.matches("====.*")) {
 					break;
 				}
-				if (config.isEmpty() && line.matches("-----*\\s*CONFIG\\s+" + configName + "\\s*-----*")) {
+				if (config.isEmpty() && line.matches("-----*\\s*CONFIG\\s+" + Pattern.quote(configName) + "\\s*-----*")) {
 					config += " "; // activate.
 					continue; // skip to next line/don't include marker.
 				}
@@ -86,7 +87,7 @@ public class MonolithSpecExtractor {
 					pw.println(line); // include end marker.
 					break;
 				}
-				if (!active && line.matches("-----*\\s*MODULE\\s+" + moduleName + "\\s*----*")) {
+				if (!active && line.matches("-----*\\s*MODULE\\s+" + Pattern.quote(moduleName) + "\\s*----*")) {
 					active = true;
 					pw.println(line); // include start marker.
 					continue;
