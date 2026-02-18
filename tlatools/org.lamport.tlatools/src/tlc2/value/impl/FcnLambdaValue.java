@@ -251,7 +251,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             }
           }
         }
-        res = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, control);
+        res = evalBody(c1, control);
       }
 
       // Finally, apply the matching excepts on the result.
@@ -361,7 +361,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             }
           }
         }
-        res = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control, this.cm);
+        res = evalBody(c1);
       }
 
       // Finally, apply the matching excepts on the result.
@@ -377,6 +377,14 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
+  }
+
+  protected Value evalBody(Context ctx) {
+    return evalBody(ctx, this.control);
+  }
+
+  protected Value evalBody(Context ctx, int control) {
+	return (Value) this.tool.eval(this.body, ctx, this.state, this.pstate, control, this.cm);
   }
 
   /* This method returns a new function value by taking except. */
@@ -662,7 +670,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             else {
               c1 = c1.cons(formals[0][0], arg);
             }
-            values[idx++] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+            values[idx++] = evalBody(c1);
           }
 	      if (this.params.domains[0] instanceof IntervalValue) {
 	      	final IntervalValue iv = (IntervalValue) this.params.domains[0];
@@ -691,7 +699,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
                 }
               }
             }
-            values[idx++] = (Value) this.tool.eval(this.body, c1, this.state, this.pstate, this.control);
+            values[idx++] = evalBody(c1);
           }
           this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
         }

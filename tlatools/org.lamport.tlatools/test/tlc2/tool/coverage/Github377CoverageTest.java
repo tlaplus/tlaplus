@@ -60,19 +60,59 @@ public class Github377CoverageTest extends AbstractCoverageTest {
 				"  line 17, col 5 to line 17, col 13 of module Github377: 1\n" + 
 				"<2Inv line 21, col 1 to line 21, col 4 of module Github377>\n" + 
 				"  line 25, col 10 to line 25, col 47 of module Github377: 1\n" + 
+				"  |line 25, col 10 to line 25, col 34 of module Github377: 1\n" + 
+				"  |line 25, col 39 to line 25, col 47 of module Github377: 1\n" + 
+				"  ||line 25, col 39 to line 25, col 44 of module Github377: 1\n" + 
+				"  |||line 23, col 11 to line 23, col 70 of module Github377: 1\n" + 
+				"  ||||line 23, col 34 to line 23, col 70 of module Github377: 2\n" + 
+				"  ||||line 23, col 25 to line 23, col 27 of module Github377: 1\n" + 
 				"  line 26, col 7 to line 26, col 11 of module Github377: 1\n" + 
 				"<2aInv line 28, col 1 to line 28, col 5 of module Github377>\n" + 
 				"  line 32, col 10 to line 33, col 21 of module Github377: 1\n" + 
+				"  |line 32, col 13 to line 32, col 21 of module Github377: 1\n" + 
+				"  |line 33, col 13 to line 33, col 21 of module Github377: 1\n" + 
+				"  ||line 33, col 13 to line 33, col 18 of module Github377: 1\n" + 
+				"  |||line 31, col 11 to line 31, col 42 of module Github377: 1\n" + 
+				"  ||||line 31, col 34 to line 31, col 42 of module Github377: 1\n" + 
+				"  |||||line 31, col 34 to line 31, col 39 of module Github377: 1\n" + 
+				"  ||||||line 30, col 11 to line 30, col 70 of module Github377: 1\n" + 
+				"  |||||||line 30, col 34 to line 30, col 70 of module Github377: 2\n" + 
+				"  |||||||line 30, col 25 to line 30, col 27 of module Github377: 1\n" + 
+				"  |||||line 31, col 41 to line 31, col 41 of module Github377: 1\n" + 
+				"  ||||line 31, col 25 to line 31, col 27 of module Github377: 1\n" + 
 				"  line 34, col 7 to line 34, col 11 of module Github377: 1\n" + 
 				"<2bInv line 36, col 1 to line 36, col 5 of module Github377>\n" + 
 				"  line 40, col 10 to line 40, col 31 of module Github377: 1\n" + 
+				"  |line 40, col 10 to line 40, col 18 of module Github377: 1\n" + 
+				"  |line 40, col 23 to line 40, col 31 of module Github377: 1\n" + 
+				"  ||line 40, col 23 to line 40, col 28 of module Github377: 1\n" + 
+				"  |||line 39, col 11 to line 39, col 42 of module Github377: 1\n" + 
+				"  ||||line 39, col 34 to line 39, col 42 of module Github377: 1\n" + 
+				"  |||||line 39, col 34 to line 39, col 39 of module Github377: 1\n" + 
+				"  ||||||line 38, col 11 to line 38, col 70 of module Github377: 1\n" + 
+				"  |||||||line 38, col 34 to line 38, col 70 of module Github377: 2\n" + 
+				"  |||||||line 38, col 25 to line 38, col 27 of module Github377: 1\n" + 
+				"  |||||line 39, col 41 to line 39, col 41 of module Github377: 1\n" + 
+				"  ||||line 39, col 25 to line 39, col 27 of module Github377: 1\n" + 
 				"  line 41, col 7 to line 41, col 11 of module Github377: 1\n" + 
 				"<3aInv line 44, col 1 to line 44, col 5 of module Github377>\n" + 
 				"  line 48, col 10 to line 50, col 21 of module Github377: 1\n" + 
+				"  |line 49, col 16 to line 49, col 21 of module Github377: 1\n" + 
+				"  |line 50, col 13 to line 50, col 21 of module Github377: 1\n" + 
+				"  ||line 50, col 13 to line 50, col 18 of module Github377: 1\n" + 
+				"  |||line 47, col 11 to line 47, col 42 of module Github377: 1\n" + 
+				"  ||||line 47, col 34 to line 47, col 42 of module Github377: 1\n" + 
+				"  |||||line 47, col 34 to line 47, col 39 of module Github377: 1\n" + 
+				"  ||||||line 46, col 11 to line 46, col 70 of module Github377: 1\n" + 
+				"  |||||||line 46, col 34 to line 46, col 70 of module Github377: 2\n" + 
+				"  |||||||line 46, col 25 to line 46, col 27 of module Github377: 1\n" + 
+				"  ||||line 47, col 25 to line 47, col 27 of module Github377: 1\n" + 
 				"  line 51, col 7 to line 51, col 11 of module Github377: 1\n" + 
 				"<3bInv line 55, col 1 to line 55, col 5 of module Github377>\n" + 
 				"  line 58, col 11 to line 58, col 42 of module Github377: 1\n" + 
 				"  line 57, col 11 to line 57, col 70 of module Github377: 1\n" + 
+				"  |line 57, col 34 to line 57, col 70 of module Github377: 2\n" + 
+				"  |line 57, col 25 to line 57, col 27 of module Github377: 1\n" + 
 				"  line 60, col 13 to line 60, col 31 of module Github377: 1\n" + 
 				"  line 61, col 7 to line 61, col 11 of module Github377: 1\n" + 
 				"<4Inv line 66, col 1 to line 66, col 4 of module Github377>\n" + 
