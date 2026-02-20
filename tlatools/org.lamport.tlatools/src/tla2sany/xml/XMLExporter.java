@@ -106,8 +106,7 @@ public class XMLExporter {
 
   public static int run(String... args) throws XMLExportingException {
     try {
-      moduleToXML(args);
-      return 0;
+      return moduleToXML(args);
     } catch (IllegalArgumentException e) {
       ToolIO.err.println("ERROR: " + e.getMessage());
       printUsage(ToolIO.err);
@@ -115,7 +114,7 @@ public class XMLExporter {
     }
   }
 
-  static void moduleToXML(String... args) throws XMLExportingException {
+  static int moduleToXML(String... args) throws XMLExportingException {
 
     if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
     LinkedList<String> pathsLs = new LinkedList<>();
@@ -157,7 +156,7 @@ public class XMLExporter {
 
     if (args[args.length - 1].equals("-help")) {
         printUsage(ToolIO.out);
-        return;
+        return 0;
     }
 
     String tla_name = args[lastarg++];
@@ -174,18 +173,17 @@ public class XMLExporter {
     //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
     if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
       try {
-        SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
-        SanySettings settings = SanySettings.validAstSettings();
-        SANY.parse(spec, tla_name, out, settings);
-        if (spec.getExternalModuleTable() == null)
-          throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
-        if (spec.getExternalModuleTable().getRootModule() == null)
-          throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have a root module", null);
+        final SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
+        final SanySettings settings = SanySettings.validAstSettings();
+        final int parseErrorCode = SANY.parse(spec, tla_name, out, settings);
+        if (parseErrorCode != 0) {
+          return parseErrorCode;
+        }
       } catch (FrontEndException fe) {
         // For debugging
         fe.printStackTrace();
         ToolIO.err.println(fe);
-        return;
+        return 1;
       }
     } else {
       throw new IllegalArgumentException("Cannot find the specified file " + tla_name + ".");
@@ -303,6 +301,7 @@ public class XMLExporter {
       throw new XMLExportingException("failed to validate XML", se);
     }
 
+    return 0;
   }
 
   static void insertRootName(Document doc, Element rootElement, SpecObj spec) {
