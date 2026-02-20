@@ -24,14 +24,24 @@ Refinement == Abstract!Spec
 RefinementParam == AbstractParam(AbstractX)!Spec
 
 op(b) == [][b]_x
-PropParam == op(TRUE)
+PropParam == op(TRUE)               \* constant-level
 
 \* Checking property PropParamRec causes a StackOverflow
 RECURSIVE opRec(_)
 opRec(b) == IF b THEN [][b]_x ELSE opRec(~b)
 PropParamRec == opRec(TRUE)
 
-PropParamF == op(FALSE)
+PropParamF == op(FALSE)              \* constant-level
+
+id(a) == a
+TypeOK == x \in {"init", "in-progress", "done"}
+PropParamIdState == id(TypeOK)       \* state-level
+
+PropParamId == id(Refinement)        \* temporal-level
+
+CheckBoth(safety, liveness) == safety /\ liveness
+PropParamCheckBoth == CheckBoth(Refinement, op(TRUE))  \* both temporal-level
+
 ==========================================================================
 
 ----------------------------- MODULE Abstract ----------------------------
