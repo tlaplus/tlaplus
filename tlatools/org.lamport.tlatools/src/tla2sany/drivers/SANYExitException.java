@@ -32,14 +32,18 @@ package tla2sany.drivers;
  * via {@link #getExitCode()}.
  */
 public class SANYExitException extends Exception {
-    private final int exitCode;
-    
-    public SANYExitException(int exitCode, String message) {
+    private final SanyExitCode exitCode;
+
+    public SANYExitException(SanyExitCode exitCode, String message) {
         super(message);
         this.exitCode = exitCode;
     }
-    
+
     public int getExitCode() {
-        return exitCode;
+        return this.exitCode.code();
+    }
+
+    public SanyExitCode getEnumeratedExitCode() {
+      return this.exitCode;
     }
 }
