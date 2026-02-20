@@ -104,7 +104,7 @@ public class SANY {
   }
 
   /**
-   * Use {@link SANY#frontEndMain(SpecObj, String, SanyOutput, SanySettings)}
+   * Use {@link SANY#parse(SpecObj, String, SanyOutput, SanySettings)}
    * instead for greater control of output and settings.
    */
   @Deprecated
@@ -119,7 +119,7 @@ public class SANY {
         doLinting,
         doValidatePCalTranslationDefault
       );
-    return parse(spec, fileName, out, settings);
+    return parse(spec, fileName, out, settings).code();
   }
 
   /**
@@ -131,9 +131,7 @@ public class SANY {
    *
    * This method does (1) syntax parsing, (2) semantic analysis, (3) level-
    * checking, and (4) linting; it modifies the spec object in place to form
-   * the root of the semantic graph of the specification. A nonzero code is
-   * returned in case of error and when {@link SanySettings#doStrictErrorCodes}
-   * is set (which it always will be for external users). The later parser
+   * the root of the semantic graph of the specification. The later parser
    * phases can be optionally disabled using the {@link SanySetting} object.
    *
    * This method sends progress indications and other log messages to the
@@ -143,12 +141,21 @@ public class SANY {
    * is desired, a {@link tla2sany.output.SilentSanyOutput} instance should
    * be provided.
    *
-   * The spec object returned must be queried by the caller using
-   * {@link SpecObj#getErrorLevel()} to see what level of problems, if any,
-   * occurred during the parsing phases. Any value other than 0 is fatal, and
-   * the caller should not use the spec object any more. To see the actual
-   * list of failures tagged with an {@link tla2sany.semantic.ErrorCode},
-   * call {@link SpecObj#getParseErrors()} and {@link SpecObj#getSemanticErrors()}.
+   * For backwards compatibility reasons, detecting & handling the possible
+   * error cases of this method is somewhat complicated. First of all, this
+   * method returns a {@link SanyExitCode} instance. If this is any other
+   * value than {@link SanyExitCode#OK}, there has been a failure and the
+   * spec object cannot be used. Secondly, this method can throw a
+   * {@link FrontEndException} if the error is particularly bad, which must
+   * be caught & handled by the caller; in this case the spec object also
+   * cannot be used. You might expect that when this method returns
+   * {@link SanyExitCode#OK} you are in the clear, but unfortunately this is
+   * not so. In this case you should call {@link SpecObj#getErrorLevel()} to
+   * see whether it is nonzero. If it is nonzero, spec again cannot be used.
+   * However, if it is zero, then you should also check {@link SpecObj#getParseErrors()}
+   * and {@link SpecObj#getSemanticErrors()} by calling the {@link Errors#isSuccess()}
+   * method on each. If these are both true, then at that point you can be
+   * assured that the spec object is ready for use.
    *
    * This method throws a {@link FrontEndException} if an unexpected runtime
    * error occurs during parsing. This exception is NOT thrown for ordinary
@@ -156,7 +163,7 @@ public class SANY {
    * {@link tla2sany.semantic.ErrorCode.ErrorLevel.ERROR} occurrences, which
    * are reported through the {@link Errors} instances as explained above.
    */
-  public static final int parse(
+  public static final SanyExitCode parse(
                              SpecObj spec, 
                              String fileName, 
                              SanyOutput out,
@@ -178,20 +185,19 @@ public class SANY {
 
     }
     catch (ParseException pe) {
-      return -1;
+      return SanyExitCode.ERROR;
     }
     catch (SemanticException se) {
-      return -1;
+      return SanyExitCode.ERROR;
     }
     catch (Exception e) {
       out.log(LogLevel.ERROR, e.toString());
       throw new FrontEndException(e);
     }
-    if (settings.doStrictErrorCodes) {
-      return spec.errorLevel;
-    } else {
-      return 0;
-    }
+
+    return settings.doStrictErrorCodes
+        ? SanyExitCode.fromCode(spec.getErrorLevel())
+        : SanyExitCode.OK;
   }
 
   /** 
@@ -251,11 +257,10 @@ public class SANY {
           {
               out.log(LogLevel.ERROR, spec.parseErrors.toString());
               // indicate fatal error during parsing phase
-              spec.errorLevel = 2;
+              spec.errorLevel = SanyExitCode.SYNTAX_PARSING_FAILURE.code();
               throw new ParseException(); 
           }
       }
-      // TODO
       catch (ParseException e) 
       {
           // get here if either the TLAPlusParser.parse() threw a ParseException or spec.ParseErrors was not empty
@@ -360,7 +365,7 @@ public class SANY {
 
             // indicate fatal error during semantic analysis or level-checking
             if ( semanticErrors.getNumErrors() > 0 ) {
-              spec.errorLevel = 4;
+              spec.errorLevel = SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE.code();
             } // end if
           } // end if
         } // end if
@@ -384,7 +389,7 @@ public class SANY {
         
         // indicate fatal error during semantic analysis or level-checking
         if ( semanticErrors.getNumErrors() > 0 ) { 
-          spec.errorLevel = 4;
+          spec.errorLevel = SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE.code();
         }
       }
       throw new SemanticException(e);
@@ -461,7 +466,7 @@ public class SANY {
   public static void SANYmain0(String args[]) throws SANYExitException {
     if (args.length == 0) {
       printUsage();
-      throw new SANYExitException(-1, "No arguments provided");
+      throw new SANYExitException(SanyExitCode.ERROR, "No arguments provided");
     }
     int i;
     // Parse and process the command line switches, which are
@@ -489,14 +494,14 @@ public class SANY {
       } else {
            ToolIO.out.println("Invalid option: " + args[i]);
            ToolIO.out.println("Try 'SANY -help' for more information.");
-           throw new SANYExitException(-1, "Invalid option: " + args[i]);
+           throw new SANYExitException(SanyExitCode.ERROR, "Invalid option: " + args[i]);
       }
     }
 
     if (i == args.length) {
       ToolIO.out.println("At least 1 filename is required.");
       ToolIO.out.println("Try 'SANY -help' for more information.");
-      throw new SANYExitException(-1, "No filename provided");
+      throw new SANYExitException(SanyExitCode.ERROR, "No filename provided");
     }
 
     final SanyOutput out = new OutErrSanyOutput(
@@ -526,16 +531,23 @@ public class SANY {
       if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
       {
           try {
-              int ret = frontEndMain(spec, args[i], out);
-			  if (ret != 0) {
-            	  throw new SANYExitException(ret, "Frontend returned error code: " + ret);
+              final SanySettings settings = new SanySettings(
+                  SANY.doStrictErrorCodes,
+                  SANY.doSemanticAnalysis,
+                  SANY.doLevelChecking,
+                  SANY.doLinting,
+                  SANY.doValidatePCalTranslationDefault
+              );
+              final SanyExitCode result = parse(spec, args[i], out, settings);
+              if (result != SanyExitCode.OK) {
+            	  throw new SANYExitException(result, "Frontend returned error code: " + result.code());
               }
             }
             catch (FrontEndException fe) {
               // For debugging
               fe.printStackTrace();   
               out.log(LogLevel.ERROR, fe.toString());
-              throw new SANYExitException(-1, "FrontEndException: " + fe.toString());
+              throw new SANYExitException(SanyExitCode.ERROR, "FrontEndException: " + fe.toString());
             }
 
             if (doDebugging) {
@@ -549,7 +561,7 @@ public class SANY {
       } else 
       {
           out.log(LogLevel.ERROR, "Cannot find the specified file %s.", args[i]);
-          throw new SANYExitException(-1, "Cannot find file: " + args[i]);
+          throw new SANYExitException(SanyExitCode.ERROR, "Cannot find file: " + args[i]);
       }
     }
   }
