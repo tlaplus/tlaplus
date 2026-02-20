@@ -179,6 +179,13 @@
 				<exclude name="**/*.jpg" />
 			</fileset>
 		</copy>
+		
+		<!-- Copy knowledge base articles for MCP resources -->
+		<copy todir="${class.dir}/docs/knowledgebase">
+			<fileset dir="../../docs/knowledgebase">
+				<include name="*.md" />
+			</fileset>
+		</copy>
 	</target>
 
 	<!-- Creates a distribution out of compiled code -->
