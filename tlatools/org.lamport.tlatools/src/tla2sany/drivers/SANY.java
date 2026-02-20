@@ -264,10 +264,12 @@ public class SANY {
       catch (ParseException e) 
       {
           // get here if either the TLAPlusParser.parse() threw a ParseException or spec.ParseErrors was not empty
+          spec.errorLevel = SanyExitCode.SYNTAX_PARSING_FAILURE.code();
           throw new ParseException();
       }
       catch (Exception e) 
       {
+          spec.errorLevel = SanyExitCode.SYNTAX_PARSING_FAILURE.code();
           out.log(LogLevel.ERROR, "\nFatal errors while parsing TLA+ spec in file %s\n", spec.getFileName());
           out.log(LogLevel.ERROR, e.toString());
           out.log(LogLevel.ERROR, spec.parseErrors.toString());
