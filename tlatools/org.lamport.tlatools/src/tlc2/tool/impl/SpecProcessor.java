@@ -1070,6 +1070,31 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     {
                         Assert.fail(EC.TLC_CONFIG_SPEC_IS_TRIVIAL, opNode.getName().toString());
                     }
+                } else if (val instanceof LazyValue)
+                {
+                    // A LazyValue appears when the parameterized-instantiation inlining
+                    // below recurses into an operator body whose formal parameter is
+                    // reached — either because the body IS the parameter (identity
+                    // operator) or because structural decomposition (e.g., splitting
+                    // conjunctions) exposes one. For example (see Github1244Test):
+                    //
+                    //   MyInit(myInit) == myInit
+                    //   Spec == MyInit(Init) /\ [][Next]_vars
+                    //
+                    // The conjunction handler splits Spec, then inlining recurses into
+                    // MyInit's body "myInit", which is looked up in the context.
+                    // getOpContext wraps each argument in a LazyValue — a closure pairing
+                    // the argument expression with its call-site context. Unwrap and
+                    // continue structural decomposition on the original argument
+                    // expression in its correct scope. See also Github817cTest and
+                    // Github817dTest for the analogous processConfigProps cases.
+                    final LazyValue lv = (LazyValue) val;
+                    // pred1 is a formal-parameter reference (an internal artifact of inlining);
+                    // remove it so the stack only contains semantically meaningful nodes for
+                    // property tagging at the level-3 handler below.
+                    final SemanticNode removed = stack.remove(stack.size() - 1);
+                    assert removed == pred1;
+                    this.processConfigSpec((ExprNode) lv.expr, lv.con, subs, stack);
                 } else
                 {
                     Assert
@@ -1362,6 +1387,27 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     {
                         Assert.fail(EC.TLC_CONFIG_SPEC_IS_TRIVIAL, opNode.getName().toString());
                     }
+                } else if (val instanceof LazyValue)
+                {
+                    // A LazyValue appears when the parameterized-instantiation inlining
+                    // below recurses into an operator body whose formal parameter is
+                    // reached — either because the body IS the parameter (identity
+                    // operator) or because structural decomposition (e.g., splitting
+                    // conjunctions) exposes one. Examples:
+                    //
+                    //   id(a) == a                                        (Github817cTest)
+                    //   PROPERTY id(Refinement)
+                    //
+                    //   CheckBoth(s, l) == s /\ l                        (Github817dTest)
+                    //   PROPERTY CheckBoth(Refinement, op(TRUE))
+                    //
+                    // getOpContext wraps each argument in a LazyValue — a closure pairing
+                    // the argument expression with its call-site context. Unwrap and
+                    // continue structural decomposition on the original argument
+                    // expression in its correct scope. See also Github1244Test for the
+                    // analogous processConfigSpec case.
+                    final LazyValue lv = (LazyValue) val;
+                    this.processConfigProps(name, (ExprNode) lv.expr, lv.con, subs);
                 } else
                 {
                     Assert
