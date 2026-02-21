@@ -217,9 +217,9 @@ jobs:
         set -o pipefail
         find "$EXAMPLES_DIR/specifications" \
         -type f -iname "*.tla" -not -name "*_TTrace_*.tla" -print0 |
-        xargs --null --no-run-if-empty --max-procs=$(nproc) --replace=TLA_FILE sh -c \
+        xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
         'java -cp "'"$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar:$DEPS_DIR/apalache/lib/apalache.jar"'" \
-        tla2sany.xml.XMLExporter -I "'"$DEPS_DIR/tlapm/library"'" -I "$(dirname "TLA_FILE")" "TLA_FILE"' > /dev/null
+        tla2sany.xml.XMLExporter -I "$(dirname "{TLA_FILE}")" -I "'"$DEPS_DIR/tlapm/library"'" "{TLA_FILE}"' > /dev/null
     - name: Model-check small tlaplus/examples models
       run: |
         SKIP=(
