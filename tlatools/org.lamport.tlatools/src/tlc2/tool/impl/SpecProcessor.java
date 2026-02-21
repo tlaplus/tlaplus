@@ -1369,7 +1369,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             final SymbolNode opNode = pred1.getOperator();
             final Object val = symbolNodeValueLookupProvider.lookup(opNode, c, false, toolId);
 
-            if (args.length == 0)
+            if (args.length == 0 && opNode.getKind() != VariableDeclKind)
             {
                 if (val instanceof OpDefNode)
                 {
