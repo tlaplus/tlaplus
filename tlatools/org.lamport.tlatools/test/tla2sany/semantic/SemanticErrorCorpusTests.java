@@ -64,7 +64,7 @@ import util.WrongInvocationException;
 @RunWith(Parameterized.class)
 public class SemanticErrorCorpusTests {
 
-  private static class SemanticErrorTestCase {
+  public static class SemanticErrorTestCase {
 
     /**
      * A regex pattern to match & extract an error code from a filename.
