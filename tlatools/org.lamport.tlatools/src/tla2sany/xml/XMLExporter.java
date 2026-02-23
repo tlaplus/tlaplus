@@ -7,9 +7,12 @@ package tla2sany.xml;
  * a tool for exporting the loaded modules to XML format
  */
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,6 +41,7 @@ import org.xml.sax.SAXException;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SanyExitCode;
 import tla2sany.drivers.SanySettings;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
@@ -48,7 +52,6 @@ import tla2sany.semantic.ExternalModuleTable;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.semantic.OpDefOrDeclNode;
 import tla2sany.semantic.SemanticNode;
-import util.FileUtil;
 import util.FilenameToStream;
 import util.SimpleFilenameToStream;
 import util.ToolIO;
@@ -100,24 +103,65 @@ public class XMLExporter {
       );
   }
 
-  public static void main(String... args) throws XMLExportingException {
+  /**
+   * Directly calls {@link XMLExporter#run(String...)} then calls
+   * {@link System#exit(int)} with the code that it returns. Possible return
+   * codes can be found in the {@link XMLExporterExitCode} class.
+   *
+   * @param args The list of command line-arguments.
+   */
+  public static void main(final String... args) {
     System.exit(run(args));
   }
 
-  public static int run(String... args) throws XMLExportingException {
+  /**
+   * Runs the XML Exporter, printing the XML output to standard output. If
+   * any errors occur, the human-readable error message will be printed to
+   * standard error and a nonzero exit code will be returned. The meaning of
+   * error codes can be found in the {@link XMLExporterExitCode} class.
+   *
+   * @param args The list of command-line arguments.
+   * @return An error code; 0 if successful.
+   */
+  public static int run(final String... args) {
     try {
       moduleToXML(args);
-      return 0;
-    } catch (IllegalArgumentException e) {
-      ToolIO.err.println("ERROR: " + e.getMessage());
-      printUsage(ToolIO.err);
-      return 1;
+      return XMLExporterExitCode.OK.code();
+    } catch (XMLExportingException e) {
+      final XMLExporterExitCode error = e.code();
+      if (error == XMLExporterExitCode.ARGS_PARSING_FAILURE) {
+        ToolIO.err.println("ERROR: " + e.getMessage());
+        printUsage(ToolIO.err);
+        return error.code();
+      } else {
+        ToolIO.err.println(e.toString());
+        if (error.isBug()) {
+          ToolIO.err.println(
+            "This is likely a bug in the XML Exporter; please report to " +
+            "https://github.com/tlaplus/tlaplus/issues"
+          );
+        }
+
+        return error.code();
+      }
     }
   }
 
+  /**
+   * Parses the given command line arguments then converts the specified TLA+
+   * spec to XML, output to standard output. Will throw a {@link XMLExportingException}
+   * on error. On success, simply returns without throwing an exception.
+   *
+   * @param args The list of command-line arguments.
+   * @throws XMLExportingException On error, such as spec parsing failure.
+   */
   static void moduleToXML(String... args) throws XMLExportingException {
 
-    if (args.length < 1) throw new IllegalArgumentException("at least one .tla file must be given");
+    if (args.length < 1) {
+      throw new XMLExportingException(
+          XMLExporterExitCode.ARGS_PARSING_FAILURE,
+          "at least one .tla file must be given", null);
+    }
     LinkedList<String> pathsLs = new LinkedList<>();
 
     boolean offline_mode = false;
@@ -141,7 +185,9 @@ public class XMLExporter {
       } else if ("-I".equals(args[i])) {
         i++;
         if (i > args.length - 2)
-          throw new IllegalArgumentException("the -I flag must be followed by a directory and at least one .tla file");
+          throw new XMLExportingException(
+              XMLExporterExitCode.ARGS_PARSING_FAILURE,
+              "the -I flag must be followed by a directory and at least one .tla file", null);
         pathsLs.addLast(args[i]);
         lastarg = i;
       }
@@ -153,7 +199,9 @@ public class XMLExporter {
     for (int i = 0; i < paths.length; i++) paths[i] = (String) pathsLs.get(i);
 
     if (args.length - lastarg != 1)
-      throw new IllegalArgumentException("Only one TLA file to check allowed!");
+      throw new XMLExportingException(
+          XMLExporterExitCode.ARGS_PARSING_FAILURE,
+          "Only one TLA file to check allowed!", null);
 
     if (args[args.length - 1].equals("-help")) {
         printUsage(ToolIO.out);
@@ -162,36 +210,96 @@ public class XMLExporter {
 
     String tla_name = args[lastarg++];
 
-    FilenameToStream fts = new SimpleFilenameToStream(paths);
+    final ExternalModuleTable spec = XMLExporter.parseSpec(tla_name, paths);
+    XMLExporter.specToXMLStream(
+        spec,
+        restricted,
+        uncomment,
+        pretty_print,
+        offline_mode,
+        ToolIO.out
+      );
+  }
 
-    SpecObj spec = new SpecObj(tla_name, fts);
+  /**
+   * Parses the TLA+ spec with the given path and import directories. Throws
+   * an exception on parse failure.
+   *
+   * @param specPath The path to the TLA+ spec.
+   * @param includeDirs A list of directories in which to search for imports.
+   * @return A {@link ExternalModuleTable} of all parsed modules.
+   * @throws XMLExportingException On parse failure.
+   */
+  static ExternalModuleTable parseSpec(
+      final String specPath,
+      final String... includeDirs
+  ) throws XMLExportingException {
+    FilenameToStream fts = new SimpleFilenameToStream(includeDirs);
 
-    // Get next file name from command line; then parse,
-    // semantically analyze, and level check the spec started in
-    // file Filename leaving the result (normally) in Specification
-    // spec.
-    // check if file exists
-    //ToolIO.out.println("Processing: "+tlas[i]+"\n"+(tlas[i] == null));
-    if (FileUtil.createNamedInputStream(tla_name, spec.getResolver()) != null) {
-      try {
-        SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
-        SanySettings settings = SanySettings.validAstSettings();
-        SANY.parse(spec, tla_name, out, settings);
-        if (spec.getExternalModuleTable() == null)
-          throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have an external module table", null);
-        if (spec.getExternalModuleTable().getRootModule() == null)
-          throw new XMLExportingException("spec " + spec.getName() + " is malformed - does not have a root module", null);
-      } catch (FrontEndException fe) {
-        // For debugging
-        fe.printStackTrace();
-        ToolIO.err.println(fe);
-        return;
+    SpecObj spec = new SpecObj(specPath, fts);
+
+    try {
+      final SanyOutput out = new SimpleSanyOutput(ToolIO.err, LogLevel.ERROR);
+      final SanySettings settings = SanySettings.validAstSettings();
+      if (SanyExitCode.OK != SANY.parse(spec, specPath, out, settings)) {
+        throw new XMLExportingException(
+            XMLExporterExitCode.SPEC_PARSING_FAILURE,
+            "Failed to parse module.", null);
       }
-    } else {
-      throw new IllegalArgumentException("Cannot find the specified file " + tla_name + ".");
+
+      return spec.getExternalModuleTable();
+    } catch (FrontEndException fe) {
+      throw new XMLExportingException(
+          XMLExporterExitCode.SPEC_PARSING_FAILURE,
+          "Failed to parse module.", fe);
     }
+  }
 
+  /**
+   * Calls {@link XMLExporter#specToXMLStream} but captures its output in a
+   * {@link ByteArrayOutputStream} instance to convert to a string, which is
+   * returned.
+   *
+   * @param spec The table of TLA+ specs to convert.
+   * @param restricted Only export the root TLA+ module.
+   * @param uncomment Process operator pre-comments to remove '(*' and '*)'.
+   * @param prettyPrint XML output will have line breaks and indentation.
+   * @param offlineMode Skip schema validation (not recommended).
+   * @return A string representation of the XML output.
+   * @throws XMLExportingException If error occurred during XML conversion.
+   */
+  static String specToXMLString(
+      final ExternalModuleTable spec,
+      final boolean restricted,
+      final boolean uncomment,
+      final boolean prettyPrint,
+      final boolean offlineMode
+  ) throws XMLExportingException {
+    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    specToXMLStream(spec, restricted, uncomment, prettyPrint, offlineMode, output);
+    return output.toString(StandardCharsets.UTF_8);
+  }
 
+  /**
+   * Converts the given set of TLA+ specs to XML and then outputs the XML to
+   * the given {@link OutputStream} instance.
+   *
+   * @param spec The table of TLA+ specs to convert.
+   * @param restricted Only export the root TLA+ module.
+   * @param uncomment Process operator pre-comments to remove '(*' and '*)'.
+   * @param pretty_print XML output will have line breaks and indentation.
+   * @param offline_mode Skip schema validation (not recommended).
+   * @param output The stream to which to output the XML.
+   * @throws XMLExportingException If error occurred during XML conversion.
+   */
+  static void specToXMLStream(
+      final ExternalModuleTable spec,
+      final boolean restricted,
+      final boolean uncomment,
+      final boolean pretty_print,
+      final boolean offline_mode,
+      final OutputStream output
+  ) throws XMLExportingException {
     try {
 
       DocumentBuilderFactory docFactory =
@@ -207,11 +315,6 @@ public class XMLExporter {
       // Create symbol context. It will be filled by all symbol references during module export.
       SymbolContext context = new SymbolContext();
 
-      //Export all the external modules
-      ExternalModuleTable table = spec.getExternalModuleTable();
-      //Element e = table.getRootModule().exportDefinition(doc,context);
-      //rootElement.appendChild(e);
-      
 		if (restricted) {
 			final BiPredicate<SemanticNode, SemanticNode> filter = (s1, s2) -> {
 				if (s1 instanceof OpDefOrDeclNode && s2 instanceof ModuleNode) {
@@ -223,7 +326,7 @@ public class XMLExporter {
 			Element ext_e = spec.getRootModule().export(doc, context, filter);
 			rootElement.appendChild(ext_e);
 		} else {
-			ModuleNode[] externalModules = table.getModuleNodes();
+			ModuleNode[] externalModules = spec.getModuleNodes();
 			for (int j = 0; j < externalModules.length; j++) {
 				// Element ext_e = externalModules[j].exportDefinition(doc, context);
 				Element ext_e = externalModules[j].export(doc, context);
@@ -236,7 +339,7 @@ public class XMLExporter {
 
       //Insert name of root module
       insertRootName(doc, rootElement, spec);
-      
+
       if (uncomment) {
 			// Instead of traversing all XML nodes, it would be more efficient to uncomment
 			// pre-comments directly within SANY's OpDefNode#getSymbolElement during the AST
@@ -275,6 +378,7 @@ public class XMLExporter {
           URL schemaFile = XMLExporter.class.getResource("sany.xsd");
           if (null == schemaFile) {
             throw new XMLExportingException(
+                XMLExporterExitCode.XML_CANNOT_FIND_EMBEDDED_SCHEMA_FILE,
                 "Unable to find sany.xsd schema file that is expected to be embedded in the jar.",
                 new FileNotFoundException("Resource sany.xsd not found in classpath"));
           }
@@ -292,22 +396,21 @@ public class XMLExporter {
             // but fail for other errors
           }*/
       }
-      StreamResult result = new StreamResult(ToolIO.out);
 
+      StreamResult result = new StreamResult(output);
       transformer.transform(source, result);
     } catch (ParserConfigurationException pce) {
-      throw new XMLExportingException("failed to write XML", pce);
+      throw new XMLExportingException(XMLExporterExitCode.XML_CONFIGURATION_FAILURE, "Failed to write XML", pce);
     } catch (TransformerException tfe) {
-      throw new XMLExportingException("failed to write XML", tfe);
+      throw new XMLExportingException(XMLExporterExitCode.XML_TRANSFORMATION_FAILURE, "Failed to transform XML", tfe);
     } catch (SAXException se) {
-      throw new XMLExportingException("failed to validate XML", se);
+      throw new XMLExportingException(XMLExporterExitCode.XML_SCHEMA_VALIDATION_FAILURE, "Failed to validate XML", se);
     }
-
   }
 
-  static void insertRootName(Document doc, Element rootElement, SpecObj spec) {
+  static void insertRootName(Document doc, Element rootElement, final ExternalModuleTable spec) {
     Element el = doc.createElement("RootModule");
-    el.appendChild(doc.createTextNode(spec.getName()));
+    el.appendChild(doc.createTextNode(spec.getRootModule().getName().toString()));
     rootElement.insertBefore(el, rootElement.getFirstChild());
   }
 }
