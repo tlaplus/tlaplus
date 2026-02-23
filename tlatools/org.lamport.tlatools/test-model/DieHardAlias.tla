@@ -8,6 +8,13 @@ AliasSub ==
     \*action       |-> action,
     water_to_pour|-> water_to_pour
 ]
+AliasSub2 ==
+[
+    \*bigBucket    |-> bigBucket,
+    \*smallBucket  |-> smallBucket,
+    action       |-> action
+    \*water_to_pour|-> water_to_pour
+]
 AliasSup ==
 [
     bigBucket    |-> bigBucket,

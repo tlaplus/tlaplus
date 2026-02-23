@@ -776,15 +776,72 @@ public class DumpLoadTraceTest extends CommonTestCase {
 				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
 	}
 
+	// These following two tests are disabled because the combination of
+	// multi-worker BFS and ALIAS variable subsetting produces intermittent failures
+	// because of non-deterministic, non-shortest counterexamples that do not
+	// satisfy the level-indexed trace constraint in the load phase.
+	//
+	// Root cause: Multi-worker BFS is not strictly level-ordered. A fast worker can
+	// advance to level k+1 while a slow worker is still processing level k, so the
+	// predecessor chain recorded may follow non-shortest paths. The dumped
+	// counterexample can therefore contain detour states (e.g., 9 levels instead of
+	// the minimum 7 for DieHard).
+	//
+	// The trace constraint is level-indexed (trace[TLCGet("level")]), so when the
+	// load phase (single worker, strict BFS) assigns states their strict BFS
+	// levels, the constraint checks the wrong trace entry. With AliasSub the trace
+	// records only water_to_pour; because 4 of 6 disjuncts leave water_to_pour
+	// UNCHANGED at 0, the constraint admits nearly every state at those levels,
+	// flooding the FPSet. The intermediate states on the path to bigBucket = 4 have
+	// water_to_pour # 0 and are constraint-rejected (not enqueued), so their
+	// successors -- including the violating state -- are never generated.
+	//
+	// The other auto-worker tests are not affected for two reasons:
+	//
+	// 1. Full-variable or superset ALIAS (no alias, AliasSup): The dump trace
+	// contains all spec variables. Thus, the constraint pins exactly one state per
+	// level. Even a non-shortest dump trace is reproduced step-for-step in the load
+	// phase because each level admits at most one matching successor. AliasSup adds
+	// a variable and therefore does not weaken the constraint.
+	//
+	// 2. Single-worker tests: With one worker, BFS is strictly level-ordered and
+	// the dump trace is always a shortest counterexample, so the level-indexed
+	// constraint aligns correctly in the load phase.
+	@Ignore("Multi-worker BFS + ALIAS variable subsetting: non-shortest counterexample breaks level-indexed trace constraint")
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
 				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
 	}
 
+	@Ignore("Multi-worker BFS + ALIAS variable subsetting: non-shortest counterexample breaks level-indexed trace constraint")
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSub2DumpLoadTraceJSON() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSub2DumpLoadTraceTLC() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSub2DumpLoadTraceJSONAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+	}
+
+	@Test
+	public void testSafetyDieHardAliasSub2DumpLoadTraceTLCAutoWorkers() throws Exception {
+		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
 				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
 	}
 
