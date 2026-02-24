@@ -336,6 +336,7 @@ jobs:
            ## Not sure what this is for, but hey: https://stackoverflow.com/a/40039594
            security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
            security find-identity -v -p codesigning tla
+           security set-keychain-settings -t 3600 -u tla
            ## Unzip, sign, and zip up the TLA Toolbox.
            unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{ matrix.TOOLBOX_PRODUCT_ZIP }}
            codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
