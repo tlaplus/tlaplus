@@ -1036,6 +1036,29 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             this.processConfigSpec(pred1.getBody(), c, subs.cons(pred1), stack);
             return;
         }
+        if (pred instanceof LetInNode)
+        {
+            // A LetInNode appears when the SPECIFICATION formula (or a
+            // sub-formula reached during structural decomposition) is a
+            // LET/IN expression.  For example:
+            //
+            //   Spec == LET id(a) == a IN id(Init /\ [][Next]_vars)
+            //
+            // Peel off the LET wrapper and continue decomposition on the
+            // body (the IN part).  The LET-defined operators need no
+            // explicit registration: SANY's AST links every operator
+            // reference in the body directly to its OpDefNode, so the
+            // existing OpApplNode handler (and getOpContext inlining)
+            // will resolve them.  This is the same pattern used for
+            // LetInKind throughout the codebase:
+            //   - Tool#getActions, getInitStates, getNextStates
+            //   - Liveness#astToLive
+            //   - Spec#collectPrimedLocs
+            //   - SpecProcessor.SubscriptCollector#enter
+            LetInNode pred1 = (LetInNode) pred;
+            this.processConfigSpec(pred1.getBody(), c, subs, stack);
+            return;
+        }
         
         if (pred instanceof OpApplNode)
         {
@@ -1360,6 +1383,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             SubstInNode pred1 = (SubstInNode) pred;
             this.processConfigProps(name, pred1.getBody(), c, subs.cons(pred1));
+            return;
+        }
+        if (pred instanceof LetInNode)
+        {
+            // See the analogous LetInNode handling in processConfigSpec.
+            LetInNode pred1 = (LetInNode) pred;
+            this.processConfigProps(name, pred1.getBody(), c, subs);
             return;
         }
         if (pred instanceof OpApplNode)
