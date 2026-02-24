@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.TimeZone;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -29,8 +30,28 @@ public class TLCGlobals
 
 	public static final int DEFAULT_CHECKPOINT_DURATION = (30 * 60 * 1000) + 42;
 
-	// The current version of TLC
-    public static String versionOfTLC = "Version 2.20 of Day Month 20??";
+	// Historically, TLC used sequential version numbers and a specific release
+	// date (e.g., "Version 2.19 of 24 February 2025").
+	// The maintenance branch continues this scheme, so 2.20, 2.21, ... are
+	// reserved for point releases. The rolling release switched to CalVer
+	// (YYYY.MM.DD.HHmmss) to avoid conflicts — the YYYY prefix can never
+	// collide with the 2.x namespace. The time component disambiguates
+	// multiple releases on the same day.
+    public static final String TLC_VERSION_NUMBER = computeVersionNumber();
+
+    private static String computeVersionNumber() {
+        final Date buildDate = getBuildDate();
+        // Locale is irrelevant — all fields are numeric.
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return sdf.format(buildDate);
+    }
+
+    public static String versionOfTLC = getVersionOfTLC();
+
+    public static String getVersionOfTLC() {
+        return "Version " + TLC_VERSION_NUMBER;
+    }
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
