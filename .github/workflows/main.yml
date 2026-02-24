@@ -21,7 +21,6 @@ jobs:
       contents: write # Required by git tag (below), which changes the content of the git repository
       checks: write # Required by mikepenz/action-junit-report@v4
       packages: read
-      workflows: write # Required when the tagged commit includes workflow file changes
     strategy: 
       matrix:
         operating-system: [ubuntu-latest, macos-latest]
