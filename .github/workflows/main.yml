@@ -224,6 +224,10 @@ jobs:
            ## https://developer.github.com/v3/repos/releases/#edit-a-release
            curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -d @gh-1_8_0.json -X PATCH --header "Content-Type: application/json"
 
+           ## Refresh published_at so the releases page shows a current date (https://github.com/tlaplus/tlaplus/issues/1211).
+           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -X PATCH --header "Content-Type: application/json" -d '{"draft": true}'
+           curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE -X PATCH --header "Content-Type: application/json" -d '{"draft": false, "prerelease": true}'
+
     - name: Upload assets to INRIA
       if: matrix.operating-system == 'ubuntu-latest'
       run: |
