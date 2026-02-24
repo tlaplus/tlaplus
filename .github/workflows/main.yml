@@ -91,7 +91,7 @@ jobs:
       run: 'echo "$MVN_SETTINGS_XML" > ~/.m2/settings.xml'
       shell: bash
       env:
-        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML_2024 }}
+        MVN_SETTINGS_XML: ${{ secrets.MVN_SETTINGS_XML_2026 }}
     - name: Set up Comodo Codesign keystore part I
       run: 'echo "$COMODO_CODESIGN_COMBINED_PEM" > ComodoCertificate.pem'
       shell: bash
