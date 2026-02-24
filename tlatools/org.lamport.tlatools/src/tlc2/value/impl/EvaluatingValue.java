@@ -213,6 +213,13 @@ public class EvaluatingValue extends OpValue {
     }
   }
 
+  @Override
+  public final IValue initialize() {
+	  this.deepNormalize();
+	  // compare MethodValue#initialize
+	  return this;
+  }
+
   public final boolean isDefined() { return true; }
 
   public final IValue deepCopy() { return this; }
