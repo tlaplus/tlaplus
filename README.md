@@ -1,7 +1,7 @@
 Overview
 --------
 [![](https://github.com/tlaplus/tlaplus/workflows/CI/badge.svg)](https://github.com/tlaplus/tlaplus/actions?query=workflow%3ACI)
-[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/org.lamport/tla2tools?server=https%3A%2F%2Foss.sonatype.org)](https://oss.sonatype.org/content/repositories/snapshots/org/lamport/tla2tools/)
+[![Maven Snapshot](https://img.shields.io/badge/maven-1.8.0--SNAPSHOT-blue)](https://central.sonatype.com/repository/maven-snapshots/org/lamport/tla2tools/)
 
 This repository hosts the core TLA⁺ command line interface (CLI) Tools and the Toolbox integrated development environment (IDE).
 Its development is managed by the [TLA⁺ Foundation](https://foundation.tlapl.us/).
@@ -11,7 +11,7 @@ For the TLA⁺ proof manager, see http://proofs.tlapl.us.
 Versioned releases can be found on the [Releases](https://github.com/tlaplus/tlaplus/releases) page.
 Currently, every commit to the master branch is built & uploaded to the [1.8.0 Clarke pre-release](https://github.com/tlaplus/tlaplus/releases/tag/v1.8.0).
 If you want the latest fixes & features you can use that pre-release.
-If you want to consume the TLA⁺ tools as a Java dependency in your software project, Maven packages are periodically published to [oss.sonatype.org](https://oss.sonatype.org/content/repositories/snapshots/org/lamport/tla2tools/).
+If you want to consume the TLA⁺ tools as a Java dependency in your software project, Maven packages are periodically published to [central.sonatype.org](https://central.sonatype.com/repository/maven-snapshots/org/lamport/tla2tools/1.8.0-SNAPSHOT/).
 
 Use
 ---
