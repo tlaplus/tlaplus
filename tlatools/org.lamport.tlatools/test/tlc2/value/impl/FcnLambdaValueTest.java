@@ -326,4 +326,53 @@ public class FcnLambdaValueTest {
 		FP64.Init();
 		assertEquals(freshY.fingerPrint(0L), fcnRcd.fingerPrint(0L));
 	}
+
+	@Test
+	public void testToTupleWithExceptIntervalDomain() {
+		// TLA+: base == [x \in 1..3 |-> 42]
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 3), IntValue.gen(42));
+
+		// TLA+: updated == [base EXCEPT ![2] = 99]
+		final ValueExcept ex = new ValueExcept(new Value[] { IntValue.gen(2) }, IntValue.gen(99));
+		final FcnLambdaValue updated = (FcnLambdaValue) base.takeExcept(ex);
+
+		// Without the fix, toTuple() calls tool.eval(body, ...) which ignores excepts
+		// and returns the default (42) for every element: <<42, 42, 42>>.
+		// With the fix, toTuple() calls select() which respects excepts: <<42, 99,
+		// 42>>.
+		assertEquals("<<42, 99, 42>>", updated.toTuple().toString());
+	}
+
+	@Test
+	public void testToTupleWithExceptSetEnumDomain() {
+		// TLA+: base == [x \in {1, 2, 3} |-> 42]
+		final SetEnumValue domain = new SetEnumValue(new Value[] { IntValue.gen(1), IntValue.gen(2), IntValue.gen(3) },
+				true);
+		final FcnLambdaValue base = createFcnLambda(domain, IntValue.gen(42));
+
+		// TLA+: updated == [base EXCEPT ![2] = 99]
+		final ValueExcept ex = new ValueExcept(new Value[] { IntValue.gen(2) }, IntValue.gen(99));
+		final FcnLambdaValue updated = (FcnLambdaValue) base.takeExcept(ex);
+
+		// Exercises the second branch of toTuple() (SetEnumValue path).
+		assertEquals("<<42, 99, 42>>", updated.toTuple().toString());
+	}
+
+	@Test
+	public void testToTupleWithExceptFP() {
+		// TLA+: base == [x \in 1..3 |-> 42]
+		final FcnLambdaValue base = createFcnLambda(new IntervalValue(1, 3), IntValue.gen(42));
+
+		// TLA+: updated == [base EXCEPT ![2] = 99]
+		final ValueExcept ex = new ValueExcept(new Value[] { IntValue.gen(2) }, IntValue.gen(99));
+		final FcnLambdaValue updated = (FcnLambdaValue) base.takeExcept(ex);
+
+		final Value tuple = updated.toTuple();
+
+		// Freshly constructed correct value: <<42, 99, 42>>
+		final TupleValue correct = new TupleValue(new Value[] { IntValue.gen(42), IntValue.gen(99), IntValue.gen(42) });
+
+		FP64.Init();
+		assertEquals(correct.fingerPrint(0L), tuple.fingerPrint(0L));
+	}
 }
