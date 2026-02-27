@@ -6,19 +6,42 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * an exception for erroes in the exporter
+ * An exception wrapper class for errors occurring during execution of
+ * {@link XMLExporter}.
  */
-
 public class XMLExportingException extends Exception {
-  private Exception nested;
-  public XMLExportingException(String str, Exception n) {
+
+  /**
+   * The standardized error code attached to this exception.
+   */
+  private final XMLExporterExitCode code;
+
+  /**
+   * The inner exception wrapped by this exception.
+   */
+  private final Exception nested;
+
+  public XMLExportingException(XMLExporterExitCode code, String str, Exception nested) {
     super(str);
-    nested = n;
+    this.nested = nested;
+    this.code = code;
   }
+
+  /**
+   * Get the nested exception that originally caused the failure.
+   */
   public Exception getNestedException() {
     return nested;
   }
 
+  /**
+   * Get the standardized error code attached to this failure.
+   */
+  public XMLExporterExitCode code() {
+    return this.code;
+  }
+
+  @Override
   public String toString() {
     if (nested == null)
       return super.toString();
