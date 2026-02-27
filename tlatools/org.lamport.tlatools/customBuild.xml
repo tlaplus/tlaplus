@@ -1156,7 +1156,8 @@
 		</javac>
 
 		<mkdir dir="${test.reports}/verify" />
-		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes" 
+		<junit printsummary="yes" haltonfailure="no" haltonerror="no" maxmemory="4096m" forkmode="perTest" fork="yes"
+			failureproperty="verify-test.failed"
 			dir="${basedir}/test-verify" >
 			<classpath refid="project.classpath" />
 			<classpath>
@@ -1176,6 +1177,7 @@
 				</fileset>
 			</batchtest>
 		</junit>
+		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
