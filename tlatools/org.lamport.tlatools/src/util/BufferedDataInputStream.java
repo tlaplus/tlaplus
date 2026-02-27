@@ -267,7 +267,6 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
       int off = 0;
       while (n > 0) {
 	if (this.len < 0) throw new EOFException();
-	int offInit = off;
 	while (n > 0 && this.len > 0) {
 	  int toCopy = Math.min(n, this.len - this.curr);
 	  for (int i = 0; i < toCopy; i++) {
@@ -281,8 +280,6 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
 	    this.curr = 0;
 	  }
 	}
-	int numRead = off - offInit;
-	off += numRead; n -= numRead;
       }
       return new String(b);
     }
