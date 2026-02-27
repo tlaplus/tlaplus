@@ -289,9 +289,9 @@ public class TLCGetSet implements ValueConstants {
 			final Value[] v = new Value[n.length];
 			
 			n[0] = TLCGetSet.COUNT;
-			v[0] = IntValue.gen(TLCGlobals.getSCMCommits());
+			v[0] = IntValue.gen(TLCGlobals.Version.scmCommits());
 			
-			final Date buildDate = TLCGlobals.getBuildDate();
+			final Date buildDate = TLCGlobals.Version.buildDate();
 			// This suffers from the year 2038 problem
 			// (https://en.wikipedia.org/wiki/Year_2038_problem). By then, somebody please
 			// properly implement support for TLC's tlc2.util.BigInt.
@@ -304,7 +304,7 @@ public class TLCGetSet implements ValueConstants {
 			v[2] = new StringValue(df.format(buildDate));
 			
 			n[3] = TLCGetSet.REV_TAG;
-			v[3] = new StringValue(TLCGlobals.getRevisionOrDev());
+			v[3] = new StringValue(TLCGlobals.Version.revisionOrDev());
 
 			return new RecordValue(n, v, false);
 		} else if (SPEC == sv.val) {

@@ -239,7 +239,7 @@ public class REPL {
 			reader.setVariable(LineReader.HISTORY_FILE, HISTORY_PATH);
 
 			System.out.println("Welcome to the TLA+ REPL!");
-            MP.printMessage(EC.TLC_VERSION, TLCGlobals.versionOfTLC);
+            MP.printMessage(EC.TLC_VERSION, TLCGlobals.Version.get());
         	System.out.println("Enter a constant-level TLA+ expression.");
 
            	reportExecutionStatistics();
@@ -259,7 +259,7 @@ public class REPL {
 
 		final Map<String, String> udc = new LinkedHashMap<>();
 		// First indicate the version (to make parsing forward compatible)
-		udc.put("ver", TLCGlobals.getRevisionOrDev());
+		udc.put("ver", TLCGlobals.Version.revisionOrDev());
 		udc.put("mode", "repl");
 		udc.put("workers", String.valueOf(TLCGlobals.getNumWorkers()));
 		udc.put("cores", Integer.toString(Runtime.getRuntime().availableProcessors()));

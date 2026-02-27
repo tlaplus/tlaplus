@@ -30,6 +30,13 @@ public class TLCGlobals
 
 	public static final int DEFAULT_CHECKPOINT_DURATION = (30 * 60 * 1000) + 42;
 
+	// Version-related state and helpers live in this nested class so that
+	// TLCGlobals.<clinit> never triggers JAR manifest I/O.  JPF's model
+	// classes for Java 11 cannot execute ZipFile.<clinit>, so any manifest
+	// reading during TLCGlobals class loading crashes JPF verification tests.
+	// The JVM only initializes Version when it is first accessed, keeping
+	// TLCGlobals safe to load inside JPF.
+	//
 	// Historically, TLC used sequential version numbers and a specific release
 	// date (e.g., "Version 2.19 of 24 February 2025").
 	// The maintenance branch continues this scheme, so 2.20, 2.21, ... are
@@ -37,21 +44,86 @@ public class TLCGlobals
 	// (YYYY.MM.DD.HHmmss) to avoid conflicts — the YYYY prefix can never
 	// collide with the 2.x namespace. The time component disambiguates
 	// multiple releases on the same day.
-    public static final String TLC_VERSION_NUMBER = computeVersionNumber();
+	public static final class Version {
 
-    private static String computeVersionNumber() {
-        final Date buildDate = getBuildDate();
-        // Locale is irrelevant — all fields are numeric.
-        final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(buildDate);
-    }
+		private static final String NUMBER = computeVersionNumber();
 
-    public static String versionOfTLC = getVersionOfTLC();
+		private static String computeVersionNumber() {
+			final Date buildDate = buildDate();
+			// Locale is irrelevant — all fields are numeric.
+			final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.US);
+			sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+			return sdf.format(buildDate);
+		}
 
-    public static String getVersionOfTLC() {
-        return "Version " + TLC_VERSION_NUMBER;
-    }
+		public static String number() {
+			return NUMBER;
+		}
+
+		public static String get() {
+			return "Version " + NUMBER;
+		}
+
+		public static String revision() {
+			return getManifestValue("X-Git-ShortRevision");
+		}
+
+		public static String revisionOrDev() {
+			final String rev = revision();
+			return rev == null ? "development" : rev;
+		}
+
+		public static Date buildDate() {
+			try {
+				final String manifestValue = getManifestValue("Build-TimeStamp");
+				if (manifestValue == null) {
+					return new Date();
+				}
+				final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+				df.setTimeZone(TimeZone.getTimeZone("UTC"));
+				return df.parse(manifestValue);
+			} catch (NullPointerException | ParseException e) {
+				return new Date();
+			}
+		}
+
+		public static int scmCommits() {
+			try {
+				return Integer.parseInt(getManifestValue("X-Git-Commits-Count"));
+			} catch (NullPointerException | NumberFormatException nfe) {
+				return 0;
+			}
+		}
+
+		public static String installLocation() {
+			try {
+				return new File(TLC.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
+			} catch (URISyntaxException e) {
+				return "unknown";
+			}
+		}
+
+		private static String getManifestValue(final String key) {
+			try {
+				final Enumeration<URL> resources = TLCGlobals.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+				while (resources.hasMoreElements()) {
+					final Manifest manifest = new Manifest(resources.nextElement().openStream());
+					final Attributes attributes = manifest.getMainAttributes();
+					if ("TLA+ Tools".equals(attributes.getValue("Implementation-Title"))) {
+						return attributes.getValue(key);
+					}
+				}
+			} catch (Throwable ignore) {
+				// Catch Throwable rather than Exception because JPF's model
+				// classes for Java 11 lack
+				// jdk.internal.misc.SharedSecrets.setJavaUtilZipFileAccess,
+				// causing ZipFile.<clinit> to throw NoSuchMethodException,
+				// which the JVM wraps in ExceptionInInitializerError (an
+				// Error, not an Exception).
+			}
+			return null;
+		}
+	}
     
     // The bound for set enumeration, used for pretty printing
     public static int enumBound = 2000;
@@ -217,72 +289,6 @@ public class TLCGlobals
 	}
 	
 	public static boolean expand = true;
-	
-	public static String getRevision() {
-		return getManifestValue("X-Git-ShortRevision");
-	}
-	
-	public static String getRevisionOrDev() {
-		return TLCGlobals.getRevision() == null ? "development" : TLCGlobals.getRevision();
-	}
-	
-	public static Date getBuildDate() {
-		try {
-			final String manifestValue = getManifestValue("Build-TimeStamp");
-			if (manifestValue == null) {
-				return new Date();
-			}
-			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
-			df.setTimeZone(TimeZone.getTimeZone("UTC"));
-			// TLC's Build-TimeStamp in the jar's Manifest is format according to ISO 8601
-			// (https://en.m.wikipedia.org/wiki/ISO_8601)
-			return df.parse(manifestValue);
-		} catch (NullPointerException | ParseException e) {
-			// There is no manifest or the manifest does not contain a build time stamp, in
-			// which case we return the current, syntactically equivalent time stamp.
-			// This is usually the case when running TLC from an IDE or the 'test' target of
-			// the Ant custombuild.xml file. In other words, this occurs during TLC development.
-			// However, regular usage should not take this branch.
-			// https://en.m.wikipedia.org/wiki/ISO_8601
-			return new Date();
-		}
-	}
-
-	public static int getSCMCommits() {
-		try {
-			return Integer.parseInt(getManifestValue("X-Git-Commits-Count"));
-		} catch (NullPointerException | NumberFormatException nfe) {
-			// Not mapping to -1 so that at the level of TLA+ it is \in Nat.
-			return 0;
-		}
-	}
-	
-	private static String getManifestValue(final String key) {
-		try {
-			final Enumeration<URL> resources = TLCGlobals.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
-			while (resources.hasMoreElements()) {
-				final Manifest manifest = new Manifest(resources.nextElement().openStream());
-				final Attributes attributes = manifest.getMainAttributes();
-				if("TLA+ Tools".equals(attributes.getValue("Implementation-Title"))) {
-					if(attributes.getValue(key) != null) {
-						return attributes.getValue(key);
-					} else {
-						return null;
-					}
-				}
-			}
-		} catch (Exception ignore) {
-		}
-		return null;
-	}
-	
-	public static String getInstallLocation() {
-		try {
-			return new File(TLC.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
-		} catch (URISyntaxException e) {
-			return "unknown";
-		}
-	}
 	
 	public static final class Coverage {
 		
