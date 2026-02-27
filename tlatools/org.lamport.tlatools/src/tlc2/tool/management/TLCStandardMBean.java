@@ -29,14 +29,14 @@ public abstract class TLCStandardMBean extends StandardMBean {
 	}
 
 	public String getVersion() {
-		return TLCGlobals.versionOfTLC;
+		return TLCGlobals.Version.get();
 	}
 	
 	public String getRevision() {
-		if (TLCGlobals.getRevision() == null) {
+		if (TLCGlobals.Version.revision() == null) {
 			return "N/A";
 		}
-		return TLCGlobals.getRevision();
+		return TLCGlobals.Version.revision();
 	}
 
 	/**

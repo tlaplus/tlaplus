@@ -287,7 +287,7 @@ public class TLCWorker extends UnicastRemoteObject implements TLCWorkerRMI {
 	}
 	
 	public static void main(String args[]) {
-		ToolIO.out.println("TLC Worker " + TLCGlobals.versionOfTLC);
+		ToolIO.out.println("TLC Worker " + TLCGlobals.Version.get());
 
 		// Must have exactly one arg: a hostname (spec is read from the server
 		// connecting to).

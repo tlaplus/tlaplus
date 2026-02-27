@@ -925,7 +925,7 @@ public class Simulator {
 		v[6] = IntValue.gen(numWorkers);
 
 		n[7] = TLCGetSet.INSTALL;
-		v[7] = new StringValue(TLCGlobals.getInstallLocation());
+		v[7] = new StringValue(TLCGlobals.Version.installLocation());
 
 		n[8] = TLCGetSet.SCHED;
 		v[8] = new StringValue(getScheduler());

@@ -25,7 +25,7 @@ public class DistributedFPSet  {
 	private static volatile boolean running = true;
 
 	public static void main(String[] args) {
-		ToolIO.out.println("TLC Distributed FP Server " + TLCGlobals.versionOfTLC);
+		ToolIO.out.println("TLC Distributed FP Server " + TLCGlobals.Version.get());
 
         // Must have exactly one arg: a hostname (spec is read from the server
 		// connecting to).

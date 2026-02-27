@@ -693,7 +693,7 @@ public abstract class AbstractChecker
 		v[4] = new StringValue(Long.toString(FP64.getIrredPoly()));
 
 		n[5] = TLCGetSet.INSTALL;
-		v[5] = new StringValue(TLCGlobals.getInstallLocation());
+		v[5] = new StringValue(TLCGlobals.Version.installLocation());
 		
 		return new RecordValue(n, v, false);
 	}
