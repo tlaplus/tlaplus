@@ -53,7 +53,9 @@ import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
+import tlc2.tool.BuiltInOPs;
 import tlc2.tool.ITool;
+import tlc2.tool.ToolGlobals;
 import tlc2.tool.coverage.ActionWrapper.Relation;
 import tlc2.util.Context;
 import tlc2.util.ObjLongTable;
@@ -357,6 +359,10 @@ public class CostModelCreator extends ExplorerVisitor {
 				return;
 			}
 			final CostModelNode pop = stack.pop();
+			int opcode = BuiltInOPs.getOpCode(((OpApplNode) exploreNode).getOperator().getName());
+			if (opcode == ToolGlobals.OPCODE_ite) {
+				((OpApplNodeWrapper)pop).setChildrenITE();
+			}
 			assert pop.getNode() == exploreNode;
 		} else if (exploreNode instanceof OpDefNode) {
 			final boolean removed = opDefNodes.remove((OpDefNode) exploreNode);
