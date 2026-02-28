@@ -68,6 +68,7 @@ public final class BufferedDataInputStream extends FilterInputStream implements 
 
     private void initFields() {
         this.buff = new byte[8192];
+        this.len = -1; // as per Object invariants above.
         this.curr = 0;
         this.temp = new byte[8];
     }

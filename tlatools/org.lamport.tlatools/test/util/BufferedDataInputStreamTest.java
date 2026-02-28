@@ -32,8 +32,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.Test;
+
+import tlc2.output.EC;
 
 public class BufferedDataInputStreamTest {
 
@@ -119,6 +122,66 @@ public class BufferedDataInputStreamTest {
 		String result = bdis.readString(10);
 
 		assertEquals("ABCDEFGHIJ", result);
+
+		bdis.close();
+	}
+
+	/**
+	 * An underlying {@link InputStream} whose {@code read(byte[])} returns 0
+	 * violates the {@code InputStream} contract (for a non-zero-length buffer, the
+	 * return value must be &gt; 0 or -1). The constructor's
+	 * {@code Assert.check(this.len != 0, ...)} must catch this and throw
+	 * {@link Assert.TLCRuntimeException}.
+	 * <p>
+	 * In practice, {@link javax.crypto.CipherInputStream} is a known JDK subclass
+	 * that can return 0 from {@code read} when a block cipher consumes input
+	 * without yet producing output.
+	 */
+	@SuppressWarnings("resource")
+	@Test
+	public void testConstructorRejectsStreamReturningZero() throws IOException {
+		InputStream zeroStream = new InputStream() {
+			@Override
+			public int read() {
+				return 0;
+			}
+
+			@Override
+			public int read(byte[] b, int off, int len) {
+				return 0;
+			}
+		};
+
+		try {
+			new BufferedDataInputStream(zeroStream);
+			fail("Constructor should throw when underlying stream returns 0 from read");
+		} catch (Assert.TLCRuntimeException expected) {
+			assertEquals(EC.SYSTEM_STREAM_EMPTY, expected.errorCode);
+		}
+	}
+
+	/**
+	 * An empty underlying stream (0 bytes) must be legal: the constructor sets
+	 * {@code len = -1} (EOF from the initial {@code read}), so the stream is
+	 * immediately at EOF and any subsequent read throws {@link EOFException}.
+	 */
+	@Test
+	public void testEmptyStream() throws IOException {
+		BufferedDataInputStream bdis = new BufferedDataInputStream(new ByteArrayInputStream(new byte[0]));
+
+		assertEquals(true, bdis.atEOF());
+
+		try {
+			bdis.readByte();
+			fail("readByte() should throw EOFException on an empty stream");
+		} catch (EOFException expected) {
+		}
+
+		try {
+			bdis.readString(1);
+			fail("readString(1) should throw EOFException on an empty stream");
+		} catch (EOFException expected) {
+		}
 
 		bdis.close();
 	}
