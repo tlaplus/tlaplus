@@ -537,17 +537,167 @@
     <xs:complexType/>
   </xs:element>
 
-  <!--  This node represents all builtins, including quantifiers, set operations, etc. -->
+  <!-- 
+  The BuiltInKind node is used for all the built-in operators of TLA+ - and
+  then some! In addition to all the operators you would expect like = and '
+  and \in, SANY also treats various language-level operators like CASE,
+  existential quantification, IF/THEN/ELSE, and even proof step types as
+  built-in operators. BuiltInKind is most often found as the operator type of
+  OpApplNode, where it uniquely determines the expected symbols (bound or
+  unbound) and expressions in OpApplNode. The expectation is usually fairly
+  clear once you are familiar with the workings of OpApplNode's bound symbols
+  & operands, and the TLA+ operator in question. There are some oddities,
+  however, and we try to document them here. Several built-in operators make
+  use of synthetic "grouping" operators in their operands.
+  -->
   <xs:element name="BuiltInKind">
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="uniquename"/>
+        <xs:element name="uniquename">
+       	  <xs:simpleType>
+       	  	<!--
+       	  	Note that some operator names need to be escaped due to XML
+       	  	encoding restrictions, but when read into your program through
+       	  	an XML library the strings should be represented as their non-
+       	  	escaped form; ex. &lt;&gt; should be read in as <>.
+       	  	-->
+          	<xs:restriction base="xs:string">
+              <!-- Parameterless reserved words -->
+              <xs:enumeration value="FALSE"/>
+              <xs:enumeration value="TRUE"/>
+              <xs:enumeration value="BOOLEAN"/>
+              <xs:enumeration value="STRING"/>
+              <!-- Unary prefix operators -->
+              <xs:enumeration value="\lnot"/>
+              <xs:enumeration value="UNION"/>
+              <xs:enumeration value="SUBSET"/>
+              <xs:enumeration value="DOMAIN"/>
+              <xs:enumeration value="ENABLED"/>
+              <xs:enumeration value="UNCHANGED"/>
+              <xs:enumeration value="[]"/>
+              <xs:enumeration value="&lt;&gt;"/> <!-- escaped form of <> -->
+              <!-- Unary postfix operators -->
+              <xs:enumeration value="&apos;"/> <!-- escaped form of ', like in x' -->
+              <!-- Binary infix operators -->
+              <xs:enumeration value="\in"/>
+              <xs:enumeration value="\notin"/>
+              <xs:enumeration value="\"/>
+              <xs:enumeration value="\union"/>
+              <xs:enumeration value="\intersect"/>
+              <xs:enumeration value="\subseteq"/>
+              <xs:enumeration value="=>"/>
+              <xs:enumeration value="\equiv"/>
+              <xs:enumeration value="="/>
+              <xs:enumeration value="/="/>
+              <xs:enumeration value="\land"/>
+              <xs:enumeration value="\lor"/>
+              <xs:enumeration value="~>"/>
+              <xs:enumeration value="\cdot"/>
+              <xs:enumeration value="-+->"/>
+              <!-- General built-in language operators -->
+              <xs:enumeration value="$ConjList"/> <!-- Vertically-aligned conjunction -->
+              <xs:enumeration value="$DisjList"/> <!-- Vertically-aligned disjunction -->
+              <xs:enumeration value="$CartesianProd"/> <!-- P \X Q \X R -->
+              <!--
+              Note that for fairness, subscript expression comes first. For
+              action-level expressions, subscript expression comes second.
+              -->
+              <xs:enumeration value="$WF"/> <!-- WF_vars(A) -->
+              <xs:enumeration value="$SF"/> <!-- SF_vars(A) -->
+              <xs:enumeration value="$SquareAct"/> <!-- [A]_vars -->
+              <xs:enumeration value="$AngleAct"/> <!-- <<A>>_vars -->
+              <!--
+              These bounded & unbounded constructs will undoubtedly take the
+              most time to deal with out of all the built-ins. Each varyingly
+              allows tuples or does not, allows multiple bounds or does not,
+              in a dizzying matrix. The set and function operators similarly
+              use bounds, as do some of the proof steps.
+              -->
+              <xs:enumeration value="$BoundedChoose"/> <!-- CHOOSE e \in S : P(e) -->
+              <xs:enumeration value="$UnboundedChoose"/> <!-- CHOOSE e : P(e) -->
+              <xs:enumeration value="$BoundedExists"/> <!-- \E x \in S : P(x) -->
+              <xs:enumeration value="$BoundedForall"/> <!-- \A x \in S : P(x) -->
+              <xs:enumeration value="$UnboundedExists"/> <!-- \E x : P(x) -->
+              <xs:enumeration value="$UnboundedForall"/> <!-- \A x : P(x) -->
+              <xs:enumeration value="$TemporalExists"/> <!-- \EE x : P(x) -->
+              <xs:enumeration value="$TemporalForall"/> <!-- \AA x : P(x) -->
+              <xs:enumeration value="$SetOfAll"/> <!-- {f(e) : e \in S} -->
+              <xs:enumeration value="$SubsetOf"/> <!-- {e \in S : P(e)} -->
+              <xs:enumeration value="$SetEnumerate"/> <!-- {a, b, c} -->
+              <xs:enumeration value="$Tuple"/> <!-- <<a, b, c>> -->
+              <!-- $SetOfRcds and $RcdConstructor both use lists of $Pair operators. -->
+              <xs:enumeration value="$SetOfRcds"/> <!-- [field1 : S, field2 : P] -->
+              <xs:enumeration value="$RcdConstructor"/> <!-- [field1 |-> e1, field2 |-> e2] -->
+              <xs:enumeration value="$RcdSelect"/> <!-- r.fieldName -->
+              <xs:enumeration value="$SetOfFcns"/> <!-- [P -> Q] -->
+              <!--
+              The difference between $FcnConstructor and $NonRecursiveFcnSpec
+              is that $FcnConstructor is used to represent anonymous functions
+              like f == [e \in S |-> e], while $NonRecursiveFcnSpec is used
+              to represent named functions like f[e \in S] == e. The structure
+              of bound symbols and operands in the enclosing OpApplNode is
+              identical in both cases. You will only find $NonRecursiveFcnSpec
+              as the body of a UserDefinedOpKind, while $FcnConstructor can
+              occur anywhere an expression can occur. $RecursiveFcnSpec is
+              also only found in the body of a UserDefinedOpKind recursing
+              on the newly-defined operator name, like f[e \in S] == f[e].
+              The operator name is introduced as an unbound symbol in the
+              OpApplNode, preceding the bounds for the function's arguments.
+              -->
+              <xs:enumeration value="$FcnConstructor"/> <!-- [e \in S |-> m(e)] -->
+              <xs:enumeration value="$NonRecursiveFcnSpec"/> <!-- f[e \in S] == m(e) -->
+              <xs:enumeration value="$RecursiveFcnSpec"/> <!-- f[e \in S] == f[e] -->
+              <!-- Multi-parameter function application wraps arguments in a tuple. -->
+              <xs:enumeration value="$FcnApply"/> <!-- f[x, y, z] -->
+              <xs:enumeration value="$IfThenElse"/> <!-- IF P THEN A ELSE B -->
+              <!--
+              $Except operands consist of a single expression deriving the base
+              function f, followed by a list of $Pair elements. The first
+              operand of each $Pair is a $Seq of update expressions; example:
+              ![x][y][z] would be the expression sequence x, y, z. The second
+              operand of each $Pair is an expression for the updated value to
+              assign to the function path. Currently there is no way to
+              distinguish ![x].y.z from ![x][y][z] in update paths; record
+              field selectors will be given as a string expression.
+              -->
+              <xs:enumeration value="$Except"/> <!-- [f EXCEPT ![x] = e] -->
+              <!--
+              $Case operands consist of a series of $Pair operators. The final
+              $Pair instance is optionally an OTHER node, identified by the
+              first operand in the $Pair being the string "$Other".
+              -->
+              <xs:enumeration value="$Case"/> <!-- CASE P1 -> A [] P2 -> B -->
+              <xs:enumeration value="$Nop"/> <!-- Subexpressions like op!<<!>>!1!@ -->
+              <!-- Proof step types -->
+              <xs:enumeration value="$Pfcase"/> <!-- CASE proof step -->
+              <xs:enumeration value="$Pick"/> <!-- PICK proof step -->
+              <xs:enumeration value="$Take"/> <!-- TAKE proof step -->
+              <xs:enumeration value="$Have"/> <!-- HAVE proof step -->
+              <xs:enumeration value="$Witness"/> <!-- WITNESS proof step -->
+              <xs:enumeration value="$Suffices"/> <!-- SUFFICES proof step -->
+              <xs:enumeration value="$Qed"/> <!-- QED proof step -->
+              <!-- Synthetic grouping operators -->
+              <!--
+              The $Pair operator is used whenever it is useful to group two
+              expressions together within a larger list. It is used in the
+              $Case, $SetOfRcds, $RcdConstructor, and $Except operators.
+              -->
+              <xs:enumeration value="$Pair"/>
+              <!--
+              The $Seq operator is used to form variable-length sub-
+              groups of lists of arguments. It is only used in the $Except
+              operator, to represent an update path like ![x][y][z].
+              -->
+              <xs:enumeration value="$Seq"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:element>
         <xs:element ref="arity"/>
         <xs:element minOccurs="0" name="params">
           <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="leibnizparam"/>
+              <xs:element minOccurs="0" maxOccurs="unbounded" ref="leibnizparam"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
