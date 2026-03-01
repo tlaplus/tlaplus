@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2022, 2023, Oracle and/or its affiliates.
+// Copyright (c) 2022, 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Thu  2 Aug 2007 at 10:25:48 PST by lamport
 //      modified on Fri Jan  4 22:46:57 PST 2002 by yuanyu
@@ -1852,8 +1852,7 @@ public abstract class Tool
 	for (int i = 0; i < letLen; i++) {
 	  OpDefNode opDef = letDefs[i];
 	  if (opDef.getArity() == 0) {
-	    Value rhs = new LazyValue(opDef.getBody(), c1, cm);
-	    c1 = c1.cons(opDef, rhs);
+	    c1 = c1.cons(opDef, new LazyValue(opDef.getBody(), c1, cm));
 	  }
 	}
 	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
@@ -2989,8 +2988,7 @@ public abstract class Tool
             for (int i = 0; i < letDefs.length; i++) {
               OpDefNode opDef = letDefs[i];
               if (opDef.getArity() == 0) {
-                Value rhs = new LazyValue(opDef.getBody(), c1, cm);
-                c1 = c1.cons(opDef, rhs);
+                c1 = c1.cons(opDef, new LazyValue(opDef.getBody(), c1, cm));
               }
             }
             return this.enabled(pred1.getBody(), acts, c1, s0, s1, cm);
