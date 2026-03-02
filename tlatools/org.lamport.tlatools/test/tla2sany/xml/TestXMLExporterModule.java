@@ -479,7 +479,9 @@ public class TestXMLExporterModule {
 
 		for (int i = 0; i < preCommentsNodes.getLength(); i++) {
 			Element preComment = (Element) preCommentsNodes.item(i);
-			String commentText = preComment.getTextContent();
+			// Strip to normalize indentation whitespace that some XML serializers
+			// (notably Java 11's Transformer with INDENT=yes) add around CDATA sections.
+			String commentText = preComment.getTextContent().trim();
 
 			Element parent = (Element) preComment.getParentNode();
 			NodeList uniqueNames = parent.getElementsByTagName("uniquename");
