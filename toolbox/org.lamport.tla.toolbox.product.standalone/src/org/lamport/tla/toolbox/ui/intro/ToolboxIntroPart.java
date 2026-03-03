@@ -127,6 +127,80 @@ public class ToolboxIntroPart extends IntroPart implements IIntroPart {
 		lblHeader.setText("Welcome to the TLA\u207A Toolbox");
 		lblHeader.setBackground(backgroundColor);
 
+		/* Deprecation notice */
+
+		final Composite noticeComposite = new Composite(outerContainer, SWT.BORDER);
+		noticeComposite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		noticeComposite.setLayout(new GridLayout(1, false));
+		final Color noticeBackground = localResourceManager
+				.createColor(ColorDescriptor.createFrom(new RGB(255, 243, 205)));
+		noticeComposite.setBackground(noticeBackground);
+
+		final Label noticeHeader = new Label(noticeComposite, SWT.WRAP);
+		noticeHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		noticeHeader.setFont(localResourceManager.createFont(FontDescriptor.createFrom(
+				new FontData(fontData.getName(), fontData.getHeight(), SWT.BOLD))));
+		noticeHeader.setText("Important: The TLA\u207A Toolbox is no longer actively maintained.");
+		noticeHeader.setBackground(noticeBackground);
+		noticeHeader.setForeground(localResourceManager.createColor(new RGB(133, 100, 4)));
+
+		final StyledText noticeBody = new StyledText(noticeComposite, SWT.WRAP | SWT.READ_ONLY);
+		noticeBody.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		noticeBody.setBackground(noticeBackground);
+		final String vscodeLink = "Visual Studio Code";
+		final String openVsxLink = "compatible editors";
+		final String cliLink = "command line";
+		final String migrationLink = "migration guide";
+		final String noticeText = "We recommend switching to one of the actively maintained alternatives:\n\n"
+				+ "  \u2022  The TLA\u207A extension for " + vscodeLink + " and " + openVsxLink + "\n"
+				+ "  \u2022  Running TLC from the " + cliLink + "\n\n"
+				+ "For help switching, see the " + migrationLink + ".";
+		noticeBody.setText(noticeText);
+
+		final int idxVscode = noticeText.indexOf(vscodeLink);
+		final int idxOpenVsx = noticeText.indexOf(openVsxLink);
+		final int idxCli = noticeText.indexOf(cliLink);
+		final int idxMigration = noticeText.indexOf(migrationLink);
+
+		StyleRange linkStyle = new StyleRange();
+		linkStyle.underline = true;
+		linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
+
+		noticeBody.setStyleRanges(
+				new int[] { idxVscode, vscodeLink.length(), idxOpenVsx, openVsxLink.length(),
+						idxCli, cliLink.length(), idxMigration, migrationLink.length() },
+				new StyleRange[] { linkStyle, linkStyle, linkStyle, linkStyle });
+
+		noticeBody.addListener(SWT.MouseDown, new Listener() {
+			public void handleEvent(Event event) {
+				final int oap;
+				try {
+					oap = noticeBody.getOffsetAtPoint(new Point(event.x, event.y));
+				} catch (IllegalArgumentException e) {
+					return;
+				}
+				String targetUrl = null;
+				if (idxVscode <= oap && oap < idxVscode + vscodeLink.length()) {
+					targetUrl = "https://marketplace.visualstudio.com/items?itemName=tlaplus.vscode-ide";
+				} else if (idxOpenVsx <= oap && oap < idxOpenVsx + openVsxLink.length()) {
+					targetUrl = "https://open-vsx.org/extension/tlaplus/vscode-ide";
+				} else if (idxCli <= oap && oap < idxCli + cliLink.length()) {
+					targetUrl = "https://github.com/tlaplus/tlaplus/blob/master/general/docs/current-tools.md";
+				} else if (idxMigration <= oap && oap < idxMigration + migrationLink.length()) {
+					targetUrl = "https://docs.tlapl.us/using:vscode:migrating_from_tlatoolbox";
+				}
+				if (targetUrl != null) {
+					try {
+						PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser()
+								.openURL(new URL(targetUrl));
+					} catch (PartInitException | MalformedURLException e) {
+						StandaloneActivator.getDefault().getLog()
+								.log(new Status(Status.ERROR, StandaloneActivator.PLUGIN_ID, e.getMessage(), e));
+					}
+				}
+			}
+		});
+
 		/* What is next section */
 
 		Label lblSeparator = new Label(outerContainer, SWT.NONE);
