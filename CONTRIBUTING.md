@@ -47,6 +47,17 @@ When you open a PR against this repo, the continuous integration (CI) checks wil
 These ensure your changes do not break the build & tests.
 While you can run most of these checks locally, if you'd like to run the CI at any time you can open a PR between your feature branch and the master branch of *your own* fork of this repo.
 
+Commit Message Format
+---------------------
+
+This repository uses a loosely-enforced common format for git commit messages, which contributors are encouraged to follow.
+Contributors should add categorization tags to the tail of the commit, below the written description and above the `Signed-off-by` and `Co-authored-by` trailer.
+The purpose of these tags is to facilitate semi-deterministic categorization of commits.
+Each tag should be enclosed in square brackets.
+The tags should start by indicating the types of changes, for example `[Bug]`, `[Feature]`, `[Doc]`, or `[Refactor]`.
+The tags should then indicate the affected components, such as `[TLC]` or `[SANY]`.
+Particularly notable or impactful commits should add the `[Changelog]` tag, to indicate the commit should be included in the changelog file that accompanies a future release.
+
 Contribution Possibilities
 --------------------------
 
