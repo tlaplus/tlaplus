@@ -16,17 +16,24 @@ If you want to consume the TLA⁺ tools as a Java dependency in your software pr
 Use
 ---
 The TLA⁺ tools require Java 11+ to run.
-The `tla2tools.jar` file contains multiple TLA⁺ tools.
-They can be used as follows:
+
+To use TLA⁺ from a graphical interface, see [the TLA⁺ VS Code extension](https://github.com/tlaplus/vscode-tlaplus/).
+The Eclipse-based TLA⁺ Toolbox GUI is also available from this repository, but it is currently unmaintained.
+
+Get `tla2tools.jar` from the [releases](https://github.com/tlaplus/tlaplus/releases) to use the tools from the command line.
+The `tla2tools.jar` file contains multiple TLA⁺ tools; after adding `tla2tools.jar` to your [`CLASSPATH`](https://docs.oracle.com/javase/tutorial/essential/environment/paths.html), the tools can be used as follows:
 ```bash
-java -cp tla2tools.jar tla2sany.SANY -help  # The TLA⁺ parser
-java -cp tla2tools.jar tlc2.TLC -help       # The TLA⁺ model checker
-java -cp tla2tools.jar tlc2.REPL            # Enter the TLA⁺ REPL
-java -cp tla2tools.jar pcal.trans -help     # The PlusCal-to-TLA⁺ translator
-java -cp tla2tools.jar tla2tex.TLA -help    # The TLA⁺-to-LaTeX translator
+EXPORT CLASSPATH=tla2tools.jar
+java tla2sany.SANY -help  # The TLA⁺ parser
+java tlc2.TLC -help       # The TLA⁺ model checker
+java tlc2.REPL            # Enter the TLA⁺ REPL
+java pcal.trans -help     # The PlusCal-to-TLA⁺ translator
+java tla2tex.TLA -help    # The TLA⁺-to-LaTeX translator
+java tla2sany.xml.XMLExporter -help # Export TLA⁺ parse tree as XML
 ```
-If you add `tla2tools.jar` to your [`CLASSPATH`](https://docs.oracle.com/javase/tutorial/essential/environment/paths.html) environment variable then you can skip the `-cp tla2tools.jar` parameter.
-Running `java -jar tla2tools.jar` is aliased to `java -cp tla2tools.jar tlc2.TLC`.
+Running `java -jar tla2tools.jar` is aliased to run `tlc2.TLC`.
+
+For more information on using & consuming the TLA⁺ tools, see [`USE.md`](./USE.md).
 
 Developing & Contributing
 -------------------------
@@ -40,8 +47,8 @@ TLA⁺ is used in safety-critical systems, so we have a contribution process in 
 
 License & Copyright
 -----------------
-Copyright © 199? HP Corporation  
-Copyright © 2003 Microsoft Corporation  
+Copyright © 199? HP Corporation
+Copyright © 2003 Microsoft Corporation
 Copyright © 2023 Linux Foundation
 
 Licensed under the [MIT License](LICENSE).
