@@ -22,6 +22,8 @@
  ******************************************************************************/
 package tla2sany.parser;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,7 +38,7 @@ import tla2sany.st.SyntaxTreeConstants;
 public class IncrementalSyntaxParseTests {
 
   public static TLAplusParser parser(String input) {
-    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), input.getBytes());
+    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), input.getBytes(StandardCharsets.UTF_8));
     parser.token_source.SwitchTo(TLAplusParserConstants.SPEC);
     parser.belchDEF();
     return parser;

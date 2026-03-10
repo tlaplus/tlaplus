@@ -27,6 +27,7 @@ package pcal;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,7 +52,7 @@ public abstract class PCalTest {
 
 	protected static String writeFile(String filename, String content) throws IOException {
 		final Path path = Files.createFile(Paths.get(filename + TLAConstants.Files.TLA_EXTENSION));
-		Files.write(path, content.getBytes());
+		Files.write(path, content.getBytes(StandardCharsets.UTF_8));
 		
 		final File file = path.toFile();
 		file.deleteOnExit();
@@ -60,7 +61,7 @@ public abstract class PCalTest {
 	
 	protected static String writeTempFile(String filename, String content) throws IOException {
 		final Path path = Files.createTempFile(filename, TLAConstants.Files.TLA_EXTENSION);
-		Files.write(path, content.getBytes());
+		Files.write(path, content.getBytes(StandardCharsets.UTF_8));
 		
 		final File file = path.toFile();
 		file.deleteOnExit();

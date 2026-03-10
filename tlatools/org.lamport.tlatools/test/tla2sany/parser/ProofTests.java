@@ -22,6 +22,7 @@
  ******************************************************************************/
 package tla2sany.parser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -173,7 +174,7 @@ public class ProofTests {
    */
   @Test
   public void test() throws ParseException {
-    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), this.proof.getBytes());
+    final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), this.proof.getBytes(StandardCharsets.UTF_8));
     parser.token_source.SwitchTo(TLAplusParserConstants.SPEC);
     final SyntaxTreeNode actual = parser.Proof();
     match(this.expected, actual);

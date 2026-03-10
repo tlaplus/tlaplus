@@ -22,6 +22,7 @@
  ******************************************************************************/
 package tla2sany.parser;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class BelchDefTests {
 
       this.parser = new TLAplusParser(
           new SilentSanyOutput(),
-          TokenizerTests.wrapInModule(inputs).getBytes());
+          TokenizerTests.wrapInModule(inputs).getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
