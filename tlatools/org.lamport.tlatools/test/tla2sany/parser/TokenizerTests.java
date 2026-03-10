@@ -172,7 +172,7 @@ public class TokenizerTests {
   private static SimpleCharStream units(final String... definitions) {
     try {
       return new SimpleCharStream(
-          new ByteArrayInputStream(wrapInModule(definitions).getBytes()),
+          new ByteArrayInputStream(wrapInModule(definitions).getBytes(StandardCharsets.UTF_8)),
           StandardCharsets.UTF_8.name(),
           1,
           1);
@@ -184,7 +184,7 @@ public class TokenizerTests {
 
   private static SimpleCharStream input(final String input) {
     try {
-      final ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes());
+      final ByteArrayInputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
       return new SimpleCharStream(inputStream, StandardCharsets.UTF_8.name(), 1, 1);
     } catch (UnsupportedEncodingException e) {
       Assert.fail(e.toString());

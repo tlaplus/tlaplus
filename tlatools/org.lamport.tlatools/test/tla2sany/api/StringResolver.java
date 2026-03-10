@@ -22,6 +22,7 @@
  ******************************************************************************/
 package tla2sany.api;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public class StringResolver implements Resolver {
       return this.innerResolver.resolve(moduleName);
     }
     return new ModuleSourceCode(
-      stringModule.getBytes(),
+      stringModule.getBytes(StandardCharsets.UTF_8),
       ModuleOrigin.IN_MEMORY_STRING,
       null);
   }
