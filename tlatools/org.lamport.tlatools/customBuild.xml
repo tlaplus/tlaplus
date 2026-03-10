@@ -108,6 +108,11 @@
 			<arg value="javacc/tla+.jj" />
 			<jvmarg value="-Dfile.encoding=UTF-8" />
 		</java>
+		<!-- JavaCC emits platform-native line endings; normalize to LF
+		     so the output is identical regardless of OS. -->
+		<fixcrlf srcdir="src/tla2sany/parser" eol="lf" fixlast="false"
+			includes="TLAplusParser.java,TLAplusParserTokenManager.java,TLAplusParserConstants.java,Token.java,TokenMgrError.java,SimpleCharStream.java,ParseException.java" />
+		<fixcrlf file="javacc/tla+.html" eol="lf" fixlast="false" />
 	</target>
 
 	<!-- ===========================================================-->
