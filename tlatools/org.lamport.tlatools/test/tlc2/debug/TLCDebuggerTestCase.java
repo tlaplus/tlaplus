@@ -750,7 +750,8 @@ public abstract class TLCDebuggerTestCase extends ModelCheckerTestCase implement
 			final EvaluateArguments args = new EvaluateArguments();
 			args.setContext(EvaluateArgumentsContext.HOVER);
 			// Resolve module to absolute path required by URI.
-			final URI uri = new URI("tlaplus", "", Paths.get(module).toAbsolutePath().toString(), symbol,
+			// Use toUri().getPath() to get a URI-compatible path (forward slashes, leading /).
+			final URI uri = new URI("tlaplus", "", Paths.get(module).toAbsolutePath().toUri().getPath(), symbol,
 					String.format("%s %s %s %s", beginLine, beginColumn, endLine, endColumn));
 			args.setExpression(uri.toASCIIString());
 			args.setFrameId(this.stack.peek().getId()); // Just use the id of the topmost frame.
