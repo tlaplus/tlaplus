@@ -23,7 +23,7 @@ jobs:
       packages: read
     strategy: 
       matrix:
-        operating-system: [ubuntu-latest, macos-latest]
+        operating-system: [ubuntu-latest, macos-latest, windows-latest]
         include: 
         - operating-system: macos-latest
           MVN_COMMAND: mvn -Dmaven.test.skip=true
@@ -39,6 +39,14 @@ jobs:
           TOOLBOX_PRODUCT_ZIP_ARM64: TLAToolbox-1.8.0-linux.gtk.aarch64.zip
 
     steps:
+
+    - name: Configure LF line endings in git
+      # Git on Windows defaults to core.autocrlf=true, which checks out
+      # files with CRLF line endings.  The generate target in customBuild.xml
+      # normalizes JavaCC output to LF via fixcrlf, so checked-out files must
+      # also be LF for the grammar/code sync check (git status) to pass.
+      if: matrix.operating-system == 'windows-latest'
+      run: git config --global core.autocrlf input
 
     - uses: actions/checkout@v2
       with:
@@ -127,7 +135,8 @@ jobs:
       ## (The same sequence of steps is executed by pr.yml)
       ## 
     - name: Run TLC tests
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test -Dtest.halt=${{ inputs.temperature }}
+      shell: bash
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test -Dtest.halt=${{ inputs.failfast }}
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
@@ -152,6 +161,7 @@ jobs:
       ## Build TLC and Toolbox (logger reduces verbosity).
       ##
     - name: Build with Maven (Linux)
+      if: matrix.operating-system != 'windows-latest'
       run: ${{ matrix.MVN_COMMAND }} -Pcodesigning -Dtycho.disableP2Mirrors=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -fae -B verify --file pom.xml
 
       ##

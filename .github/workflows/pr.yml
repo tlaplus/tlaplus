@@ -12,8 +12,15 @@ jobs:
       checks: write # Required by mikepenz/action-junit-report@v4
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, macos-latest]
+        operating-system: [ubuntu-latest, macos-latest, windows-latest]
     steps:
+    - name: Configure LF line endings in git
+      # Git on Windows defaults to core.autocrlf=true, which checks out
+      # files with CRLF line endings.  The generate target in customBuild.xml
+      # normalizes JavaCC output to LF via fixcrlf, so checked-out files must
+      # also be LF for the grammar/code sync check (git status) to pass.
+      if: matrix.operating-system == 'windows-latest'
+      run: git config --global core.autocrlf input
     - name: Clone tlaplus/tlaplus
       uses: actions/checkout@v4
       with:
@@ -26,6 +33,7 @@ jobs:
         distribution: adopt
         java-version: 17
     - name: Check tla+.jj grammar/code sync
+      shell: bash
       run: |
         ant -f tlatools/org.lamport.tlatools/customBuild.xml generate
         git status
@@ -44,6 +52,7 @@ jobs:
     - name: Build tools and unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
     - name: Run unit tests
+      shell: bash
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info test -Dtest.halt=true
     - name: Generate JUnitReport
       if: always()
@@ -79,6 +88,7 @@ jobs:
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
     - name: Build Community Modules as Integration Test
+      shell: bash
       run: |
         mkdir -p communitymodules/tlc
         cp tlatools/org.lamport.tlatools/dist/tla2tools.jar communitymodules/tlc/
