@@ -44,6 +44,7 @@ import tlc2.util.ObjLongTable;
 import tlc2.util.Vect;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.EvaluatingValue;
+import tlc2.tool.coverage.CostModel;
 import tlc2.value.impl.LazyValue;
 import tlc2.value.impl.ModelValue;
 import util.Assert;
@@ -136,6 +137,45 @@ abstract class Spec
     /* Return the variable if expr is a primed state variable. Otherwise, null. */
     public final SymbolNode getPrimedVar(SemanticNode expr, Context c, boolean cutoff)
     {
+        if (expr instanceof SubstInNode)
+        {
+            SubstInNode expr1 = (SubstInNode) expr;
+            Subst[] subs = expr1.getSubsts();
+            Context c1 = c;
+            for (int i = 0; i < subs.length; i++) {
+                Subst sub = subs[i];
+                c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, toolId));
+            }
+            return this.getPrimedVar(expr1.getBody(), c1, cutoff);
+        }
+        if (expr instanceof APSubstInNode)
+        {
+            APSubstInNode expr1 = (APSubstInNode) expr;
+            Subst[] subs = expr1.getSubsts();
+            Context c1 = c;
+            for (int i = 0; i < subs.length; i++) {
+                Subst sub = subs[i];
+                c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, toolId));
+            }
+            return this.getPrimedVar(expr1.getBody(), c1, cutoff);
+        }
+        if (expr instanceof LetInNode)
+        {
+            LetInNode expr1 = (LetInNode) expr;
+            OpDefNode[] letDefs = expr1.getLets();
+            Context c1 = c;
+            for (int i = 0; i < letDefs.length; i++) {
+                OpDefNode opDef = letDefs[i];
+                if (opDef.getArity() == 0) {
+                    c1 = c1.cons(opDef, new LazyValue(opDef.getBody(), c1, CostModel.DO_NOT_RECORD));
+                }
+            }
+            return this.getPrimedVar(expr1.getBody(), c1, cutoff);
+        }
+        if (expr instanceof LabelNode)
+        {
+            return this.getPrimedVar(((LabelNode) expr).getBody(), c, cutoff);
+        }
         if (expr instanceof OpApplNode)
         {
             OpApplNode expr1 = (OpApplNode) expr;
