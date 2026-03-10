@@ -27,6 +27,41 @@ import util.UniqueString;
 public interface SymbolNodeValueLookupProvider {
     /* Return the variable if expr is a state variable. Otherwise, null. */
 	default SymbolNode getVar(final SemanticNode expr, final Context c, final boolean cutoff, final int forToolId) {
+		if (expr instanceof SubstInNode) {
+			SubstInNode expr1 = (SubstInNode) expr;
+			Subst[] subs = expr1.getSubsts();
+			Context c1 = c;
+			for (int i = 0; i < subs.length; i++) {
+				Subst sub = subs[i];
+				c1 = c1.cons(sub.getOp(), getVal(sub.getExpr(), c, false, forToolId));
+			}
+			return getVar(expr1.getBody(), c1, cutoff, forToolId);
+		}
+		if (expr instanceof APSubstInNode) {
+			APSubstInNode expr1 = (APSubstInNode) expr;
+			Subst[] subs = expr1.getSubsts();
+			Context c1 = c;
+			for (int i = 0; i < subs.length; i++) {
+				Subst sub = subs[i];
+				c1 = c1.cons(sub.getOp(), getVal(sub.getExpr(), c, false, forToolId));
+			}
+			return getVar(expr1.getBody(), c1, cutoff, forToolId);
+		}
+		if (expr instanceof LetInNode) {
+			LetInNode expr1 = (LetInNode) expr;
+			OpDefNode[] letDefs = expr1.getLets();
+			Context c1 = c;
+			for (int i = 0; i < letDefs.length; i++) {
+				OpDefNode opDef = letDefs[i];
+				if (opDef.getArity() == 0) {
+					c1 = c1.cons(opDef, new LazyValue(opDef.getBody(), c1, CostModel.DO_NOT_RECORD));
+				}
+			}
+			return getVar(expr1.getBody(), c1, cutoff, forToolId);
+		}
+		if (expr instanceof LabelNode) {
+			return getVar(((LabelNode) expr).getBody(), c, cutoff, forToolId);
+		}
 		if (expr instanceof OpApplNode) {
 			SymbolNode opNode = ((OpApplNode) expr).getOperator();
 
