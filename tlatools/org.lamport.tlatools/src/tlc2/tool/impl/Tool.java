@@ -1833,7 +1833,7 @@ public abstract class Tool
           }
         case OpArgKind:
           {
-            return evalImplOpArgKind((OpArgNode) expr, c, s0, s1, cm);
+            return evalImplOpArgKind((OpArgNode) expr, c, s0, s1, control, cm);
           }
         default:
           {
@@ -1884,11 +1884,11 @@ public abstract class Tool
   }
   
   @ExpectInlined
-  private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final CostModel cm) {
+  private final Value evalImplOpArgKind(OpArgNode expr1, Context c, TLCState s0, TLCState s1, final int control, final CostModel cm) {
   	SymbolNode opNode = expr1.getOp();
   	Object val = this.lookup(opNode, c, false);
   	if (val instanceof OpDefNode) {
-  	  return setSource(expr1, new OpLambdaValue((OpDefNode)val, this, c, s0, s1, cm));
+  	  return setSource(expr1, new OpLambdaValue((OpDefNode)val, this, c, s0, s1, control, cm));
   	}
   	return (Value)val;
   }
