@@ -522,7 +522,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="${threadLimit}"/>
-			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides${path.separator}tlc2.overrides.TLCTestOverrides"/>
 			<!-- Distributed TLC tests must be run sequentially because they bind
 					 exclusively to a port on the system. -->
 			<batchtest fork="yes" todir="${test.reports}">
@@ -586,7 +586,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="1"/>
-			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides${path.separator}tlc2.overrides.TLCTestOverrides"/>
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<!-- Put longer-running tests first -->
@@ -743,7 +743,7 @@
 			<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
-			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
+			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides${path.separator}tlc2.overrides.TLCTestOverrides"/>
 
 			<!-- Print all output of the test to the screen. -->
 			<formatter type="plain" usefile="false" />
@@ -953,7 +953,7 @@
 				<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 				<sysproperty key="tlc2.tool.fp.FPSet.impl" value="tlc2.tool.fp.OffHeapDiskFPSet"/>
 				<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
-				<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides:tlc2.overrides.TLCTestOverrides"/>
+				<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides${path.separator}tlc2.overrides.TLCTestOverrides"/>
 	
 				<batchtest fork="yes" todir="${test.reports}/onJar">
 					<fileset dir="${test.dir}">
