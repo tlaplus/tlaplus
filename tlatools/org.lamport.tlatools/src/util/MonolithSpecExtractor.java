@@ -76,7 +76,10 @@ public class MonolithSpecExtractor {
 	
 	public static NamedInputStream module(final File in, final String moduleName)
 			throws IOException {
-		final File out = FileUtil.createTempFile(moduleName + TLAConstants.Files.TLA_EXTENSION);
+		// Use only the base name for the temp file to avoid invalid paths on Windows
+		// when moduleName contains path separators (e.g. "d:\software\...\Scratch").
+		final String safeFileName = new File(moduleName).getName() + TLAConstants.Files.TLA_EXTENSION;
+		final File out = FileUtil.createTempFile(safeFileName);
 		final PrintWriter pw = new PrintWriter(new FileWriter(out));
 		try (BufferedReader reader = new BufferedReader(new FileReader(in))) {
 			boolean active = false;
