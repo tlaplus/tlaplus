@@ -9,6 +9,7 @@ package tlc2.value.impl;
 
 import tla2sany.semantic.FormalParamNode;
 import tla2sany.semantic.OpDefNode;
+import tlc2.tool.EvalControl;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -25,25 +26,34 @@ public class OpLambdaValue extends OpValue {
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
+  // EvalControl flags captured when this LAMBDA was created. The Enabled flag
+  // is restored in eval() so that Java module overrides (which call the LAMBDA
+  // with EvalControl.Clear) do not lose the ENABLED evaluation context. Without
+  // this, primed-variable lookups inside the LAMBDA body use cutoff=false,
+  // traverse past the Context BRANCH, resolve through INSTANCE substitutions,
+  // and hit the wrong TLCStateFun binding via a UniqueString collision.
+  // See Github issue #725.
+  public final int control;
 
   /* Constructor */
   public OpLambdaValue(OpDefNode op, ITool tool,	Context con,
-           TLCState state, TLCState pstate) {
+           TLCState state, TLCState pstate, int control) {
     this.opDef = op;
     this.tool = tool;
     this.state = state;
     this.con = con;
     this.pstate = pstate;
+    this.control = control;
   }
 
   public OpLambdaValue(OpDefNode op, ITool tool,	Context con,
-          TLCState state, TLCState pstate, CostModel cm) {
-	this(op, tool, con, state, pstate);
+          TLCState state, TLCState pstate, int control, CostModel cm) {
+	this(op, tool, con, state, pstate, control);
 	this.cm = cm;
   }
   
   public OpLambdaValue(OpLambdaValue other, ITool tool) {
-	  this(other.opDef, tool, other.con, other.state, other.pstate);
+	  this(other.opDef, tool, other.con, other.state, other.pstate, other.control);
   }
 
   @Override
@@ -113,8 +123,12 @@ public class OpLambdaValue extends OpValue {
       for (int i = 0; i < alen; i++) {
         c1 = c1.cons(formals[i], args[i]);
       }
-      return (Value) this.tool.eval(this.opDef.getBody(), c1, this.state, this.pstate,
-          control);
+      // Restore the Enabled flag from the creation context. Java module overrides
+      // call this method with EvalControl.Clear, which drops the Enabled flag and
+      // causes primed-variable lookups to use cutoff=false — leading to incorrect
+      // INSTANCE substitution resolution. See Github issue #725.
+	    return (Value) this.tool.eval(this.opDef.getBody(), c1, this.state, this.pstate,
+			   EvalControl.isEnabled(this.control) ? EvalControl.setEnabled(control) : control);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
