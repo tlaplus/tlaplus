@@ -1507,7 +1507,10 @@ public class OpDefNode extends OpDefOrDeclNode
 			ret.appendChild(appendCDATA(doc, "pre-comments", Arrays.stream(getPreComments()).filter(Objects::nonNull)
 					// Do not trim to preserve indentation of comments.
 					.map(String::stripTrailing).filter(s -> !s.isEmpty())
-					.collect(Collectors.joining(System.lineSeparator()))));
+					// Use "\n" rather than System.lineSeparator(): XML 1.0 §2.11
+					// normalizes line endings to LF, so \r\n would not survive a
+					// round-trip through a conformant XML parser.
+					.collect(Collectors.joining("\n"))));
 		}
         ret.appendChild(appendElement(doc,"body",body.export(doc,context, filter)));
         if (params != null) {
