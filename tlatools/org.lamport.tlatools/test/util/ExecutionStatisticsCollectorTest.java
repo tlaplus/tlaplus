@@ -35,6 +35,7 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +70,17 @@ public class ExecutionStatisticsCollectorTest {
 
 	private static final String COMPANY = "localhost";
 
+	// The canonical hostname for "localhost" varies by platform (e.g. "localhost"
+	// on Linux/macOS, "127.0.0.1" on Windows).
+	private static final String COMPANY_CANONICAL;
+	static {
+		try {
+			COMPANY_CANONICAL = InetAddress.getByName(COMPANY).getCanonicalHostName();
+		} catch (Exception e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
+
 	@Test
 	public void testCompanyLevelNoFile() {
 		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector("/path/does/not/exist",
@@ -78,7 +90,7 @@ public class ExecutionStatisticsCollectorTest {
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
 		assertEquals("bar", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 	}
 
 	@Test
@@ -94,13 +106,13 @@ public class ExecutionStatisticsCollectorTest {
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
 		assertEquals("bar", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		final String id1 = esc.parameters.get("id");
 
 		esc.collect0(new HashMap<>(Map.of("foo", "blub")));
 		assertTrue(esc.submitted);
 		assertEquals("blub", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		final String id2 = esc.parameters.get("id");
 
 		// Share the same non-empty suffix, which is calculated from some of the host's
@@ -122,13 +134,13 @@ public class ExecutionStatisticsCollectorTest {
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
 		assertEquals("bar", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		final String id1 = esc.parameters.get("id");
 
 		esc.collect0(new HashMap<>(Map.of("foo", "blub")));
 		assertTrue(esc.submitted);
 		assertEquals("blub", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		final String id2 = esc.parameters.get("id");
 
 		// Share the same non-empty suffix, which is calculated from some of the host's
@@ -171,7 +183,7 @@ public class ExecutionStatisticsCollectorTest {
 
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		assertEquals("bar", esc.parameters.get("foo"));
 		assertNotEquals(identifierA, esc.parameters.get("id"));
 		assertNotEquals(identifierB, esc.parameters.get("id"));
@@ -179,7 +191,7 @@ public class ExecutionStatisticsCollectorTest {
 
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		assertEquals("bar", esc.parameters.get("foo"));
 		assertNotEquals(identifierA, esc.parameters.get("id"));
 		assertNotEquals(identifierB, esc.parameters.get("id"));
@@ -203,7 +215,7 @@ public class ExecutionStatisticsCollectorTest {
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
 		assertEquals("bar", esc.parameters.get("foo"));
-		assertEquals(COMPANY, esc.hostname);
+		assertEquals(COMPANY_CANONICAL, esc.hostname);
 		assertEquals("123456789ABCDEFGHIJKLMNOPQRSTUVW", esc.parameters.get("id"));
 	}
 
