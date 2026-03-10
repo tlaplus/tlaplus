@@ -26,7 +26,6 @@
 package tlc2.debug;
 
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -498,9 +497,12 @@ public class TLCStackFrame extends StackFrame {
 		final EvaluateResponse er = new EvaluateResponse();
 		try {
 			final URI u = URI.create(ea.getExpression());
-			// Unfortunately, we have to manually strip the extension because the lookup
-			// later is going to be on the module, not the file name.
-			final String moduleName = Paths.get(u.getPath()).getFileName().toString().replaceAll(".tla$", "");
+			// Extract the file name from the URI path using string operations rather
+			// than Paths.get(), which throws InvalidPathException on Windows for URI
+			// paths like "/D:/a/..." (the colon is invalid in a Windows path segment).
+			final String uriPath = u.getPath();
+			final String fileName = uriPath.substring(uriPath.lastIndexOf('/') + 1);
+			final String moduleName = fileName.replaceAll("\\.tla$", "");
 
 			final Location location = Location.parseCoordinates(moduleName, u.getFragment());
 			final LinkedList<SemanticNode> path = tool.getModule(location.source()).pathTo(location);
