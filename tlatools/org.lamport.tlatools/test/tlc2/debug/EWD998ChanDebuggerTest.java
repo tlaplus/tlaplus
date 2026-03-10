@@ -79,7 +79,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackFrames.length);
 		assertTLCFrame(stackFrames[0], 11, 11, RM);
 		// prefix depends on where the tests execute.
-		assertTrue(stackFrames[0].getSource().getPath().endsWith("test-model/EWD998/EWD998Chan.tla"));
+		assertTrue(stackFrames[0].getSource().getPath().replace('\\', '/').endsWith("test-model/EWD998/EWD998Chan.tla"));
 		stackFrames = debugger.stepIn();
 		assertEquals(2, stackFrames.length);
 		assertTLCFrame(stackFrames[1], 11, 11, RM);

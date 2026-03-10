@@ -70,7 +70,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(1, stackFrames.length);
 		assertTLCFrame(stackFrames[0], 12, 21, RM);
 		// prefix depends on where the tests execute.
-		assertTrue(stackFrames[0].getSource().getPath().endsWith("test-model/Echo/Echo.tla"));
+		assertTrue(stackFrames[0].getSource().getPath().replace('\\', '/').endsWith("test-model/Echo/Echo.tla"));
 		
 		TLCStackFrame f = (TLCStackFrame) stackFrames[0];
 		Variable[] constants = f.getConstants();

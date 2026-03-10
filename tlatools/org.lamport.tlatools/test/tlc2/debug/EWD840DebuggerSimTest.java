@@ -57,7 +57,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 
 		assertTLCFrame(stackFrames[0], 5, 5, RM);
 		// prefix depends on where the tests execute.
-		assertTrue(stackFrames[0].getSource().getPath().endsWith("test-model/EWD840/EWD840.tla"));
+		assertTrue(stackFrames[0].getSource().getPath().replace('\\', '/').endsWith("test-model/EWD840/EWD840.tla"));
 		stackFrames = debugger.stepIn();
 		assertEquals(2, stackFrames.length);
 		assertTLCFrame(stackFrames[1], 5, 5, RM);
