@@ -268,7 +268,7 @@ public class REPL {
 		udc.put("osArch", System.getProperty("os.arch"));
 		udc.put("jvmVendor", System.getProperty("java.vendor"));
 		udc.put("jvmVersion", System.getProperty("java.version"));
-		udc.put("jvmArch", tlcRuntime.getArchitecture().name());
+		udc.put("jvmArch", tlcRuntime.getArchitecture().toString());
 		udc.put("jvmHeapMem", Long.toString(heapMemory));
 		udc.put("jvmOffHeapMem", Long.toString(offHeapMemory));
 		udc.put("toolbox", Boolean.toString(TLCGlobals.tool));
