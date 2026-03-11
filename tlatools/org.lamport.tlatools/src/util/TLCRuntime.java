@@ -147,24 +147,35 @@ public class TLCRuntime {
 	}
 
 	public enum ARCH {
-		x86,
-		x86_64;
+		BIT_32("32bit"),
+		BIT_64("64bit");
+
+		private final String label;
+
+		ARCH(String label) {
+			this.label = label;
+		}
+
+		@Override
+		public String toString() {
+			return label;
+		}
 	}
 	
 	public ARCH getArchitecture() {
 		if (System.getProperty("sun.arch.data.model") != null
 				&& System.getProperty("sun.arch.data.model").equals("64")) {
-			return ARCH.x86_64;
+			return ARCH.BIT_64;
 		}
 		if (System.getProperty("com.ibm.vm.bitmode") != null 
 				&& System.getProperty("com.ibm.vm.bitmode").equals("64")) {
-			return ARCH.x86_64;
+			return ARCH.BIT_64;
 		}
 		if (System.getProperty("java.vm.version") != null 
 				&& System.getProperty("java.vm.version").contains("_64")) {
-			return ARCH.x86_64;
+			return ARCH.BIT_64;
 		}
-		return ARCH.x86;
+		return ARCH.BIT_32;
 	}
 
 	// See java.lang.ProcessHandle.current().pid() or -1 when Java version -lt 9.

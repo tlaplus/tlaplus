@@ -1419,7 +1419,7 @@ public class TLC {
 		result.put("osArch", System.getProperty("os.arch"));
 		result.put("jvmVendor", System.getProperty("java.vendor"));
 		result.put("jvmVersion", System.getProperty("java.version"));
-		result.put("jvmArch", tlcRuntime.getArchitecture().name());
+		result.put("jvmArch", tlcRuntime.getArchitecture().toString());
 		result.put("jvmHeapMem", Long.toString(heapMemory));
 		result.put("jvmOffHeapMem", Long.toString(offHeapMemory));
 		result.put("jvmPid", pid == -1 ? "" : String.valueOf(pid));
@@ -1454,7 +1454,7 @@ public class TLC {
 		result.put("osArch", System.getProperty("os.arch"));
 		result.put("jvmVendor", System.getProperty("java.vendor"));
 		result.put("jvmVersion", System.getProperty("java.version"));
-		result.put("jvmArch", tlcRuntime.getArchitecture().name());
+		result.put("jvmArch", tlcRuntime.getArchitecture().toString());
 		result.put("jvmHeapMem", Long.toString(heapMemory));
 		result.put("jvmOffHeapMem", Long.toString(offHeapMemory));
 		result.put("seed", Long.toString(RandomEnumerableValues.getSeed()));

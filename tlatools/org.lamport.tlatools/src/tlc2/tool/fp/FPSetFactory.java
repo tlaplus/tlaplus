@@ -54,7 +54,7 @@ public abstract class FPSetFactory {
 	}
 
 	private static boolean supports32Bits(final Class<? extends FPSet> clazz) {
-		if (TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.x86
+		if (TLCRuntime.getInstance().getArchitecture() == TLCRuntime.ARCH.BIT_32
 				&& OffHeapDiskFPSet.class.isAssignableFrom(clazz)) {
 			return false;
 		}

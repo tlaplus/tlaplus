@@ -94,7 +94,7 @@ public final class LongArray {
 	 *         cannot be loaded (on some JVM implementations, this isn't possible).
 	 */
 	public static boolean isSupported() {
-		if (TLCRuntime.ARCH.x86_64 != TLCRuntime.getInstance().getArchitecture()) {
+		if (TLCRuntime.ARCH.BIT_64 != TLCRuntime.getInstance().getArchitecture()) {
 			return false;
 		}
 		try {
