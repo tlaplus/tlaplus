@@ -137,7 +137,7 @@ jobs:
       ## 
     - name: Run TLC tests
       shell: bash
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test -Dtest.halt=${{ inputs.failfast }}
+      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test -Dtest.halt=${{ inputs.failfast || 'false' }}
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
