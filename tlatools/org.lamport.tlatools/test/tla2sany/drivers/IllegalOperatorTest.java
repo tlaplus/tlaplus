@@ -42,11 +42,9 @@ public class IllegalOperatorTest  {
 		SANY.SANYmain(
 				new String[] { CommonTestCase.BASE_PATH + "IllegalOperatorTest" });
 		
-		testPrintStream.assertSubstring("*** Errors: 1\n" + 
-				"\n" + 
-				"line 3, col 8 to line 3, col 11 of module IllegalOperatorTest\n" + 
-				"\n" + 
-				"Argument number 1 to operator 'D' \n" + 
-				"should be a 1-parameter operator.");
+		testPrintStream.assertSubstring("*** Errors: 1\n");
+		testPrintStream.assertSubstring("line 3, col 8 to line 3, col 11 of module IllegalOperatorTest\n");
+		testPrintStream.assertSubstring("Argument number 1 to operator 'D' \n");
+		testPrintStream.assertSubstring("should be a 1-parameter operator.");
 	}
 }

@@ -65,7 +65,7 @@ public class TestPrintStream extends PrintStream {
 				return;
 			}
 		}
-		fail("Substring not found");
+		fail("Substring `" + substring + "' not found");
 	}
 
 	public void assertRegex(String regex) {
@@ -81,7 +81,7 @@ public class TestPrintStream extends PrintStream {
 	public void assertNoSubstring(String substring) {
 		for (String string : strings) {
 			if (string.contains(substring)) {
-				fail("Substring was found");
+				fail("Substring `" + substring + "' was found");
 			}
 		}
 	}

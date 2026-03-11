@@ -43,19 +43,16 @@ public class Test217 extends SuiteETestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertSubstring("Semantic errors:\n" + 
 				"\n" + 
-				"*** Errors: 2\n" + 
-				"\n" + 
+				"*** Errors: 2\n");
+		assertSubstring(
 				"line 12, col 11 to line 12, col 19 of module test217\n" + 
 				"\n" + 
 				"Level error in applying operator I!Foo:\n" + 
-				"The level of argument 1 exceeds the maximum level allowed by the operator.\n" + 
-				"\n" + 
-				"\n" + 
+				"The level of argument 1 exceeds the maximum level allowed by the operator.\n");
+		assertSubstring(
 				"line 13, col 9 to line 13, col 19 of module test217\n" + 
 				"\n" + 
 				"Level error in applying operator I!Foo:\n" + 
-				"The level of argument 1 exceeds the maximum level allowed by the operator.\n" + 
-				"\n" + 
-				"\n");
+				"The level of argument 1 exceeds the maximum level allowed by the operator.\n");
 	}
 }

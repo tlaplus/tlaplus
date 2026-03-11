@@ -41,8 +41,8 @@ public class ETest2 extends SuiteETestCase {
 	@Test
 	public void testSpec() {
 		assertFalse(recorder.recorded(EC.GENERAL));
-		assertSubstring("*** Errors: 1\n\n"
-				+ "line 18, col 12 to line 18, col 14 of module etest2\n\n"
-				+ "The operator Foo requires 2 arguments.");
+		assertSubstring("*** Errors: 1\n");
+		assertSubstring("line 18, col 12 to line 18, col 14 of module etest2\n");
+		assertSubstring("The operator Foo requires 2 arguments.");
 	}
 }
