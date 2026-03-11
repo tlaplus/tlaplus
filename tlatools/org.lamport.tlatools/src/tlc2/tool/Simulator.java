@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -321,6 +322,14 @@ public class Simulator {
 		final ProgressReport report = new ProgressReport();
 		report.start();
 
+		// Wait for the progress report thread to enter its synchronized
+		// block. Because the thread holds the monitor when it signals
+		// the latch, it is guaranteed to reach wait() (releasing the
+		// monitor) before the main thread can acquire the monitor to
+		// call notify(). This prevents a lost notification when the
+		// simulation completes before the progress thread is scheduled.
+		report.ready.await();
+
 		//
 		// Start simulating.
 		//
@@ -336,7 +345,9 @@ public class Simulator {
 			errorCode = Math.max(this.tool.checkPostCondition(), errorCode);
 		}
 
-		// Do a final progress report.
+		// Waking the progress thread serves double duty: it breaks
+		// out of the while loop (isRunning is now false) *and* triggers
+		// one final progress report before the thread exits.
 		report.isRunning = false;
 		synchronized (report) {
 			report.notify();
@@ -601,12 +612,15 @@ public class Simulator {
 
 		volatile boolean isRunning = true;
 
+		final CountDownLatch ready = new CountDownLatch(1);
+
 		public void run() {
-			final ExprNode periodic = tool.getSpecProcessor().getPeriodic();
-			int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 			try {
+				final ExprNode periodic = tool.getSpecProcessor().getPeriodic();
+				int count = TLCGlobals.coverageInterval / TLCGlobals.progressInterval;
 				while (isRunning) {
 					synchronized (this) {
+						ready.countDown();
 						this.wait(TLCGlobals.progressInterval);
 					}
 					final long genTrace = numOfGenTraces.longValue();
@@ -636,6 +650,11 @@ public class Simulator {
 			} catch (Exception e) {
 				// SZ Jul 10, 2009: changed from error to bug
 				MP.printTLCBug(EC.TLC_REPORTER_DIED, null);
+			} finally {
+				// If getSpecProcessor or any earlier step throws an exception,
+				// always tear down the latch to avoid blocking the main thread.
+				// This is a no-op if the latch was already torn down in the normal path.
+				ready.countDown();
 			}
 		}
 
