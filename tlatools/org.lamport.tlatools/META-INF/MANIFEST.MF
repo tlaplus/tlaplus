@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Export-Package: pcal,
  pcal.exception,
  tla2sany,
+ tla2sany.api,
  tla2sany.StandardModules,
  tla2sany.drivers,
  tla2sany.explorer,
