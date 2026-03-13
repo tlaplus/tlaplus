@@ -73,15 +73,28 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String Periodic = "_PERIODIC";
     private static final String RLReward = "_RL_REWARD";
     public static final String CheckDeadlock = "CHECK_DEADLOCK";
+    private static final String Expect = "EXPECT";
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * The possible values associated with EXPECT declarations.
+     */
+    public static enum ModelResult {
+      Success,
+      AssumptionViolation,
+      DeadlockViolation,
+      SafetyViolation,
+      LivenessViolation,
+      AssertViolation
+    }
 
     /**
      * All keywords used in the configuration file
      */
     public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
             ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Alias,
-            PostCondition, Periodic, RLReward, CheckDeadlock };
+            PostCondition, Periodic, RLReward, CheckDeadlock, Expect };
 
     private Hashtable configTbl;
     private Hashtable<String, String> overrides;
@@ -139,6 +152,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.configTbl.put(Periodic, "");
         this.configTbl.put(RLReward, "");
         this.configTbl.put(CheckDeadlock, "undef");
+        this.configTbl.put(Expect, "undef");
         
         this.modConstants = new Hashtable<>();
         this.modOverrides = new Hashtable<>();
@@ -489,6 +503,20 @@ public class ModelConfig implements ValueConstants, Serializable {
                         throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), CheckDeadlock });
                     }
                     tt = getNextToken(tmgr);
+                } else if (tval.equals(Expect)) {
+                  tt = getNextToken(tmgr);
+                  if (tt.kind == TLAplusParserConstants.EOF) {
+                      throw new ConfigFileException(EC.CFG_MISSING_ID, new String[] { String.valueOf(loc), Expect });
+                  }
+                  try {
+                    if (this.configTbl.put(Expect, ModelResult.valueOf(tt.image)) != "undef") {
+                        throw new ConfigFileException(EC.CFG_TWICE_KEYWORD, new String[] { String.valueOf(loc), Expect });
+                    }
+                  } catch (IllegalArgumentException e) {
+                      throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
+                          String.valueOf(scs.getBeginLine()), String.join(", ", Arrays.stream(ModelResult.values()).map(mr -> mr.toString()).collect(Collectors.toList())) });
+                  }
+                  tt = getNextToken(tmgr);
                 } else
                 {
                     throw new ConfigFileException(EC.CFG_EXPECTED_SYMBOL, new String[] {
@@ -767,6 +795,15 @@ public class ModelConfig implements ValueConstants, Serializable {
     		return (boolean) object;
     	}
     	return true;
+    }
+
+    public synchronized final ModelResult getExpectedModelResult()
+    {
+      Object object = this.configTbl.get(Expect);
+      if (object instanceof ModelResult) {
+        return (ModelResult)object;
+      }
+      return ModelResult.Success;
     }
 
     /**
