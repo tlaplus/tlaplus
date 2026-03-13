@@ -168,6 +168,8 @@
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar" />
+				<!-- TLA+ Formatter dependencies -->
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 			</classpath>
 		</javac>
 
@@ -312,6 +314,13 @@
 			</patternset>
 		</unzip>
 
+		<!-- Extract TLA+ Formatter dependencies into target/classes -->
+		<unzip src="lib/prettier4j-0.3.2.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
 		<!-- Include a few LICENSE files -->
 		<copy todir="${class.dir}">
 			<fileset dir="lib/jline">
@@ -350,6 +359,13 @@
 			</patternset>
 		</unzip>
 
+		<!-- Extract TLA+ Formatter dependencies into class directory -->
+		<unzip src="lib/prettier4j-0.3.2.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}" level="9">
@@ -447,6 +463,8 @@
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar" />
+				<!-- TLA+ Formatter dependencies -->
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -513,9 +531,11 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
+				<pathelement path="test-resources/formatter/" />
 			</classpath>
 			<formatter type="xml" />
 			<sysproperty key="basedir" value="${basedir}/"/>
@@ -575,9 +595,11 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
+				<pathelement path="test-resources/formatter/" />
 			</classpath>
 			<formatter type="xml" />
 
@@ -660,6 +682,9 @@
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
 					<exclude name="util/IsolatedTestCaseRunner.java"/>
+					<!-- TLA+ Formatter: exclude abstract base test class -->
+					<exclude name="formatter/LexiconTest.java"/>
+					<exclude name="formatter/TlaPlusExamplesSemanticPreservationTest.java"/>
 					<!-- Known test failures -->
 					<exclude name="**/pcal/StackTestTest.java" />
 					<exclude name="**/pcal/TestPCandStackTest.java" />

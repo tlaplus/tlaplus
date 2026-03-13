@@ -35,7 +35,11 @@ Export-Package: pcal,
  tlc2.tool.queue,
  tlc2.util,
  tlc2.value,
- util
+ util,
+ formatter,
+ formatter.constructs,
+ formatter.constructs.impl,
+ formatter.exceptions
 Bundle-Vendor: Leslie Lamport, Markus Alexander Kuppe
 Bundle-RequiredExecutionEnvironment: JavaSE-11,
  JavaSE-1.8
