@@ -889,12 +889,14 @@ public class LiveCheck implements ILiveCheck {
 				final int tidx1 = tnode1.getIndex();
 				final long ptr1 = dgraph.getPtr(fp, tidx1);
 				if (tnode1.isConsistent(s, tool)) {
-					if (tnode1.isAccepting() && this.errorGraphNode == null) {
+					if (tnode1.isAccepting() && this.errorGraphNode == null && oos.hasEmptyPEM()) {
 						// MAK 01/2022:
 						//
 						// If tnode1 is a sink in the tableau graph, i.e., it is accepting and state s
 						// (from the state-graph) is consistent with this tnode1, we know that s is the
-						// final state of a counter-example of a safety property.
+						// final state of a counter-example of a safety property.  This optimization
+						// applies only when hasEmptyPEM() is true (the negated property has no PEM
+						// conditions); otherwise a liveness check is required and we must not short-circuit.
 						//
 						// What then has to happen is to reconstruct the path in the behavior graph
 						// (TableauGraph) from some initial node to the GraphNode node (with
