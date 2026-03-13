@@ -179,4 +179,25 @@ public class OrderOfSolution {
 		this.pems = pems;
 	}
 
+	public boolean hasEmptyPEM() {
+		// TODO This value could be cached when setPems is called during startup if we
+		// find it is expensive to compute. But it is likely that the number of PEMs is
+		// small, so we can just check them one by one.
+		for (PossibleErrorModel pem : pems) {
+			if (pem.isEmpty()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isPEMSatisfiedByStuttering(boolean[] checkStateRes, BitVector checkActionRes) {
+		for (PossibleErrorModel pem : pems) {
+			if (pem.isSatisfiedByStuttering(checkStateRes, checkActionRes)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

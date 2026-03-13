@@ -57,4 +57,8 @@ PostCondition ==
 			        <<2, [x |-> TRUE]>>,
 			        <<3, [x |-> FALSE]>>,
 			        <<4, [x |-> TRUE]>> } ]
+
+FairSpec == 
+    /\ Spec
+    /\ WF_x(Next)
 ====

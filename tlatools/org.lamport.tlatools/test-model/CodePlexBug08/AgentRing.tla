@@ -98,4 +98,6 @@ Limits == SumLoad \leq N * N
 Test == LBL:: [](~CanCreate /\ (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) => [](Agent.Task = 0))
 
 Test2 == [][~CanCreate /\ (\A i,j \in NodeRange : Nodes[i].Load = Nodes[j].Load) => Agent'.Task = 0]_vars
+
+TestBogus == CanCreate => <>[](~CanCreate)
 ================================================================================
