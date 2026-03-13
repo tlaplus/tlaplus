@@ -119,13 +119,23 @@ public class PCalTranslator {
 							}
 						});
 					}
-				} else {
-					// Add parser problem markers to the editor.
-					for (Translator.Error anError : translator.getErrors()) {
-						TLAMarkerHelper.installProblemMarker(file, file.getName(), IMarker.SEVERITY_ERROR,
-								anError.getLocation(), anError.toString(), progressMonitor,
-								TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
+				}
+
+				// Add parser problem markers to the editor.
+				for (Translator.Error anError : translator.getErrors()) {
+					int markerSeverity = IMarker.SEVERITY_INFO;
+					switch (anError.getSeverity()) {
+						case WARNING:
+							markerSeverity = IMarker.SEVERITY_WARNING;
+							break;
+						case ERROR:
+							markerSeverity = IMarker.SEVERITY_ERROR;
+							break;
 					}
+
+					TLAMarkerHelper.installProblemMarker(file, file.getName(), markerSeverity,
+							anError.getLocation(), anError.toString(), progressMonitor,
+							TLAMarkerHelper.TOOLBOX_MARKERS_TRANSLATOR_MARKER_ID);
 				}
 			}
 		});
