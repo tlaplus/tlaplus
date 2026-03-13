@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
 
 public class BoundedQuantConstructTest {
     @Test
-    void testBoundQuantCompact() {
+    public void testBoundQuantCompact() {
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS A, B\n" +
                 "AVeryLongName == A \\X B\n" +
@@ -16,7 +16,7 @@ public class BoundedQuantConstructTest {
     }
 
     @Test
-    void testBoundQuantWrapped() {
+    public void testBoundQuantWrapped() {
         var t = "ALongLineName == AVeryLongConstName \\X BVeryLongConstName";
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS AVeryLongConstName, BVeryLongConstName\n" +
@@ -33,7 +33,7 @@ public class BoundedQuantConstructTest {
     }
 
     @Test
-    void testBoundQuantLong() {
+    public void testBoundQuantLong() {
         var spec = "----- MODULE Spec -----\n" +
                 "EXTENDS Naturals, Sequences\n" +
                 "CONSTANT max\n" +

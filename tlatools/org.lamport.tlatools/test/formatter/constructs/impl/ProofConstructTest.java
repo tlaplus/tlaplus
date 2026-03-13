@@ -1,14 +1,22 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
+import static org.junit.Assume.assumeTrue;
 
 public class ProofConstructTest {
 
+    @BeforeClass
+    public static void checkTlapsAvailable() {
+        String tlaLib = System.getProperty("TLA-Library", System.getenv().getOrDefault("TLA_LIBRARY", ""));
+        assumeTrue("Skipping: TLAPS not available (set -DTLA-Library=... to include tlapm/library)", !tlaLib.isEmpty());
+    }
+
     @Test
-    void testSimpleProof() {
+    public void testSimpleProof() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "VARIABLE x\n" +
@@ -20,7 +28,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testNestedProofSteps() {
+    public void testNestedProofSteps() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "VARIABLE x\n" +
@@ -44,7 +52,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testProofWithBY() {
+    public void testProofWithBY() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "VARIABLE x\n" +
@@ -60,7 +68,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testBlockCommentBeforeBY() {
+    public void testBlockCommentBeforeBY() {
         // Pattern from ReachabilityProofs.tla: block comment before BY keyword
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -77,7 +85,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testLineCommentBeforeBY() {
+    public void testLineCommentBeforeBY() {
         // Line comment before BY keyword in proof step
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -92,7 +100,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testBlockCommentBeforeOBVIOUS() {
+    public void testBlockCommentBeforeOBVIOUS() {
         // Block comment before OBVIOUS keyword in proof step
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -107,7 +115,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testLineCommentBeforeBYWithRef() {
+    public void testLineCommentBeforeBYWithRef() {
         // Line comment before BY <ref> in terminal proof
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -122,7 +130,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testCommentInNestedProofBeforeBY() {
+    public void testCommentInNestedProofBeforeBY() {
         // Comment before BY/OBVIOUS in nested proof steps (multiple levels)
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -141,7 +149,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testProofWithSuffices() {
+    public void testProofWithSuffices() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "CONSTANT S\n" +
@@ -162,7 +170,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testDefineWithMultipleDefinitions() {
+    public void testDefineWithMultipleDefinitions() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "VARIABLE x\n" +
@@ -185,7 +193,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testDefineWithSingleDefinition() {
+    public void testDefineWithSingleDefinition() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "VARIABLE x\n" +
@@ -198,7 +206,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testAssumeProveInLemma() {
+    public void testAssumeProveInLemma() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "CONSTANT S\n" +
@@ -217,7 +225,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testAssumeProveWithMultipleAssumptions() {
+    public void testAssumeProveWithMultipleAssumptions() {
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
                 "CONSTANT S\n" +
@@ -237,7 +245,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testAssumeProveWrapsWhenLong() {
+    public void testAssumeProveWrapsWhenLong() {
         // When the ASSUME/PROVE is too long, it should wrap
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +
@@ -261,7 +269,7 @@ public class ProofConstructTest {
     }
 
     @Test
-    void testImplicitDefineNoKeyword() {
+    public void testImplicitDefineNoKeyword() {
         // Implicit DEFINE step (no DEFINE keyword): <1> P(b) == expr
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS\n" +

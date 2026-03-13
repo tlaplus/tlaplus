@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertUnchanged;
 
-class ExceptSpecConstructTest {
+public class ExceptSpecConstructTest {
 
     @Test
-    void testSimpleExcept() {
+    public void testSimpleExcept() {
         var s = "----- MODULE ExceptTest -----\n" +
                 "VARIABLE x\n" +
                 "Test == x' = [x EXCEPT ![1] = 2]\n" +
@@ -16,7 +16,7 @@ class ExceptSpecConstructTest {
     }
 
     @Test
-    void testChainedExceptComponents() {
+    public void testChainedExceptComponents() {
         // Regression test for bug where chained EXCEPT components (e.g., ![r].smoking)
         // would lose the value (FALSE) because ExceptSpecConstruct assumed exactly 4 children.
         var s = "----- MODULE ExceptChained -----\n" +
@@ -27,7 +27,7 @@ class ExceptSpecConstructTest {
     }
 
     @Test
-    void testTripleChainedExceptComponents() {
+    public void testTripleChainedExceptComponents() {
         // Test three chained components: ![a][b].c
         var s = "----- MODULE ExceptTriple -----\n" +
                 "VARIABLE f, a, b\n" +
@@ -37,7 +37,7 @@ class ExceptSpecConstructTest {
     }
 
     @Test
-    void testExceptWithAt() {
+    public void testExceptWithAt() {
         // Test EXCEPT with @ (reference to current value)
         var s = "----- MODULE ExceptAt -----\n" +
                 "EXTENDS Naturals\n" +

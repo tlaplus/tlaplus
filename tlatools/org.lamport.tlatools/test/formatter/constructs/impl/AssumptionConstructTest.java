@@ -1,6 +1,6 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertUnchanged;
 
@@ -12,7 +12,7 @@ import static formatter.Utils.assertUnchanged;
 public class AssumptionConstructTest {
 
     @Test
-    void testNamedAssumeWithNPrefix() {
+    public void testNamedAssumeWithNPrefix() {
         // Identifiers starting with N_ must not be dropped by buildGeneric
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
@@ -23,7 +23,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testNamedAssume() {
+    public void testNamedAssume() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "CONSTANT N\n" +
@@ -33,7 +33,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testSimpleAssume() {
+    public void testSimpleAssume() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "CONSTANT N\n" +
@@ -43,7 +43,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testNamedAssumeWithNPrefixVariant() {
+    public void testNamedAssumeWithNPrefixVariant() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "CONSTANT X\n" +
@@ -53,7 +53,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testConstantWithNPrefix() {
+    public void testConstantWithNPrefix() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "CONSTANT N_Value\n" +
@@ -62,7 +62,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testMultipleConstantsWithNPrefix() {
+    public void testMultipleConstantsWithNPrefix() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "CONSTANTS N_First, N_Second, Normal\n" +
@@ -71,7 +71,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testVariableWithNPrefix() {
+    public void testVariableWithNPrefix() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE N_State\n" +
                 "====";
@@ -79,7 +79,7 @@ public class AssumptionConstructTest {
     }
 
     @Test
-    void testOperatorWithNPrefix() {
+    public void testOperatorWithNPrefix() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "N_Op(x) == x + 1\n" +

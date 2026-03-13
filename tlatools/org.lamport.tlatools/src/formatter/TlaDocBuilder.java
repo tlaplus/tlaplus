@@ -5,14 +5,12 @@ import formatter.constructs.ConstructContext;
 import formatter.constructs.ConstructRegistry;
 import formatter.constructs.TlaConstruct;
 import formatter.constructs.impl.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tla2sany.st.TreeNode;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * New registry-based implementation of TlaDocBuilder.
@@ -20,7 +18,7 @@ import java.util.List;
  */
 public class TlaDocBuilder {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = Logger.getLogger(TlaDocBuilder.class.getName());
 
     private final ConstructRegistry registry;
     private final ConstructContext context;
@@ -131,12 +129,12 @@ public class TlaDocBuilder {
         TlaConstruct construct = registry.findHandler(node);
         if (construct != null) {
             try {
-                //LOG.debug("Calling {}: '{}'", construct.getName(), node.getHumanReadableImage());
+                //LOG.fine("Calling " + construct.getName() + ": '" + node.getHumanReadableImage() + "'");
                 var indentSize = context.getConfig().getIndentSize();
                 return construct.buildDoc(node, context, indentSize);
             } catch (Exception e) {
-                LOG.warn("Error building doc for construct {} on node kind {}: {}",
-                        construct.getName(), node.getKind(), e.getMessage(), e);
+                LOG.warning("Error building doc for construct " + construct.getName()
+                        + " on node kind " + node.getKind() + ": " + e.getMessage());
                 // Fall back to generic handling
             }
         }
@@ -168,7 +166,7 @@ public class TlaDocBuilder {
 
         // Log unknown node types to help with future construct development
         if (image != null && image.startsWith("N_")) {
-            LOG.debug("Generic node kind: {} image: '{}' hri: '{}'", node.getKind(), image, node.getHumanReadableImage());
+            LOG.fine("Generic node kind: " + node.getKind() + " image: '" + image + "' hri: '" + node.getHumanReadableImage() + "'");
         }
 
         // Leaf nodes (no children) are always rendered as text, even if image

@@ -1,99 +1,139 @@
 package formatter;
 
-import ch.qos.logback.classic.LoggerContext;
 import formatter.exceptions.AstVerificationException;
 import formatter.exceptions.SanyFrontendException;
-import org.apache.commons.cli.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String VERBOSITY_OPTION = "v";
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
     private static final String DEFAULT_VERBOSITY_OPTION = "INFO";
-    private static void printHelp(Options options) {
-        HelpFormatter formatter = new HelpFormatter();
+
+    private static void printHelp() {
         String header = "A TLA+ formatter. Use it to reformat your specs.";
         String footer = "Please contribute feedback or get the latest release from https://github.com/FedericoPonzi/tlaplus-formatter";
-        formatter.printHelp("java -jar tlaplus-formatter.jar [OPTIONS] <FILE> [OUTFILE]", header, options, footer, true);
+        System.err.println("usage: java -cp tla2tools.jar formatter.Main [OPTIONS] <FILE> [OUTFILE]");
+        System.err.println(header);
+        System.err.println();
+        System.err.println("Options:");
+        System.err.println("  -i, --indent <N>             Set the number of spaces for indentation (default: 4)");
+        System.err.println("  -w, --width <N>              Set the target line width for formatting (default: 80)");
+        System.err.println("  -v, --verbosity <LEVEL>      Set the verbosity level (ERROR, WARN, *INFO, DEBUG)");
+        System.err.println("      --skip-ast-verification  Skip AST verification after formatting (not recommended,");
+        System.err.println("                               verification is enabled by default)");
+        System.err.println("  -h, --help                   Show this help message and exit");
+        System.err.println();
+        System.err.println(footer);
     }
 
     public static int mainWrapper(String[] args) {
-        Options options = new Options();
-        options.addOption(VERBOSITY_OPTION, "verbosity", true, "Set the verbosity level (ERROR, WARN, *INFO, DEBUG)");
-        options.addOption("w", "width", true, "Set the target line width for formatting (default: 80)");
-        options.addOption("i", "indent", true, "Set the number of spaces for indentation (default: 4)");
-        options.addOption(null, "skip-ast-verification", false,
-                "Skip AST verification after formatting (not recommended, verification is enabled by default)");
+        String verbosity = null;
+        String widthStr = null;
+        String indentStr = null;
+        boolean skipAstVerification = false;
+        List<String> positionalArgs = new ArrayList<>();
 
-        CommandLine cmd;
+        // Manual argument parsing
+        int i = 0;
+        while (i < args.length) {
+            String arg = args[i];
+            if (arg.equals("-v") || arg.equals("--verbosity")) {
+                if (i + 1 >= args.length) {
+                    logger.severe("Error parsing command line arguments: Missing argument for option: " + arg);
+                    printHelp();
+                    return 1;
+                }
+                verbosity = args[++i];
+            } else if (arg.equals("-w") || arg.equals("--width")) {
+                if (i + 1 >= args.length) {
+                    logger.severe("Error parsing command line arguments: Missing argument for option: " + arg);
+                    printHelp();
+                    return 1;
+                }
+                widthStr = args[++i];
+            } else if (arg.equals("-i") || arg.equals("--indent")) {
+                if (i + 1 >= args.length) {
+                    logger.severe("Error parsing command line arguments: Missing argument for option: " + arg);
+                    printHelp();
+                    return 1;
+                }
+                indentStr = args[++i];
+            } else if (arg.equals("--skip-ast-verification")) {
+                skipAstVerification = true;
+            } else if (arg.equals("-h") || arg.equals("--help")) {
+                printHelp();
+                return 0;
+            } else if (arg.startsWith("-")) {
+                logger.severe("Error parsing command line arguments: Unrecognized option: " + arg);
+                printHelp();
+                return 1;
+            } else {
+                positionalArgs.add(arg);
+            }
+            i++;
+        }
+
         try {
-            // Parse the command-line arguments
-            CommandLineParser parser = new DefaultParser();
-            cmd = parser.parse(options, args);
-
             // Set the default log level to INFO
             setLogLevel(DEFAULT_VERBOSITY_OPTION);
 
             // Set the log level based on the verbosity option
-            if (cmd.hasOption(VERBOSITY_OPTION)) {
-                String verbosity = cmd.getOptionValue(VERBOSITY_OPTION).toUpperCase();
+            if (verbosity != null) {
+                String verbosityUpper = verbosity.toUpperCase();
                 try {
-                    setLogLevel(verbosity);
+                    setLogLevel(verbosityUpper);
                 } catch (IllegalArgumentException e) {
-                    logger.error("Invalid log level: {}", verbosity);
-                    printHelp(options);
+                    logger.severe("Invalid log level: " + verbosityUpper);
+                    printHelp();
                     return 1;
                 }
             }
-            
+
             // Parse formatting options
             int lineWidth = FormatConfig.DEFAULT_LINE_WIDTH;
             int indentSize = FormatConfig.DEFAULT_INDENT_SIZE;
-            
-            if (cmd.hasOption("w")) {
+
+            if (widthStr != null) {
                 try {
-                    lineWidth = Integer.parseInt(cmd.getOptionValue("w"));
+                    lineWidth = Integer.parseInt(widthStr);
                 } catch (NumberFormatException e) {
-                    logger.error("Invalid line width: {}", cmd.getOptionValue("w"));
-                    printHelp(options);
-                    return 1;
-                }
-            }
-            
-            if (cmd.hasOption("i")) {
-                try {
-                    indentSize = Integer.parseInt(cmd.getOptionValue("i"));
-                } catch (NumberFormatException e) {
-                    logger.error("Invalid indent size: {}", cmd.getOptionValue("i"));
-                    printHelp(options);
+                    logger.severe("Invalid line width: " + widthStr);
+                    printHelp();
                     return 1;
                 }
             }
 
-            // Get the remaining arguments (positional arguments)
-            String[] remainingArgs = cmd.getArgs();
+            if (indentStr != null) {
+                try {
+                    indentSize = Integer.parseInt(indentStr);
+                } catch (NumberFormatException e) {
+                    logger.severe("Invalid indent size: " + indentStr);
+                    printHelp();
+                    return 1;
+                }
+            }
 
-            if (remainingArgs.length == 0 || remainingArgs.length > 2) {
-                logger.error("Please provide one or two file paths (input and optionally output) as arguments.");
-                printHelp(options);
+            if (positionalArgs.isEmpty() || positionalArgs.size() > 2) {
+                logger.severe("Please provide one or two file paths (input and optionally output) as arguments.");
+                printHelp();
                 return 1;
             }
 
             // Get the input file path from the positional arguments
-            File inputFile = new File(remainingArgs[0]);
+            File inputFile = new File(positionalArgs.get(0));
             if (!inputFile.exists()) {
-                logger.error("Input file does not exist: {}", inputFile.getAbsolutePath());
+                logger.severe("Input file does not exist: " + inputFile.getAbsolutePath());
                 return 1;
             }
 
             FormatConfig config = new FormatConfig(lineWidth, indentSize);
-            boolean verifyAst = !cmd.hasOption("skip-ast-verification");
+            boolean verifyAst = !skipAstVerification;
             TLAPlusFormatter formatter;
             try {
                 formatter = new TLAPlusFormatter(inputFile, config, verifyAst);
@@ -101,7 +141,6 @@ public class Main {
                 // AST verification failed: print original input to stdout, diagnostics to stderr
                 System.out.print(Files.readString(inputFile.toPath()));
                 System.err.println("AST verification failed after formatting.");
-                System.err.println("tlaplus-formatter version: " + VersionInfo.getFullVersion());
                 System.err.println(e.getResult().formatDiagnostic());
                 System.err.println("This is a bug in the formatter. Please report it at:");
                 System.err.println("  https://github.com/FedericoPonzi/tlaplus-formatter/issues");
@@ -109,22 +148,18 @@ public class Main {
             }
             String formattedOutput = formatter.getOutput();
 
-            if (remainingArgs.length == 2) {
+            if (positionalArgs.size() == 2) {
                 // If output file is specified, write to the file
-                File outputFile = new File(remainingArgs[1]);
+                File outputFile = new File(positionalArgs.get(1));
                 Files.writeString(outputFile.toPath(), formattedOutput);
-                logger.info("Formatted output written to: {}", outputFile.getAbsolutePath());
+                logger.info("Formatted output written to: " + outputFile.getAbsolutePath());
             } else {
                 // If no output file is specified, print to stdout
                 System.out.println(formattedOutput);
             }
 
-        } catch (ParseException e) {
-            logger.error("Error parsing command line arguments: {}", e.getMessage());
-            printHelp(options);
-            return 1;
         } catch (IOException | SanyFrontendException e) {
-            logger.error("An error occurred while processing the file: {}", e.getMessage());
+            logger.severe("An error occurred while processing the file: " + e.getMessage());
             return 1;
         }
         return 0;
@@ -135,9 +170,25 @@ public class Main {
     }
 
     private static void setLogLevel(String levelStr) {
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        ch.qos.logback.classic.Level level = ch.qos.logback.classic.Level.toLevel(levelStr, ch.qos.logback.classic.Level.INFO);
-        context.getLogger("root").setLevel(level);
-        logger.debug("Log level set to {}", level);
+        Level level;
+        switch (levelStr.toUpperCase()) {
+            case "ERROR":
+                level = Level.SEVERE;
+                break;
+            case "WARN":
+                level = Level.WARNING;
+                break;
+            case "INFO":
+                level = Level.INFO;
+                break;
+            case "DEBUG":
+                level = Level.FINE;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown log level: " + levelStr);
+        }
+        Logger rootLogger = Logger.getLogger("formatter");
+        rootLogger.setLevel(level);
+        logger.fine("Log level set to " + level);
     }
 }

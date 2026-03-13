@@ -1,50 +1,50 @@
 package formatter;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class InputFolderTest extends LexiconTest {
     @Test
-    void testPlayground() {
+    public void testPlayground() {
         testSpecFiles("Playground");
     }
 
     @Test
-    void testFormatHourClock() {
+    public void testFormatHourClock() {
         testSpecFiles("HourClock");
     }
 
     @Test
-    void testRecordsWithNestedRecordsAndSequences() {
+    public void testRecordsWithNestedRecordsAndSequences() {
         testSpecFiles("RecordsWithNestedRecordsAndSequences");
     }
 
     @Test
-    void testIFET() {
+    public void testIFET() {
         testSpecFiles("IfThenElseTest");
     }
 
     @Test
-    void testStones() {
+    public void testStones() {
         testSpecFiles("Stones");
     }
 
     @Test
-    void testTowerOfHanoi() {
+    public void testTowerOfHanoi() {
         testSpecFiles("TowerOfHanoi");
     }
 
     @Test
-    void testSlush() {
+    public void testSlush() {
         testSpecFiles("Slush");
     }
 
     @Test
-    void testAllConstructs() {
+    public void testAllConstructs() {
         testSpecFiles("AllConstructs");
     }
 
     @Test
-    void testTransitiveClosure() {
+    public void testTransitiveClosure() {
         testSpecFiles("TransitiveClosure");
     }
 }

@@ -1,6 +1,6 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
@@ -8,7 +8,7 @@ import static formatter.Utils.assertUnchanged;
 public class SubsetOfConstructTest {
 
     @Test
-    void testSimpleSubsetOf() {
+    public void testSimpleSubsetOf() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
                 "op == {y \\in x: y = y}\n" +
@@ -17,7 +17,7 @@ public class SubsetOfConstructTest {
     }
 
     @Test
-    void testSubsetOfWithConjunctionListWraps() {
+    public void testSubsetOfWithConjunctionListWraps() {
         // When the predicate after : is a conjunction list and the line is too long,
         // the predicate should break to a new line with proper indentation,
         // keeping conjunction items aligned.
@@ -35,7 +35,7 @@ public class SubsetOfConstructTest {
     }
 
     @Test
-    void testSubsetOfWithConjunctionNarrowWidth() {
+    public void testSubsetOfWithConjunctionNarrowWidth() {
         // With narrow width, but conjunction fits aligned on same line as :
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
@@ -46,7 +46,7 @@ public class SubsetOfConstructTest {
     }
 
     @Test
-    void testSubsetOfWithDisjunctionListWraps() {
+    public void testSubsetOfWithDisjunctionListWraps() {
         // Disjunction list also aligns properly
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +

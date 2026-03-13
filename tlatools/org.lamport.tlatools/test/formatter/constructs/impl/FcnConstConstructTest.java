@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 
 public class FcnConstConstructTest {
 
     @Test
-    void testSingleBoundFunctionConstant() {
+    public void testSingleBoundFunctionConstant() {
         var input = "----- MODULE Test -----\n" +
                 "CONSTANT Nodes\n" +
                 "isLeaf == [n \\in Nodes |-> TRUE]\n" +
@@ -20,7 +20,7 @@ public class FcnConstConstructTest {
     }
 
     @Test
-    void testCommentBeforeFunctionConstant() {
+    public void testCommentBeforeFunctionConstant() {
         // Comment attached to the opening [ should be preserved
         var input = "----- MODULE Test -----\n" +
                 "CONSTANT S\n" +
@@ -37,7 +37,7 @@ public class FcnConstConstructTest {
     }
 
     @Test
-    void testMultiBoundFunctionConstant() {
+    public void testMultiBoundFunctionConstant() {
         // This is the btree.tla bug - multi-bound function constants like
         // [n \in Nodes, k \in Keys |-> NIL] were losing the |-> NIL part
         var input = "----- MODULE Test -----\n" +

@@ -1,6 +1,6 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
@@ -8,7 +8,7 @@ import static formatter.Utils.assertUnchanged;
 public class FairnessExprConstructTest {
 
     @Test
-    void testSimpleWF() {
+    public void testSimpleWF() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
                 "op == WF_x(x' = x)\n" +
@@ -17,7 +17,7 @@ public class FairnessExprConstructTest {
     }
 
     @Test
-    void testWFWithConjunctionBreaksToNewLine() {
+    public void testWFWithConjunctionBreaksToNewLine() {
         // When the action inside WF_() is a conjunction list that doesn't fit
         // on one line, the /\ items should be properly aligned.
         // This was causing SANY parse errors in InnerSerial.tla.
@@ -39,7 +39,7 @@ public class FairnessExprConstructTest {
     }
 
     @Test
-    void testSFWithConjunctionBreaksToNewLine() {
+    public void testSFWithConjunctionBreaksToNewLine() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x, y\n" +
                 "op ==\n" +

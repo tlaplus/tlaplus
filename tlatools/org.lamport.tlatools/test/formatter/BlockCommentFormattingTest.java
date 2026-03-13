@@ -1,6 +1,6 @@
 package formatter;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 

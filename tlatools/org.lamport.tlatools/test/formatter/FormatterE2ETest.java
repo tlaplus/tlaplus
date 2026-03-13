@@ -1,7 +1,7 @@
 package formatter;
 
 import formatter.exceptions.SanyFrontendException;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,17 +10,17 @@ import java.nio.file.Path;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertSpecUnchanged;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * End-to-end tests for the TLA+ formatter.
  * These tests create TLA+ specifications as strings, format them,
  * and verify the output structure and formatting quality.
  */
-class FormatterE2ETest {
+public class FormatterE2ETest {
 
     @Test
-    void testSimpleModuleFormatting() {
+    public void testSimpleModuleFormatting() {
         String spec = "---- MODULE SimpleTest ----\n" +
                 "VARIABLE x\n" +
                 "Init == x = 0\n" +
@@ -29,7 +29,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testModuleWithExtends() {
+    public void testModuleWithExtends() {
         String spec = "---- MODULE TestWithExtends ----\n" +
                 "EXTENDS Naturals, TLC\n" +
                 "VARIABLE counter\n" +
@@ -38,7 +38,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testMultipleVariables() {
+    public void testMultipleVariables() {
         String spec = "---- MODULE MultiVar ----\n" +
                 "VARIABLES x, y, z\n" +
                 "====\n";
@@ -46,7 +46,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testOperatorDefinition() {
+    public void testOperatorDefinition() {
         String spec = "---- MODULE OpTest ----\n" +
                 "EXTENDS Naturals\n" +
                 "VARIABLE x\n" +
@@ -57,7 +57,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testComplexExpression() {
+    public void testComplexExpression() {
         String spec = "---- MODULE ComplexTest ----\n" +
                 "VARIABLE state\n" +
                 "NextState == state' = IF state = \"ready\" THEN \"running\" ELSE \"done\"\n" +
@@ -66,7 +66,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testLineWidthConfiguration() {
+    public void testLineWidthConfiguration() {
         String spec = "---- MODULE WidthTest ----\n" +
                 "VARIABLES verylongvariablename, anotherlongname, yetanothername, abc\n" +
                 "====\n";
@@ -81,7 +81,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testLongOperatorBreaking() {
+    public void testLongOperatorBreaking() {
         String spec = "---- MODULE LongOpTest ----\n" +
                 "EXTENDS Naturals\n" +
                 "VARIABLE state\n" +
@@ -98,7 +98,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testShortVsLongOperatorFormatting() {
+    public void testShortVsLongOperatorFormatting() {
         // Short operator should stay on one line
         String shortSpec = "---- MODULE ShortOp ----\n" +
                 "EXTENDS Naturals\n" +
@@ -124,7 +124,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testPreAndPostModuleContent() {
+    public void testPreAndPostModuleContent() {
         String spec = "This is a comment before the module.\n" +
                 "---- MODULE TestModule ----\n" +
                 "VARIABLE x\n" +
@@ -134,7 +134,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testTheorem() {
+    public void testTheorem() {
         String spec = "---- MODULE TheoremTest ----\n" +
                 "EXTENDS Naturals\n" +
                 "VARIABLE x\n" +
@@ -144,7 +144,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testNamedTheorem() {
+    public void testNamedTheorem() {
         String spec = "---- MODULE NamedTheoremTest ----\n" +
                 "VARIABLE x\n" +
                 "THEOREM MyTheorem == x = 0\n" +
@@ -153,24 +153,34 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testEmptyModule() {
+    public void testEmptyModule() {
         String spec = "---- MODULE Empty ----\n" +
                 "====\n";
         assertSpecUnchanged(spec);
     }
 
     @Test
-    void testConfigurationValidation() {
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(-1, 4));
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(80, -1));
+    public void testConfigurationValidation() {
+        try {
+            new FormatConfig(-1, 4);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+        try {
+            new FormatConfig(80, -1);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
 
-        // These should be valid
-        assertDoesNotThrow(() -> new FormatConfig(1, 0));
-        assertDoesNotThrow(() -> new FormatConfig(200, 8));
+        // These should be valid — no exception expected
+        new FormatConfig(1, 0);
+        new FormatConfig(200, 8);
     }
 
     @Test
-    void testComplexModuleStructure() {
+    public void testComplexModuleStructure() {
         String spec = "---- MODULE ComplexStructure ----\n" +
                 "EXTENDS Naturals\n" +
                 "VARIABLES x, y, z\n" +
@@ -187,7 +197,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testNewlinePreservation() {
+    public void testNewlinePreservation() {
         String spec = "---- MODULE NewlineTest ----\n" +
                 //"\n" + TODO: currently removing leading newlines
                 "VARIABLE x\n" +
@@ -200,7 +210,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testMultipleNewlinePatterns() {
+    public void testMultipleNewlinePatterns() {
         String spec = "---- MODULE MultiNewline ----\n" +
                 "EXTENDS Naturals\n" +
                 "\n" +
@@ -217,7 +227,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testSingleNewlinesRemainSingle() {
+    public void testSingleNewlinesRemainSingle() {
         String spec = "---- MODULE SingleNewlines ----\n" +
                 "VARIABLE x\n" +
                 "Init == x = 0\n" +
@@ -226,7 +236,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testExtendsLocalModuleWithOtherModules() throws IOException, SanyFrontendException {
+    public void testExtendsLocalModuleWithOtherModules() throws IOException, SanyFrontendException {
         // SANY returns empty getHumanReadableImage() for certain local module names
         // in EXTENDS, even though getImage() has the correct value.
         // This caused "EXTENDS , TLC" instead of "EXTENDS TokenRing, TLC".
@@ -246,8 +256,8 @@ class FormatterE2ETest {
 
             TLAPlusFormatter formatter = new TLAPlusFormatter(mainFile);
             String output = formatter.getOutput();
-            assertTrue(output.contains("EXTENDS TokenRing, TLC"),
-                    "EXTENDS should preserve local module name, got: " + output);
+            assertTrue("EXTENDS should preserve local module name, got: " + output,
+                    output.contains("EXTENDS TokenRing, TLC"));
         } finally {
             Files.walk(tmpDir).sorted(java.util.Comparator.reverseOrder())
                     .map(Path::toFile).forEach(File::delete);
@@ -255,7 +265,7 @@ class FormatterE2ETest {
     }
 
     @Test
-    void testModuleWithExtendsBreak() {
+    public void testModuleWithExtendsBreak() {
         String spec = "---- MODULE TestWithExtends ----\n" +
                 "EXTENDS Naturals, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC, TLC\n" +
                 "VARIABLE counter\n" +

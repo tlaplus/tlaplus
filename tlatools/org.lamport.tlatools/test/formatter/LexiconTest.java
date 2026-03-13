@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static formatter.Utils.assertAstEquals;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 public abstract class LexiconTest {
 
@@ -18,24 +18,24 @@ public abstract class LexiconTest {
     public void testSpecFiles(String name) {
         try {
             URL resource = getClass().getClassLoader().getResource("inputs/" + name + ".tla");
-            assertNotNull(resource, "Resource file not found");
+            assertNotNull("Resource file not found", resource);
             File input = new File(resource.toURI());
             var f = new TLAPlusFormatter(input, new FormatConfig(80, 2));
             var actual = f.getOutput();
             compareOutputSpec(name, actual, f.root);
         } catch (Exception e) {
-            fail(e);
+            fail(e.getMessage());
         }
     }
 
     void compareOutputSpec(String name, String actual, TreeNode root1) {
         try {
             URL outputFile = getClass().getClassLoader().getResource("outputs/" + name + ".tla");
-            assertNotNull(outputFile, "Resource file not found");
+            assertNotNull("Resource file not found", outputFile);
             String expected = Files.readString(Path.of(outputFile.toURI()));
-            assertNotNull(actual, "Formatted output is null");
-            assertNotNull(expected, "Expected output is null");
-            assertEquals(expected, actual, "Formatted output does not match expected output(" + outputFile.toURI() + ").");
+            assertNotNull("Formatted output is null", actual);
+            assertNotNull("Expected output is null", expected);
+            assertEquals("Formatted output does not match expected output(" + outputFile.toURI() + ").", expected, actual);
 
 
             // initialize tlaplusfmt using output file path.
@@ -51,10 +51,10 @@ public abstract class LexiconTest {
             // It should be a bit redundant with the compareAst above, but it's just an additional sanity check.
             // might remove later to keep tests fast
             actual = f2.getOutput();
-            assertNotNull(actual, "Formatted output is null");
-            assertEquals(expected, actual, "Second formatted output does not match expected output");
+            assertNotNull("Formatted output is null", actual);
+            assertEquals("Second formatted output does not match expected output", expected, actual);
         } catch (Exception e) {
-            fail(actual, e);
+            fail(actual + ": " + e.getMessage());
         }
     }
 

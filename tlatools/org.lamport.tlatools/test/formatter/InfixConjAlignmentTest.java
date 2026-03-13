@@ -1,6 +1,6 @@
 package formatter;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 /**
  * Tests that infix conjunction/disjunction expressions preserve their AST structure
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
  * the formatter must not break lines in a way that causes SANY to re-parse them as
  * N_ConjList/N_DisjList instead of N_InfixExpr.
  */
-class InfixConjAlignmentTest {
+public class InfixConjAlignmentTest {
 
     private void assertAstPreserved(String spec, int lineWidth) throws Exception {
         var config = new FormatConfig(lineWidth, FormatConfig.DEFAULT_INDENT_SIZE);
@@ -28,7 +28,7 @@ class InfixConjAlignmentTest {
      * Formatter must not collapse => onto the last conj item line.
      */
     @Test
-    void testConjListFollowedByImplication() throws Exception {
+    public void testConjListFollowedByImplication() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS A, B, C, D, E, msgs\n" +
                 "Test == \\A m \\in msgs : /\\ A = B\n" +
@@ -39,7 +39,7 @@ class InfixConjAlignmentTest {
     }
 
     @Test
-    void testInfixConjDoesNotBecomeConjList() throws Exception {
+    public void testInfixConjDoesNotBecomeConjList() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS VeryLongA, VeryLongB, VeryLongC\n" +
                 "Test == VeryLongA /\\ VeryLongB /\\ VeryLongC\n" +
@@ -48,7 +48,7 @@ class InfixConjAlignmentTest {
     }
 
     @Test
-    void testInfixDisjDoesNotBecomeDisjList() throws Exception {
+    public void testInfixDisjDoesNotBecomeDisjList() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS VeryLongA, VeryLongB, VeryLongC\n" +
                 "Test == VeryLongA \\/ VeryLongB \\/ VeryLongC\n" +
@@ -60,7 +60,7 @@ class InfixConjAlignmentTest {
      * Test infix /\ inside an implication -- pattern from Paxos.tla.
      */
     @Test
-    void testInfixConjInsideImplication() throws Exception {
+    public void testInfixConjInsideImplication() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS LongNameA, LongNameB, LongNameC, LongNameD\n" +
                 "Test == LongNameA /\\ LongNameB /\\ LongNameC => LongNameD\n" +
@@ -69,7 +69,7 @@ class InfixConjAlignmentTest {
     }
 
     @Test
-    void testChainedInfixConjDefaultWidth() throws Exception {
+    public void testChainedInfixConjDefaultWidth() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS ReallyLongVariableNameAlpha, ReallyLongVariableNameBeta, ReallyLongVariableNameGamma\n" +
                 "Test == ReallyLongVariableNameAlpha /\\ ReallyLongVariableNameBeta /\\ ReallyLongVariableNameGamma\n" +
@@ -78,7 +78,7 @@ class InfixConjAlignmentTest {
     }
 
     @Test
-    void testInfixDisjInQuantifierBody() throws Exception {
+    public void testInfixDisjInQuantifierBody() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS S\n" +
                 "VARIABLES x, y\n" +
@@ -93,7 +93,7 @@ class InfixConjAlignmentTest {
      * right operand at the same column as the quantifier's inner conj list items.
      */
     @Test
-    void testNestedInfixConjWithQuantifier() throws Exception {
+    public void testNestedInfixConjWithQuantifier() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS S, A, B, C, D, E\n" +
                 "Test == A\n" +
@@ -107,7 +107,7 @@ class InfixConjAlignmentTest {
     }
 
     @Test
-    void testNestedInfixDisjWithQuantifier() throws Exception {
+    public void testNestedInfixDisjWithQuantifier() throws Exception {
         var spec = "----- MODULE test -----\n" +
                 "CONSTANTS S, A, B, C, D, E\n" +
                 "Test == A\n" +

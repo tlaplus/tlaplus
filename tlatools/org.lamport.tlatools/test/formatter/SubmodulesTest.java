@@ -1,11 +1,11 @@
 package formatter;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class SubmodulesTest extends LexiconTest {
 
     @Test
-    void testSubmodules() {
+    public void testSubmodules() {
         testSpecFiles("Submodules");
     }
 }

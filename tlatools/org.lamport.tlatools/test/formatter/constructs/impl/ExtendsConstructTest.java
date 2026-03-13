@@ -1,16 +1,21 @@
 package formatter.constructs.impl;
 
+import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 import formatter.TLAPlusFormatter;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertUnchanged;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ExtendsConstructTest {
+public class ExtendsConstructTest {
+
+    private static void assumeTlapsAvailable() {
+        String tlaLib = System.getProperty("TLA-Library", System.getenv().getOrDefault("TLA_LIBRARY", ""));
+        assumeTrue("Skipping: TLAPS not available (set -DTLA-Library=... to include tlapm/library)", !tlaLib.isEmpty());
+    }
 
     @Test
-    void testExtendsWithCommentsOnMultipleModules() {
+    public void testExtendsWithCommentsOnMultipleModules() {
         // Comments after non-last EXTENDS modules are preserved as pre-comments
         // on the following module node. The comment after the last module goes to the
         // next construct keyword (VARIABLE), which is handled by that construct.
@@ -25,7 +30,7 @@ class ExtendsConstructTest {
     }
 
     @Test
-    void testExtendsWithCommentOnEveryNonLastModule() {
+    public void testExtendsWithCommentOnEveryNonLastModule() {
         String spec = "---- MODULE TestExtendsAllComments ----\n" +
                 "EXTENDS Naturals, \\* basic math\n" +
                 "        Sequences, \\* sequence ops\n" +
@@ -36,7 +41,7 @@ class ExtendsConstructTest {
     }
 
     @Test
-    void testExtendsWithCommentsOnAllNonLastModulesFour() {
+    public void testExtendsWithCommentsOnAllNonLastModulesFour() {
         String spec = "---- MODULE TestExtendsFourComments ----\n" +
                 "EXTENDS Naturals, \\* basic math\n" +
                 "        Sequences, \\* sequence ops\n" +
@@ -48,7 +53,7 @@ class ExtendsConstructTest {
     }
 
     @Test
-    void testExtendsWithBlockCommentOnModule() {
+    public void testExtendsWithBlockCommentOnModule() {
         String spec = "---- MODULE TestExtendsBlockComment ----\n" +
                 "EXTENDS Naturals,\n" +
                 "        (* utility module *)\n" +
@@ -65,14 +70,15 @@ class ExtendsConstructTest {
      */
     private void assertNoExcessiveIndentation(String output) {
         for (String line : output.split("\n")) {
-            assertTrue(line.length() <= 90,
-                    "Line has excessive indentation (" + line.length() + " chars): " +
-                            line.substring(0, Math.min(80, line.length())));
+            assertTrue("Line has excessive indentation (" + line.length() + " chars): " +
+                            line.substring(0, Math.min(80, line.length())),
+                    line.length() <= 90);
         }
     }
 
     @Test
-    void testExtendsWithPreCommentAndManyModulesExceedingLineWidth() throws Exception {
+    public void testExtendsWithPreCommentAndManyModulesExceedingLineWidth() throws Exception {
+        assumeTlapsAvailable();
         // Quicksort.tla pattern: block comment before EXTENDS + >3 modules + line > 80 chars.
         // The preComment on the EXTENDS keyword inflated prefix.render().length() causing
         // massive indentation when SMART_BREAK triggered line wrapping.
@@ -85,12 +91,13 @@ class ExtendsConstructTest {
                 "====\n";
         TLAPlusFormatter f = new TLAPlusFormatter(spec);
         String out = f.getOutput();
-        assertTrue(out.contains("EXTENDS"), "EXTENDS keyword not found in output:\n" + out);
+        assertTrue("EXTENDS keyword not found in output:\n" + out, out.contains("EXTENDS"));
         assertNoExcessiveIndentation(out);
     }
 
     @Test
-    void testExtendsWithLineCommentAndManyModulesExceedingLineWidth() throws Exception {
+    public void testExtendsWithLineCommentAndManyModulesExceedingLineWidth() throws Exception {
+        assumeTlapsAvailable();
         // Same bug with a line comment instead of block comment before EXTENDS
         String spec = "---- MODULE TestExtendsLineComment ----\n" +
                 "\\* A line comment before EXTENDS that is long enough to trigger the bug\n" +
@@ -103,7 +110,8 @@ class ExtendsConstructTest {
     }
 
     @Test
-    void testExtendsWithMultiplePreCommentsAndManyModules() throws Exception {
+    public void testExtendsWithMultiplePreCommentsAndManyModules() throws Exception {
+        assumeTlapsAvailable();
         // Multiple comments before EXTENDS
         String spec = "---- MODULE TestExtendsMultiPreComments ----\n" +
                 "\\* First comment explaining the module purpose\n" +
@@ -118,7 +126,8 @@ class ExtendsConstructTest {
     }
 
     @Test
-    void testExtendsWithLargePreCommentPreservesSemantics() throws Exception {
+    public void testExtendsWithLargePreCommentPreservesSemantics() throws Exception {
+        assumeTlapsAvailable();
         // The formatted output must still be valid TLA+ (parseable by SANY)
         String spec = "---- MODULE TestExtendsSemantic ----\n" +
                 "(***********************************************)\n" +
@@ -136,6 +145,6 @@ class ExtendsConstructTest {
         TLAPlusFormatter f2 = new TLAPlusFormatter(out1);
         String out2 = f2.getOutput();
         // Must be idempotent
-        assertEquals(out1, out2, "Formatter should be idempotent");
+        assertEquals("Formatter should be idempotent", out1, out2);
     }
 }

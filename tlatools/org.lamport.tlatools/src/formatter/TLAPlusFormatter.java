@@ -3,21 +3,19 @@ package formatter;
 import com.opencastsoftware.prettier4j.Doc;
 import formatter.exceptions.AstVerificationException;
 import formatter.exceptions.SanyFrontendException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tla2sany.st.TreeNode;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class TLAPlusFormatter {
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger LOG = Logger.getLogger(TLAPlusFormatter.class.getName());
 
     final TreeNode root;
     private final File spec;
@@ -104,7 +102,7 @@ public final class TLAPlusFormatter {
                     "Formatted output failed to parse: " + e.getMessage()));
         } finally {
             if (tmpFile != null && !tmpFile.delete()) {
-                LOG.debug("Failed to delete temporary verification file: {}", tmpFile);
+                LOG.fine("Failed to delete temporary verification file: " + tmpFile);
             }
         }
     }
@@ -188,7 +186,7 @@ public final class TLAPlusFormatter {
             var endOfModuleRow = root.zero()[3].getLocation().getCoordinates()[0];
             return getPreAndPostModuleSections(content, startOfModuleRow, endOfModuleRow);
         } catch (IOException e) {
-            LOG.error("Failed to read content of the spec to get pre and post module sections: {}", String.valueOf(e));
+            LOG.severe("Failed to read content of the spec to get pre and post module sections: " + String.valueOf(e));
             throw e;
         }
     }

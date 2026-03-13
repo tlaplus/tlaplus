@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
 
-class TimesConstructTest {
+public class TimesConstructTest {
     @Test
-    void testTimesCompact() {
+    public void testTimesCompact() {
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS A, B\n" +
                 "AVeryLongName == A \\X B\n" +
@@ -16,7 +16,7 @@ class TimesConstructTest {
     }
 
     @Test
-    void testTimesChained() {
+    public void testTimesChained() {
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS A, B, C\n" +
                 "AVeryLongName == A \\X B \\X C\n" +
@@ -25,7 +25,7 @@ class TimesConstructTest {
     }
 
     @Test
-    void testTimesChainedFour() {
+    public void testTimesChainedFour() {
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS A, B, C, D\n" +
                 "AVeryLongName == A \\X B \\X C \\X D\n" +
@@ -34,7 +34,7 @@ class TimesConstructTest {
     }
 
     @Test
-    void testTimesWrapped() {
+    public void testTimesWrapped() {
         var t = "ALongLineName == AVeryLongConstName \\X BVeryLongConstName";
         var s = "----- MODULE Spec -----\n" +
                 "CONSTANTS AVeryLongConstName, BVeryLongConstName\n" +

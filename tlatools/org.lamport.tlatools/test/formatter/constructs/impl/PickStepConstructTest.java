@@ -1,13 +1,21 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import static formatter.Utils.*;
+import static org.junit.Assume.assumeTrue;
 
 public class PickStepConstructTest {
 
+    @BeforeClass
+    public static void checkTlapsAvailable() {
+        String tlaLib = System.getProperty("TLA-Library", System.getenv().getOrDefault("TLA_LIBRARY", ""));
+        assumeTrue("Skipping: TLAPS not available (set -DTLA-Library=... to include tlapm/library)", !tlaLib.isEmpty());
+    }
+
     @Test
-    void testPickWithConjunctionList() {
+    public void testPickWithConjunctionList() {
         // PICK with conjunction list body must remain parseable
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS, Naturals\n" +
@@ -31,7 +39,7 @@ public class PickStepConstructTest {
     }
 
     @Test
-    void testPickSimpleBody() {
+    public void testPickSimpleBody() {
         // PICK with a simple (non-conjunction) body can stay on same line
         var input = "----- MODULE Test -----\n" +
                 "EXTENDS TLAPS, Naturals\n" +

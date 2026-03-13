@@ -5,7 +5,7 @@ import tla2sany.st.TreeNode;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 public class Utils {
 
@@ -15,13 +15,13 @@ public class Utils {
             assertEquals(spec, f);
             idempotency(spec);
         } catch (Exception e) {
-            fail(e);
+            fail(e.getMessage());
         }
     }
 
     static void assertAstEquals(TreeNode root1, TreeNode root2) {
         AstComparator.Result result = AstComparator.compare(root1, root2);
-        assertTrue(result.isMatch(), result.formatDiagnostic());
+        assertTrue(result.formatDiagnostic(), result.isMatch());
     }
 
     /**
@@ -35,7 +35,7 @@ public class Utils {
         TLAPlusFormatter formatter2 = new TLAPlusFormatter(output1);
         String output2 = formatter2.getOutput();
         // Verify idempotency
-        assertEquals(output1, output2, "Formatter should be idempotent");
+        assertEquals("Formatter should be idempotent", output1, output2);
         assertAstEquals(formatter1.root, formatter2.root);
     }
 
@@ -43,15 +43,15 @@ public class Utils {
         try {
             var f = new TLAPlusFormatter(input, config);
             var received = f.getOutput();
-            assertEquals(expected, received, "Formatted output does not match expected output");
+            assertEquals("Formatted output does not match expected output", expected, received);
 
         } catch (Exception e) { //  throws FrontEndException, IOException
-            fail(e);
+            fail(e.getMessage());
         }
         try {
             idempotency(input);
         } catch (Exception e) {
-            fail(e);
+            fail(e.getMessage());
         }
     }
 

@@ -1,16 +1,16 @@
 package formatter;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for FormatConfig.
  */
-class FormatConfigTest {
+public class FormatConfigTest {
 
     @Test
-    void testDefaultConstructor() {
+    public void testDefaultConstructor() {
         FormatConfig config = new FormatConfig();
 
         assertEquals(FormatConfig.DEFAULT_LINE_WIDTH, config.getLineWidth());
@@ -20,7 +20,7 @@ class FormatConfigTest {
     }
 
     @Test
-    void testParameterizedConstructor() {
+    public void testParameterizedConstructor() {
         FormatConfig config = new FormatConfig(120, 2);
 
         assertEquals(120, config.getLineWidth());
@@ -28,37 +28,60 @@ class FormatConfigTest {
     }
 
     @Test
-    void testInvalidLineWidth() {
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(0, 4));
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(-1, 4));
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(-100, 4));
+    public void testInvalidLineWidth() {
+        try {
+            new FormatConfig(0, 4);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+        try {
+            new FormatConfig(-1, 4);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+        try {
+            new FormatConfig(-100, 4);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testInvalidIndentSize() {
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(80, -1));
-        assertThrows(IllegalArgumentException.class, () -> new FormatConfig(80, -5));
+    public void testInvalidIndentSize() {
+        try {
+            new FormatConfig(80, -1);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+        try {
+            new FormatConfig(80, -5);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
-    void testValidEdgeCases() {
-        // Minimum valid values
-        assertDoesNotThrow(() -> new FormatConfig(1, 0));
-
+    public void testValidEdgeCases() {
+        // Minimum valid values — should not throw
         FormatConfig config = new FormatConfig(1, 0);
         assertEquals(1, config.getLineWidth());
         assertEquals(0, config.getIndentSize());
     }
 
     @Test
-    void testLargeValues() {
+    public void testLargeValues() {
         FormatConfig config = new FormatConfig(1000, 16);
         assertEquals(1000, config.getLineWidth());
         assertEquals(16, config.getIndentSize());
     }
 
     @Test
-    void testEquals() {
+    public void testEquals() {
         FormatConfig config1 = new FormatConfig(80, 4);
         FormatConfig config2 = new FormatConfig(80, 4);
         FormatConfig config3 = new FormatConfig(100, 4);
@@ -71,19 +94,19 @@ class FormatConfigTest {
     }
 
     @Test
-    void testEqualsWithSelf() {
+    public void testEqualsWithSelf() {
         FormatConfig config = new FormatConfig(80, 4);
         assertEquals(config, config);
     }
 
     @Test
-    void testEqualsWithNull() {
+    public void testEqualsWithNull() {
         FormatConfig config = new FormatConfig(80, 4);
         assertNotEquals(null, config);
     }
     
     @Test
-    void testHashCode() {
+    public void testHashCode() {
         FormatConfig config1 = new FormatConfig(80, 4);
         FormatConfig config2 = new FormatConfig(80, 4);
         FormatConfig config3 = new FormatConfig(100, 4);
@@ -93,7 +116,7 @@ class FormatConfigTest {
     }
 
     @Test
-    void testToString() {
+    public void testToString() {
         FormatConfig config = new FormatConfig(80, 4);
         String str = config.toString();
 
@@ -103,7 +126,7 @@ class FormatConfigTest {
     }
 
     @Test
-    void testToStringWithDifferentValues() {
+    public void testToStringWithDifferentValues() {
         FormatConfig config = new FormatConfig(120, 2);
         String str = config.toString();
 

@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
 
-class InfixExprConstructTest {
+public class InfixExprConstructTest {
     @Test
-    void testCompact() {
+    public void testCompact() {
         var s = "----- MODULE InfixExpr -----\n" +
                 "CONSTANTS S, Z\n" +
                 "Test == S \\in Z\n" +
@@ -16,7 +16,7 @@ class InfixExprConstructTest {
     }
 
     @Test
-    void testWrapped() {
+    public void testWrapped() {
         var t = "AVeryLongTestName == AVeryLongConstantName \\in AVeryLongConstantNameThatForcesWrapping";
         var s = "----- MODULE InfixExpr -----\n" +
                 "CONSTANT AVeryLongConstantName, AVeryLongConstantNameThatForcesWrapping\n" +

@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertSpecEquals;
 import static formatter.Utils.assertUnchanged;
 
-class IfThenElseConstructTest {
+public class IfThenElseConstructTest {
     @Test
-    void testCompact() {
+    public void testCompact() {
         var s = "----- MODULE Times -----\n" +
                 "CONSTANTS A, B\n" +
                 "AVeryLongName == IF TRUE THEN A ELSE B\n" +
@@ -16,7 +16,7 @@ class IfThenElseConstructTest {
     }
 
     @Test
-    void testWrapped() {
+    public void testWrapped() {
 
         var t = "ALongLineName == IF TRUE THEN AVeryLongConstName ELSE BVeryLongConstName";
         var s = "----- MODULE Times -----\n" +

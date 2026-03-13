@@ -1,13 +1,13 @@
 package formatter.constructs.impl;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import static formatter.Utils.assertUnchanged;
 
 public class PrefixExprConstructTest {
 
     @Test
-    void testBoxOperatorNoSpaceWithActionExpr() {
+    public void testBoxOperatorNoSpaceWithActionExpr() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
                 "Next == x' = x\n" +
@@ -17,7 +17,7 @@ public class PrefixExprConstructTest {
     }
 
     @Test
-    void testBoxOperatorNoSpaceWithIdentifier() {
+    public void testBoxOperatorNoSpaceWithIdentifier() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
                 "Inv == x = 0\n" +
@@ -27,7 +27,7 @@ public class PrefixExprConstructTest {
     }
 
     @Test
-    void testDiamondOperatorNoSpace() {
+    public void testDiamondOperatorNoSpace() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE x\n" +
                 "Inv == x = 0\n" +
@@ -37,7 +37,7 @@ public class PrefixExprConstructTest {
     }
 
     @Test
-    void testDomainHasSpace() {
+    public void testDomainHasSpace() {
         var s = "----- MODULE Test -----\n" +
                 "VARIABLE f\n" +
                 "op == DOMAIN f\n" +
@@ -46,7 +46,7 @@ public class PrefixExprConstructTest {
     }
 
     @Test
-    void testSubsetHasSpace() {
+    public void testSubsetHasSpace() {
         var s = "----- MODULE Test -----\n" +
                 "EXTENDS Naturals\n" +
                 "VARIABLE x\n" +

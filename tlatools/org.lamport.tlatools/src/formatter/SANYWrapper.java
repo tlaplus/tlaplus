@@ -4,7 +4,6 @@ import formatter.exceptions.SanyException;
 import formatter.exceptions.SanyFrontendException;
 import formatter.exceptions.SanySemanticException;
 import formatter.exceptions.SanySyntaxException;
-import org.apache.commons.io.output.WriterOutputStream;
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
 import tla2sany.modanalyzer.ParseUnit;
@@ -14,6 +13,7 @@ import tla2sany.output.SimpleSanyOutput;
 import tla2sany.st.TreeNode;
 import util.SimpleFilenameToStream;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -66,21 +66,20 @@ public class SANYWrapper {
     }
 
     public static void loadSpecObject(SpecObj specObj, File file, StringWriter errBuf) throws IOException, SanyFrontendException {
-        var outStream = WriterOutputStream
-                .builder()
-                .setWriter(errBuf)
-                .setCharset(StandardCharsets.UTF_8)
-                .get();
+        var baos = new ByteArrayOutputStream();
 
         try {
             SANY.frontEndMain(
                     specObj,
                     file.getAbsolutePath(),
-                    new SimpleSanyOutput(new PrintStream(outStream, false, StandardCharsets.UTF_8), LogLevel.INFO)
+                    new SimpleSanyOutput(new PrintStream(baos, false, StandardCharsets.UTF_8), LogLevel.INFO)
             );
         } catch (FrontEndException e) {
             throw new SanyFrontendException(e);
         }
+
+        // Write captured output to errBuf for callers that need it
+        errBuf.write(baos.toString(StandardCharsets.UTF_8));
 
         ThrowOnError(specObj);
     }
