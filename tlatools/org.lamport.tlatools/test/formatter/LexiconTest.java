@@ -35,7 +35,8 @@ public abstract class LexiconTest {
             String expected = Files.readString(Path.of(outputFile.toURI()));
             assertNotNull("Formatted output is null", actual);
             assertNotNull("Expected output is null", expected);
-            assertEquals("Formatted output does not match expected output(" + outputFile.toURI() + ").", expected, actual);
+            assertEquals("Formatted output does not match expected output(" + outputFile.toURI() + ").",
+                    expected.replace("\r\n", "\n"), actual.replace("\r\n", "\n"));
 
 
             // initialize tlaplusfmt using output file path.
@@ -52,7 +53,8 @@ public abstract class LexiconTest {
             // might remove later to keep tests fast
             actual = f2.getOutput();
             assertNotNull("Formatted output is null", actual);
-            assertEquals("Second formatted output does not match expected output", expected, actual);
+            assertEquals("Second formatted output does not match expected output",
+                    expected.replace("\r\n", "\n"), actual.replace("\r\n", "\n"));
         } catch (Exception e) {
             fail(actual + ": " + e.getMessage());
         }

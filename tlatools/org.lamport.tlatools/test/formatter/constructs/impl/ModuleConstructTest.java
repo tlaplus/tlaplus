@@ -14,7 +14,7 @@ public class ModuleConstructTest {
         var s = "----- MODULE m -----------\n" + "=============================";
 
         var f = (new TLAPlusFormatter(s)).getOutput();
-        assertEquals(s, f);
+        assertEquals(s.replace("\r\n", "\n"), f.replace("\r\n", "\n"));
     }
 
     @Test

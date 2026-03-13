@@ -12,7 +12,7 @@ public class Utils {
     public static void assertUnchanged(String spec) {
         try {
             var f = (new TLAPlusFormatter(spec)).getOutput();
-            assertEquals(spec, f);
+            assertEquals(spec.replace("\r\n", "\n"), f.replace("\r\n", "\n"));
             idempotency(spec);
         } catch (Exception e) {
             fail(e.getMessage());
@@ -35,7 +35,8 @@ public class Utils {
         TLAPlusFormatter formatter2 = new TLAPlusFormatter(output1);
         String output2 = formatter2.getOutput();
         // Verify idempotency
-        assertEquals("Formatter should be idempotent", output1, output2);
+        assertEquals("Formatter should be idempotent",
+                output1.replace("\r\n", "\n"), output2.replace("\r\n", "\n"));
         assertAstEquals(formatter1.root, formatter2.root);
     }
 
@@ -43,9 +44,10 @@ public class Utils {
         try {
             var f = new TLAPlusFormatter(input, config);
             var received = f.getOutput();
-            assertEquals("Formatted output does not match expected output", expected, received);
+            assertEquals("Formatted output does not match expected output",
+                    expected.replace("\r\n", "\n"), received.replace("\r\n", "\n"));
 
-        } catch (Exception e) { //  throws FrontEndException, IOException
+        } catch (Exception e) {
             fail(e.getMessage());
         }
         try {

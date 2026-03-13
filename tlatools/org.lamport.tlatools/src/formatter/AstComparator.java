@@ -157,11 +157,14 @@ public final class AstComparator {
                         new ArrayList<>(path));
             }
             for (int i = 0; i < n1.getPreComments().length; i++) {
-                if (!n1.getPreComments()[i].equals(n2.getPreComments()[i])) {
+                // Normalize CRLF for Windows compatibility
+                String c1 = n1.getPreComments()[i].replace("\r\n", "\n");
+                String c2 = n2.getPreComments()[i].replace("\r\n", "\n");
+                if (!c1.equals(c2)) {
                     return Result.mismatch(
                             "Comment content mismatch on node: " + n1.getHumanReadableImage()
-                                    + ". Expected: \"" + n1.getPreComments()[i]
-                                    + "\" but found: \"" + n2.getPreComments()[i] + "\"",
+                                    + ". Expected: \"" + c1
+                                    + "\" but found: \"" + c2 + "\"",
                             new ArrayList<>(path));
                 }
             }

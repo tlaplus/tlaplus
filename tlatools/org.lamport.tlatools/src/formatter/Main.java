@@ -80,10 +80,8 @@ public class Main {
         }
 
         try {
-            // Set the default log level to INFO
             setLogLevel(DEFAULT_VERBOSITY_OPTION);
 
-            // Set the log level based on the verbosity option
             if (verbosity != null) {
                 String verbosityUpper = verbosity.toUpperCase();
                 try {
@@ -125,7 +123,6 @@ public class Main {
                 return 1;
             }
 
-            // Get the input file path from the positional arguments
             File inputFile = new File(positionalArgs.get(0));
             if (!inputFile.exists()) {
                 logger.severe("Input file does not exist: " + inputFile.getAbsolutePath());
@@ -149,12 +146,10 @@ public class Main {
             String formattedOutput = formatter.getOutput();
 
             if (positionalArgs.size() == 2) {
-                // If output file is specified, write to the file
                 File outputFile = new File(positionalArgs.get(1));
                 Files.writeString(outputFile.toPath(), formattedOutput);
                 logger.info("Formatted output written to: " + outputFile.getAbsolutePath());
             } else {
-                // If no output file is specified, print to stdout
                 System.out.println(formattedOutput);
             }
 
