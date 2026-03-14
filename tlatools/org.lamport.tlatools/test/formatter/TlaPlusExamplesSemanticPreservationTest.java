@@ -67,31 +67,40 @@ public class TlaPlusExamplesSemanticPreservationTest {
     @Parameters(name = "{0}")
     public static List<Object[]> data() throws IOException {
         String examplesPath = getExamplesPath();
-        Assume.assumeTrue(
-                "tlaplus/Examples path not configured – skipping semantic preservation tests.",
-                examplesPath != null && !examplesPath.isEmpty());
+        if (examplesPath == null || examplesPath.isEmpty()) {
+            // Return a single placeholder so JUnit 4 Parameterized doesn't error out.
+            // The @Test method will call Assume and skip gracefully.
+            return Collections.singletonList(new Object[]{"(skipped – examples path not configured)", null});
+        }
 
         Path examplesDir = Path.of(examplesPath);
-        Assume.assumeTrue(
-                "tlaplus/Examples path does not exist: " + examplesPath,
-                Files.exists(examplesDir) && Files.isDirectory(examplesDir));
+        if (!Files.exists(examplesDir) || !Files.isDirectory(examplesDir)) {
+            throw new IllegalArgumentException(
+                    "tlaplus/Examples path does not exist or is not a directory: " + examplesPath);
+        }
 
         String fileFilter = getFileFilter();
 
         List<Path> tlaFiles = Files.walk(examplesDir)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(".tla"))
+                .filter(p -> {
+                    // Exclude dependency directories (e.g. deps/tlapm, deps/apalache)
+                    Path rel = examplesDir.relativize(p);
+                    return !rel.startsWith("deps");
+                })
                 .filter(p -> fileFilter == null || fileFilter.isEmpty()
                         || p.toString().contains(fileFilter))
                 .filter(TlaPlusExamplesSemanticPreservationTest::filenameMatchesModule)
                 .sorted()
                 .collect(Collectors.toList());
 
-        Assume.assumeFalse(
-                fileFilter != null && !fileFilter.isEmpty()
-                        ? "No .tla files found matching filter '" + fileFilter + "'"
-                        : "No .tla files found in: " + examplesPath,
-                tlaFiles.isEmpty());
+        if (tlaFiles.isEmpty()) {
+            throw new IllegalStateException(
+                    fileFilter != null && !fileFilter.isEmpty()
+                            ? "No .tla files found matching filter '" + fileFilter + "' in: " + examplesPath
+                            : "No .tla files found in: " + examplesPath);
+        }
 
         System.out.println("Found " + tlaFiles.size() + " .tla files to test");
 
@@ -122,6 +131,7 @@ public class TlaPlusExamplesSemanticPreservationTest {
 
     @Test
     public void testSemanticPreservation() {
+        Assume.assumeNotNull(tlaFilePath);
         File tlaFile = tlaFilePath.toFile();
 
         TLAPlusFormatter originalFormatter;

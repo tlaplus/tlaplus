@@ -135,9 +135,23 @@ jobs:
       ## removed to allow the test suite to run to completion.
       ## (The same sequence of steps is executed by pr.yml)
       ## 
+    - name: Checkout TLAPM
+      uses: actions/checkout@v4
+      with:
+        repository: tlaplus/tlapm
+        path: tlapm
+    - name: Download CommunityModules
+      shell: bash
+      run: |
+        curl -sLO https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
+        unzip -o CommunityModules-deps.jar -d community-modules-tla
     - name: Run TLC tests
       shell: bash
-      run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test -Dtest.halt=${{ inputs.failfast || 'false' }}
+      run: |
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test test \
+          -Dtest.halt=${{ inputs.failfast || 'false' }} \
+          -Dformatter.tlapm.path="${{ github.workspace }}/tlapm/library" \
+          -Dformatter.community.modules.path="${{ github.workspace }}/community-modules-tla"
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
