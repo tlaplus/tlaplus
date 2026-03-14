@@ -143,7 +143,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			LetInNode expr1 = (LetInNode) expr;
 			return astToLive(tool, expr1.getBody(), con);
 		}
-		case SubstInKind: {
+		case SubstInKind: { // lbl: ugfweiyg
 			SubstInNode expr1 = (SubstInNode) expr;
 			Subst[] subs = expr1.getSubsts();
 			int slen = subs.length;
@@ -188,12 +188,23 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (val instanceof OpDefNode) {
 				OpDefNode opDef = (OpDefNode) val;
 				opcode = BuiltInOPs.getOpCode(opDef.getName());
-				if (opcode == 0) {
+				// Skip syntactic expansion of recursive operators: astToLive
+				// would endlessly inline the self-referential body. Instead,
+				// fall through to the level-based handling below, which wraps
+				// the call opaquely and lets Tool.eval handle the recursion
+				// at runtime against concrete states.
+				if (opcode == 0 && !opDef.getInRecursive()) {
 					try {
 						FormalParamNode[] formals = opDef.getParams();
 						Context con1 = con;
 						for (int i = 0; i < alen; i++) {
-							IValue argVal = tool.eval(args[i], con, TLCState.Empty);
+							// Use getVal (not eval) to bind operator arguments
+							// lazily, mirroring SubstInKind handling (lbl: ugfweiyg).
+							// eval would eagerly evaluate: ExprNode args against
+							// TLCState.Empty (fails for state variables), and
+							// OpArgNode args into OpLambdaValue (which downstream
+							// code cannot match as OpDefNode at line 188).
+							Object argVal = tool.getVal(args[i], con, false);
 							con1 = con1.cons(formals[i], argVal);
 						}
 						LiveExprNode res = astToLive(tool, opDef.getBody(), con1);
