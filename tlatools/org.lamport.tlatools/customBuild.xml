@@ -13,12 +13,6 @@
 	<!-- TLA-Library path for TLAPS/CommunityModules (empty by default, set via -DTLA-Library=...) -->
 	<property name="TLA-Library" value="" />
 
-	<!-- Individual module paths for formatter tests (avoids semicolon issues on Windows
-	     when passing a combined TLA-Library through the ant command line).
-	     Set via -Dformatter.tlapm.path=... and -Dformatter.community.modules.path=... -->
-	<property name="formatter.tlapm.path" value="" />
-	<property name="formatter.community.modules.path" value="" />
-
 	<!-- Path to tlaplus/examples clone for semantic preservation tests (empty by default) -->
 	<property name="tlaplus.examples.path" value="" />
 
@@ -694,7 +688,7 @@
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
 					<exclude name="util/IsolatedTestCaseRunner.java"/>
-					<!-- TLA+ Formatter: runs in its own junit block with TLA-Library -->
+					<!-- TLA+ Formatter: runs in its own junit block below -->
 					<exclude name="formatter/**/*Test*.java"/>
 					<!-- Known test failures -->
 					<exclude name="**/pcal/StackTestTest.java" />
@@ -736,9 +730,10 @@
 			</batchtest>
 		</junit>
 
-		<!-- Run formatter unit tests in their own junit block so TLA-Library
-		     (tlapm, CommunityModules) is scoped to formatter only and does not
-		     shadow standard modules (Bags.tla, Json.tla) used by tlatools tests. -->
+		<!-- Run formatter unit tests in a separate junit block to keep them
+		     isolated from tlatools tests. Tests that need TLAPS/CommunityModules
+		     (21 tests) auto-skip here via Assume guards and are run in the
+		     examples-tests CI job where those deps are available. -->
 		<junit
 			printsummary="yes"
 			showoutput="no"
@@ -761,7 +756,6 @@
 			</classpath>
 			<formatter type="xml" />
 			<sysproperty key="basedir" value="${basedir}/"/>
-			<sysproperty key="TLA-Library" value="${formatter.tlapm.path}${path.separator}${formatter.community.modules.path}"/>
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="formatter/**/*Test*.java" />
@@ -797,6 +791,34 @@
 			<batchtest fork="yes" todir="${test.reports}">
 				<fileset dir="${test.dir}">
 					<include name="formatter/TlaPlusExamplesSemanticPreservationTest.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<!-- Runs the 21 formatter tests that need TLAPS/CommunityModules.
+	     These auto-skip in the main 'test' target (no TLA-Library set).
+	     Requires -DTLA-Library=... pointing at tlapm/library and CommunityModules .tla files. -->
+	<target name="test-formatter-tlaps" depends="compile, compile-test">
+		<mkdir dir="${test.reports}" />
+		<junit printsummary="yes" haltonfailure="true" showoutput="yes" haltonerror="true" forkmode="perTest" fork="yes">
+			<jvmarg value="-ea"/>
+			<classpath>
+				<pathelement location="lib/junit-4.12.jar" />
+				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="test-resources/formatter/" />
+			</classpath>
+			<formatter type="xml" />
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="TLA-Library" value="${TLA-Library}"/>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="formatter/constructs/impl/ProofConstructTest.java" />
+					<include name="formatter/constructs/impl/PickStepConstructTest.java" />
+					<include name="formatter/constructs/impl/ExtendsConstructTest.java" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -843,7 +865,6 @@
 			<sysproperty key="util.FileUtil.milliseconds" value="true"/>
 			<sysproperty key="tlc2.tool.distributed.TLCWorker.threadCount" value="4"/>
 			<sysproperty key="tlc2.overrides.TLCOverrides" value="tlc2.overrides.TLCOverrides${path.separator}tlc2.overrides.TLCTestOverrides"/>
-			<sysproperty key="TLA-Library" value="${TLA-Library}"/>
 
 			<!-- Print all output of the test to the screen. -->
 			<formatter type="plain" usefile="false" />

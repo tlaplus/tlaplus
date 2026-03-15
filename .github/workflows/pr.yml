@@ -51,22 +51,10 @@ jobs:
     ## 
     - name: Build tools and unit tests
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
-    - name: Checkout TLAPM
-      uses: actions/checkout@v4
-      with:
-        repository: tlaplus/tlapm
-        path: tlapm
-    - name: Download CommunityModules
-      shell: bash
-      run: |
-        curl -sLO https://github.com/tlaplus/CommunityModules/releases/latest/download/CommunityModules-deps.jar
-        unzip -o CommunityModules-deps.jar -d community-modules-tla
     - name: Run unit tests
       shell: bash
       run: |
-        ant -f tlatools/org.lamport.tlatools/customBuild.xml info test -Dtest.halt=true \
-          -Dformatter.tlapm.path="${{ github.workspace }}/tlapm/library" \
-          -Dformatter.community.modules.path="${{ github.workspace }}/community-modules-tla"
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml info test -Dtest.halt=true
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
@@ -294,18 +282,33 @@ jobs:
           --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions                                             \
           --skip "specifications/KnuthYao/SimKnuthYao.cfg"
+    - name: Run formatter TLAPS-dependent tests
+      if: ${{ !matrix.unicode }}
+      run: |
+        TLAPM_LIB="${{ github.workspace }}/${{ env.DEPS_DIR }}/tlapm/library"
+        CM_JAR="${{ github.workspace }}/${{ env.DEPS_DIR }}/community/modules.jar"
+        if [ -d "$TLAPM_LIB" ] && [ -f "$CM_JAR" ]; then
+          mkdir -p community-modules-tla
+          cd community-modules-tla && jar xf "$CM_JAR" && cd ..
+          ant -f tlatools/org.lamport.tlatools/customBuild.xml test-formatter-tlaps \
+            -DTLA-Library="${TLAPM_LIB}:${{ github.workspace }}/community-modules-tla"
+        else
+          echo "::notice::Skipping formatter TLAPS tests (tlapm or CommunityModules not available)"
+        fi
     - name: Test formatter on all specs in Examples repo
       if: ${{ !matrix.unicode }}
       run: |
-        mkdir -p community-modules-tla
-        cd community-modules-tla && jar xf "${{ github.workspace }}/${{ env.DEPS_DIR }}/community/modules.jar" && cd ..
         git clone --depth 1 https://github.com/apalache-mc/apalache.git apalache-src
         ant -f tlatools/org.lamport.tlatools/customBuild.xml test-formatter-semantic \
           -Dtlaplus.examples.path="${{ github.workspace }}/${{ env.EXAMPLES_DIR }}" \
           -DTLA-Library="${{ github.workspace }}/${{ env.DEPS_DIR }}/tlapm/library:${{ github.workspace }}/community-modules-tla:${{ github.workspace }}/apalache-src/src/tla"
-    - name: Upload formatter semantic test results
+    - name: Upload formatter test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: formatter-semantic-results-${{ matrix.unicode && 'unicode' || 'ascii' }}
-        path: tlatools/org.lamport.tlatools/target/surefire-reports/TEST-formatter.TlaPlusExamplesSemanticPreservationTest.xml
+        path: |
+          tlatools/org.lamport.tlatools/target/surefire-reports/TEST-formatter.TlaPlusExamplesSemanticPreservationTest.xml
+          tlatools/org.lamport.tlatools/target/surefire-reports/TEST-formatter.constructs.impl.ProofConstructTest.xml
+          tlatools/org.lamport.tlatools/target/surefire-reports/TEST-formatter.constructs.impl.PickStepConstructTest.xml
+          tlatools/org.lamport.tlatools/target/surefire-reports/TEST-formatter.constructs.impl.ExtendsConstructTest.xml
