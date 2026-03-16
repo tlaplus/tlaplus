@@ -10,6 +10,12 @@
 	<!-- Use Java 11 for all builds -->
 	<property name="java.release" value="11" />
 
+	<!-- TLA-Library path for TLAPS/CommunityModules (empty by default, set via -DTLA-Library=...) -->
+	<property name="TLA-Library" value="" />
+
+	<!-- Path to tlaplus/examples clone for semantic preservation tests (empty by default) -->
+	<property name="tlaplus.examples.path" value="" />
+
     <!-- Destination path to the html coverage report -->
     <property name="code-coverage.dir" value="target/code-coverage-report"/>
 
@@ -168,6 +174,8 @@
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar" />
+				<!-- TLA+ Formatter dependencies -->
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 			</classpath>
 		</javac>
 
@@ -312,6 +320,13 @@
 			</patternset>
 		</unzip>
 
+		<!-- Extract TLA+ Formatter dependencies into target/classes -->
+		<unzip src="lib/prettier4j-0.3.2.jar" dest="target/classes">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
 		<!-- Include a few LICENSE files -->
 		<copy todir="${class.dir}">
 			<fileset dir="lib/jline">
@@ -350,6 +365,13 @@
 			</patternset>
 		</unzip>
 
+		<!-- Extract TLA+ Formatter dependencies into class directory -->
+		<unzip src="lib/prettier4j-0.3.2.jar" dest="${class.dir}">
+			<patternset>
+				<include name="**/*.class"/>
+				<exclude name="META-INF/**"/>
+			</patternset>
+		</unzip>
 		<!-- create a JAR file for the users -->
 		<mkdir dir="${dist.dir}" />
 		<jar destfile="${dist.file}" level="9">
@@ -447,6 +469,8 @@
 				<pathelement location="lib/gson/gson-2.8.6.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc_0.21.1.v20230829-0012.jar" />
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.debug_0.21.1.v20230829-0012.jar" />
+				<!-- TLA+ Formatter dependencies -->
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 			</classpath>
 		</javac>
@@ -513,9 +537,11 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
+				<pathelement path="test-resources/formatter/" />
 			</classpath>
 			<formatter type="xml" />
 			<sysproperty key="basedir" value="${basedir}/"/>
@@ -575,9 +601,11 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
+				<pathelement path="test-resources/formatter/" />
 			</classpath>
 			<formatter type="xml" />
 
@@ -660,6 +688,8 @@
 					<exclude name="**/TestDriver2.java" />
 					<exclude name="**/AllTests.java" />
 					<exclude name="util/IsolatedTestCaseRunner.java"/>
+					<!-- TLA+ Formatter: runs in its own junit block below -->
+					<exclude name="formatter/**/*Test*.java"/>
 					<!-- Known test failures -->
 					<exclude name="**/pcal/StackTestTest.java" />
 					<exclude name="**/pcal/TestPCandStackTest.java" />
@@ -700,9 +730,98 @@
 			</batchtest>
 		</junit>
 
+		<!-- Run formatter unit tests in a separate junit block to keep them
+		     isolated from tlatools tests. Tests that need TLAPS/CommunityModules
+		     (21 tests) auto-skip here via Assume guards and are run in the
+		     examples-tests CI job where those deps are available. -->
+		<junit
+			printsummary="yes"
+			showoutput="no"
+			haltonfailure="${test.halt}"
+			haltonerror="${test.halt}"
+			failureproperty="unit-test.failed"
+			forkmode="perTest"
+			fork="yes"
+			threads="${threadLimit}"
+		>
+			<jvmarg value="-ea"/>
+			<jvmarg value="-XX:+UseParallelGC"/>
+			<classpath>
+				<pathelement location="lib/junit-4.12.jar" />
+				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="test-resources/formatter/" />
+			</classpath>
+			<formatter type="xml" />
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="formatter/**/*Test*.java" />
+					<exclude name="formatter/LexiconTest.java" />
+					<exclude name="formatter/TlaPlusExamplesSemanticPreservationTest.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+
 		<!-- remove copied class.dir -->
 		<delete dir="${ws.class.dir}" deleteonexit="true"/>
 		<fail message="Unit test failures." if="unit-test.failed" />
+	</target>
+
+	<!-- Runs the formatter semantic preservation tests against tlaplus/examples.
+	     Requires -Dtlaplus.examples.path=... pointing at a local clone. -->
+	<target name="test-formatter-semantic" depends="compile, compile-test">
+		<mkdir dir="${test.reports}" />
+		<junit printsummary="yes" haltonfailure="true" showoutput="yes" haltonerror="true" forkmode="perTest" fork="yes">
+			<jvmarg value="-ea"/>
+			<classpath>
+				<pathelement location="lib/junit-4.12.jar" />
+				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="test-resources/formatter/" />
+			</classpath>
+			<formatter type="xml" />
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="TLA-Library" value="${TLA-Library}"/>
+			<sysproperty key="tlaplus.examples.path" value="${tlaplus.examples.path}"/>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="formatter/TlaPlusExamplesSemanticPreservationTest.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<!-- Runs the 21 formatter tests that need TLAPS/CommunityModules.
+	     These auto-skip in the main 'test' target (no TLA-Library set).
+	     Requires -DTLA-Library=... pointing at tlapm/library and CommunityModules .tla files. -->
+	<target name="test-formatter-tlaps" depends="compile, compile-test">
+		<mkdir dir="${test.reports}" />
+		<junit printsummary="yes" haltonfailure="true" showoutput="yes" haltonerror="true" forkmode="perTest" fork="yes">
+			<jvmarg value="-ea"/>
+			<classpath>
+				<pathelement location="lib/junit-4.12.jar" />
+				<pathelement location="lib/hamcrest-core-1.3.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
+				<pathelement path="${class.dir}" />
+				<pathelement path="${test.class.dir}" />
+				<pathelement path="test-resources/formatter/" />
+			</classpath>
+			<formatter type="xml" />
+			<sysproperty key="basedir" value="${basedir}/"/>
+			<sysproperty key="TLA-Library" value="${TLA-Library}"/>
+			<batchtest fork="yes" todir="${test.reports}">
+				<fileset dir="${test.dir}">
+					<include name="formatter/constructs/impl/ProofConstructTest.java" />
+					<include name="formatter/constructs/impl/PickStepConstructTest.java" />
+					<include name="formatter/constructs/impl/ExtendsConstructTest.java" />
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 
 	<!-- Executes a given set of unit test. -->
@@ -732,10 +851,12 @@
 				<pathelement location="lib/lsp/org.eclipse.lsp4j.jsonrpc.debug_0.21.1.v20230829-0012.jar"/>
 				<pathelement location="lib/CommunityModules.jar"/>
 				<pathelement location="test-model/UserModuleOverrideFromJar.jar" />
+				<pathelement location="lib/prettier4j-0.3.2.jar" />
 				<pathelement path="${class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="${test.class.dir}" />
 				<pathelement path="test-model/" />
+				<pathelement path="test-resources/formatter/" />
 			</classpath>
 
 			<!-- Pass the base path of the tlatools project to unit tests in case they need it to locate TLA+ specs or configs -->
@@ -997,6 +1118,8 @@
 						<exclude name="**/TestDriver2.java" />
 						<exclude name="**/AllTests.java" />
 						<exclude name="util/IsolatedTestCaseRunner.java"/>
+						<!-- TLA+ Formatter: not tested via dist JAR -->
+						<exclude name="formatter/**/*Test*.java"/>
 						<!-- Known test failures -->
 						<exclude name="**/pcal/StackTestTest.java" />
 						<exclude name="**/pcal/TestPCandStackTest.java" />
