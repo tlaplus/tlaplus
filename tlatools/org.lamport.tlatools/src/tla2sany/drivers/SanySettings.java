@@ -134,6 +134,20 @@ public final class SanySettings {
   }
 
   /**
+   * Settings for use when SANY is called as a library by another tool that
+   * manages its own error reporting. All validation stages are enabled.
+   *
+   * @param suppressedCodes      message codes to silence; may be empty
+   * @param messagesAsErrorCodes message codes to elevate to errors; may be empty
+   * @return settings appropriate for a caller that checks results itself
+   */
+  public static SanySettings forExternalCaller(
+      final Set<ErrorCode> suppressedCodes,
+      final Set<ErrorCode> messagesAsErrorCodes) {
+    return new SanySettings(true, true, true, true, true, suppressedCodes, messagesAsErrorCodes);
+  }
+
+  /**
    * Use this constructor if you want full control over SANY settings,
    * including per-code message suppression and elevation.
    */

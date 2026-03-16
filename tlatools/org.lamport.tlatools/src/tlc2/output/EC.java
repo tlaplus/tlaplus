@@ -1,5 +1,9 @@
 package tlc2.output;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -467,5 +471,32 @@ public interface EC
 		public static boolean exitStatusToCrash(final int exitStatus) {
 			return !knownExitValues.contains(exitStatus);
 		}
+    }
+
+    /**
+     * Returns {@code true} if {@code code} is a known TLC error/message code
+     * declared as a {@code public static final int} field in this interface.
+     */
+    static boolean isKnownCode(final int code) {
+        return KnownCodes.ALL.contains(code);
+    }
+
+    /** 
+     * Lazy holder for the set of all known EC codes, built once via reflection. 
+     * NOTE: Ideally, we should refactor TLC and introduce an enumeration of all the codes. However,
+     * it would result in multiple changes all over the codebase.
+     */
+    final class KnownCodes {
+        static final Set<Integer> ALL;
+        static {
+            final HashSet<Integer> s = new HashSet<>();
+            for (final Field f : EC.class.getDeclaredFields()) {
+                if (f.getType() == int.class && Modifier.isStatic(f.getModifiers())) {
+                    try { s.add(f.getInt(null)); } catch (final IllegalAccessException ignored) {}
+                }
+            }
+            ALL = Collections.unmodifiableSet(s);
+        }
+        private KnownCodes() {}
     }
 }

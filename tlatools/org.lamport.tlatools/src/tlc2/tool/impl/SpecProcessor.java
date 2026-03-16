@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SanyExitCode;
+import tla2sany.drivers.SanySettings;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
@@ -384,22 +386,15 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	}
 
     /**
-     * Processes the specification and collects information to be used
-     * by tools. The processing tries to use any customized module (Java
-     * class) to override the corresponding TLA+ module.
-     * @param mode 
+     * Parses the specification with SANY and validates the result.
      */
-    // SZ Feb 20, 2009: added support for existing specObj
-    private final void processSpec(final Mode mode)
-    {
-
-        // We first call the SANY front-end to parse and semantic-analyze
-        // the complete TLA+ spec starting with the main module rootFile.
+    private final void parseSpec() {
         if (TLCGlobals.tool)
         {
             MP.printMessage(EC.TLC_SANY_START);
         }
-		final PrintStream ps = MP.isSuppressed(EC.TLC_SANY_START) ? new DelayedPrintStream(ToolIO.out) : ToolIO.out;
+
+        final PrintStream ps = MP.isSuppressed(EC.TLC_SANY_START) ? new DelayedPrintStream(ToolIO.out) : ToolIO.out;
         try
         {
             // SZ Feb 20, 2009:
@@ -409,7 +404,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // Only if something unexpected happens the
             // exception is thrown
             SanyOutput out = new SimpleSanyOutput(ps, LogLevel.INFO);
-            SANY.frontEndMain(specObj, this.rootFile, out);
+            final SanySettings settings = SanySettings.forExternalCaller(
+                MP.getSanySuppressedCodes(), MP.getSanyMessagesAsErrorCodes());
+            final SanyExitCode exitCode = SANY.parse(specObj, this.rootFile, out, settings);
+            // SZ Feb 20, 2009:
+            // since failed parsing is not marked by an exception,
+            // check the status of the spec
+            // check if the specification has been successfully created
+            if (!specObj.parseErrors.isSuccess()) {
+                Assert.fail(EC.TLC_PARSING_FAILED, specObj.parseErrors.getErrors());
+            }
+            if (!specObj.semanticErrors.isSuccess()) {
+                Assert.fail(EC.TLC_PARSING_FAILED, specObj.semanticErrors.getErrors());
+            }
+            // Abort if SANY reported any elevated errors.
+            if (exitCode != SanyExitCode.OK) {
+                Assert.fail(EC.TLC_PARSING_FAILED);
+            }
         } catch (FrontEndException e)
         {
         	if (ps instanceof DelayedPrintStream) {
@@ -423,19 +434,23 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         {
             MP.printMessage(EC.TLC_SANY_END);
         }
+    }
+
+    /**
+     * Processes the specification and collects information to be used
+     * by tools. The processing tries to use any customized module (Java
+     * class) to override the corresponding TLA+ module.
+     * @param mode 
+     */
+    // SZ Feb 20, 2009: added support for existing specObj
+    private final void processSpec(final Mode mode)
+    {
+        // We first call the SANY front-end to parse and semantic-analyze
+        // the complete TLA+ spec starting with the main module rootFile.
+        parseSpec();
+
         // The following statement moved here by LL on 11 March 2011
         MP.printMessage(EC.TLC_STARTING);
-
-        // SZ Feb 20, 2009:
-        // since failed parsing is not marked by an exception,
-        // check the status of the spec
-        // check if the specification has been successfully created
-		if (!specObj.parseErrors.isSuccess()) {
-			Assert.fail(EC.TLC_PARSING_FAILED, specObj.parseErrors.getErrors());
-		}
-		if (!specObj.semanticErrors.isSuccess()) {
-			Assert.fail(EC.TLC_PARSING_FAILED, specObj.semanticErrors.getErrors());
-		}
 
         // Set the rootModule:
         this.moduleTbl = specObj.getExternalModuleTable();

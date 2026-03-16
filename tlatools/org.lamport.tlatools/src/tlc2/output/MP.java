@@ -10,7 +10,9 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Set;
 
+import tla2sany.semantic.ErrorCode;
 import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
@@ -19,7 +21,6 @@ import tlc2.util.statistics.IBucketStatistics;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.DebugPrinter;
-import util.Set;
 import util.TLAConstants;
 import util.ToolIO;
 
@@ -211,14 +212,20 @@ public class MP
 
     private static MP instance = null;
 	private static BroadcastMessagePrinterRecorder recorder = new BroadcastMessagePrinterRecorder();
-    private final Set warningHistory;
+    private final Set<String> warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     // Thread-safe date/number formatting to avoid races across worker threads.
     private static final DateTimeFormatter SDF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     		.withZone(ZoneId.systemDefault()); //$NON-NLS-1$
 	private static final ThreadLocal<DecimalFormat> DF = ThreadLocal.withInitial(() -> new DecimalFormat("###,###.###"));
-	
-	private static final java.util.Set<Integer> SUPPRESSED = new HashSet<>();
+
+    // TLC-range message codes
+	private static final Set<Integer> TLC_SUPPRESSED = new HashSet<>();
+	private static final Set<Integer> TLC_MESSAGES_AS_ERRORS = new HashSet<>();
+
+    // SANY-range message codes
+	private static final Set<ErrorCode> SANY_SUPPRESSED = new HashSet<>();
+	private static final Set<ErrorCode> SANY_MESSAGES_AS_ERRORS = new HashSet<>();
 	
 	/**
 	 * By default, do not run in debug mode which means full stack traces do not
@@ -238,14 +245,102 @@ public class MP
         final String suppressed = System.getProperty("tlc2.output.MP", "");
         for (String i : suppressed.split(",")) {
         	try {
-        		SUPPRESSED.add(Integer.parseInt(i.trim()));
+        		TLC_SUPPRESSED.add(Integer.parseInt(i.trim()));
         	} catch (NumberFormatException ignored) {
         	}
 		}
     }
     
     public static boolean isSuppressed(int messageCode) {
-    	return SUPPRESSED.contains(messageCode);
+    	return TLC_SUPPRESSED.contains(messageCode);
+    }
+
+    /**
+     * Adds all codes in {@code codes} to the suppressed set. TLC messages whose
+     * code is suppressed are never printed to the console, though they are
+     * still recorded by the {@link BroadcastMessagePrinterRecorder}.
+     */
+    public static void addTlcSuppressed(java.util.Collection<Integer> codes) {
+        TLC_SUPPRESSED.addAll(codes);
+    }
+
+    /**
+     * Returns an unmodifiable view of the set of currently suppressed message
+     * codes. Populated by the {@code -suppressMessages} CLI flag.
+     */
+    public static Set<Integer> getTlcSuppressedCodes() {
+        return java.util.Collections.unmodifiableSet(TLC_SUPPRESSED);
+    }
+
+    /**
+     * Adds all codes in {@code codes} to the messages-as-errors set. When
+     * {@link #printWarning} is called for a code in this set it causes TLC to 
+     * abort with the associated error code.
+     */
+    public static void addTlcMessagesAsErrors(java.util.Collection<Integer> codes) {
+        TLC_MESSAGES_AS_ERRORS.addAll(codes);
+    }
+
+    /**
+     * Returns {@code true} if messages with {@code messageCode} should be
+     * elevated to errors (i.e. the code was registered via
+     * {@link #addTlcMessagesAsErrors}).
+     */
+    public static boolean isTlcMessageAsError(int messageCode) {
+        return TLC_MESSAGES_AS_ERRORS.contains(messageCode);
+    }
+
+    /**
+     * Returns an unmodifiable view of the set of codes that are currently
+     * configured to be treated as errors. Populated by the
+     * {@code -messagesAsErrors} CLI flag.
+     */
+    public static Set<Integer> getTlcMessagesAsErrorCodes() {
+        return java.util.Collections.unmodifiableSet(TLC_MESSAGES_AS_ERRORS);
+    }
+
+    /**
+     * Returns an unmodifiable view of the set of currently suppressed SANY
+     * message codes. Populated by the {@code -suppressMessages} CLI flag.
+     */
+    public static Set<ErrorCode> getSanySuppressedCodes() {
+        return java.util.Collections.unmodifiableSet(SANY_SUPPRESSED);
+    }
+
+    /**
+     * Returns an unmodifiable view of the set of SANY-range codes that are currently
+     * configured to be treated as errors. Populated by the
+     * {@code -messagesAsErrors} CLI flag.
+     */
+    public static Set<ErrorCode> getSanyMessagesAsErrorCodes() {
+        return java.util.Collections.unmodifiableSet(SANY_MESSAGES_AS_ERRORS);
+    }
+
+    /**
+     * Adds all SANY-range codes in {@code codes} to the suppressed set. Messages whose
+     * code is suppressed are never printed to the console.
+     */
+    public static void addSanySuppressed(java.util.Collection<ErrorCode> codes) {
+        SANY_SUPPRESSED.addAll(codes);
+    }
+
+    /**
+     * Adds all SANY-range codes in {@code codes} to the messages-as-error set.
+     */
+    public static void addSanyMessagesAsErrors(java.util.Collection<ErrorCode> codes) {
+        SANY_MESSAGES_AS_ERRORS.addAll(codes);
+    }
+
+    /**
+     * Clears all per-code message controls ({@link #TLC_SUPPRESSED}, {@link #TLC_MESSAGES_AS_ERRORS},
+     * {@link #SANY_SUPPRESSED}, and {@link #SANY_MESSAGES_AS_ERRORS}).  Intended for use by tests 
+     * to restore MP to a clean state between test cases.
+     */
+    public static void resetMessageControl() {
+        TLC_SUPPRESSED.clear();
+        TLC_MESSAGES_AS_ERRORS.clear();
+        SANY_SUPPRESSED.clear();
+        SANY_MESSAGES_AS_ERRORS.clear();
     }
 
     /**
@@ -253,7 +348,7 @@ public class MP
      */
     private MP()
     {
-        warningHistory = new Set();
+        warningHistory = new HashSet<>();
     }
 
     /**
@@ -1775,7 +1870,7 @@ public class MP
      */
     public static void printWarning(int errorCode, String... parameters)
     {
-    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error")) {
+    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error") || isTlcMessageAsError(errorCode)) {
     		Assert.fail(errorCode, parameters);
     	}
     	recorder.record(errorCode, (Object[]) parameters);
@@ -1786,7 +1881,7 @@ public class MP
             // construct the message
             String message = getMessage(WARNING, errorCode, parameters);
             // if the message has not been printed
-            if (instance.warningHistory.put(message) == null)
+            if (instance.warningHistory.add(message))
             {
                 // print it
             	if (!isSuppressed(errorCode)) {
@@ -1804,7 +1899,7 @@ public class MP
      */
     public static void printWarning(int errorCode, String parameters, Throwable e)
     {
-    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error")) {
+    	if (Boolean.getBoolean(MP.class.getName() + ".warning2error") || isTlcMessageAsError(errorCode)) {
     		Assert.fail(errorCode, e);
     	}
     	recorder.record(errorCode, parameters, e);
@@ -1815,7 +1910,7 @@ public class MP
             // construct the message
             String message = getMessage(WARNING, errorCode, new String[]{parameters});
             // if the message has not been printed
-            if (instance.warningHistory.put(message) == null)
+            if (instance.warningHistory.add(message))
             {
                 // print it
             	if (!isSuppressed(errorCode)) {
