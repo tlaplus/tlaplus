@@ -1,31 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 23/9/2014 Author: Tomer Libal -->
-<!-- This DTD represents a SANY parsed module, corresponding to an input tla file. -->
-<!-- Elements starting with capital letters correspond to SANY Java classes -->
-<!-- This DTD should encompass all relevant data and later should be matched against actual XMLS to see if there is redundancy (do theorems really have suffices?) -->
-<!-- In addition to the inheritance structure, the DTD should also take into account semantical constraints based on kinds. I.e. it is not possible to create certain nodes of certain kinds -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xml:lang="en">
+  <xs:annotation>
+    <xs:documentation>
+      This schema file represents the format of a fully-parsed TLA+ spec as
+      exported by the tla2sany.xml.XMLExporter application. In addition to
+      validating the exported XML, this document also serves as the primary
+      documentation of the SANY (Syntactic ANalYzer) XML output format. Users
+      should refer to the annotations on each element to understand which
+      TLA+ construct each element corresponds to, and the meaning of each
+      field.
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+      The exported spec is fully analyzed and resolved, so each identifier is
+      associated with a unique integer ID specifying the definition being
+      referred to. Many node types also have level information, which is the
+      closest thing TLA+ has to a type system.
+
+      Many of the elements in this file are groups of other elements, for the
+      utility of shortening lists of references elsewhere. For example, all
+      references that broadly look like "operator definitions" are in the
+      OpDefNodeRef group. Other elements can then use OpDefNodeRef to say
+      that any element of the OpDefNodeRef group is expected/allowed there.
+      Documentation on these utility groups is usually omitted. In programmer
+      vernacular, group members are "inlined" at their point of reference.
+
+      Depending on how you're viewing this document, you may see text in
+      these comment blocks contain escaped XML like &amp;lt; or &amp;gt; -
+      any XML library or web browser should resolve these to their non-
+      escaped forms of &lt; and &gt; respectively, so you should not need
+      to worry about performing the conversion in your own program.
+
+      Several places in this document are tagged with [TODO], indicating
+      likely future revision; for discussion and tracking, see this issue:
+      https://github.com/tlaplus/tlaplus/issues/1313.
+
+      The original version of this document, along with the XML exporter
+      itself, was authored by Tomer Libal in 2014.
+    </xs:documentation>
+  </xs:annotation>
 
   <xs:element name="modules">
+    <xs:annotation>
+      <xs:documentation>
+        This is the root of the syntax tree consisting of three things:
+        (1) The name of the root module of the specification
+        (2) A table of UID-indexed definitions for reference
+        (3) A list of all modules transitively imported by the root module
+
+        If you only care about the root module and not any of its imports,
+        then find it by name in the list of modules after resolving their
+        UIDs in the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="RootModule" type="xs:string"/>
-        <xs:element ref="context"/>
+        <xs:element name="RootModule" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The name of this TLA+ specification's root module. This will be
+              the outermost module in the .tla file given to the parser.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="context">
+          <xs:annotation>
+            <xs:documentation>
+              A table of all definitions found in all specifications, indexed
+              by UIDs. Everything from operator parameters to constants is
+              found here. Modules themselves are also defined here.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:sequence maxOccurs="unbounded">
           <xs:choice>
-            <xs:element ref="ModuleNode"/>
-            <xs:element ref="ModuleNodeRef"/>
+            <xs:element ref="ModuleNodeRef">
+              <xs:annotation>
+                <xs:documentation>
+                  A list of modules included in the transitive closure of
+                  dependencies of the root module. The modules are given as
+                  UID references which can be resolved in the context table.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element ref="ModuleNode">
+              <xs:annotation>
+                <xs:documentation>
+                  This type is never found here and should be removed from
+                  the schema [TODO].
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
           </xs:choice>
         </xs:sequence>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <!-- context and symbol references -->
-  <!-- everything which has a uniquename is defined only once, here, and is referred by its name.
-       this element resides within a certain scope and affects only this scope -->
   <xs:element name="context">
+    <xs:annotation>
+      <xs:documentation>
+        A UID-indexed table containing details of all modules, definitions,
+        and even individual operator parameters. Whenever a TLA+ construct
+        needs to refer to something else, it uses a UID which is resolved in
+        this table.
+
+        References are never given as a "naked" integer. Instead, they are
+        wrapped in type information. For example, UserDefinedOpKindRef will
+        contain a UID which, when looked up in this table, should produce a
+        UserDefinedOpKind. This is a fair amount of bookkeeping, however, and
+        consumers of this XML output will be forgiven if they discard the
+        typing wrapper and only keep naked integers around.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:element name="entry">
@@ -59,21 +144,39 @@
       <xs:element ref="AssumeDefRef"/>
     </xs:choice>
   </xs:group>
+
   <xs:element name="ModuleInstanceKindRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a ModuleInstanceKind node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
   <xs:element name="UserDefinedOpKindRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a UserDefinedOpKind node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
   <xs:element name="BuiltInKindRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a BuiltInKind node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -82,6 +185,11 @@
   </xs:element>
 
   <xs:element name="FormalParamNodeRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a FormalParamNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -90,6 +198,11 @@
   </xs:element>
 
   <xs:element name="ModuleNodeRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a ModuleNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -98,6 +211,11 @@
   </xs:element>
 
   <xs:element name="TheoremNodeRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a TheoremNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -106,6 +224,11 @@
   </xs:element>
 
   <xs:element name="TheoremDefRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing a TheoremDefNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -114,6 +237,11 @@
   </xs:element>
 
   <xs:element name="AssumeNodeRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing an AssumeNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -122,6 +250,11 @@
   </xs:element>
 
   <xs:element name="AssumeDefRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing an AssumeDef node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -130,6 +263,11 @@
   </xs:element>
 
   <xs:element name="OpDeclNodeRef">
+    <xs:annotation>
+      <xs:documentation>
+        A UID producing an OpDeclNode node from the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="UID"/>
@@ -137,16 +275,33 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- A level node is a wrapper around all other nodes containing location and level information -->
   <xs:group name="node">
+    <xs:annotation>
+      <xs:documentation>
+        A very important node type that is inlined at the start of nearly all
+        other node types. Encodes information about location and level; both
+        fields are optional.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element minOccurs="0" ref="location"/>
       <xs:element minOccurs="0"  ref="level"/>
     </xs:sequence>
   </xs:group>
 
-  <!-- ExprNode is a grouping of the following nodes -->
   <xs:group name="ExprNode">
+    <xs:annotation>
+      <xs:documentation>
+        The all-important expression AST node kind, a mainstay of ASTs the
+        world over. Users might be confused by the rather short list of
+        elements here compared to how many expression kinds are found in TLA+
+        syntax. Beyond literal values like NumeralNode and oddities like
+        labels and LET/IN, almost every TLA+ language operator (CHOOSE,
+        conjunction lists, quantification, etc.) is defined as an OpApplNode
+        with an appropriate BuiltInKind operator. Refer to those definitions
+        for more info.
+      </xs:documentation>
+    </xs:annotation>
     <xs:choice>
       <xs:element ref="AtNode"/>
       <xs:element ref="DecimalNode"/>
@@ -161,8 +316,17 @@
     </xs:choice>
   </xs:group>
 
-  <!-- Location -->
   <xs:element name="location">
+    <xs:annotation>
+      <xs:documentation>
+        The all-important location of an element. Uses the common format of
+        start-line/column to end-line/column. The filename does not end with
+        a .tla suffix and does not include any relative path information.
+        However, the filename is not just the module name; in the case of
+        multiple modules within a single file (for example, a nested module)
+        the filename will always be the first outermost module name.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="column"/>
@@ -191,34 +355,92 @@
   <xs:element name="begin" type="xs:integer"/>
   <xs:element name="end" type="xs:integer"/>
 
-  <!-- Level -->
   <xs:element name="level">
+    <xs:annotation>
+      <xs:documentation>
+        The level of a TLA+ construct, if applicable. This ranges from
+        Constant to Temporal. A TLA+ construct's level is the closest thing
+        TLA+ has to a type, and its primary purpose is to prevent users from
+        (accidentally) double-priming an expression.
+      </xs:documentation>
+    </xs:annotation>
     <xs:simpleType>
     <xs:restriction base="xs:integer">
-      <xs:minInclusive value="0"/>
-      <xs:maxInclusive value="3"/>
-      <!--
-      ConstantLevel = 0 (Constant)
-      VariableLevel = 1 (State)
-      ActionLevel = 2   (Transition)
-      TemporalLevel = 3 (Temporal)
-      -->
+      <xs:enumeration value="0">
+        <xs:annotation>
+          <xs:documentation>
+            0 indicates a Constant-level construct. This means anything that
+            uses only identifiers declared as CONSTANT, literal values like
+            integers or strings, or other Constant-level values. Operator
+            parameters where the level is unknown within the body of the
+            operator are also assigned Constant level by default. Basically
+            this means the construct's value should remain unchanged across
+            an entire behavior.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="1">
+        <xs:annotation>
+          <xs:documentation>
+            1 indicates a Variable-level construct. This means anything that
+            uses identifiers declared as VARIABLE, or other Variable-level
+            values. Combining Constant- and Variable-level elements in an
+            expression results in a Variable-level expression. Basically this
+            means the construct's value should depend only on the current
+            state.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="2">
+        <xs:annotation>
+          <xs:documentation>
+            2 indicates an Action-level construct. This means anything that
+            operates on the level of a pair of states, such as [A]_v type
+            constructs.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="3">
+        <xs:annotation>
+          <xs:documentation>
+            3 indicates a Temporal-level construct. This means anything that
+            operates on the level of an entire behavior, such as []P.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
  </xs:element>
 
-  <!-- Pre-comments -->
-  <xs:element name="pre-comments" type="xs:string"/>
+  <xs:element name="pre-comments" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>
+        Often, users will add comments above operators describing what they
+        do. These comments are attached and enclosed in this field.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
 
-
-  <!-- Instantiations and substitutions -->
-  <!-- Operator substitution? -->
-  <!-- A list of substitutions and the expression they apply to -->
-  <xs:element name="APSubstInNode">
+  <xs:element name="SubstInNode">
+    <xs:annotation>
+      <xs:documentation>
+        When a module is imported with substitution, operators from that
+        module are inlined in the importing module and their bodies are
+        wrapped in this node kind which contains the substitution list. It is
+        up to the consumer of this AST to apply those substitutions in the
+        body expression. SANY takes this "lazily-applied substitution"
+        approach instead of directly rewriting the expression in the AST.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="substs">
+          <xs:annotation>
+            <xs:documentation>
+              The list of substitutions to apply to the body expression.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element maxOccurs="unbounded" ref="Subst"/>
@@ -226,6 +448,79 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The expression in which definitions should be substituted.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:group ref="ExprNode"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="instFrom">
+          <xs:annotation>
+            <xs:documentation>
+              The module from which the substituted module was imported.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="instTo">
+          <xs:annotation>
+            <xs:documentation>
+              The module that was imported with substitutions.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="APSubstInNode">
+    <xs:annotation>
+      <xs:documentation>
+        Similar to SubstInNode, but applied to an ASSUME/PROVE block. So if a
+        module containing a named theorem of ASSUME/PROVE form is imported
+        using INSTANCE with substitutions, then the named THEOREM node is
+        inlined in the importing module with its ASSUME/PROVE body wrapped in
+        this node type. This is a very niche case.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="node"/>
+        <xs:element name="substs">
+          <xs:annotation>
+            <xs:documentation>
+              The list of substitutions to apply to the ASSUME/PROVE block.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" ref="Subst"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The ASSUME/PROVE block to which the substitutions should be
+              applied. An ordinary expression node is marked valid here, but
+              that would result in an ordinary SubstInNode instead; it should
+              likely be removed [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:group ref="ExprNode"/>
@@ -234,6 +529,11 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="instFrom">
+          <xs:annotation>
+            <xs:documentation>
+              The module from which the substituted module was imported.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element ref="ModuleNodeRef"/>
@@ -241,6 +541,11 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="instTo">
+          <xs:annotation>
+            <xs:documentation>
+              The module that was imported with substitutions.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element ref="ModuleNodeRef"/>
@@ -251,55 +556,45 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- Expr substitution -->
-  <!-- A list of substitutions and the expression they apply to -->
-  <xs:element name="SubstInNode">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:group ref="node"/>
-        <xs:element name="substs">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element maxOccurs="unbounded" ref="Subst"/>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
-        <xs:element name="body">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:group ref="ExprNode"/>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
-        <xs:element name="instFrom">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element ref="ModuleNodeRef"/>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
-        <xs:element name="instTo">
-          <xs:complexType>
-            <xs:sequence>
-              <xs:element ref="ModuleNodeRef"/>
-            </xs:sequence>
-          </xs:complexType>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-  <!-- Module substitution -->
-  <!-- A list of substitutions, the name of the instance and list of instance params -->
   <xs:element name="InstanceNode">
+    <xs:annotation>
+      <xs:documentation>
+        This is used for unit-level INSTANCE M and N == INSTANCE M module
+        imports, with or without substitutions. It is not (currently) used
+        for INSTANCE imports in LET/IN blocks or DEFINE proof steps. INSTANCE
+        imports in LET/IN blocks directly inline all operators in the
+        imported module while omitting the INSTANCE definition itself, and
+        INSTANCE imports in DEFINE proof steps use ModuleInstanceKind nodes.
+        These varying cases may be unified in a future XML Exporter version
+        [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:sequence>
-          <xs:element minOccurs="0" maxOccurs="1" ref="uniquename"/>
+          <xs:element minOccurs="0" maxOccurs="1" ref="uniquename">
+            <xs:annotation>
+              <xs:documentation>
+                If the import is named, like N == INSTANCE M instead of just
+                INSTANCE M, then the name is presented here.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
         </xs:sequence>
-        <xs:element name="module" type="xs:string"/>
+        <xs:element name="module" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the module being imported; ex. "M" in INSTANCE M.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="substs">
+          <xs:annotation>
+            <xs:documentation>
+              Any substitutions applied to the imported module using WITH.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element minOccurs="0" maxOccurs="unbounded" ref="Subst"/>
@@ -307,23 +602,56 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="params">
+          <xs:annotation>
+            <xs:documentation>
+              Parameter info; for example in N(x, y) == INSTANCE M this will
+              list the properties of parameters x and y. If the INSTANCE is
+              unnamed then this will always be empty.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element minOccurs="0" maxOccurs="unbounded" ref="FormalParamNodeRef"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" ref="local"/>
+        <xs:element minOccurs="0" ref="local">
+          <xs:annotation>
+            <xs:documentation>
+              If present, this was marked LOCAL and so should not be imported
+              into any module that imports this one.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <!-- Mapping from the OpDeclNode to either of the others -->
   <xs:element name="Subst">
+    <xs:annotation>
+      <xs:documentation>
+        When importing a module using INSTANCE M WITH x &lt;- a, y &lt;- b
+        for substitutions, this node contains info on a single substitution.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="OpDeclNodeRef"/>
+        <xs:element ref="OpDeclNodeRef">
+          <xs:annotation>
+            <xs:documentation>
+              The substituted operator declaration in the imported module;
+              for x &lt;- a, this would be "x".
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:choice>
+          <xs:annotation>
+            <xs:documentation>
+              The value to substitute for the operator declaration, which is
+              either an expression or an operator reference; for x &lt;- a,
+              this would be "a".
+            </xs:documentation>
+          </xs:annotation>
           <xs:group ref="ExprNode"/>
           <xs:element ref="OpArgNode"/>
         </xs:choice>
@@ -331,26 +659,59 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- This is a unique name in the hierarchy -->
-  <xs:element name="uniquename" type="xs:string"/>
+  <xs:element name="uniquename" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>
+        A name that is guaranteed to be unique within this specification.
+        Notable exception for LAMBDA operators, which all have the uniquename
+        "LAMBDA" in a UserDefinedOpKind node.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
 
-  <!-- This is a unique ID in the system -->
-  <xs:element name="UID" type="xs:integer"/>
+  <xs:element name="UID" type="xs:integer">
+    <xs:annotation>
+      <xs:documentation>
+        An integer key that is guaranteed to be unique within this spec; used
+        to look up operator definitions in the context table.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
 
-  <!-- Assumptions and Theorems -->
-  <!-- An assumption named by name and described by ExprNode -->
   <xs:element name="AssumeNode">
+    <xs:annotation>
+      <xs:documentation>
+        A unit-level ASSUME/ASSUMPTION/AXIOM statement. These assumptions can
+        be named, like ASSUME P == expr; if so, this contains an AssumeDefRef
+        reference to an AssumeDef node containing the name information. The
+        AssumeDef is otherwise a duplicate of this node. These two node types
+        will likely be unified in a future XML Exporter version [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element minOccurs="0" name="definition">
+          <xs:annotation>
+            <xs:documentation>
+              If assumption is named, this field will be present and refers
+              to an AssumeDef node containing that name information.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:element ref="AssumeDefRef"/>
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element name="body"> <!-- Invariant: definition body is assumption body, if definition exists -->
+        <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The expression that is being assumed to be true. Currently this
+              says it can be an AssumeDef, but that should not ever happen so
+              the variant should be removed [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:group ref="ExprNode"/>
@@ -358,17 +719,37 @@
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <!-- reference to AssumeDef included in ExprNode -->
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="AssumeDef">
+    <xs:annotation>
+      <xs:documentation>
+        The odd counterpart to a named AssumeNode. Other places use the
+        AssumeDefRef type, but all should be replaced with AssumeNode and the
+        two node types unified into one [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element name="uniquename" type="xs:string"/>
+        <xs:element name="uniquename" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The assumption name.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:choice>
+          <xs:annotation>
+            <xs:documentation>
+              The assumption body. Should be a duplicate of the body of the
+              AssumeNode from which this AssumeDef is referenced. It is not
+              known why an AssumeProveLike is marked valid here; that should
+              never happen and is not valid at this location [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:group ref="ExprNode"/>
           <xs:group ref="AssumeProveLike"/>
         </xs:choice>
@@ -376,19 +757,48 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- Similar to assumption but may contain a proof. It can also refer to a proof step -->
   <xs:element name="TheoremNode">
+    <xs:annotation>
+      <xs:documentation>
+        A THEOREM/PROPOSITION/LEMMA/COROLLARY statement. Similar to ASSUME
+        nodes, if it's named then there is a reference to a redundant
+        TheoremDefNode [TODO]. This is also used for proof steps; the proof
+        step type is encoded in the body, where it is an OpApplNode with a
+        BuiltInKind operator type corresponding to CASE, PICK, TAKE, HAVE,
+        WITNESS, or SUFFICES. The actual body of the proof step will be in
+        the OpApplNode.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element minOccurs="0" name="definition">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the theorem, if present. For proof steps, this will
+              be present if the proof is named like &lt;1&gt;a or similar.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:element ref="TheoremDefRef"/>
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element name="body"> <!-- Invariant: definition body is theorem body, if definition exists -->
+        <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The body of this theorem node. This will be an expression, or
+              an ASSUME/PROVE block. In the case that this is a proof step,
+              the expression will be an OpApplNode with the appropriate built
+              in operator: CASE steps are $Pfcase, TAKE steps are $Take, HAVE
+              steps are $Have, WITNESS steps are $Witness, SUFFICES (or naked
+              expression) steps are $Suffices, and QED steps are $Qed. The
+              body of the proof step is given in the OpApplNode itself; for
+              example, a SUFFICES proof step consists of no bound symbols and
+              a single operand, which is the expression.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:group ref="ExprNode"/>
@@ -396,20 +806,59 @@
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:group minOccurs="0" ref="ProofNode"/>
-        <xs:element minOccurs="0" ref="suffices"/>
+        <xs:group minOccurs="0" ref="ProofNode">
+          <xs:annotation>
+            <xs:documentation>
+              Theorem nodes (and some proof step kinds) can be optionally
+              followed by a nested proof. If this theorem has such a proof,
+              it will be present here.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:group>
+        <xs:element minOccurs="0" ref="suffices">
+          <xs:annotation>
+            <xs:documentation>
+              It is unclear what the purpose of this flag is, since SUFFICES
+              proof steps are indicated with an OpApplNode built-in operator
+              as described above. It is likely to be removed in the future
+              [TODO].
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
   <xs:element name="suffices">
+    <xs:annotation>
+      <xs:documentation>
+        The purpose of this flag is unclear and it is likely to be removed in
+        the future [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
   <xs:element name="TheoremDefNode">
+    <xs:annotation>
+      <xs:documentation>
+        Similar to the redundancy between AssumeNode and AssumeDef, we have
+        TheoremNode and TheoremDefNode. You should only ever have to consult
+        the uniquename field of this node, as all other fields are duplicates
+        of TheoremNode fields. These should be combined into one node type
+        [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element name="uniquename" type="xs:string"/>
+        <xs:element name="uniquename" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The theorem name.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:choice>
           <xs:group ref="ExprNode"/>
           <xs:group ref="AssumeProveLike"/>
@@ -418,12 +867,27 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- A non empty list of assumptions and a prove expressions with possible suffices and boxed -->
   <xs:element name="AssumeProveNode">
+    <xs:annotation>
+      <xs:documentation>
+        This is the ASSUME/PROVE node, which can occur as the body of a
+        THEOREM construct or a SUFFICES proof step. It consists of a series
+        of assumptions in the form of expressions, nested ASSUME/PROVE
+        blocks, and new symbol introductions; it is then followed by a proof
+        goal expression.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="assumes">
+          <xs:annotation>
+            <xs:documentation>
+              The list of assumptions/hypotheses. These can either be
+              expressions, nested ASSUME/PROVE blocks, or new symbol
+              introductions.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
               <xs:group ref="AssumeProveLike"/>
@@ -433,12 +897,33 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="prove">
+          <xs:annotation>
+            <xs:documentation>
+              The proof goal. This is a single expression.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:group ref="ExprNode"/>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" ref="suffices"/>
-        <xs:element minOccurs="0" ref="boxed"/>
+        <xs:element minOccurs="0" ref="suffices">
+          <xs:annotation>
+            <xs:documentation>
+              The meaning and purpose of this flag is unknown. It should
+              likely be removed [TODO].
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element minOccurs="0" ref="boxed">
+          <xs:annotation>
+            <xs:documentation>
+              Temporal or "boxed" ASSUME/PROVE blocks were an early prototype
+              feature of the TLA+ proof language and should be removed; see
+              https://github.com/tlaplus/rfcs/issues/20 [TODO]. This flag
+              should never occur and can be ignored.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -450,25 +935,49 @@
     </xs:choice>
   </xs:group>
 
-  <!--  Signals a boxed scope (not clear if it is implemented in SANY) -->
   <xs:element name="boxed">
+    <xs:annotation>
+      <xs:documentation>
+        Temporal or "boxed" ASSUME/PROVE blocks were an early prototype
+        feature of the TLA+ proof language and should be removed; see
+        https://github.com/tlaplus/rfcs/issues/20 [TODO]. This flag should
+        never occur and can be ignored.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
-  <!-- Represents a new declaration + possible domain -->
   <xs:element name="NewSymbNode">
+    <xs:annotation>
+      <xs:documentation>
+        Within ASSUME/PROVE blocks, new symbols can be introduced. These can
+        look like NEW CONSTANT x \in S, NEW VARIABLE y, etc. This AST node
+        represents those symbol declarations, with the new symbol type
+        (CONSTANT, VARIABLE, etc.) captured in OpDeclNode enumeration and the
+        optional set bound consisting of an expression.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="OpDeclNodeRef"/>
-        <xs:group minOccurs="0" ref="ExprNode"/>
+        <xs:element ref="OpDeclNodeRef">
+          <xs:annotation>
+            <xs:documentation>
+              The new symbol name and level.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:group minOccurs="0" ref="ExprNode">
+          <xs:annotation>
+            <xs:documentation>
+              The new symbol's optional set bound.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:group>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-
-  <!-- Operator definitions -->
-  <!--  OpDefNode is classified according to its kinds (is NumberedProofStepKind relevant, since it is never referenced in by or use?) -->
   <xs:group name="OpDefNode">
     <xs:choice>
       <xs:element ref="ModuleInstanceKind"/>
@@ -477,8 +986,18 @@
     </xs:choice>
   </xs:group>
 
-  <!-- Represents the name of an instantiated module -->
   <xs:element name="ModuleInstanceKind">
+    <xs:annotation>
+      <xs:documentation>
+        This is one method of representing INSTANCE imports, used only in
+        DEFINE proof steps. So if you write DEFINE N == INSTANCE M then this
+        node type will result. This node type is unfortunately unsuited for
+        its purpose, and cannot capture operator parameters or substitutions.
+        Thankfully defining INSTANCE imports in this way is fairly rare, but
+        this really is a bug in the XML Exporter and this class should just
+        be removed in favor of the more featureful InstanceNode [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
@@ -488,43 +1007,122 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- An operator and its definition, arity and list of arguments -->
   <xs:element name="UserDefinedOpKind">
+    <xs:annotation>
+      <xs:documentation>
+        Users will be familiar with this one! Every time you define a new
+        operator in a module, this is the node type that results. It consists
+        of a name, parameters, and a body. Any prefixing comments are also
+        included, along with whether the operator is recursive or local.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="uniquename"/>
-        <xs:element ref="arity"/>
-        <xs:element minOccurs="0" ref="pre-comments"/>
+        <xs:element ref="uniquename">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the operator. For op == expr, this will be "op".
+              For symbolic operators like a !! b == expr, this will be "!!".
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="arity">
+          <xs:annotation>
+            <xs:documentation>
+              The number of operator parameters. This is somewhat redundant
+              because the parameter details are given below, but perhaps nice
+              to have for quick reference.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element minOccurs="0" ref="pre-comments">
+          <xs:annotation>
+            <xs:documentation>
+              Any comments occurring before the operator. For example,
+              (* Text *) op == expr will have "(* Text *)" here, or "Text" if
+              certain XML Exporter settings are used.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The operator body. This is an expression.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:group ref="ExprNode"/>
           </xs:complexType>
         </xs:element>
         <xs:element minOccurs="0" name="params">
+          <xs:annotation>
+            <xs:documentation>
+              A list of parameters accepted by the operator. Note that these
+              can be either simple identifiers, or operators-as-parameters
+              themselves which have an associated arity.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="leibnizparam"/>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" ref="recursive"/>
-        <xs:element minOccurs="0" ref="local"/>
+        <xs:element minOccurs="0" ref="recursive">
+          <xs:annotation>
+            <xs:documentation>
+              A flag indicating whether the operator is recursive.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element minOccurs="0" ref="local">
+          <xs:annotation>
+            <xs:documentation>
+              A flag indicating whether the operator is LOCAL, so should not
+              be exported if this module is imported from another module.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="recursive">
+    <xs:annotation>
+      <xs:documentation>
+        A flag indicating whether the operator is recursive.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
   <xs:element name="local">
+    <xs:annotation>
+      <xs:documentation>
+        A flag indicating whether the definition is LOCAL, so should not be
+        exported if this module is imported from another module.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
-  <xs:element name="arity" type="xs:integer"/>
+  <xs:element name="arity" type="xs:integer">
+    <xs:annotation>
+      <xs:documentation>
+        The arity of a definition, meaning number of parameters it accepts.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
 
   <xs:element name="leibnizparam">
+    <xs:annotation>
+      <xs:documentation>
+        A wrapper around an ordinary parameter node indicating whether it is
+        "Leibniz". Refer to the leibniz flag definition for an explanation of
+        what that means.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="FormalParamNodeRef"/>
@@ -534,34 +1132,49 @@
   </xs:element>
 
   <xs:element name="leibniz">
+    <xs:annotation>
+      <xs:documentation>
+        The "Leibniz"-ness of an operator is an important but obscure concept
+        that fundamentally controls whether it is safe to provide to INSTANCE
+        imports as a WITH substitution for an operator. Another term for this
+        is "substitutivity", which basically means that if two things are
+        equal, you can substitute one for another without changing the value
+        of an expression. One counterexample is the prime operator, which is
+        not substitutive; if two variables x and y are equal in one state,
+        then for any substitutive operator "op", op(x) should equal op(y).
+        However, it is not the case that x' must equal y', because they could
+        differ in the next state. Thus the prime operator is not substitutive
+        nor "Leibniz", and so you cannot use the prime operator as a WITH
+        substitute in INSTANCE imports. This prevents one method by which
+        users could accidentally write silly expressions in TLA+. See also:
+        https://plato.stanford.edu/entries/identity-relative/
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
-  <!-- 
-  The BuiltInKind node is used for all the built-in operators of TLA+ - and
-  then some! In addition to all the operators you would expect like = and '
-  and \in, SANY also treats various language-level operators like CASE,
-  existential quantification, IF/THEN/ELSE, and even proof step types as
-  built-in operators. BuiltInKind is most often found as the operator type of
-  OpApplNode, where it uniquely determines the expected symbols (bound or
-  unbound) and expressions in OpApplNode. The expectation is usually fairly
-  clear once you are familiar with the workings of OpApplNode's bound symbols
-  & operands, and the TLA+ operator in question. There are some oddities,
-  however, and we try to document them here. Several built-in operators make
-  use of synthetic "grouping" operators in their operands.
-  -->
   <xs:element name="BuiltInKind">
+    <xs:annotation>
+      <xs:documentation>
+        The BuiltInKind node is used for all the built-in operators of TLA+ -
+        and then some! In addition to all the operators you would expect like
+        = and ' and \in, SANY also treats various language-level operators
+        like CASE, existential quantification, IF/THEN/ELSE, and even proof
+        step types as built-in operators. BuiltInKind is most often found as
+        the operator type of OpApplNode, where it uniquely determines the
+        expected symbols (bound or unbound) and expressions in OpApplNode.
+        The expectation is usually fairly clear once you are familiar with
+        the workings of OpApplNode's bound symbols and operands, and the TLA+
+        operator in question. There are some oddities, however, and we try to
+        document them here. Several built-in operators make use of synthetic
+        "grouping" operators in their operands.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="uniquename">
        	  <xs:simpleType>
-       	  	<!--
-       	  	Note that some operator names need to be escaped due to XML
-       	  	encoding restrictions, but when read into your program through
-       	  	an XML library the strings should be represented as their non-
-       	  	escaped form; ex. &lt;&gt; should be read in as <>.
-       	  	-->
           	<xs:restriction base="xs:string">
               <!-- Parameterless reserved words -->
               <xs:enumeration value="FALSE"/>
@@ -693,8 +1306,25 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
-        <xs:element ref="arity"/>
+        <xs:element ref="arity">
+          <xs:annotation>
+            <xs:documentation>
+              The arity of the built-in operator. Redundant as it should
+              equal the number of parameters detailed below.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element minOccurs="0" name="params">
+          <xs:annotation>
+            <xs:documentation>
+              Details of the parameters accepted by the built-in operator,
+              which each might be an expression or an operator. Unfortunately
+              there is a dual representation issue here where parameterless
+              built-in operators can be represented by either no params field
+              or a params field with zero children. This should be unified
+              for simplicity [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element minOccurs="0" maxOccurs="unbounded" ref="leibnizparam"/>
@@ -706,6 +1336,21 @@
   </xs:element>
 
   <xs:element name="OpArgNode">
+    <xs:annotation>
+      <xs:documentation>
+        Information on an operator that is provided as an argument to another
+        operator. This node is just a wrapper with location and level info
+        around a reference to an operator. Note that argument usually refers
+        to the concrete value used at a callsite, while parameter refers to
+        the abstract identifier defined in the operator header. So this node
+        kind is generally used in operator applications.
+
+        Importantly, LAMBDA operators are represented as a UserDefinedOpKind
+        with the name "LAMBDA". While this somewhat violates the "unique"
+        property of uniquename, it is relatively convenient as they are
+        simply anonymous user-defined operators.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
@@ -726,8 +1371,18 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- Represents params of user definitions -->
   <xs:element name="FormalParamNode">
+    <xs:annotation>
+      <xs:documentation>
+        Information about abstract identifiers defined in the header of an
+        operator. For example, in op(x, y, F(_)) == expr this node kind would
+        contain info about one of x, y, or F. The only relevant info here
+        (other than location info) is the name and how many parameters the
+        identifier accepts; on the declaration side, the parameters accepted
+        by the identifier are not named, nor do they have arity information
+        of their own.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
@@ -737,24 +1392,101 @@
     </xs:complexType>
   </xs:element>
 
-  <!-- Represents constants, variables, bound variables and new symbols -->
   <xs:element name="OpDeclNode">
+    <xs:annotation>
+      <xs:documentation>
+        This class represents the declaration of a non-operator identifier
+        such as a CONSTANT or VARIABLE, or a new symbol in ASSUME/PROVE
+        blocks.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="uniquename"/>
-        <xs:element ref="arity"/>
+        <xs:element ref="uniquename">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the new symbol.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="arity">
+          <xs:annotation>
+            <xs:documentation>
+              The arity of the new symbol. This should only be applicable to
+              CONSTANT declarations.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="kind">
           <xs:simpleType>
             <xs:restriction base="xs:integer">
-              <xs:enumeration value="2"/> <!--ConstantDeclKind-->
-              <xs:enumeration value="3"/> <!--VariableDeclKind-->
-              <xs:enumeration value="4"/> <!--BoundSymbolKind-->
-              <xs:enumeration value="24"/> <!--NewConstantKind-->
-              <xs:enumeration value="25"/> <!--NewVariableKind-->
-              <xs:enumeration value="26"/> <!--NewStateKind-->
-              <xs:enumeration value="27"/> <!--NewActionKind-->
-              <xs:enumeration value="28"/> <!--NewTemporalKind-->
+              <xs:enumeration value="2">
+                <xs:annotation>
+                  <xs:documentation>
+                    This is a newly declared unit-level CONSTANT, such as in
+                    CONSTANTS x, F(_, _), y
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="3">
+                <xs:annotation>
+                  <xs:documentation>
+                    This is a newly-declared unit-level VARIABLE, such as in
+                    VARIABLES x, y, z
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="4">
+                <xs:annotation>
+                  <xs:documentation>
+                    This is supposedly for bound symbols in quantification,
+                    but should never actually be used for that as bound
+                    symbols have their own node type. Likely should be
+                    removed [TODO].
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="24">
+                <xs:annotation>
+                  <xs:documentation>
+                    In ASSUME/PROVE blocks, indicates the declaration of a
+                    NEW CONSTANT identifier.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="25">
+                <xs:annotation>
+                  <xs:documentation>
+                    In ASSUME/PROVE blocks, indicates the declaration of a
+                    NEW VARIABLE identifier.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="26">
+                <xs:annotation>
+                  <xs:documentation>
+                    In ASSUME/PROVE blocks, indicates the declaration of a
+                    NEW STATE identifier.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="27">
+                <xs:annotation>
+                  <xs:documentation>
+                    In ASSUME/PROVE blocks, indicates the declaration of a
+                    NEW ACTION identifier.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
+              <xs:enumeration value="28">
+                <xs:annotation>
+                  <xs:documentation>
+                    In ASSUME/PROVE blocks, indicates the declaration of a
+                    NEW TEMPORAL identifier.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:enumeration>
             </xs:restriction>
           </xs:simpleType>
         </xs:element>
@@ -762,22 +1494,74 @@
     </xs:complexType>
   </xs:element>
 
-
-  <!-- Proofs -->
-  <!-- The first three correspond to LeafProofNode, the last to NonLeafProofNode -->
   <xs:group name="ProofNode">
+    <xs:annotation>
+      <xs:documentation>
+        AST node kind representing a proof. Proofs can take several possible
+        forms, primarily broken into terminal (or "leaf") and non-terminal.
+        Terminal proofs include OMITTED, OBVIOUS, or BY proofs. Non-terminal
+        proofs consist of a series of proof steps, some of which may have
+        nested proofs of their own. Proofs originally occur as the child of a
+        THEOREM node.
+      </xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:group ref="node"/>
       <xs:choice>
-        <xs:element ref="omitted"/>
-        <xs:element ref="obvious"/>
-        <xs:element ref="by"/>
+        <xs:element ref="omitted">
+          <xs:annotation>
+            <xs:documentation>
+              A terminal proof indicating that a proof is actually omitted.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="obvious">
+          <xs:annotation>
+            <xs:documentation>
+              A terminal proof asserting that the proposition is so obvious
+              that it can be easily discharged without further elaboration.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element ref="by">
+          <xs:annotation>
+            <xs:documentation>
+              A terminal proof asserting that the proposition follows clearly
+              from a series of referenced definitions or theorems.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="steps">
+          <xs:annotation>
+            <xs:documentation>
+              A complicated non-terminal proof consisting of a series of
+              proof steps, some of which might have nested proofs of their
+              own.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:group ref="node"/>
-              <xs:element name="proofLevel" type="xs:integer"/>
+              <xs:element name="proofLevel" type="xs:integer">
+                <xs:annotation>
+                  <xs:documentation>
+                    The level of the proof; for example, proofs with steps
+                    like &lt;2&gt; have level 2. Proofs with an implicit
+                    level like &lt;*&gt; or &lt;+&gt; still have a level
+                    exposed here, perhaps calculated by incrementing the
+                    level of a proof in which this one is nested.
+                  </xs:documentation>
+                </xs:annotation>
+              </xs:element>
               <xs:sequence maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation>
+                    A list of steps in the proof. The final proof step is
+                    guaranteed to be a QED step, redundantly indicated using
+                    the $Qed built-in operator type. Probably this should be
+                    separated out into its own field [TODO].
+                  </xs:documentation>
+                </xs:annotation>
                 <xs:group ref="step"/>
               </xs:sequence>
             </xs:sequence>
@@ -788,23 +1572,51 @@
   </xs:group>
 
   <xs:element name="omitted">
+    <xs:annotation>
+      <xs:documentation>
+        A terminal proof indicating that a proof is actually omitted.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:group ref="node"/>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="obvious">
+    <xs:annotation>
+      <xs:documentation>
+        A terminal proof asserting that the proposition is so obvious that it
+        can be easily discharged without further elaboration.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:group ref="node"/>
     </xs:complexType>
   </xs:element>
 
-  <!-- Facts and Defs are defined to be of these kinds according to comments in the Java code, seems step names cannot be referenced? -->
   <xs:element name="by">
+    <xs:annotation>
+      <xs:documentation>
+        A terminal proof asserting that the proposition follows clearly from
+        a series of referenced definitions or theorems. This is split into
+        two parts: facts - which consist only of expressions - and defs,
+        which must be a reference to an existing definition.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="facts">
+          <xs:annotation>
+            <xs:documentation>
+              A list of expressions from which the proposition follows. This
+              is said to also allow references to modules or instances, and
+              these are currently supported, but no other TLA+ tooling
+              accepts them and they are overwhelmingly likely to be removed
+              from the language; see [TODO]:
+              https://github.com/tlaplus/rfcs/issues/18
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="ExprNode"/>
@@ -814,6 +1626,13 @@
           </xs:complexType>
         </xs:element>
         <xs:element name="defs">
+          <xs:annotation>
+            <xs:documentation>
+              A list of definitions from which the proposition follows. This
+              also allows module references but, like with the facts, support
+              for these will almost certainly be removed from the language.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element ref="UserDefinedOpKindRef"/>
@@ -823,7 +1642,16 @@
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" ref="only"/>
+        <xs:element minOccurs="0" ref="only">
+          <xs:annotation>
+            <xs:documentation>
+              The BY proof allows the ONLY keyword, meaning *only* the listed
+              expressions and definitions should suffice to discharge the
+              proposition under consideration. This flag will be present if
+              the ONLY keyword is present.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -832,33 +1660,60 @@
     <xs:complexType/>
   </xs:element>
 
-  <!-- Steps are defined to be of this types according to comments in the Java code -->
   <xs:group name="step">
+    <xs:annotation>
+      <xs:documentation>
+        Various types of proof steps. Actually only three of these are used:
+        DefStepNode for DEFINES proof steps, UseOrHideNode for USE/HIDE proof
+        steps, and TheoremNodeRef for all other types. InstanceNode and
+        TheoremNode should both be removed [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:choice>
       <xs:element ref="DefStepNode"/>
       <xs:element ref="UseOrHideNode"/>
       <xs:element ref="InstanceNode"/>
       <xs:element ref="TheoremNodeRef"/>
-      <xs:element ref="TheoremNode"/> <!-- in case of unnamed theorem -->
+      <xs:element ref="TheoremNode"/>
     </xs:choice>
   </xs:group>
 
   <xs:element name="DefStepNode">
+    <xs:annotation>
+      <xs:documentation>
+        The DEFINE proof step consists of one or more definitions, which can
+        be either a new operator, a new function, or a new named INSTANCE
+        import. For the latter, currently this creates ModuleInstanceKind
+        instead of the usual InstanceNode; this is a bug which should be
+        fixed [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:group maxOccurs="unbounded" ref="OpDefNodeRef"/>
       </xs:sequence>
     </xs:complexType>
-<!--        <xs:element minOccurs="0" ref="stepnumber"/> this is cancelled out as it is not clear what exactly is referenced by USE facts (or BY proofs)
-when the xml is generated, check what for the stepnumber take (maybe as simple strings? then we need to return this field)-->
   </xs:element>
 
   <xs:element name="UseOrHideNode">
+    <xs:annotation>
+      <xs:documentation>
+        A USE/HIDE block, which can occur either at the unit level or in a
+        proof step. Its structure is nearly identical to that of a BY proof.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="facts">
+          <xs:annotation>
+            <xs:documentation>
+              Expressions to use or hide in all subsequent proof steps. The
+              module and instance references, while currently supported, will
+              likely be removed from the language [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="ExprNode"/>
@@ -868,6 +1723,13 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
           </xs:complexType>
         </xs:element>
         <xs:element name="defs">
+          <xs:annotation>
+            <xs:documentation>
+              Definitions to use or hide in all subsequent proof steps. The
+              module and instance references, while currently supported, will
+              likely be removed from the language [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:element ref="UserDefinedOpKindRef"/>
@@ -877,10 +1739,21 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" ref="only"/>
-        <xs:element minOccurs="0" ref="hide"/>
-<!--        <xs:element minOccurs="0" ref="stepnumber"/> this is cancelled out as it is not clear what exactly is referenced by USE facts (or BY proofs)
-when the xml is generated, check what for the stepnumber take (maybe as simple strings? then we need to return this field)-->
+        <xs:element minOccurs="0" ref="only">
+          <xs:annotation>
+            <xs:documentation>
+              Whether the ONLY keyword was used in the USE/HIDE block.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element minOccurs="0" ref="hide">
+          <xs:annotation>
+            <xs:documentation>
+              Whether this was a HIDE block; if missing, this was a USE block
+              instead.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -889,12 +1762,14 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     <xs:complexType/>
   </xs:element>
 
-  <xs:element name="stepnumber" type="xs:string"/>
-
-
-  <!-- Expressions -->
-  <!-- Occurrences of @ by supplying the innermost enclosing $Except and the innermost $Pair containing this @ -->
   <xs:element name="AtNode">
+    <xs:annotation>
+      <xs:documentation>
+        This node represents an @ used within a function EXCEPT expression.
+        For convenience of evaluation, the innermost closing $Except and the
+        innermost $Pair within that $Except are duplicated and attached.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
@@ -910,8 +1785,15 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- A decimal number (read Java code and java API for more information)-->
   <xs:element name="DecimalNode">
+    <xs:annotation>
+      <xs:documentation>
+        A non-integer decimal number. This is presented in mantissa/exponent
+        form, and also the integral/fractional components of the number as
+        originally written in the source file. For example, in 123.456 the
+        integral component is "123" and the fractional component is "456".
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
@@ -923,14 +1805,37 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- Represents a labeled expression nm(x,y): (ExprNode|AssumeProveNode) -->
   <xs:element name="LabelNode">
+    <xs:annotation>
+      <xs:documentation>
+        Represents a labeled expression such as lbl(x, y) :: expr. Labels are
+        a way of referring to "subexpressions" within TLA+, which are smaller
+        components of a larger expression. For example, in op == x + lbl :: y
+        the op!lbl label refers to the expression y. Named subexpressions of
+        this type can be contrasted with anonymous subexpressions, which are
+        associated with the $Nop built-in operator. It is preferable to use a
+        named subexpression, as the future of anonymous subexpressions in the
+        language is uncertain and their support is generally poorer.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="uniquename">
+          <xs:annotation>
+            <xs:documentation>
+              The label name.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element ref="arity"/>
         <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The expression encapsulated by the label. Labels can also be
+              used to encapsulate nested ASSUME/PROVE blocks.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:group ref="ExprNode"/>
@@ -939,6 +1844,15 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
           </xs:complexType>
         </xs:element>
         <xs:element name="params">
+          <xs:annotation>
+            <xs:documentation>
+              The label parameters. Labels require parameters when they
+              encapsulate expressions within quantifiers. For example,
+              \E x \in S : lbl(x) :: expr. This is because references to that
+              label must provide bindings for the identifiers introduced by
+              the quantifier in order to evaluate the expression.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence minOccurs="0" maxOccurs="unbounded">
               <xs:element ref="FormalParamNodeRef"/>
@@ -949,17 +1863,37 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- A list of definitions and the body -->
   <xs:element name="LetInNode">
+    <xs:annotation>
+      <xs:documentation>
+        A LET/IN block consisting of a series of local operator definitions
+        and then a body expression in which those definitions are in scope.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="body">
+          <xs:annotation>
+            <xs:documentation>
+              The expression body in which the operators are in scope.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:group ref="ExprNode"/>
           </xs:complexType>
         </xs:element>
         <xs:element name="opDefs">
+          <xs:annotation>
+            <xs:documentation>
+              The list of local operator definitions. This should really only
+              be UserDefinedOpKind or ModuleInstanceKind refs [TODO]. Note
+              that if the user defines a module INSTANCE import here, it will
+              not currently be exposed; instead, all operators in the module
+              will be inlined immediately. However, the import should still
+              be exposed here for user consumption [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
               <xs:group ref="OpDefNodeRef"/>
@@ -974,8 +1908,13 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- An integer number -->
   <xs:element name="NumeralNode">
+    <xs:annotation>
+      <xs:documentation>
+        An integer number. SANY will convert all binary, octal, and hex
+        literals to this representation.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
         <xs:sequence>
             <xs:group ref="node"/>
@@ -984,8 +1923,12 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- An string -->
   <xs:element name="StringNode">
+    <xs:annotation>
+      <xs:documentation>
+        A string literal.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
         <xs:sequence>
             <xs:group ref="node"/>
@@ -994,12 +1937,33 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- A general node for applications. FIrst the operator and then the operands -->
   <xs:element name="OpApplNode">
+    <xs:annotation>
+      <xs:documentation>
+        A workhorse AST node kind that represents a very large number of
+        possible expressions. It is a marvel of abstraction that so many TLA+
+        operators can be captured by this structure. Fundamentally it only
+        consists of three things: an operator name, a list of arguments to
+        that operator, and a list of symbols introduced by that operator (for
+        example, if the operator is quantification). This captures nearly
+        every expression type except for primitive values like numbers and
+        strings, and odd cases like @, labels, and LET/IN blocks. See the
+        ExprNode group for the full list. OpApplNode also represents several
+        proof step types.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
         <xs:element name="operator">
+          <xs:annotation>
+            <xs:documentation>
+              The operator to apply. This can range from a reference to an
+              identifier, an application of a user-defined operator, and
+              (most prominently) an application of a built-in TLA+ operator.
+              See BuiltInKind for an enumeration of possible operators there.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice>
               <xs:element ref="FormalParamNodeRef"/>
@@ -1012,6 +1976,13 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
           </xs:complexType>
         </xs:element>
         <xs:element name="operands">
+          <xs:annotation>
+            <xs:documentation>
+              Operands (aka arguments) to the operator. These can be either
+              expressions or operators themselves. Most operators only accept
+              expressions.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="ExprNode"/>
@@ -1020,6 +1991,16 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
           </xs:complexType>
         </xs:element>
         <xs:element name="boundSymbols" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>
+              Symbols introduced by the operator, for example if the operator
+              is quantification. Most operators do not introduce any symbols.
+              Unfortunately we again see a "dual representation" issue here
+              where zero introduced symbols can either be represented by a
+              missing boundSymbols field or a boundSymbols field with zero
+              children; both cases occur and this should be fixed [TODO].
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
               <xs:element ref="unbound"/>
@@ -1032,6 +2013,15 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   </xs:element>
 
   <xs:element name="unbound">
+    <xs:annotation>
+      <xs:documentation>
+        An introduced symbol without a set bound, as in \E x : P(x). This can
+        optionally be a tuple, as in CHOOSE &lt;&lt;x, y&gt;&gt; : P(x, y).
+        Unbounded CHOOSE expressions are the only place in TLA+ that allow
+        introducing symbols in an unbounded tuple. This is represented by
+        having each symbol in the tuple bundled in its own node.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="FormalParamNodeRef"/>
@@ -1041,6 +2031,17 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
   </xs:element>
 
   <xs:element name="bound">
+    <xs:annotation>
+      <xs:documentation>
+        An introduced symbol that has a set bound; this can be either tuple
+        or non-tuple, and both cases allow multiple symbols to be associated
+        with the set bound. For example \E x, y \in S : P(x, y) is valid
+        syntax, as is \E &lt;&lt;x, y&gt;&gt; \in S \X M : P(x, y). Both have
+        the same representation here except for the tuple flag. It would be
+        nice for ease of parsing to have all the symbol nodes grouped beneath
+        a field [TODO].
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" ref="FormalParamNodeRef"/>
@@ -1050,18 +2051,41 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
     </xs:complexType>
   </xs:element>
 
-  <!-- this is just a flag signaling that the referenced parameter is a tuple -->
   <xs:element name="tuple">
+    <xs:annotation>
+      <xs:documentation>
+        A flag indicating that the introduced symbol is in a tuple.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType/>
   </xs:element>
 
-  <!-- Module(constants,variables,operators,assumptions,theorems) -->
   <xs:element name="ModuleNode">
+    <xs:annotation>
+      <xs:documentation>
+        This is the root definition of a module, with all its unit-level
+        definitions. Some of those unit-level definitions are represented
+        directly here, and others are references which must be resolved in
+        the context table.
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
       <xs:sequence>
         <xs:group ref="node"/>
-        <xs:element ref="uniquename"/>
+        <xs:element ref="uniquename">
+          <xs:annotation>
+            <xs:documentation>
+              The module's name.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element name="extends">
+          <xs:annotation>
+            <xs:documentation>
+              A list of modules that are extended by this module. Does not
+              include modules that are imported using INSTANCE.
+            </xs:documentation>
+          </xs:annotation>
           <xs:complexType>
             <xs:sequence>
               <xs:element ref="uniquename" minOccurs="0" maxOccurs="unbounded"/>
@@ -1069,14 +2093,19 @@ when the xml is generated, check what for the stepnumber take (maybe as simple s
           </xs:complexType>
         </xs:element>
         <xs:sequence minOccurs="0" maxOccurs="unbounded">
-        <xs:choice>
-          <xs:element ref="OpDeclNodeRef"/>
-          <xs:group   ref="OpDefNodeRef"/>
-          <xs:element ref="AssumeNodeRef"/>
-          <xs:element ref="InstanceNode"/>
-          <xs:element ref="UseOrHideNode"/>
-          <xs:element ref="TheoremNodeRef"/>
-        </xs:choice>
+          <xs:annotation>
+            <xs:documentation>
+              The unit-level definitions in this module.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:choice>
+            <xs:element ref="OpDeclNodeRef"/>
+            <xs:group   ref="OpDefNodeRef"/>
+            <xs:element ref="AssumeNodeRef"/>
+            <xs:element ref="InstanceNode"/>
+            <xs:element ref="UseOrHideNode"/>
+            <xs:element ref="TheoremNodeRef"/>
+          </xs:choice>
         </xs:sequence>
       </xs:sequence>
     </xs:complexType>
