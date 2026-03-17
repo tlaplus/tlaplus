@@ -933,4 +933,14 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		}
 	}
 
+	public static void printStutteringCounterExampleWarning(ITool tool) {
+		final String specName = tool.getModelConfig().getSpec();
+		if (!specName.isEmpty() && tool.getTemporals().length == 0) {
+			final Object spec = tool.getSpecProcessor().getDefns().get(specName);
+			MP.printWarning(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY,
+					new String[] { specName, ((OpDefNode) spec).getLocation().toString() });
+		} else if (specName.isEmpty()) {
+			MP.printWarning(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY, new String[] { "" });
+		}
+	}
 }

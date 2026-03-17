@@ -14,10 +14,31 @@ SpecNoFair ==
 SpecWithFair ==
     Init /\ [][Next]_b /\ WF_b(Next)
 
+SpecWithCustomFair ==
+    Init /\ [][Next]_b /\ <>(b = TRUE)
+
 ------
 
 Live ==
     WF_b(Next)
+
+SafetyProp ==
+    [](b => [](~b => []~b))
+
+EventuallyB ==
+    <>(b = TRUE)
+
+LeadsToB ==
+    (b = FALSE) ~> (b = TRUE)
+
+InfOftenB ==
+    []<>(b = TRUE)
+
+EventuallyAlwaysB ==
+    <>[](b = TRUE)
+
+VacuousLive ==
+    (b = TRUE) => <>(b = FALSE)
 
 ------
 

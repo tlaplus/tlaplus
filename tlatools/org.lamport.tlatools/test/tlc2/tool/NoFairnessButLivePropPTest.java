@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2025 NVIDIA Corp. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -37,11 +37,10 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class NoFairnessButLivePropCTest extends ModelCheckerTestCase {
+public class NoFairnessButLivePropPTest extends ModelCheckerTestCase {
 
-	public NoFairnessButLivePropCTest() {
-		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropC.cfg" },
-				ExitStatus.SUCCESS);
+	public NoFairnessButLivePropPTest() {
+		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropP.cfg" }, ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -50,13 +49,19 @@ public class NoFairnessButLivePropCTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
+		// SpecNoFair (no fairness) + VacuousLive ((b = TRUE) => <>(b = FALSE)):
+		// P => <>Q is a genuine liveness property, but no violation was found.
+		// The fairness warning is deferred until a counterexample is printed,
+		// so it does not appear when model checking succeeds.
+		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
 		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY));
+		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY));
 
 		assertZeroUncovered();
 	}
 
 	@Override
 	protected boolean doCoverage() {
-		return false; // No coverage for this test.
+		return false;
 	}
 }

@@ -877,23 +877,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             Assert.fail(EC.TLC_CONFIG_MISSING_NEXT);
         }
         
-		if (this.config.getSpec().length() == 0 && !this.config.getProperties().isEmpty()
-				&& this.impliedTemporals.length > 0) {
-			// Raise a warning if the specification verifies one or more PROPERTIES but
-			// lacks a behavior spec (SPECIFICATION), having only INIT and NEXT. However, if
-			// the verified PROPERTY is a refinement check against another spec that doesn't
-			// assert fairness (i.e., this.impliedTemporals is empty), then it's acceptable
-			// to have PROPERTY without a corresponding SPECIFICATION.
-			MP.printWarning(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY, new String[] { "" });
-		}
-
-		if (this.config.getSpec().length() > 0 && !this.config.getProperties().isEmpty()
-				&& this.impliedTemporals.length > 0 && this.temporals.length == 0) {
-			// Raise a warning if the specification verifies one or more PROPERTIES but
-			// the behavior spec (SPECIFICATION) lacks a fairness constraint.
-			MP.printWarning(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY,
-					new String[] { specName, ((OpDefNode) this.defns.get(specName)).getLocation().toString() });
-		}
 
 		if (this.config.getSpec().length() > 0 && this.config.getProperties().size() == 1
 				&& this.temporals.length > 0

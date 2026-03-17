@@ -931,19 +931,18 @@ public class MP
 			break;
 		case EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY:
 			b.append(
-					"Temporal properties (PROPERTY or PROPERTIES) are being verified without a behavior specification "
-					+ "(SPECIFICATION). Only INIT and NEXT have been provided. This is likely to result in (trivial) "
-					+ "counterexamples showing infinite stuttering following the initial state. It is recommended to use "
-					+ "SPECIFICATION Spec, with Spec asserting a suitable fairness constraint (compare Chapter "
-					+ "8, page 87ff of Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+					"The stuttering counterexample above may be caused by the absence of a behavior specification "
+					+ "(SPECIFICATION). Only INIT and NEXT have been provided, so TLC permits infinite stuttering. "
+					+ "To rule out such counterexamples, use SPECIFICATION Spec, with Spec asserting a suitable fairness "
+					+ "constraint (compare Chapter 8, page 87ff of Specifying Systems at "
+					+ "https://lamport.azurewebsites.net/tla/book.html).");
 			break;
 		case EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY:
 			b.append(
-					"Temporal properties (PROPERTY or PROPERTIES) are being verified without a fairness constraint "
-					+ "conjoined to the behavior specification %1% defined at %2%. This may lead to trivial counterexamples "
-					+ "in which the system exhibits infinite stuttering immediately after the initial state. To avoid this, "
-					+ "it is recommended to conjoin a suitable fairness constraint to %1% (compare Chapter 8, page 87ff of "
-					+ "Specifying Systems at https://lamport.azurewebsites.net/tla/book.html).");
+					"The stuttering counterexample above may be caused by the absence of a fairness constraint "
+					+ "in the behavior specification %1% defined at %2%. To rule out such counterexamples, conjoin a "
+					+ "suitable fairness constraint to %1% (compare Chapter 8, page 87ff of Specifying Systems at "
+					+ "https://lamport.azurewebsites.net/tla/book.html).");
 			break;
 
         case EC.TLC_EXPECTED_VALUE:

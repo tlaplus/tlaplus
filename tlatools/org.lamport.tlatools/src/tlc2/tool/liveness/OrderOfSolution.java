@@ -6,6 +6,7 @@
 package tlc2.tool.liveness;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -60,6 +61,7 @@ public class OrderOfSolution {
 	 *      20systems%20safety%20doi&pg=PA409
 	 */
 	private final LNEven[] promises; // promises in the tableau
+	private final boolean containsBoxInPromise;
 	private LiveExprNode[] checkState; // state subformula
 	private LiveExprNode[] checkAction; // action subformula
 	private PossibleErrorModel[] pems;
@@ -71,6 +73,9 @@ public class OrderOfSolution {
 	public OrderOfSolution(final TBGraph aTableau, final LNEven[] livenessEventually) {
 		tableau = aTableau;
 		promises = livenessEventually;
+
+		containsBoxInPromise = Arrays.stream(promises).map(LNEven::getBody).filter(this::containsBoxOperator).findAny()
+				.isPresent();
 	}
 
 	public final void printPromises(PrintStream ps) {
@@ -197,6 +202,77 @@ public class OrderOfSolution {
 				return true;
 			}
 		}
+		return false;
+	}
+
+	/**
+	 * Returns {@code true} when all {@link PossibleErrorModel PEMs} are empty
+	 * (no {@code <>[]}/{@code []<>} cycle conditions) and every promise body is
+	 * box-free (no {@code []} operator nested inside any {@code <>} promise).
+	 *
+	 * <p>When both conditions hold, a counter-example can be witnessed by a
+	 * finite prefix reaching an accepting tableau node, without requiring
+	 * cycle detection in the behaviour graph.</p>
+	 *
+	 * <p>Returns {@code false} when any of the following holds:</p>
+	 * <ul>
+	 *   <li>At least one PEM is non-empty — cycle conditions must be checked.</li>
+	 *   <li>A promise body contains a {@code []} operator — the eventuality
+	 *       is not pure and requires cycle-based reasoning.</li>
+	 * </ul>
+	 */
+	public boolean hasEmptyPEMAndBoxFreePromises() {
+		if (this.containsBoxInPromise) {
+			return false;
+		}
+		// Unlike hasEmptyPEM(), which checks whether *any* PEM is empty (sufficient for
+		// the short-circuit optimization in LiveCheck where a single empty disjunct
+		// already witnesses a safety counter-example), suppressing the stuttering
+		// warning requires *every* disjunct to be safety-like. If even one PEM carries
+		// cycle conditions, the warning is still relevant.
+		for (PossibleErrorModel pem : pems) {
+			if (!pem.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Recursively checks whether the given {@link LiveExprNode} tree contains an
+	 * {@link LNAll} ({@code []}) node.
+	 */
+	private boolean containsBoxOperator(LiveExprNode node) {
+		if (node instanceof LNAll) {
+			return true;
+		}
+		if (node instanceof LNEven) {
+			return containsBoxOperator(((LNEven) node).getBody());
+		}
+		if (node instanceof LNNeg) {
+			return containsBoxOperator(((LNNeg) node).getBody());
+		}
+		if (node instanceof LNNext) {
+			return containsBoxOperator(((LNNext) node).getBody());
+		}
+		if (node instanceof LNConj) {
+			final LNConj conj = (LNConj) node;
+			for (int i = 0; i < conj.getCount(); i++) {
+				if (containsBoxOperator(conj.getBody(i))) {
+					return true;
+				}
+			}
+		}
+		if (node instanceof LNDisj) {
+			final LNDisj disj = (LNDisj) node;
+			for (int i = 0; i < disj.getCount(); i++) {
+				if (containsBoxOperator(disj.getBody(i))) {
+					return true;
+				}
+			}
+		}
+		// LNBool, LNState, and LNAction are leaves with no LiveExprNode
+		// children, so they cannot contain temporal operators.
 		return false;
 	}
 

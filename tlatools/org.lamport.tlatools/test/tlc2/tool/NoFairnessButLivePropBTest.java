@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2025 NVIDIA Corp. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -50,7 +50,8 @@ public class NoFairnessButLivePropBTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
-		// There is a fairness constraint (albeit an insufficient one to refine H => VIOLATION_LIVENESS).
+		// There is a fairness constraint (albeit an insufficient one to refine H =>
+		// VIOLATION_LIVENESS).
 		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY));
 
 		assertZeroUncovered();
