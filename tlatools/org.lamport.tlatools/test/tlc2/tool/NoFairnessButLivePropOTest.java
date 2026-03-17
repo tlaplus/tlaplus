@@ -25,6 +25,7 @@
  ******************************************************************************/
 package tlc2.tool;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.FileNotFoundException;
@@ -36,10 +37,10 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class NoFairnessButLivePropATest extends ModelCheckerTestCase {
+public class NoFairnessButLivePropOTest extends ModelCheckerTestCase {
 
-	public NoFairnessButLivePropATest() {
-		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropA.cfg" },
+	public NoFairnessButLivePropOTest() {
+		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropO.cfg" },
 				ExitStatus.VIOLATION_LIVENESS);
 	}
 
@@ -49,13 +50,16 @@ public class NoFairnessButLivePropATest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
-		assertTrue(recorder.recorded(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY));
+		// INIT/NEXT with <>[](b = TRUE): non-empty PEM (AEState from negation []<>),
+		// so TLC_CONFIG_NO_SPEC_BUT_PROPERTY fires.  Mirrors MCRealTimeHourClock.tla.
+		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY));
+		assertTrue(recorder.recorded(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY));
 
 		assertZeroUncovered();
 	}
 
 	@Override
 	protected boolean doCoverage() {
-		return false; // No coverage for this test.
+		return false;
 	}
 }

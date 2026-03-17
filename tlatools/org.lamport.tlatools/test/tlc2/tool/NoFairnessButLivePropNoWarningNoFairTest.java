@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2025 NVIDIA Corp. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -37,10 +37,11 @@ import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-public class NoFairnessButLivePropETest extends ModelCheckerTestCase {
+public class NoFairnessButLivePropNoWarningNoFairTest extends ModelCheckerTestCase {
 
-	public NoFairnessButLivePropETest() {
-		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropE.cfg" }, ExitStatus.SUCCESS);
+	public NoFairnessButLivePropNoWarningNoFairTest() {
+		super("NoFairnessButLiveProp", new String[] { "-config", "NoFairnessButLivePropNoWarningNoFair.cfg" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Test
@@ -49,13 +50,17 @@ public class NoFairnessButLivePropETest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "2", "0"));
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "2"));
 
+		// SpecNoFair lacks fairness, but both properties are safety-level
+		// (SafetyProp has empty PEMs, RefinementNoFair is [][A]_v). Neither
+		// warning should fire because no genuine liveness checking is needed.
 		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_FAIRNESS_BUT_LIVE_PROPERTY));
+		assertFalse(recorder.recorded(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY));
 
 		assertZeroUncovered();
 	}
 
 	@Override
 	protected boolean doCoverage() {
-		return false; // No coverage for this test.
+		return false;
 	}
 }

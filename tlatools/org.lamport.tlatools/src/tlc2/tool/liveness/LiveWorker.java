@@ -978,6 +978,9 @@ public class LiveWorker implements Callable<Boolean> {
 		final int stateNumber = (int) cycleState.stateNumber; // if the cast causes problems the trace won't be comprehensible anyway.
 		if (sinfo.fingerPrint() == cycleState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNumber);
+			if (!this.oos.hasEmptyPEMAndBoxFreePromises()) {
+				Liveness.printStutteringCounterExampleWarning(tool);
+			}
 		} else {
 			// The new sinfo.state is equivalent to cycleState after getState(..). The
 			// sinfo.info has the name of the action that closes the loop of the lasso/takes
