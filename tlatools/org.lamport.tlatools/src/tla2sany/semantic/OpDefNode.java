@@ -1503,25 +1503,28 @@ public class OpDefNode extends OpDefOrDeclNode
         ret = doc.createElement("UserDefinedOpKind");
         ret.appendChild(appendText(doc,"uniquename",getName().toString()));
         ret.appendChild(appendText(doc,"arity",Integer.toString(getArity())));
-		if (getPreComments().length > 0) {
-			ret.appendChild(appendCDATA(doc, "pre-comments", Arrays.stream(getPreComments()).filter(Objects::nonNull)
-					// Do not trim to preserve indentation of comments.
-					.map(String::stripTrailing).filter(s -> !s.isEmpty())
-					// Use "\n" rather than System.lineSeparator(): XML 1.0 §2.11
-					// normalizes line endings to LF, so \r\n would not survive a
-					// round-trip through a conformant XML parser.
-					.collect(Collectors.joining("\n"))));
-		}
+        ret.appendChild(appendElement(doc, "originalOperator", this.getSource().export(doc, context, filter)));
+        ret.appendChild(appendElement(doc, "originallyDefinedInModule", this.getOriginallyDefinedInModuleNode().export(doc, context, filter)));
         ret.appendChild(appendElement(doc,"body",body.export(doc,context, filter)));
+        final Element arguments = doc.createElement("params");
+        ret.appendChild(arguments);
         if (params != null) {
-          Element arguments = doc.createElement("params");
           for (int i=0; i<params.length; i++) {
             Element lp = doc.createElement("leibnizparam");
             lp.appendChild(params[i].export(doc,context, filter));
             if (isLeibnizArg != null && isLeibnizArg[i]) lp.appendChild(doc.createElement("leibniz"));
             arguments.appendChild(lp);
           }
-          ret.appendChild(arguments);
+        }
+
+        if (getPreComments().length > 0) {
+          ret.appendChild(appendCDATA(doc, "pre-comments", Arrays.stream(getPreComments()).filter(Objects::nonNull)
+              // Do not trim to preserve indentation of comments.
+              .map(String::stripTrailing).filter(s -> !s.isEmpty())
+              // Use "\n" rather than System.lineSeparator(): XML 1.0 §2.11
+              // normalizes line endings to LF, so \r\n would not survive a
+              // round-trip through a conformant XML parser.
+              .collect(Collectors.joining("\n"))));
         }
 
         if (inRecursive) {
