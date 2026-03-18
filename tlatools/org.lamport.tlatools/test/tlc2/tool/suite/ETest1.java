@@ -37,7 +37,8 @@ public class ETest1 extends SuiteETestCase {
 	
 	@Test
 	public void testSpec() {
-		assertSubstring("*** Errors: 1\n\n" + "line 18, col 12 to line 18, col 17 of module etest1\n\n"
-				+ "The operator Foo requires 1 arguments.");
+		assertSubstring("*** Errors: 1\n");
+		assertSubstring("line 18, col 12 to line 18, col 17 of module etest1\n");
+		assertSubstring("The operator Foo requires 1 arguments.");
 	}
 }

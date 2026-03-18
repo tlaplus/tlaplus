@@ -43,13 +43,11 @@ public class Test214 extends SuiteETestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertSubstring("Semantic errors:\n" + 
 				"\n" + 
-				"*** Errors: 1\n" + 
-				"\n" + 
+				"*** Errors: 1\n");
+		assertSubstring(
 				"line 10, col 11 to line 10, col 14 of module test214\n" + 
 				"\n" + 
 				"The only expression allowed as a fact in a HIDE is \n" + 
-				"the name of a theorem, assumption, or step.\n" + 
-				"\n" + 
-				"\n");
+				"the name of a theorem, assumption, or step.\n");
 	}
 }

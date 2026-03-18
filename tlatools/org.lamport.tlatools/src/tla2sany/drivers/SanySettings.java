@@ -22,6 +22,10 @@
  ******************************************************************************/
 package tla2sany.drivers;
 
+import java.util.Set;
+
+import tla2sany.semantic.ErrorCode;
+
 /**
  * Encapsulates various settings controlling SANY execution. This is intended
  * to replace global static settings derived from parsing command line args
@@ -70,6 +74,20 @@ public final class SanySettings {
   public final boolean validatePCalTranslation;
 
   /**
+   * The set of error codes whose messages should be silenced (not printed).
+   * An empty set means all messages are shown. Messages with codes in this
+   * set are neither printed nor cause SANY to fail.
+   */
+  public final Set<ErrorCode> suppressedCodes;
+
+  /**
+   * The set of message codes that should be elevated to errors. An empty set
+   * means no messages are elevated. When a message with a code in this set is
+   * encountered, SANY will treat it as an error.
+   */
+  public final Set<ErrorCode> messagesAsErrorCodes;
+
+  /**
    * Sensible default settings with meaningful error codes and all stages of
    * the validation process enabled. A good choice when you intend to present
    * SANY warnings & errors directly to the user.
@@ -77,7 +95,7 @@ public final class SanySettings {
    * @return A {@link SanySettings} instance with sensible default settings.
    */
   public static SanySettings defaultSettings() {
-    return new SanySettings(true, true, true, true);
+    return new SanySettings(true, true, true, true, Set.of(), Set.of());
   }
 
   /**
@@ -90,11 +108,13 @@ public final class SanySettings {
    * @return A {@link SanySettings} instance for only producing a valid AST.
    */
   public static SanySettings validAstSettings() {
-    return new SanySettings(true, true, false, false);
+    return new SanySettings(true, true, false, false, Set.of(), Set.of());
   }
 
   /**
    * Use this constructor if you want full control over SANY settings.
+   * The new {@code suppressedCodes} and {@code messagesAsErrorCodes} sets
+   * default to empty (no suppression, no elevation).
    */
   public SanySettings(
       final boolean doSemanticAnalysis,
@@ -106,7 +126,31 @@ public final class SanySettings {
         doSemanticAnalysis,
         doLevelChecking,
         doLinting,
-        validatePCalTranslation
+        validatePCalTranslation,
+        Set.of(),
+        Set.of()
+      );
+  }
+
+  /**
+   * Use this constructor if you want full control over SANY settings,
+   * including per-code message suppression and elevation.
+   */
+  public SanySettings(
+      final boolean doSemanticAnalysis,
+      final boolean doLevelChecking,
+      final boolean doLinting,
+      final boolean validatePCalTranslation,
+      final Set<ErrorCode> suppressedCodes,
+      final Set<ErrorCode> messagesAsErrorCodes) {
+    this(
+        true,
+        doSemanticAnalysis,
+        doLevelChecking,
+        doLinting,
+        validatePCalTranslation,
+        suppressedCodes,
+        messagesAsErrorCodes
       );
   }
 
@@ -120,11 +164,15 @@ public final class SanySettings {
       final boolean doSemanticAnalysis,
       final boolean doLevelChecking,
       final boolean doLinting,
-      final boolean validatePCalTranslation) {
+      final boolean validatePCalTranslation,
+      final Set<ErrorCode> suppressedCodes,
+      final Set<ErrorCode> messagesAsErrorCodes) {
     this.doStrictErrorCodes = doStrictErrorCodes;
     this.doSemanticAnalysis = doSemanticAnalysis;
     this.doLevelChecking = doLevelChecking;
     this.doLinting = doLinting;
     this.validatePCalTranslation = validatePCalTranslation;
+    this.suppressedCodes = suppressedCodes != null ? Set.copyOf(suppressedCodes) : Set.of();
+    this.messagesAsErrorCodes = messagesAsErrorCodes != null ? Set.copyOf(messagesAsErrorCodes) : Set.of();
   }
 }
