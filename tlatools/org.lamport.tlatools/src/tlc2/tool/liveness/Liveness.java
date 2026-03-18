@@ -652,8 +652,8 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			for (int j = 0; j < tfbin.size() && found == -1; j++) {
 				final LiveExprNode tf0 = tfbin.exprAt(j);
 				if ((tf == null && tf0 == null) || (tf != null && tf0 != null && tf.equals(tf0))) {
-					// We get here if we fFound two (syntactically) equivalent temporal formulae
-					// (null and null are syntactically equivalent). An simple example is:
+					// We get here if we found two (syntactically) equivalent temporal formulae
+					// (null and null are syntactically equivalent). A simple example is:
 					//
 					//  Spec== x = 0 /\ [][UNCHANGED x]_x /\ SF_x(UNCHANGED x)
 					//  Prop== <>TRUE  \* Alternatively, a state-level expression.
@@ -674,7 +674,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 					//  Fairness== \A self \in SetOfProcs: SF_vars(...)
 					//  Prop== \A self \in SetOfProcs: P ~> Q
 					//
-					// In those specs, this optimizations substantially reduces the blowup caused by
+					// In those specs, this optimization substantially reduces the blowup caused by
 					// the universal quantifier.
 					//
 					//TODO: Investigate how substantial reduction, if a more sophisticated (beyond syntax)
@@ -885,7 +885,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		if (ln.containAction()) {
 			Assert.fail(EC.TLC_LIVE_WRONG_FORMULA_FORMAT);
 		}
-		// If we get here (because of a temporal formula), at tableau is
+		// If we get here (because of a temporal formula), a tableau is
 		// consequently going to be created. This part corresponds to the
 		// ideas in the MP book.
 		pem.tfs.addElement(ln);
