@@ -52,6 +52,7 @@ public class TableauSymmetryTest extends ModelCheckerTestCase {
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_144481269489929000"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		assertNodeAndPtrSizes(624L, 224L);

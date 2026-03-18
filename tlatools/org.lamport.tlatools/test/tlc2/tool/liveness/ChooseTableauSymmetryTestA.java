@@ -52,6 +52,8 @@ public class ChooseTableauSymmetryTestA extends ModelCheckerTestCase {
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_144481269489929000",
+				"AllReady"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert the error trace

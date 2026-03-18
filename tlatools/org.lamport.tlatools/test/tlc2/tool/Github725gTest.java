@@ -52,6 +52,7 @@ public class Github725gTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "1"));
 
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "Prop"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

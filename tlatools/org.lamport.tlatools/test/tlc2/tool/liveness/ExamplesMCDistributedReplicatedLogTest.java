@@ -75,6 +75,7 @@ public class ExamplesMCDistributedReplicatedLogTest extends ModelCheckerTestCase
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "InSync"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

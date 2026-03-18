@@ -52,6 +52,7 @@ public class SymmetryTableauModelCheckerTest extends ModelCheckerTestCase {
 
 		// Assert it has found a temporal violation and a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_144172195414092000"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// The spec's 'NoVal' value is what violates symmetry.

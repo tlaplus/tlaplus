@@ -38,8 +38,11 @@ import tlc2.output.EC.ExitStatus;
 
 public abstract class BidirectionalTransitions2CTest extends ModelCheckerTestCase {
 
-	public BidirectionalTransitions2CTest(final String config) {
+	private final String expectedPropertyName;
+
+	public BidirectionalTransitions2CTest(final String config, final String expectedPropertyName) {
 		super("BidirectionalTransitions", new String[] { "-config", config }, ExitStatus.VIOLATION_LIVENESS);
+		this.expectedPropertyName = expectedPropertyName;
 	}
 	
 	@Test
@@ -49,6 +52,7 @@ public abstract class BidirectionalTransitions2CTest extends ModelCheckerTestCas
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "9", "4", "0"));
 
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, expectedPropertyName));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

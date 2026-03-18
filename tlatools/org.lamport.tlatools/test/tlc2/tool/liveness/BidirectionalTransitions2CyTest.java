@@ -28,6 +28,6 @@ package tlc2.tool.liveness;
 public class BidirectionalTransitions2CyTest extends BidirectionalTransitions2CTest {
 
 	public BidirectionalTransitions2CyTest() {
-		super("BidirectionalTransitions2Cy");
+		super("BidirectionalTransitions2Cy", "Prop2Cy");
 	}
 }
