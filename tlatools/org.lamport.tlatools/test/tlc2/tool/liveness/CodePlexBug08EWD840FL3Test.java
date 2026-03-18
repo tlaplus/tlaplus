@@ -55,6 +55,7 @@ public class CodePlexBug08EWD840FL3Test extends ModelCheckerTestCase {
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "FalseLiveness3"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		assertNodeAndPtrSizes(143808L, 25040L);

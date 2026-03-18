@@ -71,6 +71,7 @@ public class May09Test extends ModelCheckerTestCase {
 	public void testSpec() throws IOException {
 		// Assert TLC has found a temporal violation and a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_146183936178122000"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 
 		// Assert the error trace

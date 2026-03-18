@@ -57,6 +57,7 @@ public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 	
 		// Assert it has found a temporal violation and a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_1444366015116104000"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));

@@ -52,6 +52,7 @@ public class SymmetryModelCheckerTestLonga extends ModelCheckerTestCase {
 
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, "prop_143263724208534000"));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		assertNodeAndPtrSizes(180L, 80L);
