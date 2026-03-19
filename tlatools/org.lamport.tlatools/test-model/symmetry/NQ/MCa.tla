@@ -68,6 +68,8 @@ neg_prop_14467710210701039000 ==
 ~((\E e \in EnQers : enq[e] = v2) ~> (\E d \in DeQers : deq[d] = v2))
 ----
 
+EnqueueCompletes == \A e \in EnQers : (enq[e] # Done) ~> (enq[e] = Done)
+
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================
 \* Modification History

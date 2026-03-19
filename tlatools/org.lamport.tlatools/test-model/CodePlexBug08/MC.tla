@@ -14,6 +14,8 @@ neg_prop_14235897021223000 ==
 ~(Xshrinks)
 ----
 
+XEventuallyGrows == <>(x >= 4)
+
 Tautology == (x = x) ~> (x = x)
 =============================================================================
 \* Modification History

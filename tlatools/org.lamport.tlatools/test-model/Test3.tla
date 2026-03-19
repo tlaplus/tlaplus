@@ -61,5 +61,7 @@ PostCondition ==
 	
 neg_Prop1 == ~(Prop1)
 
+XReturnsToZero == []<>(x = 0)
+
 Tautology == (x = x) ~> (x = x)
 ===================================

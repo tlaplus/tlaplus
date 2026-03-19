@@ -49,5 +49,7 @@ neg_prop_144172195414092000 ==
 ~(Liveness)
 ----
 
+ProcessingCompletes == \A p \in Proc : (ctl[p] = "busy") ~> (ctl[p] = "done")
+
 Tautology == (mem = mem) ~> (mem = mem)
 =============================================================================

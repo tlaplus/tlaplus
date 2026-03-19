@@ -15,5 +15,8 @@ VisitsTwoThenStaysSmall == <>(x = 1 /\ <>(x = 2)) => <>[](x < 2)
 
 neg_VisitsTwoThenStaysSmall == ~(VisitsTwoThenStaysSmall)
 
+EventuallyZero == <>(x = 0)
+EventuallyTwo == <>(x = 2)
+
 Tautology == (x = x) ~> (x = x)
 ====

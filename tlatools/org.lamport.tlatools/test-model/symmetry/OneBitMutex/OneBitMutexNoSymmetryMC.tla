@@ -395,5 +395,7 @@ PostCondition ==
 						     unchecked |-> (A :> {} @@ B :> {}),
 						     other |-> (A :> B @@ B :> A) ] >>
 
+CriticalSectionExits == \A e \in Procs : (pc[e] = "cs") ~> (pc[e] = "ncs")
+
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

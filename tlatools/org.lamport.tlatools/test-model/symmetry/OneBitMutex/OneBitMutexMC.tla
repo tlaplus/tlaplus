@@ -29,5 +29,7 @@ neg_prop_144491423293819000 ==
 ~(StarvationFreedom)
 ----
 
+CriticalSectionExits == \A e \in Procs : (pc[e] = "cs") ~> (pc[e] = "ncs")
+
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

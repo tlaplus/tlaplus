@@ -22,5 +22,7 @@ Liveness == []<>(x=3)
 
 neg_Liveness == ~(Liveness)
 
+XInitZero == <>(x = 0)
+
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================
