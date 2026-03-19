@@ -45,4 +45,5 @@ Next == /\ x < 3
 \* x to go up to 3 but expect x to remain -lt 3 forever.
 Prop == <>[](x < 3)
 
+Tautology == (x = x) ~> (x = x)
 =============================================================================

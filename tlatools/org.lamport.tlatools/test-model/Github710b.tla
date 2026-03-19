@@ -34,4 +34,5 @@ PostCondition ==
 		           <<2, [x |-> 2]>> >> },
 		  state |-> {<<1, [x |-> 1]>>, <<2, [x |-> 2]>>} ]
 			
+Tautology == (vars = vars) ~> (vars = vars)
 ====

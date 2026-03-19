@@ -9,6 +9,8 @@ Spec
 prop_14235897021223000 ==
 Xshrinks
 ----
+
+Tautology == (x = x) ~> (x = x)
 =============================================================================
 \* Modification History
 \* Created Tue Feb 10 18:35:02 CET 2015 by markus
