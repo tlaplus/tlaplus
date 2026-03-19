@@ -599,5 +599,7 @@ PostCondition ==
 			
 neg_FalseLiveness == ~FalseLiveness
 
+ValidLiveness == Liveness
+
 Tautology == (vars = vars) ~> (vars = vars)
 ===================

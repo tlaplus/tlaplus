@@ -14,5 +14,7 @@ NeverThree == [](x = 1 => [](x # 3))
 
 neg_NeverThree == ~(NeverThree)
 
+EventuallyThree == <>(x = 3)
+
 Tautology == (x = x) ~> (x = x)
 ====

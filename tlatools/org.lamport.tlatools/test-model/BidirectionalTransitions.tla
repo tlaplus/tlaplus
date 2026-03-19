@@ -31,5 +31,8 @@ neg_Prop1By == ~(Prop1By)
 neg_Prop2Cx == ~(Prop2Cx)
 neg_Prop2Cy == ~(Prop2Cy)
 
+XChanges == (x = 1) ~> (x # 1)
+XCyclesToZero == []<>(x = 0)
+
 Tautology == (x = x) ~> (x = x)
 =================================================
