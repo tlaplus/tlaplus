@@ -237,6 +237,9 @@ public class TLC {
      *  				java tlc2.TLC -simulate spec[.tla]
      *  2. Model checking of TLA+ specs:
      *  				java tlc2.TLC [-modelcheck] spec[.tla]
+     *  3. MCP (Model Context Protocol) server mode:
+     *  				java tlc2.TLC -mcpServer
+     *  				(Starts a stdio-based MCP server for programmatic access to TLA+ tools)
      *
      * The command line also provides the following options observed for functionalities 1. & 2.:
      *  o -config file: provide the config file.
@@ -308,6 +311,14 @@ public class TLC {
      */
     public static void main(String[] args) throws Exception
     {
+        // Check for MCP server mode first
+        if (args.length > 0 && args[0].equals("-mcpServer")) {
+            // Start MCP server in stdio mode
+            tlc2.mcp.MCPServer server = new tlc2.mcp.MCPServer();
+            server.start();
+            return;
+        }
+        
         final TLC tlc = new TLC();
 
         // Try to parse parameters.
