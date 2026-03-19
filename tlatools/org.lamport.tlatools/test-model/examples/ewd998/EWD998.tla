@@ -5,7 +5,7 @@
 (* Shmuel Safra's version of termination detection.                        *)
 (* https://www.cs.utexas.edu/users/EWD/ewd09xx/EWD998.PDF                  *)
 (***************************************************************************)
-EXTENDS Integers, FiniteSets, Functions
+EXTENDS Integers, FiniteSets, Functions, TLC, TLCExt
 
 CONSTANT
     \* @type: Int;
@@ -205,6 +205,95 @@ TD == INSTANCE AsyncTerminationDetection
 TDSpec == TD!Spec
 
 THEOREM Spec => TDSpec
+
+TokenAwayFromZero == <>[](token.pos > 0)
+
+-----
+
+PostCondition ==
+  CounterExample =
+  [ action |->
+      { << << 1,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 0, q |-> 0, color |-> "black"] ] >>,
+           [ name |-> "InitiateProbe",
+             location |->
+                 [ beginLine |-> 52,
+                   beginColumn |-> 3,
+                   endLine |-> 60,
+                   endColumn |-> 43,
+                   module |-> "EWD998" ] ],
+           << 2,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 1, q |-> 0, color |-> "white"] ] >> >>,
+        << << 2,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 1, q |-> 0, color |-> "white"] ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 64,
+                   beginColumn |-> 3,
+                   endLine |-> 72,
+                   endColumn |-> 43,
+                   module |-> "EWD998" ],
+             context |-> [i |-> 1],
+             parameters |-> <<"i">> ],
+           << 3,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 0, q |-> 0, color |-> "white"] ] >> >>,
+        << << 3,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 0, q |-> 0, color |-> "white"] ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 64,
+                   beginColumn |-> 3,
+                   endLine |-> 72,
+                   endColumn |-> 43,
+                   module |-> "EWD998" ],
+             context |-> [i |-> 1],
+             parameters |-> <<"i">> ],
+           << 3,
+              [ color |-> (0 :> "white" @@ 1 :> "white"),
+                active |-> (0 :> FALSE @@ 1 :> FALSE),
+                counter |-> (0 :> 0 @@ 1 :> 0),
+                pending |-> (0 :> 0 @@ 1 :> 0),
+                token |-> [pos |-> 0, q |-> 0, color |-> "white"] ] >> >> },
+  state |->
+      { << 1,
+           [ color |-> (0 :> "white" @@ 1 :> "white"),
+             active |-> (0 :> FALSE @@ 1 :> FALSE),
+             counter |-> (0 :> 0 @@ 1 :> 0),
+             pending |-> (0 :> 0 @@ 1 :> 0),
+             token |-> [pos |-> 0, q |-> 0, color |-> "black"] ] >>,
+        << 2,
+           [ color |-> (0 :> "white" @@ 1 :> "white"),
+             active |-> (0 :> FALSE @@ 1 :> FALSE),
+             counter |-> (0 :> 0 @@ 1 :> 0),
+             pending |-> (0 :> 0 @@ 1 :> 0),
+             token |-> [pos |-> 1, q |-> 0, color |-> "white"] ] >>,
+        << 3,
+           [ color |-> (0 :> "white" @@ 1 :> "white"),
+             active |-> (0 :> FALSE @@ 1 :> FALSE),
+             counter |-> (0 :> 0 @@ 1 :> 0),
+             pending |-> (0 :> 0 @@ 1 :> 0),
+             token |-> [pos |-> 0, q |-> 0, color |-> "white"] ] >> } ]
+  
 =============================================================================
 
 Checked with TLC in 01/2021 with two cores on a fairly modern desktop

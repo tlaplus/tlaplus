@@ -12,7 +12,7 @@
 (* order as long as no client earlier in the schedule asks for them.   *)
 (***********************************************************************)
 
-EXTENDS FiniteSets, Sequences, Naturals, TLC
+EXTENDS FiniteSets, Sequences, Naturals, TLC, TLCExt
 
 CONSTANTS
   Clients,     \* set of all clients
@@ -174,4 +174,95 @@ THEOREM Allocator => ClientsWillReturn
 THEOREM Allocator => ClientsWillObtain
 THEOREM Allocator => InfOftenSatisfied
 
+PermanentAllocation == \A c \in Clients : <>[](alloc[c] # {})
+
+
+-------
+CONSTANT c1, c2, c3, r1, r2
+PostCondition ==
+CounterExample =
+[ action |->
+      { << << 1,
+              [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >>,
+           [ name |-> "Request",
+             location |->
+                 [ beginLine |-> 70,
+                   beginColumn |-> 3,
+                   endLine |-> 72,
+                   endColumn |-> 30,
+                   module |-> "SchedulingAllocator" ],
+             context |-> [S |-> {r2}, c |-> c1],
+             parameters |-> <<"c", "S">> ],
+           << 2,
+              [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >> >>,
+        << << 2,
+              [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >>,
+           [ name |-> "Schedule",
+             location |->
+                 [ beginLine |-> 97,
+                   beginColumn |-> 3,
+                   endLine |-> 99,
+                   endColumn |-> 30,
+                   module |-> "SchedulingAllocator" ] ],
+           << 3,
+              [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<c1>> ] >> >>,
+        << << 3,
+              [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<c1>> ] >>,
+           [ name |-> "Allocate",
+             location |->
+                 [ beginLine |-> 79,
+                   beginColumn |-> 3,
+                   endLine |-> 85,
+                   endColumn |-> 41,
+                   module |-> "SchedulingAllocator" ],
+             context |-> [S |-> {r2}, c |-> c1],
+             parameters |-> <<"c", "S">> ],
+           << 4,
+              [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >> >>,
+        << << 4,
+              [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >>,
+           [ name |-> "Return",
+             location |->
+                 [ beginLine |-> 90,
+                   beginColumn |-> 3,
+                   endLine |-> 92,
+                   endColumn |-> 30,
+                   module |-> "SchedulingAllocator" ],
+             context |-> [S |-> {r2}, c |-> c1],
+             parameters |-> <<"c", "S">> ],
+           << 1,
+              [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+                sched |-> <<>> ] >> >> },
+  state |->
+      { << 1,
+           [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+             alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+             sched |-> <<>> ] >>,
+        << 2,
+           [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+             alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+             sched |-> <<>> ] >>,
+        << 3,
+           [ unsat |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+             alloc |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+             sched |-> <<c1>> ] >>,
+        << 4,
+           [ unsat |-> (c1 :> {} @@ c2 :> {} @@ c3 :> {}),
+             alloc |-> (c1 :> {r2} @@ c2 :> {} @@ c3 :> {}),
+             sched |-> <<>> ] >> } ]
 =========================================================================

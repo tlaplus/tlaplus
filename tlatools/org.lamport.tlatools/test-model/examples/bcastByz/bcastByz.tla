@@ -263,6 +263,8 @@ IndInv_Unforg_NoBcast_TLC ==
   /\ sent = {}  
   /\ rcvd \in [ Proc -> sent \cup SUBSET ByzMsgs ]   
         
+ProposeLeadsToAccept == \A p \in Proc : pc[p] = "V1" ~> pc[p] = "AC"
+
 =============================================================================
 \* Modification History
 \* Last modified Sat Sep 04 19:49:08 CEST 2021 by tran

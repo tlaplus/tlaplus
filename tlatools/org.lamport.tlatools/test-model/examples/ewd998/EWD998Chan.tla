@@ -191,4 +191,6 @@ EWD998Spec == EWD998!Spec
 
 THEOREM Spec => EWD998Spec
 
+InboxInfOftenNonEmpty == []<>(\E n \in Node : inbox[n] # <<>>)
+
 =============================================================================

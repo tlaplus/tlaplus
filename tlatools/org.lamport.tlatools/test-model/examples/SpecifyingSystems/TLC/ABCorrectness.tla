@@ -37,4 +37,6 @@ TypeInv == /\ sBit \in {0, 1}
 ABCFairness == WF_cvars(CRcvMsg) /\ WF_cvars(CRcvAck)   
 
 ABCSpec == ABCInit /\ [][ABCNext]_cvars /\ ABCFairness
+
+InfOftenOutOfSync == []<>(sBit # sAck)
 ==============================================================

@@ -12,7 +12,7 @@
 (* instead of InternalMemory.                                              *)
 (***************************************************************************)
 
-EXTENDS LiveInternalMemory
+EXTENDS LiveInternalMemory, TLC, TLCExt
 
 (***************************************************************************)
 (* The operator Send is used in specifications in conjuncts of the form    *)
@@ -44,5 +44,118 @@ MCReply(p, d, oldMemInt, newMemInt) ==  newMemInt = <<p, d>>
 (* the single element <<p, NoVal>>, for an arbitrary processor p.          *)
 (***************************************************************************)
 MCInitMemInt == {<<CHOOSE p \in Proc : TRUE, NoVal>>}
+
+AlwaysBusy == \A p \in Proc : []<>(ctl[p] = "busy")
+
+CONSTANT p1, p2, a1, a2, a3, v1, v2
+
+PostCondition ==
+   CounterExample = 
+   [ action |->
+      { << << 1,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+                memInt |-> <<p1, NoVal>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+           [ name |-> "Req",
+             location |->
+                 [ beginLine |-> 15,
+                   beginColumn |-> 11,
+                   endLine |-> 20,
+                   endColumn |-> 26,
+                   module |-> "InternalMemory" ],
+             context |-> [p |-> p2],
+             parameters |-> <<"p">> ],
+           << 2,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
+                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |->
+                    ( p1 :> NoVal @@
+                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >> >>,
+        << << 2,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
+                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |->
+                    ( p1 :> NoVal @@
+                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >>,
+           [ name |-> "Do",
+             location |->
+                 [ beginLine |-> 23,
+                   beginColumn |-> 3,
+                   endLine |-> 31,
+                   endColumn |-> 21,
+                   module |-> "InternalMemory" ],
+             context |-> [p |-> p2],
+             parameters |-> <<"p">> ],
+           << 3,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
+                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> >>,
+        << << 3,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
+                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+           [ name |-> "Rsp",
+             location |->
+                 [ beginLine |-> 33,
+                   beginColumn |-> 11,
+                   endLine |-> 36,
+                   endColumn |-> 35,
+                   module |-> "InternalMemory" ],
+             context |-> [p |-> p2],
+             parameters |-> <<"p">> ],
+           << 4,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+                memInt |-> <<p2, NoVal>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> >>,
+        << << 4,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+                memInt |-> <<p2, NoVal>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+           [ name |-> "Req",
+             location |->
+                 [ beginLine |-> 15,
+                   beginColumn |-> 11,
+                   endLine |-> 20,
+                   endColumn |-> 26,
+                   module |-> "InternalMemory" ],
+             context |-> [p |-> p2],
+             parameters |-> <<"p">> ],
+           << 2,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
+                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+                buf |->
+                    ( p1 :> NoVal @@
+                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >> >> },
+  state |->
+      { << 1,
+           [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+             memInt |-> <<p1, NoVal>>,
+             mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+             buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+        << 2,
+           [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
+             memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+             mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+             buf |->
+                 ( p1 :> NoVal @@
+                   p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >>,
+        << 3,
+           [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
+             memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+             mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+             buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+        << 4,
+           [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+             memInt |-> <<p2, NoVal>>,
+             mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
+             buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> } ]
 =============================================================================
 

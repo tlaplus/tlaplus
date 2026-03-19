@@ -3,7 +3,7 @@
 (* An abstract specification of the termination detection problem in a     *)
 (* ring with asynchronous communication.                                   *)
 (***************************************************************************)
-EXTENDS Naturals
+EXTENDS Naturals, TLC, TLCExt
 CONSTANT
   \* @type: Int; 
   N
@@ -116,6 +116,60 @@ QuiescenceAsTraceInv(hist) ==
 (* and next-state relation Next.                                           *)
 (***************************************************************************)
 StableActionInvariant == terminated => terminated'
+
+PendingInfOften == <>[][DetectTermination]_vars
+
+PostCondition ==
+  CounterExample =
+   [ action |->
+      { << << 1,
+              [ active |->
+                    (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
+                terminationDetected |-> FALSE ] >>,
+           [ name |-> "SendMsg",
+             location |->
+                 [ beginLine |-> 47,
+                   beginColumn |-> 3,
+                   endLine |-> 49,
+                   endColumn |-> 46,
+                   module |-> "AsyncTerminationDetection" ],
+             context |-> [i |-> 3, j |-> 3],
+             parameters |-> <<"i", "j">> ],
+           << 2,
+              [ active |->
+                    (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+                terminationDetected |-> FALSE ] >> >>,
+        << << 2,
+              [ active |->
+                    (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+                terminationDetected |-> FALSE ] >>,
+           [ name |-> "RcvMsg",
+             location |->
+                 [ beginLine |-> 52,
+                   beginColumn |-> 3,
+                   endLine |-> 55,
+                   endColumn |-> 34,
+                   module |-> "AsyncTerminationDetection" ],
+             context |-> [i |-> 3],
+             parameters |-> <<"i">> ],
+           << 1,
+              [ active |->
+                    (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
+                terminationDetected |-> FALSE ] >> >> },
+  state |->
+      { << 1,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+             pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
+             terminationDetected |-> FALSE ] >>,
+        << 2,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
+             pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+             terminationDetected |-> FALSE ] >> } ]
+
 =============================================================================
 \* Modification History
 \* Last modified Tue Apr 12 15:04:08 CEST 2022 by merz

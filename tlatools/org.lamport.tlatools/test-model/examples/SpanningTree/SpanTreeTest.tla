@@ -67,6 +67,8 @@ Liveness == <>PostCondition
 (* cardinality 2.  For N nodes, SUBSET(SUBSET Nodes) contains 2^(2^N)      *)
 (* elements.                                                               *)
 (***************************************************************************)
+AllDistancesOne == <>[](\A n \in Nodes : dist[n] = 1)
+
 =============================================================================
 \* Modification History
 \* Last modified Mon Jun 17 05:43:38 PDT 2019 by lamport

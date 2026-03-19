@@ -17,7 +17,7 @@
 (*  - Pull \E n \in Nodes up to the Spec level in preparation of PlusPy    *)
 (*    implementation.                                                      *)
 (***************************************************************************)
-EXTENDS Integers, Sequences, FiniteSets, Naturals, Utils
+EXTENDS Integers, Sequences, FiniteSets, Naturals, Utils, TLC, TLCExt
 
 Merge(n, r, l) ==
     LET max(a, b) == IF a > b THEN a ELSE b
@@ -271,4 +271,2448 @@ THEOREM Spec => EWD998Safe /\ EWD998Live
 View == 
     <<active, color, counter, EWD998ChanInbox, passes>>
 
+PassesInfOftenLow == []<><<\A n \in Node: Environment(n)>>_vars
+
+CONSTANT n1, n2, n3, n4, n5
+PostCondition ==
+  CounterExample =
+   [ action |->
+      { << << 1,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "black" @@
+                      n4 :> "black" @@
+                      n5 :> "black" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 0 @@
+                                     n4 :> 0 @@
+                                     n5 :> 0 ) ] >> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) ),
+                passes |-> 0 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n3],
+             parameters |-> <<"n">> ],
+           << 2,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "black" @@
+                      n5 :> "black" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 0 @@
+                                     n5 :> 0 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) ),
+                passes |-> 1 ] >> >>,
+        << << 2,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "black" @@
+                      n5 :> "black" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 0 @@
+                                     n5 :> 0 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) ),
+                passes |-> 1 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n4],
+             parameters |-> <<"n">> ],
+           << 3,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "black" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 0 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) ),
+                passes |-> 2 ] >> >>,
+        << << 3,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "black" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 0 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) ),
+                passes |-> 2 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n5],
+             parameters |-> <<"n">> ],
+           << 4,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 3 ] >> >>,
+        << << 4,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "black" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 0 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 1 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 3 ] >>,
+           [ name |-> "InitiateProbe",
+             location |->
+                 [ beginLine |-> 104,
+                   beginColumn |-> 3,
+                   endLine |-> 126,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n1],
+             parameters |-> <<"n">> ],
+           << 5,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 4 ] >> >>,
+        << << 5,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "black" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 0 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 0 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 4 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n2],
+             parameters |-> <<"n">> ],
+           << 6,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 5 ] >> >>,
+        << << 6,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 1 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 0 @@
+                            n5 :> 0 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 5 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n3],
+             parameters |-> <<"n">> ],
+           << 7,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 6 ] >> >>,
+        << << 7,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 1 @@
+                                     n5 :> 1 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 0 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 6 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n4],
+             parameters |-> <<"n">> ],
+           << 8,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 1 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 7 ] >> >>,
+        << << 8,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 1 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 0 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) ),
+                passes |-> 7 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n5],
+             parameters |-> <<"n">> ],
+           << 9,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 8 ] >> >>,
+        << << 9,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "black",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 2 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 2 @@
+                            n2 :> 0 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 8 ] >>,
+           [ name |-> "InitiateProbe",
+             location |->
+                 [ beginLine |-> 104,
+                   beginColumn |-> 3,
+                   endLine |-> 126,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n1],
+             parameters |-> <<"n">> ],
+           << 10,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 9 ] >> >>,
+        << << 10,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 1 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 1 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 9 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n2],
+             parameters |-> <<"n">> ],
+           << 11,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 10 ] >> >>,
+        << << 11,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 2 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 1 @@
+                            n5 :> 1 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 10 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n3],
+             parameters |-> <<"n">> ],
+           << 12,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 11 ] >> >>,
+        << << 12,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 2 @@
+                                     n5 :> 2 ) ] >> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 1 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 11 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n4],
+             parameters |-> <<"n">> ],
+           << 13,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 3 @@
+                                     n5 :> 2 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 2 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 12 ] >> >>,
+        << << 13,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :> <<>> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 3 @@
+                                     n5 :> 2 ) ] >> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 2 ) @@
+                      n5 :>
+                          ( n1 :> 2 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) ),
+                passes |-> 12 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n5],
+             parameters |-> <<"n">> ],
+           << 14,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 3 @@
+                                     n5 :> 3 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 2 ) @@
+                      n5 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 3 ) ),
+                passes |-> 13 ] >> >>,
+        << << 14,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 3 @@
+                                     n5 :> 3 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 2 ) @@
+                      n5 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 3 ) ),
+                passes |-> 13 ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 129,
+                   beginColumn |-> 3,
+                   endLine |-> 148,
+                   endColumn |-> 57,
+                   module |-> "EWD998ChanID" ],
+             context |-> [n |-> n5],
+             parameters |-> <<"n">> ],
+           << 14,
+              [ active |->
+                    ( n1 :> FALSE @@
+                      n2 :> FALSE @@
+                      n3 :> FALSE @@
+                      n4 :> FALSE @@
+                      n5 :> FALSE ),
+                color |->
+                    ( n1 :> "white" @@
+                      n2 :> "white" @@
+                      n3 :> "white" @@
+                      n4 :> "white" @@
+                      n5 :> "white" ),
+                counter |->
+                    (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+                inbox |->
+                    ( n1 :>
+                          << [ color |-> "white",
+                               type |-> "tok",
+                               q |-> 0,
+                               vc |->
+                                   ( n1 :> 3 @@
+                                     n2 :> 2 @@
+                                     n3 :> 3 @@
+                                     n4 :> 3 @@
+                                     n5 :> 3 ) ] >> @@
+                      n2 :> <<>> @@
+                      n3 :> <<>> @@
+                      n4 :> <<>> @@
+                      n5 :> <<>> ),
+                clock |->
+                    ( n1 :>
+                          ( n1 :> 3 @@
+                            n2 :> 1 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n2 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 2 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n3 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 2 @@
+                            n5 :> 2 ) @@
+                      n4 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 2 ) @@
+                      n5 :>
+                          ( n1 :> 3 @@
+                            n2 :> 2 @@
+                            n3 :> 3 @@
+                            n4 :> 3 @@
+                            n5 :> 3 ) ),
+                passes |-> 13 ] >> >> },
+  state |->
+      { << 1,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "black" @@
+                   n2 :> "black" @@
+                   n3 :> "black" @@
+                   n4 :> "black" @@
+                   n5 :> "black" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 0 @@
+                                  n2 :> 0 @@
+                                  n3 :> 0 @@
+                                  n4 :> 0 @@
+                                  n5 :> 0 ) ] >> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 1 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n2 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) ),
+             passes |-> 0 ] >>,
+        << 2,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "black" @@
+                   n2 :> "black" @@
+                   n3 :> "white" @@
+                   n4 :> "black" @@
+                   n5 :> "black" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 0 @@
+                                  n2 :> 0 @@
+                                  n3 :> 1 @@
+                                  n4 :> 0 @@
+                                  n5 :> 0 ) ] >> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 1 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n2 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) ),
+             passes |-> 1 ] >>,
+        << 3,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "black" @@
+                   n2 :> "black" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "black" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 0 @@
+                                  n2 :> 0 @@
+                                  n3 :> 1 @@
+                                  n4 :> 1 @@
+                                  n5 :> 0 ) ] >> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 1 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n2 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) ),
+             passes |-> 2 ] >>,
+        << 4,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "black" @@
+                   n2 :> "black" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 0 @@
+                                  n2 :> 0 @@
+                                  n3 :> 1 @@
+                                  n4 :> 1 @@
+                                  n5 :> 1 ) ] >> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 1 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n2 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) ),
+             passes |-> 3 ] >>,
+        << 5,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "black" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 2 @@
+                                  n2 :> 0 @@
+                                  n3 :> 1 @@
+                                  n4 :> 1 @@
+                                  n5 :> 1 ) ] >> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 2 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n2 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) ),
+             passes |-> 4 ] >>,
+        << 6,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 2 @@
+                                  n2 :> 1 @@
+                                  n3 :> 1 @@
+                                  n4 :> 1 @@
+                                  n5 :> 1 ) ] >> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 2 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n2 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n3 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 0 @@ n5 :> 0) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) ),
+             passes |-> 5 ] >>,
+        << 7,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 2 @@
+                                  n2 :> 1 @@
+                                  n3 :> 2 @@
+                                  n4 :> 1 @@
+                                  n5 :> 1 ) ] >> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 2 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n2 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n3 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n4 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 0) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) ),
+             passes |-> 6 ] >>,
+        << 8,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 2 @@
+                                  n2 :> 1 @@
+                                  n3 :> 2 @@
+                                  n4 :> 2 @@
+                                  n5 :> 1 ) ] >> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 2 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n2 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n3 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n4 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 1) @@
+                   n5 :>
+                       (n1 :> 0 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) ),
+             passes |-> 7 ] >>,
+        << 9,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :>
+                       << [ color |-> "black",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 2 @@
+                                  n2 :> 1 @@
+                                  n3 :> 2 @@
+                                  n4 :> 2 @@
+                                  n5 :> 2 ) ] >> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 2 @@ n2 :> 0 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n2 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n3 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n4 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 1) @@
+                   n5 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) ),
+             passes |-> 8 ] >>,
+        << 10,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 3 @@
+                                  n2 :> 1 @@
+                                  n3 :> 2 @@
+                                  n4 :> 2 @@
+                                  n5 :> 2 ) ] >> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 3 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n2 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 1 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n3 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n4 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 1) @@
+                   n5 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) ),
+             passes |-> 9 ] >>,
+        << 11,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 3 @@
+                                  n2 :> 2 @@
+                                  n3 :> 2 @@
+                                  n4 :> 2 @@
+                                  n5 :> 2 ) ] >> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 3 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n2 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n3 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 1 @@ n5 :> 1) @@
+                   n4 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 1) @@
+                   n5 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) ),
+             passes |-> 10 ] >>,
+        << 12,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 3 @@
+                                  n2 :> 2 @@
+                                  n3 :> 3 @@
+                                  n4 :> 2 @@
+                                  n5 :> 2 ) ] >> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 3 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n2 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n3 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n4 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 1) @@
+                   n5 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) ),
+             passes |-> 11 ] >>,
+        << 13,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :> <<>> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 3 @@
+                                  n2 :> 2 @@
+                                  n3 :> 3 @@
+                                  n4 :> 3 @@
+                                  n5 :> 2 ) ] >> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 3 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n2 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n3 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n4 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 3 @@ n5 :> 2) @@
+                   n5 :>
+                       (n1 :> 2 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) ),
+             passes |-> 12 ] >>,
+        << 14,
+           [ active |->
+                 ( n1 :> FALSE @@
+                   n2 :> FALSE @@
+                   n3 :> FALSE @@
+                   n4 :> FALSE @@
+                   n5 :> FALSE ),
+             color |->
+                 ( n1 :> "white" @@
+                   n2 :> "white" @@
+                   n3 :> "white" @@
+                   n4 :> "white" @@
+                   n5 :> "white" ),
+             counter |-> (n1 :> 0 @@ n2 :> 0 @@ n3 :> 0 @@ n4 :> 0 @@ n5 :> 0),
+             inbox |->
+                 ( n1 :>
+                       << [ color |-> "white",
+                            type |-> "tok",
+                            q |-> 0,
+                            vc |->
+                                ( n1 :> 3 @@
+                                  n2 :> 2 @@
+                                  n3 :> 3 @@
+                                  n4 :> 3 @@
+                                  n5 :> 3 ) ] >> @@
+                   n2 :> <<>> @@
+                   n3 :> <<>> @@
+                   n4 :> <<>> @@
+                   n5 :> <<>> ),
+             clock |->
+                 ( n1 :>
+                       (n1 :> 3 @@ n2 :> 1 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n2 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 2 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n3 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 2 @@ n5 :> 2) @@
+                   n4 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 3 @@ n5 :> 2) @@
+                   n5 :>
+                       (n1 :> 3 @@ n2 :> 2 @@ n3 :> 3 @@ n4 :> 3 @@ n5 :> 3) ),
+             passes |-> 13 ] >> } ]
+   
 =============================================================================

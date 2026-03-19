@@ -37,7 +37,7 @@ public class ExamplesMCLiveWriteThroughCacheTest extends ModelCheckerTestCase {
 
 	public ExamplesMCLiveWriteThroughCacheTest() {
 		super("MCLiveWriteThroughCache", "examples/SpecifyingSystems/Liveness", new String[] { "-lncheck", "final" },
-				ExitStatus.SUCCESS);
+				ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override
@@ -68,7 +68,9 @@ public class ExamplesMCLiveWriteThroughCacheTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED)); // PermanentlyBusy
+		// Assert counterexample via POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

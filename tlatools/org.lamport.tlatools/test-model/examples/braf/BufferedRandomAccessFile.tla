@@ -14,7 +14,7 @@
 \* Readers will probably want to start with the general RandomAccessFile spec
 \* before reading this one.
 
-EXTENDS Naturals, Sequences, TLC, Common
+EXTENDS Naturals, Sequences, TLC, Common, TLCExt
 
 CONSTANT BuffSz
 
@@ -289,6 +289,13 @@ Alias == [
     \* abstract vars
     abstract_contents |-> LogicalFileContent]
 
+DirtyLeadsToClean == dirty ~> ~dirty
+
+Postcondition ==
+  CounterExample =
+   [action |-> {<<<<1, [dirty |-> FALSE, length |-> 0, curr |-> 0, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 0, file_content |-> [elems |-> <<>>], file_pointer |-> 0]>>, [name |-> "WriteAtMost", location |-> [beginLine |-> 200, beginColumn |-> 5, endLine |-> 209, endColumn |-> 60, module |-> "BufferedRandomAccessFile"], context |-> [data |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>]], parameters |-> <<"data">>], <<2, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 0, file_content |-> [elems |-> <<>>], file_pointer |-> 0]>>>>, <<<<2, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 0, file_content |-> [elems |-> <<>>], file_pointer |-> 0]>>, [name |-> "SetLength", location |-> [beginLine |-> 148, beginColumn |-> 5, endLine |-> 163, endColumn |-> 30, module |-> "BufferedRandomAccessFile"], context |-> [newLength |-> 2], parameters |-> <<"newLength">>], <<3, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 1, file_content |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], file_pointer |-> 1]>>>>, <<<<3, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 1, file_content |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], file_pointer |-> 1]>>, [name |-> "SetLength", location |-> [beginLine |-> 148, beginColumn |-> 5, endLine |-> 163, endColumn |-> 30, module |-> "BufferedRandomAccessFile"], context |-> [newLength |-> 2], parameters |-> <<"newLength">>], <<3, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 1, file_content |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], file_pointer |-> 1]>>>>}, state |-> {<<1, [dirty |-> FALSE, length |-> 0, curr |-> 0, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 0, file_content |-> [elems |-> <<>>], file_pointer |-> 0]>>, <<2, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 0, file_content |-> [elems |-> <<>>], file_pointer |-> 0]>>, <<3, [dirty |-> TRUE, length |-> 2, curr |-> 2, lo |-> 0, buff |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], diskPos |-> 1, file_content |-> [elems |-> <<ArbitrarySymbol, ArbitrarySymbol>>], file_pointer |-> 1]>>}]
+   
+
 ===============================================================================
 
 --------------------------- MODULE RandomAccessFile ---------------------------
@@ -443,5 +450,4 @@ TruncateOrExtendFile(file, new_length) ==
     IF new_length > ArrayLen(file)
     THEN ArrayConcat(file, ConstArray(new_length - ArrayLen(file), ArbitrarySymbol))
     ELSE ArraySlice(file, 0, new_length)
-
 ===============================================================================

@@ -5,7 +5,7 @@
 (* Derivation of a termination detection algorithm for distributed         *)
 (* computations (with W.H.J.Feijen and A.J.M. van Gasteren).               *)
 (***************************************************************************)
-EXTENDS Naturals
+EXTENDS Naturals, TLC, TLCExt
 
 CONSTANT N
 ASSUME NAssumption == N \in Nat \ {0}
@@ -171,6 +171,109 @@ CheckInductiveSpec == TypeOK /\ Inv /\ [][Next]_vars
 (***************************************************************************)
 TD == INSTANCE SyncTerminationDetection
 TDSpec == TD!Spec
+TokenPermanentlyBlack == <>[](tcolor = "black")
+
+
+----
+PostCondition ==
+  CounterExample =
+   [ action |->
+      { << << 1,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 0,
+                tcolor |-> "black" ] >>,
+           [ name |-> "InitiateProbe",
+             location |->
+                 [ beginLine |-> 40,
+                   beginColumn |-> 3,
+                   endLine |-> 45,
+                   endColumn |-> 43,
+                   module |-> "EWD840" ] ],
+           << 2,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 2,
+                tcolor |-> "white" ] >> >>,
+        << << 2,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 2,
+                tcolor |-> "white" ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 58,
+                   beginColumn |-> 3,
+                   endLine |-> 63,
+                   endColumn |-> 43,
+                   module |-> "EWD840" ],
+             context |-> [i |-> 2],
+             parameters |-> <<"i">> ],
+           << 3,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 1,
+                tcolor |-> "white" ] >> >>,
+        << << 3,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 1,
+                tcolor |-> "white" ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 58,
+                   beginColumn |-> 3,
+                   endLine |-> 63,
+                   endColumn |-> 43,
+                   module |-> "EWD840" ],
+             context |-> [i |-> 1],
+             parameters |-> <<"i">> ],
+           << 4,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 0,
+                tcolor |-> "white" ] >> >>,
+        << << 4,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 0,
+                tcolor |-> "white" ] >>,
+           [ name |-> "PassToken",
+             location |->
+                 [ beginLine |-> 58,
+                   beginColumn |-> 3,
+                   endLine |-> 63,
+                   endColumn |-> 43,
+                   module |-> "EWD840" ],
+             context |-> [i |-> 1],
+             parameters |-> <<"i">> ],
+           << 4,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+                color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+                tpos |-> 0,
+                tcolor |-> "white" ] >> >> },
+  state |->
+      { << 1,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+             color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+             tpos |-> 0,
+             tcolor |-> "black" ] >>,
+        << 2,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+             color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+             tpos |-> 2,
+             tcolor |-> "white" ] >>,
+        << 3,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+             color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+             tpos |-> 1,
+             tcolor |-> "white" ] >>,
+        << 4,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE),
+             color |-> (0 :> "white" @@ 1 :> "white" @@ 2 :> "white"),
+             tpos |-> 0,
+             tcolor |-> "white" ] >> } ]
+   
 =============================================================================
 \* Modification History
 \* Created Mon Sep 09 11:33:10 CEST 2013 by merz

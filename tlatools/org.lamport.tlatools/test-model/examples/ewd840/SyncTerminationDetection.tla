@@ -61,6 +61,8 @@ Quiescence == [](terminated => []terminated)
 
 Liveness == terminated ~> terminationDetected
 
+DetectionLeadsToReactivation == terminationDetected ~> (\E n \in Node : active[n])
+
 =============================================================================
 \* Modification History
 \* Created Sun Jan 10 15:19:20 CET 2021 by merz
