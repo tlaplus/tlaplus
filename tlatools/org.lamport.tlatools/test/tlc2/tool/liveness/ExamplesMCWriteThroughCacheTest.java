@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCWriteThroughCacheTest extends ModelCheckerTestCase {
 
 	public ExamplesMCWriteThroughCacheTest() {
-		super("MCWriteThroughCache", "examples/SpecifyingSystems/CachingMemory", ExitStatus.SUCCESS);
+		super("MCWriteThroughCache", "examples/SpecifyingSystems/CachingMemory", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

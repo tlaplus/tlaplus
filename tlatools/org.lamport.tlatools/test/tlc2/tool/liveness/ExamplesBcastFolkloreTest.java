@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesBcastFolkloreTest extends ModelCheckerTestCase {
 
 	public ExamplesBcastFolkloreTest() {
-		super("bcastFolklore", "examples/bcastFolklore", ExitStatus.SUCCESS);
+		super("bcastFolklore", "examples/bcastFolklore", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

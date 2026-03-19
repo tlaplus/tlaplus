@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesEWD998ChanIDTest extends ModelCheckerTestCase {
 
 	public ExamplesEWD998ChanIDTest() {
-		super("EWD998ChanID", "examples/ewd998", ExitStatus.SUCCESS);
+		super("EWD998ChanID", "examples/ewd998", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

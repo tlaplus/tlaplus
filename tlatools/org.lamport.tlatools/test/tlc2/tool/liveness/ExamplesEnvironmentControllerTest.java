@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesEnvironmentControllerTest extends ModelCheckerTestCase {
 
 	public ExamplesEnvironmentControllerTest() {
-		super("EnvironmentController", "examples/detector_chan96", ExitStatus.SUCCESS);
+		super("EnvironmentController", "examples/detector_chan96", new String[] { "-lncheck", "final" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Override

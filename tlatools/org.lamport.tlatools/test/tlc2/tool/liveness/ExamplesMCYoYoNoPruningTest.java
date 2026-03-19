@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCYoYoNoPruningTest extends ModelCheckerTestCase {
 
 	public ExamplesMCYoYoNoPruningTest() {
-		super("MCYoYoNoPruning", "examples/YoYo", ExitStatus.SUCCESS);
+		super("MCYoYoNoPruning", "examples/YoYo", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

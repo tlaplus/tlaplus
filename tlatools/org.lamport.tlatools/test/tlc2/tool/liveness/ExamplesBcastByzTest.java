@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesBcastByzTest extends ModelCheckerTestCase {
 
 	public ExamplesBcastByzTest() {
-		super("bcastByz", "examples/bcastByz", ExitStatus.SUCCESS);
+		super("bcastByz", "examples/bcastByz", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

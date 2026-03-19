@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesBlockingQueuePoisonAppleTest extends ModelCheckerTestCase {
 
 	public ExamplesBlockingQueuePoisonAppleTest() {
-		super("BlockingQueuePoisonApple", "examples/BlockingQueue", ExitStatus.SUCCESS);
+		super("BlockingQueuePoisonApple", "examples/BlockingQueue", new String[] { "-lncheck", "final" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Override

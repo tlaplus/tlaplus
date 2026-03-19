@@ -39,7 +39,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCDistributedReplicatedLogTest extends ModelCheckerTestCase {
 
 	public ExamplesMCDistributedReplicatedLogTest() {
-		super("MCDistributedReplicatedLog", "examples/FiniteMonotonic", ExitStatus.VIOLATION_LIVENESS);
+		super("MCDistributedReplicatedLog", "examples/FiniteMonotonic", new String[] { "-lncheck", "final" },
+				ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override

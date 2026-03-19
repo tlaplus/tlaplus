@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSpanTreeTest extends ModelCheckerTestCase {
 
 	public ExamplesSpanTreeTest() {
-		super("SpanTree", "examples/SpanningTree", ExitStatus.SUCCESS);
+		super("SpanTree", "examples/SpanningTree", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

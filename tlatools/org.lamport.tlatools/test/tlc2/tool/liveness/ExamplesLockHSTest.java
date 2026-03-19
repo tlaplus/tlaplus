@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesLockHSTest extends ModelCheckerTestCase {
 
 	public ExamplesLockHSTest() {
-		super("LockHS", "examples/locks_auxiliary_vars", ExitStatus.SUCCESS);
+		super("LockHS", "examples/locks_auxiliary_vars", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override
