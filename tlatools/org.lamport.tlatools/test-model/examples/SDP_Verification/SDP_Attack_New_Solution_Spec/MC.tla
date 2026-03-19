@@ -46,6 +46,8 @@ const_1645172937699129000 ==
 [IP |-> 22,Port |-> 80]
 ----
 
+AttackerEstablishes == <>(\E x \in aTCPLinkSet : x.State = "ESTABLISHED")
+
 =============================================================================
 \* Modification History
 \* Created Fri Feb 18 16:28:57 CST 2022 by 10227694

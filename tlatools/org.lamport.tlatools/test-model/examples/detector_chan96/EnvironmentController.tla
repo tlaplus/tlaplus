@@ -335,6 +335,8 @@ EventuallyStrongAccuracy ==
 
 StateConstraint ==
    TLCGet("level") < 20
+NeverPermanentlySuspected == \A p \in Proc : <>[](\A q \in Proc : p \notin suspected[q])
+
 =============================================================================
 \* Modification History
 \* Last modified Tue Jun 12 17:49:08 CEST 2018 by tthai

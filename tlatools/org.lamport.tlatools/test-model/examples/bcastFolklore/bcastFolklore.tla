@@ -150,6 +150,9 @@ ReliableChan ==
 StateConstraint ==
     TLCGet("level") < 5
 
+CrashCountInfOftenZero ==
+  \E sndr \in 1..N : []<>(\A p \in Corr : <<sndr, "ECHO">> \in rcvd[p])
+
 =============================================================================
 \* Modification History
 \* Last modified Mon Sep 03 17:01:26 CEST 2018 by tthai

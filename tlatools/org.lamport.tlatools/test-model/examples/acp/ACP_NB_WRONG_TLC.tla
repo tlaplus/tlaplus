@@ -118,4 +118,6 @@ fairnessNB == /\ \A i \in participants : WF_<<coordinator, participant>>(\E j \i
 
 SpecNB == InitNB /\ [][progNNB]_<<coordinator, participant>> /\ fairnessNB
 
+CommitLeadsToAllCommit == \A p \in participants : \A q \in participants : (participant[p].decision = commit) ~> (participant[q].decision = commit)
+
 ================================================================================

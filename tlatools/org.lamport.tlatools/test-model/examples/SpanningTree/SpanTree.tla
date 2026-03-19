@@ -162,6 +162,8 @@ Liveness == <>(~ ENABLED Next)
 (* allowing it to be set to any value in (dist[m]+1) ..  (dist[n]-1) .  If *)
 (* you don't see why, use TLC to find out for you.                         *)
 (***************************************************************************)
+AllNodesDirectChildren == \A n \in Nodes : <>(mom[n] = Root)
+
 =============================================================================
 \* Modification History
 \* Last modified Mon Jun 17 05:52:09 PDT 2019 by lamport

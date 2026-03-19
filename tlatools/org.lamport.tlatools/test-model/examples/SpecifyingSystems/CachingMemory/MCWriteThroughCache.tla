@@ -88,4 +88,6 @@ LM_Inner_ISpec ==
     LM_Inner_IInit  /\  [][LM_Inner_INext]_<<memInt, omem, octl, obuf>>
 -----------------------------------------------------------------------------
 THEOREM LM_Inner_ISpec => []LM_Inner_TypeInvariant
+
+BusyLeadsToRdy == \A p \in Proc : (ctl[p] = "busy") ~> (ctl[p] = "rdy")
 =============================================================================
