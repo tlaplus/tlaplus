@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesBufferedRandomAccessFileTest extends ModelCheckerTestCase {
 
 	public ExamplesBufferedRandomAccessFileTest() {
-		super("BufferedRandomAccessFile", "examples/braf", ExitStatus.SUCCESS);
+		super("BufferedRandomAccessFile", "examples/braf", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

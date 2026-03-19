@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesNbacgGuer01Test extends ModelCheckerTestCase {
 
 	public ExamplesNbacgGuer01Test() {
-		super("nbacg_guer01", "examples/nbacg_guer01", ExitStatus.SUCCESS);
+		super("nbacg_guer01", "examples/nbacg_guer01", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

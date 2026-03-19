@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesAbaAsynByzTest extends ModelCheckerTestCase {
 
 	public ExamplesAbaAsynByzTest() {
-		super("aba_asyn_byz", "examples/aba-asyn-byz", ExitStatus.SUCCESS);
+		super("aba_asyn_byz", "examples/aba-asyn-byz", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

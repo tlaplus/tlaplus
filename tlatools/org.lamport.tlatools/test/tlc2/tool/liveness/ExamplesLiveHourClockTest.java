@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesLiveHourClockTest extends ModelCheckerTestCase {
 
 	public ExamplesLiveHourClockTest() {
-		super("LiveHourClock", "examples/SpecifyingSystems/Liveness", ExitStatus.SUCCESS);
+		super("LiveHourClock", "examples/SpecifyingSystems/Liveness", new String[] { "-lncheck", "final" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Override

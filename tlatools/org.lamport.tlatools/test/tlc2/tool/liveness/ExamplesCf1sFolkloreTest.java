@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesCf1sFolkloreTest extends ModelCheckerTestCase {
 
 	public ExamplesCf1sFolkloreTest() {
-		super("cf1s_folklore", "examples/cf1s-folklore", ExitStatus.SUCCESS);
+		super("cf1s_folklore", "examples/cf1s-folklore", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

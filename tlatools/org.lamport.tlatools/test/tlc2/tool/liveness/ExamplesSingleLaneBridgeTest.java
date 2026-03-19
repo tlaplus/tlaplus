@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSingleLaneBridgeTest extends ModelCheckerTestCase {
 
 	public ExamplesSingleLaneBridgeTest() {
-		super("MC", "examples/SingleLaneBridge", ExitStatus.SUCCESS);
+		super("MC", "examples/SingleLaneBridge", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

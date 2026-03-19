@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCEWD687aTest extends ModelCheckerTestCase {
 
 	public ExamplesMCEWD687aTest() {
-		super("MCEWD687a", "examples/ewd687a", ExitStatus.SUCCESS);
+		super("MCEWD687a", "examples/ewd687a", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

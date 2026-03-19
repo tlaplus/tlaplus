@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesACPNBTLCTest extends ModelCheckerTestCase {
 
 	public ExamplesACPNBTLCTest() {
-		super("ACP_NB_TLC", "examples/acp", ExitStatus.SUCCESS);
+		super("ACP_NB_TLC", "examples/acp", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override
