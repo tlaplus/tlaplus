@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesHuangTest extends ModelCheckerTestCase {
 
 	public ExamplesHuangTest() {
-		super("Huang", "examples/Huang", ExitStatus.SUCCESS);
+		super("Huang", "examples/Huang", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

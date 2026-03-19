@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSimpleAllocatorTest extends ModelCheckerTestCase {
 
 	public ExamplesSimpleAllocatorTest() {
-		super("SimpleAllocator", "examples/allocator", ExitStatus.SUCCESS);
+		super("SimpleAllocator", "examples/allocator", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

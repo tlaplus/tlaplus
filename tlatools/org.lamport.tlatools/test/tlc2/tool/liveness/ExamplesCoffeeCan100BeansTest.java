@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesCoffeeCan100BeansTest extends ModelCheckerTestCase {
 
 	public ExamplesCoffeeCan100BeansTest() {
-		super("CoffeeCan100Beans", "examples/CoffeeCan", ExitStatus.SUCCESS);
+		super("CoffeeCan100Beans", "examples/CoffeeCan", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSDPAttackNewSolutionTest extends ModelCheckerTestCase {
 
 	public ExamplesSDPAttackNewSolutionTest() {
-		super("MC", "examples/SDP_Verification/SDP_Attack_New_Solution_Spec", ExitStatus.SUCCESS);
+		super("MC", "examples/SDP_Verification/SDP_Attack_New_Solution_Spec", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

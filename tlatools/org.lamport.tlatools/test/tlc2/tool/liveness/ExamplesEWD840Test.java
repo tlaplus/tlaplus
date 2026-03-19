@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesEWD840Test extends ModelCheckerTestCase {
 
 	public ExamplesEWD840Test() {
-		super("EWD840", "examples/ewd840", ExitStatus.SUCCESS);
+		super("EWD840", "examples/ewd840", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

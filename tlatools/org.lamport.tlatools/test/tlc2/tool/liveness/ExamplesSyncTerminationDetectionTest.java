@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSyncTerminationDetectionTest extends ModelCheckerTestCase {
 
 	public ExamplesSyncTerminationDetectionTest() {
-		super("SyncTerminationDetection", "examples/ewd840", ExitStatus.SUCCESS);
+		super("SyncTerminationDetection", "examples/ewd840", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

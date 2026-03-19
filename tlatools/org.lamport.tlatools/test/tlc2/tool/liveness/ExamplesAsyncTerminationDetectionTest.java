@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesAsyncTerminationDetectionTest extends ModelCheckerTestCase {
 
 	public ExamplesAsyncTerminationDetectionTest() {
-		super("AsyncTerminationDetection", "examples/ewd998", ExitStatus.SUCCESS);
+		super("AsyncTerminationDetection", "examples/ewd998", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
 	}
 
 	@Override

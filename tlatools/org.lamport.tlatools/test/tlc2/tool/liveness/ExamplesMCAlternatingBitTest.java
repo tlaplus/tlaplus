@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCAlternatingBitTest extends ModelCheckerTestCase {
 
 	public ExamplesMCAlternatingBitTest() {
-		super("MCAlternatingBit", "examples/SpecifyingSystems/TLC", ExitStatus.SUCCESS);
+		super("MCAlternatingBit", "examples/SpecifyingSystems/TLC", new String[] { "-lncheck", "final" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Override

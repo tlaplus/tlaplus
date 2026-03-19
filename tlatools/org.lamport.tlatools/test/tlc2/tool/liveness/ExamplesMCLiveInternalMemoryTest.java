@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCLiveInternalMemoryTest extends ModelCheckerTestCase {
 
 	public ExamplesMCLiveInternalMemoryTest() {
-		super("MCLiveInternalMemory", "examples/SpecifyingSystems/Liveness", ExitStatus.SUCCESS);
+		super("MCLiveInternalMemory", "examples/SpecifyingSystems/Liveness", new String[] { "-lncheck", "final" },
+				ExitStatus.SUCCESS);
 	}
 
 	@Override
