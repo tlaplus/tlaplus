@@ -20,5 +20,7 @@ SpecWeakFair == Spec /\ WF_vars(Next)
 
 Liveness == []<>(x=3)
 
+neg_Liveness == ~(Liveness)
+
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

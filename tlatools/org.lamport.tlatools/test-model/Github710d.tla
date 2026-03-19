@@ -12,5 +12,7 @@ FairSpec == Spec /\ WF_x(Step)
 
 NeverThree == [](x = 1 => [](x # 3))
 
+neg_NeverThree == ~(NeverThree)
+
 Tautology == (x = x) ~> (x = x)
 ====

@@ -9,6 +9,10 @@ Spec
 prop_14235897021223000 ==
 Xshrinks
 ----
+\* NEGATED PROPERTY definition
+neg_prop_14235897021223000 ==
+~(Xshrinks)
+----
 
 Tautology == (x = x) ~> (x = x)
 =============================================================================

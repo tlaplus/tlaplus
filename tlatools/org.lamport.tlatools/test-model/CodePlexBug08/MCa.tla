@@ -9,6 +9,10 @@ Spec
 prop_14273156623745000 ==
 x=1 ~> x=0
 ----
+\* NEGATED PROPERTY definition
+neg_prop_14273156623745000 ==
+~(x=1 ~> x=0)
+----
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
 	/\ \/ /\ CounterExample = 

@@ -44,6 +44,10 @@ Spec
 prop_144172195414092000 ==
 Liveness
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144172195414092000 ==
+~(Liveness)
+----
 
 Tautology == (mem = mem) ~> (mem = mem)
 =============================================================================
