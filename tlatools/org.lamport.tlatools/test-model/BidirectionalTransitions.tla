@@ -25,4 +25,6 @@ Fair2C == WF_x(C)
 Spec2C == (x=0) /\ [][C \/ D]_x/\ Fair2C
 Prop2Cx == WF_x(D)
 Prop2Cy == []<><<D>>_x
+
+Tautology == (x = x) ~> (x = x)
 =================================================

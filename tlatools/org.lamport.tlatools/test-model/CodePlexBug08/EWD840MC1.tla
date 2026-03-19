@@ -597,4 +597,5 @@ PostCondition ==
 			             tpos |-> 1,
 			             tcolor |-> "black" ] >> } ]
 			
+Tautology == (vars = vars) ~> (vars = vars)
 ===================

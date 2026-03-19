@@ -33,6 +33,8 @@ Prop == <>( b = 1 )
 \* missing an initial-state invariant violation.
 Inv == IF Svc!StepEnabled THEN TRUE ELSE b /= 0
 
+Tautology == (b = b) ~> (b = b)
+
 ====
 
 ---- MODULE Inner725g ----

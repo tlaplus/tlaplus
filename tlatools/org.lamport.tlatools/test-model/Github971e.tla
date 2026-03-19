@@ -16,4 +16,6 @@ Spec ==
 LeadsTo ==
     \* lasso shaped counterexample/liveness property
     x = 0 ~> [](x = 1 => [](y = "a")) 
+
+Tautology == (vars = vars) ~> (vars = vars)
 ==========================

@@ -406,6 +406,8 @@ PostConditionLasso ==
 			        <<3, [x |-> 3, y |-> FALSE]>>,
 			        <<4, [x |-> 4, y |-> TRUE]>> } ]
 
+Tautology == (vars = vars) ~> (vars = vars)
+
 PostConditionStuttering ==
   	/\ IF CounterExample.state = {} THEN TRUE ELSE CounterExample = 
 			[ action |->

@@ -47,7 +47,7 @@ public class UnsymmetricModelCheckerTestA extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		// ModelChecker intends to check liveness
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "1"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_LIVE_IMPLIED, "2"));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_INIT_GENERATED2, "2", "s", "1"));
 		
 		// ModelChecker has finished and generated the expected amount of states

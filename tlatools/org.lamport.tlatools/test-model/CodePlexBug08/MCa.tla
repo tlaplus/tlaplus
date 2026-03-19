@@ -103,6 +103,8 @@ PostCondition ==
 					   [x |-> 4, b |-> TRUE],
 					   [x |-> 4, b |-> FALSE],
 					   [x |-> 5, b |-> TRUE] >> 
+
+Tautology == (x = x) ~> (x = x)
 =============================================================================
 \* Modification History
 \* Created Wed Mar 25 21:34:22 CET 2015 by markus

@@ -61,4 +61,6 @@ PostCondition ==
 FairSpec == 
     /\ Spec
     /\ WF_x(Next)
+
+Tautology == (vars = vars) ~> (vars = vars)
 ====
