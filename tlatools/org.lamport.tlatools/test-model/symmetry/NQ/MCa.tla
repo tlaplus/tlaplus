@@ -63,6 +63,10 @@ TypeOK
 prop_14467710210701039000 ==
 (\E e \in EnQers : enq[e] = v2) ~> (\E d \in DeQers : deq[d] = v2)
 ----
+\* NEGATED PROPERTY definition
+neg_prop_14467710210701039000 ==
+~((\E e \in EnQers : enq[e] = v2) ~> (\E d \in DeQers : deq[d] = v2))
+----
 
 Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

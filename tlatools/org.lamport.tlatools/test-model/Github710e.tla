@@ -13,5 +13,7 @@ FairSpec == Spec /\ WF_x(Next)
 
 VisitsTwoThenStaysSmall == <>(x = 1 /\ <>(x = 2)) => <>[](x < 2)
 
+neg_VisitsTwoThenStaysSmall == ~(VisitsTwoThenStaysSmall)
+
 Tautology == (x = x) ~> (x = x)
 ====

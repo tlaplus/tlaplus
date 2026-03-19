@@ -24,6 +24,10 @@ Spec
 prop_144481269489929000 ==
 LivenessO
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144481269489929000 ==
+~(LivenessO)
+----
 
 Tautology == (arr = arr) ~> (arr = arr)
 =============================================================================
