@@ -85,6 +85,8 @@ Liveness == <>PostCondition
 (* chosen) graph with six nodes.  On a few tries, it took TLC an average   *)
 (* of a little more than 30 seconds to do it.                              *)
 (***************************************************************************)
+NextAlwaysEnabled == []<>(ENABLED Next)
+
 =============================================================================
 \* Modification History
 \* Last modified Mon Jun 17 05:39:15 PDT 2019 by lamport

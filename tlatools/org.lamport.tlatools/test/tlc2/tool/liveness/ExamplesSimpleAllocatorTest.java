@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSimpleAllocatorTest extends ModelCheckerTestCase {
 
 	public ExamplesSimpleAllocatorTest() {
-		super("SimpleAllocator", "examples/allocator", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
+		super("SimpleAllocator", "examples/allocator", new String[] { "-lncheck", "final" },
+				ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override
@@ -67,7 +68,9 @@ public class ExamplesSimpleAllocatorTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED)); // AllocInfOftenEmpty
+		// Assert counterexample via POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

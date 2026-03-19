@@ -154,6 +154,8 @@ OneStep1_Ltl ==
 StateConstraint ==
     TLCGet("level") < 6
 
+AllDecideOne == \A self \in Proc : <>(pc[self] = "D1")
+
 =============================================================================
 \* Modification History
 \* Last modified Mon Jul 09 13:26:59 CEST 2018 by tthai

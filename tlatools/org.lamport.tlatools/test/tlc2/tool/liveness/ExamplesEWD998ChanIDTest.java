@@ -36,7 +36,7 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesEWD998ChanIDTest extends ModelCheckerTestCase {
 
 	public ExamplesEWD998ChanIDTest() {
-		super("EWD998ChanID", "examples/ewd998", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
+		super("EWD998ChanID", "examples/ewd998", new String[] { "-lncheck", "final" }, ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override
@@ -67,7 +67,9 @@ public class ExamplesEWD998ChanIDTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED)); // PassesInfOftenLow
+		// Assert counterexample via POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesMCWriteThroughCacheTest extends ModelCheckerTestCase {
 
 	public ExamplesMCWriteThroughCacheTest() {
-		super("MCWriteThroughCache", "examples/SpecifyingSystems/CachingMemory", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
+		super("MCWriteThroughCache", "examples/SpecifyingSystems/CachingMemory", new String[] { "-lncheck", "final" },
+				ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override
@@ -67,7 +68,9 @@ public class ExamplesMCWriteThroughCacheTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED)); // BusyLeadsToRdy
+		// Assert counterexample via POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }

@@ -21,6 +21,8 @@ const_1615720459299214000 ==
 {1,2,3,4,5,6,7,8}
 ----
 
+CarsInfOftenOnBridge == \A car \in CarsRight : []<>(Location[car] \in Bridge)
+
 =============================================================================
 \* Modification History
 \* Last modified Sun Oct 10 22:023:42 CEST 2021 by youne

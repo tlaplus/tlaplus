@@ -210,4 +210,6 @@ CommitValidityLtl ==
 TerminationLtl ==
   ([](\A i \in Proc : pc[i] # "BYZ" /\ someFail[i] = FALSE)) => <>(\A i \in Proc : pc[i] = "COMMIT" \/ pc[i] = "ABORT")      
 
+AllCommit == \A self \in Proc : <>(pc[self] = "COMMIT")
+
 =============================================================================

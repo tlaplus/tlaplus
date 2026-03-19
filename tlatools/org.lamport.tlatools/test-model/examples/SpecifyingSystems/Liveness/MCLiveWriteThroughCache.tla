@@ -10,7 +10,7 @@
 (* CachingMemory, except it also "instantiates" the definition of LISpec.  *)
 (***************************************************************************)
 
-EXTENDS LiveWriteThroughCache
+EXTENDS LiveWriteThroughCache, TLC, TLCExt
 
 (***************************************************************************)
 (* The following definitions are substituted for the constants Send,       *)
@@ -141,5 +141,42 @@ LM_Inner_LISpec == LM_Inner_ISpec /\ LM_Inner_Liveness2
 
 LM_Inner_LivenessProperty == 
    \A p \in Proc : (octl[p] = "req") ~> (octl[p] = "rdy")
+
+PermanentlyBusy == \A p \in Proc : []<><<DoRd(p)>>_vars
+
+CONSTANT p1, p2, a1, v1, v2
+PostCondition ==
+   CounterExample =
+   [ action |->
+      { << << 1,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal),
+                memInt |-> <<p1, NoVal>>,
+                wmem |-> (a1 :> v1),
+                cache |-> (p1 :> (a1 :> NoVal) @@ p2 :> (a1 :> NoVal)),
+                memQ |-> <<>> ] >>,
+           [ name |-> "UnnamedAction",
+             location |->
+                 [ beginLine |-> 0,
+                   beginColumn |-> 0,
+                   endLine |-> 0,
+                   endColumn |-> 0,
+                   module |-> "--TLA+ BUILTINS--" ] ],
+           << 1,
+              [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+                buf |-> (p1 :> NoVal @@ p2 :> NoVal),
+                memInt |-> <<p1, NoVal>>,
+                wmem |-> (a1 :> v1),
+                cache |-> (p1 :> (a1 :> NoVal) @@ p2 :> (a1 :> NoVal)),
+                memQ |-> <<>> ] >> >> },
+  state |->
+      { << 1,
+           [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
+             buf |-> (p1 :> NoVal @@ p2 :> NoVal),
+             memInt |-> <<p1, NoVal>>,
+             wmem |-> (a1 :> v1),
+             cache |-> (p1 :> (a1 :> NoVal) @@ p2 :> (a1 :> NoVal)),
+             memQ |-> <<>> ] >> } ]
+
 
 =============================================================================

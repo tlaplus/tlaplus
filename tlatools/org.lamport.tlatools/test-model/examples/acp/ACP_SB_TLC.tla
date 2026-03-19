@@ -15,4 +15,6 @@ AC4_alt == [][ /\ (\A i \in participants : participant[i].decision = commit
                /\ (\A j \in participants : participant[j].decision = abort  
                                 => (participant'[j].decision = abort))]_<<participant>>
 
+AllDecide == \A p \in participants : <>(participant[p].decision \in {commit, abort})
+
 ================================================================================

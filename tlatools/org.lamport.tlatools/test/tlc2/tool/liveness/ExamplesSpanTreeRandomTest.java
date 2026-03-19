@@ -36,7 +36,8 @@ import tlc2.output.EC.ExitStatus;
 public class ExamplesSpanTreeRandomTest extends ModelCheckerTestCase {
 
 	public ExamplesSpanTreeRandomTest() {
-		super("SpanTreeRandom", "examples/SpanningTree", new String[] { "-lncheck", "final" }, ExitStatus.SUCCESS);
+		super("SpanTreeRandom", "examples/SpanningTree", new String[] { "-lncheck", "final" },
+				ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Override
@@ -67,7 +68,9 @@ public class ExamplesSpanTreeRandomTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertFalse(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED)); // 
+		// Assert counterexample via POSTCONDITION.
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
 	}
 }
