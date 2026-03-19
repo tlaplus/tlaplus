@@ -131,19 +131,19 @@ public class Simulator {
 			if (tool.isDebugger()) {
 				this.workers.add(new ExplorationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces));
 			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rl")) {
 				this.workers.add(new RLSimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces));
 			} else if (Boolean.getBoolean(Simulator.class.getName() + ".rlaction")) {
 				this.workers.add(new RLActionSimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces));
 			} else {
 				this.workers.add(new SimulationWorker(i, t, this.workerResultQueue, this.rng.nextLong(),
 						this.traceDepth, this.traceNum, this.traceActions, this.checkDeadlock, this.traceFile,
-						liveCheck, this.numOfGenStates, this.numOfGenTraces, this.welfordM2AndMean));
+						liveCheck, this.numOfGenStates, this.numOfGenTraces));
 			}
 		}
 	
@@ -175,7 +175,6 @@ public class Simulator {
 	// concurrently, so we use a LongAdder to reduce potential contention.
 	private final LongAdder numOfGenStates = new LongAdder();
 	private final AtomicLong numOfGenTraces = new AtomicLong();
-	private final AtomicLong welfordM2AndMean = new AtomicLong();
 
 	// private Action[] actionTrace; // SZ: never read locally
 	private final String traceFile;
@@ -604,7 +603,48 @@ public class Simulator {
 	public final ITool getTool() {
 	    return this.tool;	
 	}
-	
+
+	/**
+	 * Combines per-worker Welford state into aggregate statistics using the
+	 * parallel/partitioned Welford algorithm.
+	 *
+	 * @return double[3] where [0]=aggregate mean, [1]=aggregate M2, [2]=aggregate N.
+	 * @see <a href="https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm">
+	 *      Welford's parallel algorithm</a>
+	 */
+	protected double[] computeAggregateTraceStats() {
+		double aggMean = 0;
+		double aggM2 = 0;
+		long aggN = 0;
+
+		for (SimulationWorker w : this.workers) {
+			final long wN;
+			final double wMean;
+			final double wM2;
+			synchronized (w.statistics) {
+				wN = w.statistics.getLocalN();
+				if (wN == 0) {
+					continue;
+				}
+				wMean = w.statistics.getLocalMean();
+				wM2 = w.statistics.getLocalM2();
+			}
+
+			if (aggN == 0) {
+				aggN = wN;
+				aggMean = wMean;
+				aggM2 = wM2;
+			} else {
+				// Welford's parallel/partitioned combine:
+				final long newN = aggN + wN;
+				final double delta = wMean - aggMean;
+				aggM2 = aggM2 + wM2 + delta * delta * ((double) aggN * wN / newN);
+				aggMean = aggMean + delta * ((double) wN / newN);
+				aggN = newN;
+			}
+		}
+		return new double[] { aggMean, aggM2, aggN };
+	}
 	/**
 	 * Reports progress information
 	 */
@@ -623,16 +663,15 @@ public class Simulator {
 						ready.countDown();
 						this.wait(TLCGlobals.progressInterval);
 					}
-					final long genTrace = numOfGenTraces.longValue();
-					final long m2AndMean = welfordM2AndMean.get();
-					final long mean = m2AndMean & 0x00000000FFFFFFFFL; // could be int.
-					final long m2 = m2AndMean >>> 32;
+					final double[] stats = computeAggregateTraceStats();
+					final long aggN = (long) stats[2];
+					final double variance = aggN > 1 ? stats[1] / (aggN - 1) : 0; // sample variance
 					MP.printMessage(EC.TLC_PROGRESS_SIMU, 
 							String.valueOf(numOfGenStates.longValue()),
-							String.valueOf(genTrace),
-							String.valueOf(mean),
-							String.valueOf(Math.round(m2 / (genTrace + 1d))), // Var(X),  +1 to prevent div-by-zero.
-							String.valueOf(Math.round(Math.sqrt(m2 / (genTrace + 1d))))); // SD, +1 to prevent div-by-zero.
+							String.valueOf(aggN),
+							String.valueOf(Math.round(stats[0])),
+							String.valueOf(Math.round(variance)), // Var(X)
+							String.valueOf(Math.round(Math.sqrt(variance)))); // SD
 					if (count > 1) {
 						count--;
 					} else {
@@ -902,14 +941,14 @@ public class Simulator {
 		n[8] = TLCGetSet.SPEC_ACTIONS;
 		v[8] = getWorkerStatistics().getActions();
 		
-		final long m2AndMean = welfordM2AndMean.get();
-		final long mean = m2AndMean & 0x00000000FFFFFFFFL; // could be int.
+		final double[] stats = computeAggregateTraceStats();
 		n[9] = TLCGetSet.LEVEL_MEAN;
-		v[9] = IntValue.narrowToIntValue(mean);
+		v[9] = IntValue.narrowToIntValue(Math.round(stats[0]));
 
-		final long m2 = m2AndMean >>> 32;
+		final long aggN = (long) stats[2];
+		final double variance = aggN > 1 ? stats[1] / (aggN - 1) : 0;
 		n[10] = TLCGetSet.LEVEL_VARIANCE;
-		v[10] = IntValue.narrowToIntValue(Math.round(m2 / (genTrace + 1d)));// Var(X),  +1 to prevent div-by-zero.
+		v[10] = IntValue.narrowToIntValue(Math.round(variance));
 
 		return new RecordValue(n, v, false);
 	}
