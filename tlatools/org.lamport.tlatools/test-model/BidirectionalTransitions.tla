@@ -26,5 +26,10 @@ Spec2C == (x=0) /\ [][C \/ D]_x/\ Fair2C
 Prop2Cx == WF_x(D)
 Prop2Cy == []<><<D>>_x
 
+neg_Prop1Bx == ~(Prop1Bx)
+neg_Prop1By == ~(Prop1By)
+neg_Prop2Cx == ~(Prop2Cx)
+neg_Prop2Cy == ~(Prop2Cy)
+
 Tautology == (x = x) ~> (x = x)
 =================================================

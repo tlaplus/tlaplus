@@ -19,6 +19,10 @@ Spec
 prop_144491423293819000 ==
 StarvationFreedom
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144491423293819000 ==
+~(StarvationFreedom)
+----
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))

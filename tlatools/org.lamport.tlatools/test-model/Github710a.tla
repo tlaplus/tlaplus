@@ -62,5 +62,7 @@ FairSpec ==
     /\ Spec
     /\ WF_x(Next)
 
+neg_AtMostOnce == ~(AtMostOnce)
+
 Tautology == (vars = vars) ~> (vars = vars)
 ====

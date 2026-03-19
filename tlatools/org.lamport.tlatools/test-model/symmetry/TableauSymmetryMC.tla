@@ -24,6 +24,10 @@ Spec
 prop_144481269489929000 ==
 Liveness
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144481269489929000 ==
+~(Liveness)
+----
 
 Tautology == (arr = arr) ~> (arr = arr)
 =============================================================================
