@@ -108,6 +108,8 @@ PostCondition ==
 					   [x |-> 4, b |-> FALSE],
 					   [x |-> 5, b |-> TRUE] >> 
 
+XEventuallyGrows == <>(x >= 4)
+
 Tautology == (x = x) ~> (x = x)
 =============================================================================
 \* Modification History

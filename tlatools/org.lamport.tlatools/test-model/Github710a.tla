@@ -64,5 +64,7 @@ FairSpec ==
 
 neg_AtMostOnce == ~(AtMostOnce)
 
+EventuallyFlipBack == (x = TRUE) ~> (x = FALSE)
+
 Tautology == (vars = vars) ~> (vars = vars)
 ====
