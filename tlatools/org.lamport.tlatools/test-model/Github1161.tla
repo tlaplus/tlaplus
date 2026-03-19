@@ -51,6 +51,8 @@ RECURSIVE RecViolated(_)
 RecViolated(n) == IF n = 5 THEN FALSE ELSE IF n = 0 THEN TRUE ELSE RecViolated(n - 1)
 PropertyViolated == abs!Double(RecViolated, s)
 
+Tautology == (s = s) ~> (s = s)
+
 ==========================================================================
 
 --------------------------- MODULE Github1161Abstract --------------------

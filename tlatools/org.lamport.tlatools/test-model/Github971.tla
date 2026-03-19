@@ -27,6 +27,8 @@ Spec ==
 LeadsTo ==
     \* lasso shaped counterexample/liveness property
     x = 0 ~> [](x = 1 => [](x = 1)) 
+
+Tautology == (x = x) ~> (x = x)
 ==========================
 
 fp(x =-1) =  3234510876920644087

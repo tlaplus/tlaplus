@@ -432,7 +432,6 @@ PostCondition ==
 			     Agent |-> [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0],
 			     CanCreate |-> FALSE ] >>
 
-	
 =============================================================================
 \* Modification History
 \* Created Fri Mar 27 12:31:27 CET 2015 by makuppe

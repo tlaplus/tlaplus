@@ -64,7 +64,14 @@ PostCondition ==
                                 beginColumn |-> 8,
                                 endLine |-> 38,
                                 endColumn |-> 18,
-                                module |-> "TLCGetLevel" ] ] },
+                                module |-> "TLCGetLevel" ] ] ,
+				      [ name |-> "UnnamedAction",
+				        location |->
+				            [ beginLine |-> 144,
+				                beginColumn |-> 14,
+				                endLine |-> 144,
+				                endColumn |-> 31,
+				                module |-> "TLCGetLevel" ] ] },
                 temporals |-> {},
                 actions |->
                     { [ coverage |-> [generated |-> 6, distinct |-> 3],
@@ -134,4 +141,5 @@ PostCondition ==
                                 endColumn |-> 31,
                                 module |-> "TLCGetLevel" ] ] } ]
 
+Tautology == (x = x) ~> (x = x)
 =============================================================================
