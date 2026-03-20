@@ -1036,14 +1036,40 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
-        <xs:element minOccurs="0" ref="pre-comments">
+        <xs:element name="originalOperator">
           <xs:annotation>
             <xs:documentation>
-              Any comments occurring before the operator. For example,
-              (* Text *) op == expr will have "(* Text *)" here, or "Text" if
-              certain XML Exporter settings are used.
+              When one module imports another using EXTENDS or INSTANCE, the
+              imported module's operators are all duplicated and inlined in
+              the importing module. This field contains a reference to the
+              operator node as it was originally defined. Note that operators
+              can be inlined multiple times, but this will always point to
+              the actual original operator; thus users do not need to resolve
+              a chain of references to find the original. If this operator is
+              itself an original operator not inlined from somewhere else, it
+              will reference its own UID here.
             </xs:documentation>
           </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="UserDefinedOpKindRef"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="originallyDefinedInModule">
+          <xs:annotation>
+            <xs:documentation>
+              A reference to the module in which this operator was originally
+              defined. This might be different from the module in which this
+              specific UserDefinedOpKind node is found, if the operator was
+              imported using EXTENDS or INSTANCE.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="ModuleNodeRef"/>
+            </xs:sequence>
+          </xs:complexType>
         </xs:element>
         <xs:element name="body">
           <xs:annotation>
@@ -1055,7 +1081,7 @@
             <xs:group ref="ExprNode"/>
           </xs:complexType>
         </xs:element>
-        <xs:element minOccurs="0" name="params">
+        <xs:element name="params">
           <xs:annotation>
             <xs:documentation>
               A list of parameters accepted by the operator. Note that these
@@ -1068,6 +1094,15 @@
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="leibnizparam"/>
             </xs:sequence>
           </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" ref="pre-comments">
+          <xs:annotation>
+            <xs:documentation>
+              Any comments occurring before the operator. For example,
+              (* Text *) op == expr will have "(* Text *)" here, or "Text" if
+              certain XML Exporter settings are used.
+            </xs:documentation>
+          </xs:annotation>
         </xs:element>
         <xs:element minOccurs="0" ref="recursive">
           <xs:annotation>
