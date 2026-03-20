@@ -19,6 +19,10 @@ Spec
 prop_144491423293819000 ==
 StarvationFreedom
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144491423293819000 ==
+~(StarvationFreedom)
+----
 
 PostCondition ==
 	/\ TLCSet(42, TLCGet("generated"))
@@ -391,4 +395,7 @@ PostCondition ==
 						     unchecked |-> (A :> {} @@ B :> {}),
 						     other |-> (A :> B @@ B :> A) ] >>
 
+CriticalSectionExits == \A e \in Procs : (pc[e] = "cs") ~> (pc[e] = "ncs")
+
+Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

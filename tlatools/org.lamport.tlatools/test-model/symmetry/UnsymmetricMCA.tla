@@ -24,4 +24,12 @@ SpecA
 prop_1444366015116104000 ==
 Prop
 ----
+\* NEGATED PROPERTY definition
+neg_prop_1444366015116104000 ==
+~(Prop)
+----
+
+XVisitsIntegers == []<>(x \in {1, 2})
+
+Tautology == (x = x) ~> (x = x)
 =============================================================================

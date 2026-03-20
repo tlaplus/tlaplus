@@ -24,6 +24,14 @@ Spec1
 prop_143263724208534000 ==
 Prop1
 ----
+\* NEGATED PROPERTY definition
+neg_prop_143263724208534000 ==
+~(Prop1)
+----
+
+YOscillates == []<>(y = 0)
+
+Tautology == (x = x) ~> (x = x)
 =============================================================================
 \* Modification History
 \* Created Tue May 26 12:47:22 CEST 2015 by markus

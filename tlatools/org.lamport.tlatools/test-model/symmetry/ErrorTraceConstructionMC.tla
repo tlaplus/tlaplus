@@ -9,4 +9,12 @@ Spec
 prop_14411937652505000 ==
 Prop
 ----
+\* NEGATED PROPERTY definition
+neg_prop_14411937652505000 ==
+~(Prop)
+----
+
+YReachesThree == []<>(y = 3)
+
+Tautology == (x = x) ~> (x = x)
 =============================================================================

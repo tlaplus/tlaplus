@@ -11,6 +11,10 @@ Spec == Init /\ [][Next]_<<x>> /\ []<><<TRUE>>_<<x>>
 
 Liveness2 == <>(x = 11)
 
+neg_Liveness2 == ~(Liveness2)
+
+XCyclesToZero == []<>(x = 0)
+
 Alias == [ x |-> x, l |-> TLCGet("level") ]
 
 PostCondition ==

@@ -2,7 +2,8 @@
 SPECIFICATION
     Spec
 PROPERTIES
-    Termination 
+    Termination
+    Tautology
 CONSTANT
     Threads = {t1,t2,t3}
 ====
@@ -129,6 +130,8 @@ Spec == /\ Init /\ [][Next]_vars
 Termination == <>(\A self \in ProcSet: pc[self] = "Done")
 
 \* END TRANSLATION
+
+Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================
 \* Modification History
 \* Last modified Sun Sep 29 12:39:24 PDT 2019 by tony

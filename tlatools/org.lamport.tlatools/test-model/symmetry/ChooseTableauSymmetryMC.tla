@@ -24,4 +24,12 @@ Spec
 prop_144481269489929000 ==
 Liveness
 ----
+\* NEGATED PROPERTY definition
+neg_prop_144481269489929000 ==
+~(Liveness)
+----
+
+AllReady == \A v \in Val : []<>(arr[v] = "ready")
+
+Tautology == (arr = arr) ~> (arr = arr)
 =============================================================================

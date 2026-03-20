@@ -24,4 +24,12 @@ Spec
 prop_146115906602341000 ==
 Live
 ----
+\* NEGATED PROPERTY definition
+neg_prop_146115906602341000 ==
+~(Live)
+----
+
+YReturnsToZero == <>(y = 0)
+
+Tautology == (vars = vars) ~> (vars = vars)
 =============================================================================

@@ -59,4 +59,9 @@ PostCondition ==
 			  state |->
 			      {<<1, [x |-> 0]>>, <<2, [x |-> 1]>>, <<3, [x |-> 0]>>, <<4, [x |-> 2]>>} ]
 	
+neg_Prop1 == ~(Prop1)
+
+XReturnsToZero == []<>(x = 0)
+
+Tautology == (x = x) ~> (x = x)
 ===================================

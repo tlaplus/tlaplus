@@ -61,4 +61,10 @@ PostCondition ==
 FairSpec == 
     /\ Spec
     /\ WF_x(Next)
+
+neg_AtMostOnce == ~(AtMostOnce)
+
+EventuallyFlipBack == (x = TRUE) ~> (x = FALSE)
+
+Tautology == (vars = vars) ~> (vars = vars)
 ====

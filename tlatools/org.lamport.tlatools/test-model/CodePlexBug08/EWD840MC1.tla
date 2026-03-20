@@ -597,4 +597,9 @@ PostCondition ==
 			             tpos |-> 1,
 			             tcolor |-> "black" ] >> } ]
 			
+neg_FalseLiveness == ~FalseLiveness
+
+ValidLiveness == Liveness
+
+Tautology == (vars = vars) ~> (vars = vars)
 ===================
