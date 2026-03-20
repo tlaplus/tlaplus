@@ -59,8 +59,9 @@ public final class SanySettings {
 
   /**
    * This setting controls whether, after running semantic analysis & level
-   * checking, SANY runs linting. This will cause a failure if semantic
-   * analysis was disabled.
+   * checking, SANY runs linting. If either {@link SanySettings#doSemanticAnalysis}
+   * or {@link SanySettings#doLevelChecking} are false, SANY will skip linting
+   * regardless of this setting.
    */
   public final boolean doLinting;
 

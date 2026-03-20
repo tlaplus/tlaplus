@@ -192,22 +192,22 @@ public class SANY {
       frontEndParse(spec, out, settings);
     
       // **** Semantic analysis and level checking
-      if (settings.doSemanticAnalysis) 
-            {frontEndSemanticAnalysis(spec, out, settings);} ;
+      if (settings.doSemanticAnalysis) {
+        frontEndSemanticAnalysis(spec, out, settings);
 
-      // **** Linting
-      if (settings.doLinting) {
-        final int warnsBefore = spec.semanticErrors.getWarningDetails().size();
-        frontEndLinting(spec, out);
-        // Print linting warnings, respecting suppressed/elevated codes.
-        final List<ErrorDetails> allWarnings = spec.semanticErrors.getWarningDetails();
-        final List<ErrorDetails> lintingWarnings = allWarnings.subList(warnsBefore, allWarnings.size());
-        final boolean errorElevated = reportMessages(out, filterVisibleMessages(lintingWarnings, settings), settings);
-        if (errorElevated) {
-          spec.errorLevel = SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE.code();
+        // **** Linting
+        if (settings.doLevelChecking && SanyExitCode.OK == SanyExitCode.fromCode(spec.getErrorLevel()) && settings.doLinting) {
+          final int warnsBefore = spec.semanticErrors.getWarningDetails().size();
+          frontEndLinting(spec, out);
+          // Print linting warnings, respecting suppressed/elevated codes.
+          final List<ErrorDetails> allWarnings = spec.semanticErrors.getWarningDetails();
+          final List<ErrorDetails> lintingWarnings = allWarnings.subList(warnsBefore, allWarnings.size());
+          final boolean errorElevated = reportMessages(out, filterVisibleMessages(lintingWarnings, settings), settings);
+          if (errorElevated) {
+            spec.errorLevel = SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE.code();
+          }
         }
       }
-
     }
     catch (ParseException pe) {
       return SanyExitCode.ERROR;
