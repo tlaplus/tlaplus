@@ -95,9 +95,9 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 			assertEquals(7, stackFrames.length);
 			assertTLCStateFrame(stackFrames[4], 20, 23, RM, vars);
 			assertTLCStateFrame(stackFrames[3], 20, 20, RM, vars);
-			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[0], vars[2], vars[3]);
-			assertTLCStateFrame(stackFrames[1], 22, 22, RM, vars[0], vars[2]);
-			assertTLCStateFrame(stackFrames[0], 23, 23, RM, vars[2]);
+			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[1], vars[2], vars[3]);
+			assertTLCStateFrame(stackFrames[1], 22, 22, RM, vars[2], vars[3]);
+			assertTLCStateFrame(stackFrames[0], 23, 23, RM, vars[3]);
 		}
 
 		// Debug the InitiateProbe action of the next-state relation.
@@ -184,7 +184,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		 */
 		stackFrames = debugger.stepIn(5);
 		assertEquals(9, stackFrames.length);
-		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[0], vars[2], vars[3]);
+		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[1], vars[2], vars[3]);
 
 		/*
   				/\ UNCHANGED <<tpos, tcolor>>
@@ -192,7 +192,7 @@ public class EWD840DebuggerSimTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.stepIn(7);
 		assertEquals(9, stackFrames.length);
 		context = Context.Empty.cons(null, IntValue.ValZero).cons(null, IntValue.ValZero);
-		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[0], vars[2]);
+		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[2], vars[3]);
 		
 		// 8888888888888888888 State Constraint 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(MDL, 16);

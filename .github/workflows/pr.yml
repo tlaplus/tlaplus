@@ -54,7 +54,7 @@ jobs:
     - name: Run unit tests
       shell: bash
       run: |
-        ant -f tlatools/org.lamport.tlatools/customBuild.xml info test -Dtest.halt=true
+        ant -f tlatools/org.lamport.tlatools/customBuild.xml info test
     - name: Generate JUnitReport
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report

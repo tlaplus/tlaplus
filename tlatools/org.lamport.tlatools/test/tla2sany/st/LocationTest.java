@@ -121,4 +121,11 @@ public class LocationTest {
 			l = next;
 		}
 	}
+	
+	@Test
+	public void testSourceCodeExcerpt() {
+	  final String sourceCode = "foo\nbar\nbaz";
+	  final Location loc = new Location(1, 1, 3, 3);
+	  assertEquals(sourceCode, loc.getSourceCodeExcerpt(sourceCode));
+	}
 }
