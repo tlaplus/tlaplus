@@ -1281,6 +1281,15 @@ public class LiveWorker implements Callable<Boolean> {
 			this.dg = checker.getDiskGraph();
 			this.dg.createCache();
 			PossibleErrorModel[] pems = this.oos.getPems();
+			// checkSccs must run separately per PEM because each PEM's EAAction
+			// prunes different edges during the Tarjan DFS (see the
+			// gnode.getCheckAction guard in checkSccs), yielding different SCCs.
+			// EAAction entries are <>[] conjuncts derived from fairness
+			// constraints.  Since <>[]E requires E on every transition in the
+			// cycle, edges that do not satisfy E cannot appear in a valid
+			// counterexample and are pruned.  Different fairness constraints
+			// produce different EAAction sets and therefore prune different
+			// edges, so there is no single SCC decomposition valid for all PEMs.
 			for (int i = 0; i < pems.length; i++) {
 				if (!hasErrFound()) {
 					this.pem = pems[i];
