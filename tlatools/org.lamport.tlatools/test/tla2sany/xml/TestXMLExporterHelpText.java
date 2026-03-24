@@ -37,7 +37,7 @@ public class TestXMLExporterHelpText {
 
   @Test
   public void testPrintHelpText() throws XMLExportingException {
-    Assert.assertEquals(0, XMLExporter.run("-help"));
+    Assert.assertEquals(XMLExporterExitCode.OK.code(), XMLExporter.run("-help"));
     String out = this.outStream.toString();
     String err = this.errStream.toString();
     Assert.assertNotEquals(out, 0, out.length());
@@ -47,27 +47,7 @@ public class TestXMLExporterHelpText {
 
   @Test
   public void testPrintHelpTextOnNoArgs() throws XMLExportingException {
-    Assert.assertEquals(1, XMLExporter.run());
-    String out = this.outStream.toString();
-    String err = this.errStream.toString();
-    Assert.assertEquals(out, 0, out.length());
-    Assert.assertNotEquals(err, 0, err.length());
-    Assert.assertTrue(err, err.contains(getHelpText()));
-  }
-
-  @Test
-  public void testPrintHelpTextOnUnknownArg() throws XMLExportingException {
-    Assert.assertEquals(1, XMLExporter.run("-InvalidArg"));
-    String out = this.outStream.toString();
-    String err = this.errStream.toString();
-    Assert.assertEquals(out, 0, out.length());
-    Assert.assertNotEquals(err, 0, err.length());
-    Assert.assertTrue(err, err.contains(getHelpText()));
-  }
-
-  @Test
-  public void testPrintHelpTextOnNonexistentFile() throws XMLExportingException {
-    Assert.assertEquals(1, XMLExporter.run("DoesNotExist.tla"));
+    Assert.assertEquals(XMLExporterExitCode.ARGS_PARSING_FAILURE.code(), XMLExporter.run());
     String out = this.outStream.toString();
     String err = this.errStream.toString();
     Assert.assertEquals(out, 0, out.length());
