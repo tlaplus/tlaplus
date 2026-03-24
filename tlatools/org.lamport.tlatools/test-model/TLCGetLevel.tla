@@ -41,7 +41,7 @@ Prop ==
 PostCondition ==
     TLCGet("spec") = [ impliedinits |-> {},
                 impliedactions |-> 
-                    { [ name |-> "UnnamedAction",
+                    { [ name |-> "Prop",
                         location |-> 
                             [ beginLine |-> 39,
                                 beginColumn |-> 10,
@@ -58,14 +58,14 @@ PostCondition ==
                                 endColumn |-> 30,
                                 module |-> "TLCGetLevel" ] ] },
                 impliedtemporals |->
-                    { [ name |-> "UnnamedAction",
+                    { [ name |-> "Prop",
                         location |->
                             [ beginLine |-> 38,
                                 beginColumn |-> 8,
                                 endLine |-> 38,
                                 endColumn |-> 18,
                                 module |-> "TLCGetLevel" ] ] ,
-				      [ name |-> "UnnamedAction",
+				      [ name |-> "Tautology",
 				        location |->
 				            [ beginLine |-> 144,
 				                beginColumn |-> 14,
