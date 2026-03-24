@@ -806,7 +806,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				if (opDef.getLevel() == LevelNode.VariableLevel) {
 					MP.printWarning(EC.TLC_LIVE_FORMULA_STATE_LEVEL, new String[] { propName });
 				}
-                this.processConfigProps(propName, opDef.getBody(), Context.Empty, List.Empty);
+                this.processConfigProps(propName, propName, opDef.getBody(), Context.Empty, List.Empty);
             } else if (prop == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "property", propName });
@@ -1370,19 +1370,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
     /* Process the PROPERTIES field of the config file. */
-    private final void processConfigProps(String name, ExprNode pred, Context c, List subs)
+    private final void processConfigProps(String name, final String configName, ExprNode pred, Context c, List subs)
     {
         if (pred instanceof SubstInNode)
         {
             SubstInNode pred1 = (SubstInNode) pred;
-            this.processConfigProps(name, pred1.getBody(), c, subs.cons(pred1));
+            this.processConfigProps(name, configName, pred1.getBody(), c, subs.cons(pred1));
             return;
         }
         if (pred instanceof LetInNode)
         {
             // See the analogous LetInNode handling in processConfigSpec.
             LetInNode pred1 = (LetInNode) pred;
-            this.processConfigProps(name, pred1.getBody(), c, subs);
+            this.processConfigProps(name, configName, pred1.getBody(), c, subs);
             return;
         }
         if (pred instanceof OpApplNode)
@@ -1400,7 +1400,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     {
                         Assert.fail(EC.TLC_CONFIG_OP_NO_ARGS, opNode.getName().toString());
                     }
-                    this.processConfigProps(opNode.getName().toString(), ((OpDefNode) val).getBody(), c, subs);
+                    this.processConfigProps(opNode.getName().toString(), configName, ((OpDefNode) val).getBody(), c, subs);
                 } else if (val == null)
                 {
                     Assert.fail(EC.TLC_CONFIG_OP_NOT_IN_SPEC, opNode.getName().toString());
@@ -1430,7 +1430,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     // expression in its correct scope. See also Github1244Test for the
                     // analogous processConfigSpec case.
                     final LazyValue lv = (LazyValue) val;
-                    this.processConfigProps(name, (ExprNode) lv.expr, lv.con, subs);
+                    this.processConfigProps(name, configName, (ExprNode) lv.expr, lv.con, subs);
                 } else
                 {
                     Assert
@@ -1469,7 +1469,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					// Link the operator's (formal) parameters to the given args.
 					c = symbolNodeValueLookupProvider.getOpContext(odn, args, c, false, toolId);
 					// Recurse.
-					this.processConfigProps(opNode.getName().toString(), odn.getBody(), c, subs);
+					this.processConfigProps(opNode.getName().toString(), configName, odn.getBody(), c, subs);
 					return;
 				}
 			}
@@ -1500,7 +1500,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					Context c1;
 					while ((c1 = ctxts.nextElement()) != null) {
 						final ExprNode expr = (ExprNode) args[0];
-						this.processConfigProps(expr.toString(), expr, c1, subs);
+						this.processConfigProps(expr.toString(), configName, expr, c1, subs);
 					}
 					return;
 				}
@@ -1510,7 +1510,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 for (int i = 0; i < args.length; i++)
                 {
                     ExprNode conj = (ExprNode) args[i];
-                    this.processConfigProps(conj.toString(), conj, c, subs);
+                    this.processConfigProps(conj.toString(), configName, conj, c, subs);
                 }
                 return;
             }
@@ -1526,10 +1526,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                         name = boxArg1.getOperator().getName().toString();
                     }
                     this.impliedActNameVec.addElement(name);
-                    this.impliedActionVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c));
+                    this.impliedActionVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c, configName));
                 } else if (symbolNodeValueLookupProvider.getLevelBound(boxArg, c, toolId) < 2)
                 {
-                    this.invVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c));
+                    this.invVec.addElement(new Action(Specs.addSubsts(boxArg, subs), c, configName));
                     if ((boxArg instanceof OpApplNode) && (((OpApplNode) boxArg).getArgs().length == 0))
                     {
                         name = ((OpApplNode) boxArg).getOperator().getName().toString();
@@ -1537,7 +1537,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                     this.invNameVec.addElement(name);
                 } else
                 {
-                    this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
+                    this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c, configName));
                     this.impliedTemporalNameVec.addElement(name);
                 }
                 return;
@@ -1545,18 +1545,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
           // The following case added by LL on 13 Nov 2009 to handle subexpression names.
           if (opcode ==  OPCODE_nop)
            {
-               this.processConfigProps(name, (ExprNode) args[0], c, subs);
+               this.processConfigProps(name, configName, (ExprNode) args[0], c, subs);
                return;
            }
         }
         int level = symbolNodeValueLookupProvider.getLevelBound(pred, c, toolId);
         if (level <= 1)
         {
-            this.impliedInitVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
+            this.impliedInitVec.addElement(new Action(Specs.addSubsts(pred, subs), c, configName));
             this.impliedInitNameVec.addElement(name);
         } else if (level == 3)
         {
-            this.impliedTemporalVec.addElement(new Action(Specs.addSubsts(pred, subs), c));
+			this.impliedTemporalVec
+					.addElement(new Action(Specs.addSubsts(pred, subs), c, configName));
             this.impliedTemporalNameVec.addElement(name);
         } else if (level == 2)
         {

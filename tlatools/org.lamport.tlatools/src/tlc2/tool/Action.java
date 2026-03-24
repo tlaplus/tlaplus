@@ -62,6 +62,10 @@ public final class Action implements ToolGlobals, Serializable {
 	  this(pred, con, UNNAMED_ACTION, isInitPred, false);
   }
 
+  public Action(SemanticNode pred, Context con, String actionName) {
+	  this(pred, con, UniqueString.of(actionName), false, false);
+  }
+
   private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred, final boolean isInternal) {
 	  this.pred = pred;
 	  this.con = con;
