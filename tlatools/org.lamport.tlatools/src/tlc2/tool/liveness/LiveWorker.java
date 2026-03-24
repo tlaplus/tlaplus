@@ -7,12 +7,14 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -823,9 +825,6 @@ public class LiveWorker implements Callable<Boolean> {
 //		writeDotViz(state, tidx, nodeTbl, new java.io.File(liveCheck.getMetaDir() + java.io.File.separator
 //				+ "pSatisfiableSCC_" + System.currentTimeMillis() + ".dot"));
 
-		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
-		MP.printError(EC.TLC_COUNTER_EXAMPLE);
-		
 		// Collect alias-processed states for deferred printing so that we can
 		// perform post-hoc property attribution before emitting any output.
 		final List<TLCStateInfo> printableStates = new ArrayList<>();
@@ -972,12 +971,17 @@ public class LiveWorker implements Callable<Boolean> {
 					() -> new ArrayList<>(states)));
 		}
 
-		/* All error trace states have been printed (prefix + cycleStack +
-		 * postfix). What is left is to print either the stuttering or the
-		 * back-to-cyclePos marker.
+		/* The full lasso is now available. Perform post-hoc property
+		 * attribution to determine which property/properties are violated.
 		 */ 
 		
 		final int stateNumber = (int) cycleState.stateNumber; // if the cast causes problems the trace won't be comprehensible anyway.
+
+		final Set<String> violated = Liveness.findViolatedProperties(tool,
+				states.stream().map(s -> s.state).collect(Collectors.toList()), cyclePos);
+		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, violated.toArray(String[]::new));
+		MP.printError(EC.TLC_COUNTER_EXAMPLE);
+
 		// Print all trace states (prefix + cycle).
 		for (int i = 0; i < printableStates.size(); i++) {
 			StatePrinter.printInvariantViolationStateTraceState(printableStates.get(i));

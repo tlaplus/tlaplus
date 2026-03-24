@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -55,6 +57,24 @@ public abstract class LiveExprNode {
 	 * @return true iff both states are consistent with this {@link LiveExprNode}.
 	 */
 	public abstract boolean eval(ITool tool, TLCState s1, TLCState s2);
+
+	/**
+	 * Evaluates this temporal formula at position {@code pos} of a
+	 * lasso-shaped behavior.  The lasso consists of a finite prefix
+	 * {@code states[0..cyclePos-1]} followed by a cycle
+	 * {@code states[cyclePos..len-1]} that repeats forever.
+	 *
+	 * @param tool       the tool instance for evaluating state/action predicates
+	 * @param states     the lasso states
+	 * @param cyclePos   0-based index where the cycle begins
+	 * @param pos        current evaluation position in the lasso
+	 * @return true iff this formula holds at position {@code pos}
+	 */
+	public boolean evalOnLasso(final ITool tool, final List<TLCState> states,
+			final int cyclePos, final int pos) {
+		assert false : "evalOnLasso not implemented for " + getClass().getSimpleName();
+		return true;
+	}
 
 	/* The string representation. */
 	public final String toString() {

@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -28,6 +30,11 @@ abstract class LNState extends LiveExprNode {
 
 	public final boolean eval(ITool tool, TLCState s) {
 		return this.eval(tool, s, TLCState.Empty);
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		return eval(tool, states.get(pos), TLCState.Empty);
 	}
 
 	public final Context getContext() {

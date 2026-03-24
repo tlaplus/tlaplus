@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 
@@ -37,6 +39,11 @@ public class LNNeg extends LiveExprNode {
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		return !this.body.eval(tool, s1, s2);
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		return !this.body.evalOnLasso(tool, states, cyclePos, pos);
 	}
 
 	public final void toString(StringBuffer sb, String padding) {

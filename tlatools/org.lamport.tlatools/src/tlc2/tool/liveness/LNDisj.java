@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
 import tlc2.util.Vect;
@@ -92,6 +94,16 @@ class LNDisj extends LiveExprNode {
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) disjs.elementAt(i);
 			if (item.eval(tool, s1, s2)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		for (int i = 0; i < disjs.size(); i++) {
+			if (((LiveExprNode) disjs.elementAt(i)).evalOnLasso(tool, states, cyclePos, pos)) {
 				return true;
 			}
 		}

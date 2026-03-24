@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tla2sany.semantic.LevelConstants;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -35,6 +37,13 @@ class LNNext extends LiveExprNode {
 
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		return this.body.eval(tool, s2, TLCState.Empty);
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		assert false : "LNNext should have been rewritten by astToLive";
+		final int next = (pos + 1 < states.size()) ? pos + 1 : cyclePos;
+		return body.evalOnLasso(tool, states, cyclePos, next);
 	}
 
 	public final void toString(StringBuffer sb, String padding) {
