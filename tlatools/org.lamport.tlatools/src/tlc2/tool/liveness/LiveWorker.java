@@ -826,6 +826,10 @@ public class LiveWorker implements Callable<Boolean> {
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 		
+		// Collect alias-processed states for deferred printing so that we can
+		// perform post-hoc property attribution before emitting any output.
+		final List<TLCStateInfo> printableStates = new ArrayList<>();
+
 		/*
 		 * Use a dedicated thread to concurrently search a prefix-path from some
 		 * initial node to the state identified by <<state, tidx>>.
@@ -836,9 +840,9 @@ public class LiveWorker implements Callable<Boolean> {
 			 * @see java.util.concurrent.Callable#call()
 			 */
 			public List<TLCStateInfo> call() throws Exception {
-				// Print the error trace. We first construct the prefix that
-				// led to the bad cycle. The nodes on prefix and cycleStack then
-				// form the complete counter example.
+				// We first construct the prefix that led to the bad cycle. The
+				// nodes on prefix and cycleStack then form the complete counter
+				// example.
 				final LongVec prefix = LiveWorker.this.dg.getPath(state, tidx);
 				final int plen = prefix.size();
 				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
@@ -870,10 +874,10 @@ public class LiveWorker implements Callable<Boolean> {
 					}
 				}
 
-				// Print the prefix in reverse order of previous loop:
+				// Process prefix states through evalAlias for deferred printing:
 				for (int i = 0; i < states.size() - 1; i++) {
 					final int j = i;
-					StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(states.get(i),
+					printableStates.add(tool.getDebugger().evalAlias(states.get(i),
 							states.get(i + 1).state, () -> new ArrayList<>(states.subList(0, j))));
 				}
 				return states;
@@ -917,9 +921,9 @@ public class LiveWorker implements Callable<Boolean> {
 									// error trace.
 		}
 
-		// Wait for the prefix-path to be searched/generated and fully printed.
+		// Wait for the prefix-path to be searched/generated.
 		// get() is a blocking call that makes this thread wait for the executor
-		// to finish its job of searching and printing the prefix-path.
+		// to finish its job of searching the prefix-path.
 		final List<TLCStateInfo> states;
 		try {
 			states = future.get();
@@ -933,16 +937,14 @@ public class LiveWorker implements Callable<Boolean> {
 		}
 		
 		/*
-		 * At this point everything from the initial state up to the start state
-		 * of the SCC has been printed. Now, print cycleState and the  states in
-		 * postfix. Obtain the last state from the prefix (which corresponds to
-		 * <<state, tidx>>) to use it to generate the next state. Obviously, we
-		 * have to wait for the prefix thread to be done for two reasons: a) the
-		 * trace has to be printed and b) we need the TLCState instance to generate
-		 * the successor states in the cycle.
+		 * Obtain the last state from the prefix (which corresponds to
+		 * <<state, tidx>>) to use it to generate the next state.
 		 */
 		final TLCStateInfo cycleState = states.get(states.size() - 1);
 		TLCStateInfo sinfo = cycleState;
+		
+		// Remember where the cycle begins before appending cycle states.
+		final int cyclePos = states.size() - 1;
 		
 		// 4723xdf:
 		// Only print the state if it differs from its predecessor. We don't
@@ -953,7 +955,7 @@ public class LiveWorker implements Callable<Boolean> {
 		// efficiency reason. Regenerating the next state might be
 		// expensive.
 		if (postfix.isEmpty()) {
-			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(cycleState,
+			printableStates.add(tool.getDebugger().evalAlias(cycleState,
 					cycleState.state, () -> new ArrayList<>(states)));
 		} else {
 			postfix.pack().removeLastIf(cycleState.fingerPrint());
@@ -961,12 +963,12 @@ public class LiveWorker implements Callable<Boolean> {
 			for (int i = postfix.size() - 1; i >= 0; i--) {
 				final long curFP = postfix.elementAt(i);
 				TLCStateInfo sucinfo = tool.getState(curFP, sinfo);
-				StatePrinter.printInvariantViolationStateTraceState(
+				printableStates.add(
 						tool.getDebugger().evalAlias(sinfo, sucinfo.state, () -> new ArrayList<>(states)));
 				states.add(sucinfo);
 				sinfo = sucinfo;
 			}
-			StatePrinter.printInvariantViolationStateTraceState(tool.getDebugger().evalAlias(sinfo, cycleState.state,
+			printableStates.add(tool.getDebugger().evalAlias(sinfo, cycleState.state,
 					() -> new ArrayList<>(states)));
 		}
 
@@ -976,6 +978,14 @@ public class LiveWorker implements Callable<Boolean> {
 		 */ 
 		
 		final int stateNumber = (int) cycleState.stateNumber; // if the cast causes problems the trace won't be comprehensible anyway.
+		// Print all trace states (prefix + cycle).
+		for (int i = 0; i < printableStates.size(); i++) {
+			StatePrinter.printInvariantViolationStateTraceState(printableStates.get(i));
+		}
+
+		/* What is left is to print either the stuttering or the
+		 * back-to-cyclePos marker.
+		 */ 
 		if (sinfo.fingerPrint() == cycleState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNumber);
 			if (!this.oos.hasEmptyPEMAndBoxFreePromises()) {
