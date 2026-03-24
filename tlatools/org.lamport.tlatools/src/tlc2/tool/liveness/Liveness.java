@@ -8,6 +8,9 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import tla2sany.semantic.ASTConstants;
 import tla2sany.semantic.ExprNode;
@@ -26,6 +29,7 @@ import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.EvalControl;
+import tlc2.tool.EvalException;
 import tlc2.tool.IContextEnumerator;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
@@ -38,6 +42,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.ToolIO;
 
 public class Liveness implements ToolGlobals, ASTConstants {
@@ -942,5 +947,58 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		} else if (specName.isEmpty()) {
 			MP.printWarning(EC.TLC_CONFIG_NO_SPEC_BUT_PROPERTY, new String[] { "" });
 		}
+	}
+
+	/**
+	 * Evaluates each original liveness property from the spec against the
+	 * concrete counterexample lasso and returns the names of violated
+	 * properties.
+	 * <p>
+	 * This uses a direct recursive evaluator ({@link LiveExprNode#evalOnLasso})
+	 * rather than the existing tableau/SCC machinery ({@link LiveCheck1#checkTrace})
+	 * because the latter operates on the combined, negated, DNF-transformed formula
+	 * produced by {@link #processLiveness} and therefore cannot attribute violations
+	 * to individual properties.
+	 */
+	public static Set<String> findViolatedProperties(final ITool tool, final List<TLCState> states, final int cyclePos) {
+		assert !states.isEmpty() : "Counter-example trace must contain at least one state";
+		assert cyclePos >= 0 && cyclePos < states.size()
+				: "cyclePos=" + cyclePos + " out of bounds for states.size()=" + states.size();
+		final Action[] checks = tool.getImpliedTemporals();
+		final Set<String> violated = new LinkedHashSet<>(); // deterministic order
+		for (int i = 0; i < checks.length; i++) {
+			try {
+				// TODO: Avoid reconstructing LiveExprNode during post-processing. Instead,
+				// create and store the LiveExprNode during parseLiveness, and reuse it here.
+				final LiveExprNode prop = astToLive(tool, (ExprNode) checks[i].pred, checks[i].con);
+				if (!prop.evalOnLasso(tool, states, cyclePos, 0)) {
+					violated.add(checks[i].getNameOfDefault());
+				}
+			// The following two catch blocks are defensive. Since the counterexample is
+			// already valid, a failure in post-hoc attribution should degrade to an unnamed
+			// violation rather than crash TLC.
+			} catch (TLCRuntimeException e) {
+				// The astToLive call uses the same Action[].pred and Action[].con that
+				// parseLiveness already converted successfully at startup, so it should not
+				// fail here. The eval calls inside evalOnLasso operate on reconstructed
+				// counterexample states that TLC already evaluated during state-space
+				// exploration. No known case currently triggers this catch. It is defensive:
+				// since the counterexample is already valid, a failure in post-hoc attribution
+				// should degrade to an unnamed violation rather than crash TLC.
+				MP.printTLCRuntimeException((TLCRuntimeException) e);
+			} catch (RuntimeException e) {
+				MP.printError(EC.GENERAL, e);
+			}
+		}
+		assert violated.size() > 0 : "Failed to determine property";
+		return violated;
+	}
+
+	/**
+	 * Overload for counterexamples that end with a stuttering cycle
+	 * (i.e., the cycle consists of the final state repeating forever).
+	 */
+	public static Set<String> findViolatedProperties(final ITool tool, final List<TLCState> states) {
+		return findViolatedProperties(tool, states, states.size() - 1);
 	}
 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionService;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import tlc2.TLC;
 import tlc2.TLCGlobals;
@@ -798,9 +800,6 @@ public class LiveCheck implements ILiveCheck {
 					return;
 				}
 				TLCGlobals.mainChecker.printedLivenessErrorStack = true;
-				
-				MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
-				MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
 				final int plen = prefix.size();
 				final List<TLCStateInfo> states = new ArrayList<TLCStateInfo>(plen);
@@ -829,6 +828,13 @@ public class LiveCheck implements ILiveCheck {
 				// property.
 				final TLCStateInfo last = states.get(states.size() - 1);
 				states.set(states.size() -1 , tool.evalAlias(last, last.state));
+
+				// Post-hoc property attribution: treat the safety-like
+				// violation as a lasso where the last state stutters forever.
+				final Set<String> violated = Liveness.findViolatedProperties(tool,
+						states.stream().map(s -> s.state).collect(Collectors.toList()), states.size() - 1);
+				MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, violated.toArray(String[]::new));
+				MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
 				for (int i = 0; i < states.size(); i++) {
 					StatePrinter.printInvariantViolationStateTraceState(states.get(i));

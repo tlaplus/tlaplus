@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tla2sany.semantic.LevelConstants;
 import tlc2.output.EC;
 import tlc2.tool.ITool;
@@ -45,6 +47,28 @@ class LNEven extends LiveExprNode {
 	public final boolean eval(ITool tool, TLCState s1, TLCState s2) {
 		Assert.fail(EC.TLC_LIVE_CANNOT_EVAL_FORMULA, EVENTUALLY);
 		return false; // make compiler happy
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		// <>body: body must hold at some position from pos onward.
+		// Since the cycle repeats forever, it suffices to find body
+		// true at any cycle position.
+		// When pos is already in the cycle, the tail prefix has been
+		// fully traversed and only the cycle needs to be checked.
+		if (pos < cyclePos) {
+			for (int i = pos; i < cyclePos; i++) {
+				if (body.evalOnLasso(tool, states, cyclePos, i)) {
+					return true;
+				}
+			}
+		}
+		for (int i = cyclePos; i < states.size(); i++) {
+			if (body.evalOnLasso(tool, states, cyclePos, i)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public final void toString(StringBuffer sb, String padding) {

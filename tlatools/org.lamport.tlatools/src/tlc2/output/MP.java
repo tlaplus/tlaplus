@@ -567,7 +567,25 @@ public class MP
             b.append("The following behavior constitutes a counter-example:\n");
             break;
         case EC.TLC_TEMPORAL_PROPERTY_VIOLATED:
-            b.append("Temporal properties were violated.\n");
+			if (parameters.length > 1) {
+				b.append("Temporal properties ");
+				for (int i = 1; i <= parameters.length; i++) {
+					if (i > 1 && i < parameters.length) {
+						b.append(", ");
+					} else if (i == parameters.length) {
+						b.append(parameters.length == 2 ? " and " : ", and ");
+					}
+					b.append("%" + i + "%");
+				}
+				b.append(" were violated.\n");
+			} else if (parameters.length == 1) {
+				b.append("Temporal property %1% was violated.\n");
+			} else {
+				// With issue https://github.com/tlaplus/tlaplus/issues/641 addressed, this
+				// branch should no longer be needed. It is kept as a precaution in case the fix
+				// is incomplete, to avoid crashes occurring before TLC emits a counterexample.
+				b.append("Temporal properties were violated.\n");
+			}
             break;
 
         // this is a TLC bug

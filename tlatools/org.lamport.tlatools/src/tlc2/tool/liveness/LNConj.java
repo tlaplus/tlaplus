@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tlc2.output.EC;
 import tlc2.tool.ITool;
 import tlc2.tool.TLCState;
@@ -94,6 +96,16 @@ class LNConj extends LiveExprNode {
 		for (int i = 0; i < sz; i++) {
 			LiveExprNode item = (LiveExprNode) this.conjs.elementAt(i);
 			if (!item.eval(tool, s1, s2)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		for (int i = 0; i < conjs.size(); i++) {
+			if (!((LiveExprNode) conjs.elementAt(i)).evalOnLasso(tool, states, cyclePos, pos)) {
 				return false;
 			}
 		}

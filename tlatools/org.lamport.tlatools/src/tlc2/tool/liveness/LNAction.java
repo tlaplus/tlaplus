@@ -5,6 +5,8 @@
 
 package tlc2.tool.liveness;
 
+import java.util.List;
+
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.LevelConstants;
 import tlc2.output.EC;
@@ -81,6 +83,14 @@ public class LNAction extends LiveExprNode {
 			Assert.fail(EC.TLC_LIVE_ENCOUNTERED_NONBOOL_PREDICATE);
 		}
 		return ((IBoolValue) val).getVal();
+	}
+
+	@Override
+	public boolean evalOnLasso(ITool tool, List<TLCState> states, int cyclePos, int pos) {
+		final int len = states.size();
+		final TLCState s1 = states.get(pos);
+		final TLCState s2 = (pos + 1 < len) ? states.get(pos + 1) : states.get(cyclePos);
+		return eval(tool, s1, s2);
 	}
 
 	public final void toString(StringBuffer sb, String padding) {
