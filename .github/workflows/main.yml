@@ -27,9 +27,6 @@ jobs:
         include: 
         - operating-system: macos-latest
           MVN_COMMAND: mvn -Dmaven.test.skip=true
-          GITHUB_RELEASE_NAME: The Clarke release
-          TOOLBOX_PRODUCT_ZIP: TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
-          TOOLBOX_PRODUCT_ZIP_ARM64: TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip
 
         - operating-system: ubuntu-latest
           MVN_COMMAND: xvfb-run mvn -Dtest.skip=true -Dmaven.test.failure.ignore=true 
@@ -226,13 +223,24 @@ jobs:
            curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
            curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}} --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
 
+           ## macOS x86_64
+           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip") | .id')
+           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
+
+           ## macOS ARM64
+           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip") | .id')
+           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
+           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip --upload-file toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip
+
            ## Generate changelog
            cd general/docs/changelogs
            ## Append sha1 sum to changelog (last line of changelog has the table header).
            echo "$(sha1sum ../../../tlatools/org.lamport.tlatools/dist/tla2tools.jar | cut -f 1 -d " ")|tla2tools.jar"  >> ch1_8_0.md
            echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP_WIN}}" >> ch1_8_0.md
            echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP}} | cut -f 1 -d " ")|${{matrix.TOOLBOX_PRODUCT_ZIP}}" >> ch1_8_0.md
-           echo "TBD|macOS" >> ch1_8_0.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip | cut -f 1 -d " ")|TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip" >> ch1_8_0.md
+           echo "$(sha1sum ../../../toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip | cut -f 1 -d " ")|TLAToolbox-1.8.0-macosx.cocoa.aarch64.zip" >> ch1_8_0.md
            ## Two above as one-liner without intermediate file.
            $(jq -n --argjson changelog "$(cat ch1_8_0.md | jq  --raw-input --slurp .)" -f gh-1_8_0.jq > gh-1_8_0.json)
            ## Update draft release with latest changelog in case it changed.
@@ -246,8 +254,6 @@ jobs:
     - name: Upload assets to INRIA
       if: matrix.operating-system == 'ubuntu-latest'
       run: |
-           ## Thanks Apple for your walled garden! Delete the *unsigned* Toolbox maxOS zip created by the Linux/ubuntu job.  The macOS job below creates and rsyncs a *signed* zip file.
-           rm toolbox/org.lamport.tla.toolbox.product.product/target/products/TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
            ## Upload p2 and apt repository to INRIA machine.
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av tlatools/org.lamport.tlatools/dist/tla2tools.jar github@upload.tlapl.us:dist/
            rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av toolbox/org.lamport.tla.toolbox.product.product/target/products/*.zip github@upload.tlapl.us:products/
@@ -318,66 +324,3 @@ jobs:
           --method POST \
           --input - <<< '{"event_type":"tlaplus-dispatch","client_payload":{"source":"tlaplus"}}'
 
-      ################################# macOS #################################
-
-      ##
-      ## Sign Toolbox macOS zip file.
-      ##
-    - name: Set up Apple Certs
-      if: matrix.operating-system == 'macos-latest'
-      run: 'echo "$APPLE_CODESIGN_CERTS" > certs.pem'
-      shell: bash
-      env:
-        APPLE_CODESIGN_CERTS: ${{ secrets.APPLE_CODESIGN_CERTS }}
-    - name: Set up Apple Key (dev)
-      if: matrix.operating-system == 'macos-latest'
-      run: 'echo "$APPLE_CODESIGN_DEVELOPER_PRIVKEY" > dev.pem'
-      shell: bash
-      env:
-        APPLE_CODESIGN_DEVELOPER_PRIVKEY: ${{ secrets.APPLE_CODESIGN_DEVELOPER_PRIVKEY }}
-    - name: Install rsync dependencies with Homebrew
-      if: matrix.operating-system == 'macos-latest'
-      run: |
-        brew update
-        brew install rsync ## install samba rsync to not use macos' built-in openrsync.  Latter is incompatible with rrsync (restricted rsync) that protects our Inria machine.
-    - name: Create macOS keychain, unzip, sign, and zip up TLA+ Toolbox for macOS
-      if: matrix.operating-system == 'macos-latest'
-      run: |
-           ## Convert pems stored as Github secrets to .p12 files that 'security import' accepts.
-           openssl pkcs12 -export -inkey dev.pem -in certs.pem -out dev.p12 -passin pass:${{ secrets.APPLE_CERT_PASSWORD }} -passout pass:${{ secrets.APPLE_CERT_PASSWORD }}
-           ## Create a fresh keychain "tla" and import certs and keys into it.
-           security create-keychain -p ${{ secrets.APPLE_CERT_PASSWORD }} tla
-           security import certs.pem -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
-           security import dev.p12 -k tla -P ${{ secrets.APPLE_CERT_PASSWORD }} -T /usr/bin/codesign
-           ## Listing the keychain once is apparently required for codesign to work.
-           security list-keychains -s tla
-           security default-keychain -s tla
-           ## Not sure what this is for, but hey: https://stackoverflow.com/a/40039594
-           security set-key-partition-list -S apple-tool:,apple: -s -k ${{ secrets.APPLE_CERT_PASSWORD }} tla
-           security find-identity -v -p codesigning tla
-           security set-keychain-settings -t 3600 -u tla
-           ## Unzip, sign, and zip up the TLA Toolbox.
-           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{ matrix.TOOLBOX_PRODUCT_ZIP }}
-           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
-           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
-           #xcrun altool --notarize-app --primary-bundle-id "org.lamport.tla.toolbox.product.product" --username "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" --file "${{ matrix.TOOLBOX_PRODUCT_ZIP }}"
-           xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "${{ matrix.TOOLBOX_PRODUCT_ZIP }}"
-           ## Upload signed TLAToolbox zip to Github release.
-           DRAFT_RELEASE=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases --header "Content-Type: application/json" | jq '.[]| select(.name=="${{ matrix.GITHUB_RELEASE_NAME }}") | .id')
-           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "${{ matrix.TOOLBOX_PRODUCT_ZIP }}") | .id')
-           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
-           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{ matrix.TOOLBOX_PRODUCT_ZIP }} --upload-file ${{ matrix.TOOLBOX_PRODUCT_ZIP }}
-           ## Unzip, sign, and zip up the TLA Toolbox (ARM64).
-           rm -rf "TLA+ Toolbox.app"
-           unzip toolbox/org.lamport.tla.toolbox.product.product/target/products/${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
-           codesign --force --identifier org.lamport.tla.toolbox.product.product --keychain tla --deep --entitlements toolbox/org.lamport.tla.toolbox.product.product/entitlements.plist --options runtime --verbose=4 -f -s "Developer ID Application: M K (3PCM4M3RWK)" "TLA+ Toolbox.app"
-           ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" ${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
-           # Notarization always times out on the ARM64 build, so we're not doing it for now.
-           #xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}"
-           ## Upload signed TLAToolbox zip to Github release.
-           ID=$(curl -sS -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets --header "Content-Type: application/json"  | jq '.[]| select(.name == "${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}") | .id')
-           curl -sS -X DELETE -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://api.github.com/repos/${{ github.repository }}/releases/assets/$ID
-           curl -s -X POST -H "Content-Type: application/zip" -H "Authorization: token ${{secrets.GITHUB_TOKEN}}" https://uploads.github.com/repos/${{ github.repository }}/releases/$DRAFT_RELEASE/assets?name=${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}} --upload-file ${{matrix.TOOLBOX_PRODUCT_ZIP_ARM64}}
-           ## Upload x86_64 and ARM64 zips to INRIA machine.
-           rsync --version
-           rsync -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" --delete -av ${{ matrix.TOOLBOX_PRODUCT_ZIP }} ${{ matrix.TOOLBOX_PRODUCT_ZIP_ARM64 }} github@upload.tlapl.us:products/
