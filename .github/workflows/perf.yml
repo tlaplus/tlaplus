@@ -41,12 +41,19 @@ jobs:
         ant -f tlatools/org.lamport.tlatools/customBuild.xml info compile compile-test dist
 
     - name: Download artifact from previous performance test
-      uses: dawidd6/action-download-artifact@v7
       continue-on-error: true
-      with:
-        workflow: perf.yml
-        name: perf-results
-        path: previous
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        run_id=$(gh run list -w perf.yml -s completed -L 1 --json databaseId -q '.[0].databaseId')
+        if [ -n "$run_id" ]; then
+          echo "Downloading perf-results artifact from run $run_id"
+          gh run download "$run_id" -n perf-results -D previous
+        else
+          echo "::warning::No previous completed run found for perf.yml."
+          echo "This can happen if GitHub's artifact expiration policy (max 90 days) deleted old artifacts."
+          echo "Continuing without previous results — no regression comparison will be performed."
+        fi
 
       ##
       ## Fetch CommunityModules.
