@@ -22,13 +22,13 @@ jobs:
       if: matrix.operating-system == 'windows-latest'
       run: git config --global core.autocrlf input
     - name: Clone tlaplus/tlaplus
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
       with:
         distribution: adopt
         java-version: 17
@@ -59,7 +59,7 @@ jobs:
       if: always()
       run: ant -f tlatools/org.lamport.tlatools/customBuild.xml test-report
     - name: Upload raw unit test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       if: always()
       with:
           ## Name of the artifact to upload (discriminated by os to prevent name conflicts).
@@ -69,19 +69,19 @@ jobs:
             tlatools/org.lamport.tlatools/target/surefire-reports/TESTS-TestSuites.xml
             tlatools/org.lamport.tlatools/target/surefire-reports/junit-noframes.html
     - name: Publish unit test results
-      uses: mikepenz/action-junit-report@v4
+      uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
       if: always()
       with:
           check_name: JUnit Test Report on ${{ matrix.operating-system }}
           report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'
     - name: Upload tla2tools.jar
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       if: matrix.operating-system == 'ubuntu-latest'
       with:
           name: tla2tools
           path: tlatools/org.lamport.tlatools/dist/tla2tools.jar
     - name: Clone tlaplus/CommunityModules
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         repository: tlaplus/CommunityModules
         path: communitymodules/
@@ -100,11 +100,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Clone tlaplus/tlaplus
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         fetch-depth: 0
     - name: Set up JDK 11
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
       with:
         ## JPF requires Java 11.
         distribution: 'adopt'
@@ -125,13 +125,13 @@ jobs:
       fail-fast: false
     steps:
     - name: Clone tlaplus/tlaplus
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
       with:
         distribution: adopt
         java-version: 17
@@ -177,7 +177,7 @@ jobs:
            ditto -ck --sequesterRsrc --keepParent "TLA+ Toolbox.app" TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip
            xcrun notarytool submit --wait --team-id "${{secrets.APPLE_CODESIGN_TEAM_ID}}" --apple-id "${{secrets.APPLE_CODESIGN_DEVELOPER_ID}}" --password "${{secrets.APPLE_CODESIGN_DEVELOPER_PASSWORD}}" "TLAToolbox-1.8.0-macosx.cocoa.x86_64.zip"
     - name: Upload Toolbox Artifacts (zip files)
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       if: matrix.operating-system == 'macos-latest' ## This avoids a name clash (TLAToolboxes) between matrix runners. The macOS runner also builds the Windows and Linux zip files. Unlike the Linux runner, it additionally codesigns the macOS zip.
       with:
         name: TLAToolboxes
@@ -198,18 +198,18 @@ jobs:
       DIST_DIR: "tlatools/org.lamport.tlatools/dist"
     steps:
     - name: Clone tlaplus/tlaplus
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         # Number of commits to fetch. 0 indicates all history.
         # jgit task nested in customBuild.xml fails without history.
         fetch-depth: 0
     - name: Clone tlaplus/examples
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         repository: tlaplus/examples
         path: ${{ env.EXAMPLES_DIR }}
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
       with:
         distribution: adopt
         java-version: 17
@@ -304,7 +304,7 @@ jobs:
           -Dtlaplus.examples.path="${{ github.workspace }}/${{ env.EXAMPLES_DIR }}" \
           -DTLA-Library="${{ github.workspace }}/${{ env.DEPS_DIR }}/tlapm/library:${{ github.workspace }}/community-modules-tla:${{ github.workspace }}/apalache-src/src/tla"
     - name: Upload formatter test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       if: always()
       with:
         name: formatter-semantic-results-${{ matrix.unicode && 'unicode' || 'ascii' }}
