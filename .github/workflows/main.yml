@@ -287,36 +287,36 @@ jobs:
       ##
     - name: Integration tests with CommunityModules
       if: matrix.operating-system == 'ubuntu-latest' && github.event.client_payload.source != 'CommunityModules'
-      uses: peter-evans/repository-dispatch@v3
-      with:
-          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
-          repository: tlaplus/CommunityModules
-          event-type: tlaplus-dispatch
-          client-payload: '{"source": "tlaplus"}'
+      env:
+        GH_TOKEN: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+      run: |
+        gh api repos/tlaplus/CommunityModules/dispatches \
+          --method POST \
+          --input - <<< '{"event_type":"tlaplus-dispatch","client_payload":{"source":"tlaplus"}}'
 
       ##
       ## Trigger CI run of tlaplus/examples as integration tests.
       ##
     - name: Integration tests with tlaplus/examples
       if: matrix.operating-system == 'ubuntu-latest'
-      uses: peter-evans/repository-dispatch@v3
-      with:
-          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
-          repository: tlaplus/examples
-          event-type: tlaplus-dispatch
-          client-payload: '{"source": "tlaplus"}'
+      env:
+        GH_TOKEN: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+      run: |
+        gh api repos/tlaplus/examples/dispatches \
+          --method POST \
+          --input - <<< '{"event_type":"tlaplus-dispatch","client_payload":{"source":"tlaplus"}}'
 
       ##
       ## Trigger build of VSCode extension.
       ##
     - name: VSCode nightly build
       if: matrix.operating-system == 'ubuntu-latest'
-      uses: peter-evans/repository-dispatch@v3
-      with:
-          token: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
-          repository: tlaplus/vscode-tlaplus
-          event-type: tlaplus-dispatch
-          client-payload: '{"source": "tlaplus"}'
+      env:
+        GH_TOKEN: ${{ secrets.COMMUNITYMODULES_ACCESS_TOKEN }}
+      run: |
+        gh api repos/tlaplus/vscode-tlaplus/dispatches \
+          --method POST \
+          --input - <<< '{"event_type":"tlaplus-dispatch","client_payload":{"source":"tlaplus"}}'
 
       ################################# macOS #################################
 
