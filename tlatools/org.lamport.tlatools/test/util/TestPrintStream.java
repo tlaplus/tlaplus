@@ -85,4 +85,14 @@ public class TestPrintStream extends PrintStream {
 			}
 		}
 	}
+
+	public int countSubstring(final String substring) {
+		int count = 0;
+		for (String string : strings) {
+			if (string.contains(substring)) {
+				count++;
+			}
+		}
+		return count;
+	}
 }

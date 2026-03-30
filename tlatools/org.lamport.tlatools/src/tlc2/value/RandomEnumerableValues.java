@@ -39,9 +39,14 @@ public abstract class RandomEnumerableValues {
 	/* Randomization for sets */
 		
 	private static long randomSeed; 
+	private static final ThreadLocal<Long> RANDOM_ACCESSES = ThreadLocal.withInitial(() -> 0L);
 	
 	public static long getSeed() {
 		return randomSeed;
+	}
+
+	public static long getAccessCount() {
+		return RANDOM_ACCESSES.get();
 	}
 	
 	/**
@@ -71,6 +76,7 @@ public abstract class RandomEnumerableValues {
 	}
 	
 	public static Random get() {
+		RANDOM_ACCESSES.set(RANDOM_ACCESSES.get() + 1L);
 		return RANDOMS.get();
 	}
 	

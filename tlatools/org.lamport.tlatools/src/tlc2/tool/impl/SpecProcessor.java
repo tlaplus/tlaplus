@@ -97,6 +97,7 @@ import tlc2.util.List;
 import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CallableValue;
@@ -118,6 +119,8 @@ import util.UniqueString;
 public class SpecProcessor implements ValueConstants, ToolGlobals {
 	
 	private static final String PROPERTY = "PROPERTY";
+	private static final String AGGRESSIVE_CONSTANT_CACHING =
+			SpecProcessor.class.getName() + ".aggressiveConstantCaching";
 	
     private final String rootFile; // The root file of this spec.
     private final int toolId;
@@ -262,6 +265,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
           if (opDef.getArity() == 0) {
             try {
+            	final long randomAccessCountBeforeEvaluation = RandomEnumerableValues.getAccessCount();
             	Object defVal = WorkerValue.demux(opDefEvaluator, opDef.getBody());
             	opDef.setToolObject(toolId, defVal);
             	// https://github.com/tlaplus/tlaplus/issues/648
@@ -291,15 +295,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             	//
             	//    CONSTANT C <- R
             	// 
-            	// Therefore, we let the user decide by giving her TLC!TLCEval to wrap expressive 
+            	// TLC now caches constant overrides automatically when their startup evaluation
+            	// does not consume randomness. Random overrides remain uncached to preserve the
+            	// probabilistic behavior above.
+            	//
+            	// Users can still force caching by giving TLC!TLCEval to wrap expressive
             	// constant definitions when necessary:
             	//
             	//    R == TLCEval(RandomElement({1,2,3}))
             	//
-            	// Alternatively, she may use -Dtlc2.tool.impl.SpecProcessor.aggressiveConstantPropagation=true
-            	// to force TLC to cache and reuse the result of evaluating any expression that redefines a
-            	// constant during startup.
-            	if (Boolean.getBoolean(SpecProcessor.class.getName() + ".aggressiveConstantCaching")) {
+            	// Alternatively, she may use -Dtlc2.tool.impl.SpecProcessor.aggressiveConstantCaching=true
+            	// to force TLC to cache and reuse the result of evaluating any expression that
+            	// redefines a constant during startup.
+            	if (shouldCacheConstantOverride(randomAccessCountBeforeEvaluation)) {
             		consts[i].setToolObject(toolId, defVal);
             	}
 
@@ -373,6 +381,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         this.processConstantDefns(imods[i]);
       }
     }
+
+	private boolean shouldCacheConstantOverride(final long randomAccessCountBeforeEvaluation) {
+		if (Boolean.getBoolean(AGGRESSIVE_CONSTANT_CACHING)) {
+			return true;
+		}
+		return RandomEnumerableValues.getAccessCount() == randomAccessCountBeforeEvaluation;
+	}
 
 	public static final String LAZY_CONSTANT_OPERATORS = SpecProcessor.class.getName() + ".vetoed";
 
