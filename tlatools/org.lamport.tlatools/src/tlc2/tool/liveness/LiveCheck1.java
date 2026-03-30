@@ -9,8 +9,10 @@ package tlc2.tool.liveness;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import tlc2.output.EC;
 import tlc2.output.MP;
@@ -521,8 +523,6 @@ public class LiveCheck1 implements ILiveCheck {
 
 	/* Print out the error state trace. */
 	CounterExample printErrorTrace(final BEGraphNode node) throws IOException {
-		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED);
-		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 		// First, find a "bad" cycle from the "bad" scc.
 		ObjectStack cycleStack = new MemObjectStack(metadir, "cyclestack");
 		int slen = currentOOS.getCheckState().length;
@@ -638,9 +638,10 @@ public class LiveCheck1 implements ILiveCheck {
 		
 		final Resolver r = stateTrace != null && !stateTrace.isEmpty() ? new StateTraceResolver() : new Resolver();
 		
-		// Now, print the error trace. We first construct the prefix that
+		// Construct the error trace. We first construct the prefix that
 		// led to the bad cycle. The nodes on prefix and cycleStack then
-		// form the complete counter example.
+		// form the complete counter example. Printing is deferred until
+		// the full lasso is available for post-hoc property attribution.
 		int stateNum = 0;
 		BEGraphNode[] prefix = BEGraph.getPath(initNode, node);
 		TLCStateInfo[] states = new TLCStateInfo[prefix.length];
@@ -661,16 +662,15 @@ public class LiveCheck1 implements ILiveCheck {
 			fp = fp1;
 		}
 
-		// Print the prefix:
+		// Process the prefix through evalAlias and collect for deferred printing:
 		TLCState cycleState = null;
 		for (int i = 0; i < stateNum; i++) {
 			sinfo = myTool.getDebugger().evalAlias(states[i], cycleState);
 			trace.add(sinfo);
-			StatePrinter.printInvariantViolationStateTraceState(sinfo, cycleState, i + 1);
 			cycleState = states[i].state;
 		}
 
-		// Print the cycle:
+		// Construct the cycle:
 		TLCState lastState = cycleState;
 		int cyclePos = stateNum;
 		long[] fps = new long[cycleStack.size()];
@@ -685,10 +685,23 @@ public class LiveCheck1 implements ILiveCheck {
 				sinfo = r.getState(fps[i], sinfo.state, stateNum++);
 				sinfo = myTool.getDebugger().evalAlias(sinfo, lastState);
 				trace.add(sinfo);
-				StatePrinter.printInvariantViolationStateTraceState(sinfo, lastState, stateNum);
 				lastState = sinfo.state;
 			}
 		}
+
+		// The full lasso is now available. Perform post-hoc property
+		// attribution to determine which property/properties are violated.
+		final Set<String> violated = Liveness.findViolatedProperties(myTool,
+				trace.stream().map(s -> s.state).collect(Collectors.toList()), cyclePos - 1);
+		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, violated.toArray(String[]::new));
+		MP.printError(EC.TLC_COUNTER_EXAMPLE);
+
+		// Print all trace states (prefix + cycle).
+		for (int i = 0; i < trace.size(); i++) {
+			StatePrinter.printInvariantViolationStateTraceState(trace.get(i),
+					i == 0 ? null : trace.get(i - 1).state, i + 1);
+		}
+
 		if (node.stateFP == lastState.fingerPrint()) {
 			StatePrinter.printStutteringState(stateNum);
 			return new CounterExample(trace, stateNum);

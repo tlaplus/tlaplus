@@ -29,6 +29,6 @@ package tlc2.tool.liveness.simulation;
 public class Example1Test extends AbstractExampleTestCase {
 
 	public Example1Test() {
-		super("Example1");
+		super("Example1", "Liveness1");
 	}
 }
