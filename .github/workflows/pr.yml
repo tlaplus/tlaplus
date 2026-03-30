@@ -70,7 +70,7 @@ jobs:
             tlatools/org.lamport.tlatools/target/surefire-reports/junit-noframes.html
     - name: Publish unit test results
       uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
-      if: always()
+      if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository }}
       with:
           check_name: JUnit Test Report on ${{ matrix.operating-system }}
           report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'

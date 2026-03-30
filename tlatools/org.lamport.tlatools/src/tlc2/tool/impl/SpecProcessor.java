@@ -222,9 +222,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
     private final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> constantDefns = new HashMap<>();
+    private final Map<OpDeclNode, OpDefNode> cachedConstantOverrideSource = new HashMap<>();
     
     public final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> getConstantDefns() {
     	return constantDefns;
+    }
+
+    public final OpDefNode getCachedConstantOverrideSource(final OpDeclNode constantDecl) {
+    	return cachedConstantOverrideSource.get(constantDecl);
     }
     
     /**
@@ -309,6 +314,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             	// redefines a constant during startup.
             	if (shouldCacheConstantOverride(randomAccessCountBeforeEvaluation)) {
             		consts[i].setToolObject(toolId, defVal);
+            		cachedConstantOverrideSource.put(consts[i], opDef);
             	}
 
             	constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(opDef, defVal);

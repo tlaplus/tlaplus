@@ -358,7 +358,7 @@ public class TLCStackFrame extends StackFrame {
 					// view by modules. In other words, constants get moved up by one level in the
 					// variable view iff there is only one module.
 					e.getValue().entrySet().stream()
-							.map(c -> getVariable((Value) WorkerValue.mux(c.getValue()), c.getKey().getName()))
+							.map(c -> getVariable((Value) WorkerValue.mux(c.getValue()), getConstantDisplayName(sp, c.getKey())))
 							.forEach(var -> vars.add(var));
 				} else {
 					final ModuleNode module = e.getKey();
@@ -387,12 +387,22 @@ public class TLCStackFrame extends StackFrame {
 						} else {
 							final OpDeclNode odn = (OpDeclNode) oddn;
 							l.add((DebugTLCVariable) ((Value) value)
-									.toTLCVariable(new DebugTLCVariable(odn.getSignature()), rnd));
+									.toTLCVariable(new DebugTLCVariable(getConstantDisplayName(sp, odn)), rnd));
 						}
 					}
 					nestedConstants.put(v.getVariablesReference(), l);
 				}
 			}
+	}
+
+	private UniqueString getConstantDisplayName(final SpecProcessor specProcessor, final OpDefOrDeclNode node) {
+		if (node instanceof OpDeclNode) {
+			final OpDefNode source = specProcessor.getCachedConstantOverrideSource((OpDeclNode) node);
+			if (source != null) {
+				return source.getName();
+			}
+		}
+		return node.getName();
 	}
 	
 	protected Variable[] toSortedDistinctArray(final List<Variable> vars) {
