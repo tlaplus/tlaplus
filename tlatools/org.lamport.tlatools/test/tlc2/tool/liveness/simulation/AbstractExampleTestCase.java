@@ -43,17 +43,19 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 
 	private final String name;
 	private final boolean assertPostCondition;
+	private final String expectedViolatedProperty;
 
-	public AbstractExampleTestCase(final String cfg) {
-		this(cfg, true);
+	public AbstractExampleTestCase(final String cfg, final String expectedViolatedProperty) {
+		this(cfg, expectedViolatedProperty, true);
 	}
 
-	public AbstractExampleTestCase(final String cfg, final boolean assertPostCondition) {
+	public AbstractExampleTestCase(final String cfg, final String expectedViolatedProperty, final boolean assertPostCondition) {
 		// Checks the depth parameter too. Depth <= 100 will cause simluation to
 		// go on forever.
 		super(cfg, "simulation", new String[] { "-simulate", "-depth", "11" }, ExitStatus.VIOLATION_LIVENESS);
 		this.name = cfg;
 		this.assertPostCondition = assertPostCondition;
+		this.expectedViolatedProperty = expectedViolatedProperty;
 	}
 	
 	@Test
@@ -65,6 +67,7 @@ public abstract class AbstractExampleTestCase extends ModelCheckerTestCase {
 		
 		// Assert it has found the temporal violation and also a counter example
 		assertTrue(recorder.recorded(EC.TLC_TEMPORAL_PROPERTY_VIOLATED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, expectedViolatedProperty));
 		assertTrue(recorder.recorded(EC.TLC_COUNTER_EXAMPLE));
 		
 		// Assert the error trace

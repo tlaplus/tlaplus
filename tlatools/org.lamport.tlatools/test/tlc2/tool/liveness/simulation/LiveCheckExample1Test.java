@@ -35,6 +35,6 @@ public class LiveCheckExample1Test extends AbstractExampleTestCase {
 	}
 	
 	public LiveCheckExample1Test() {
-		super("Example1", false);
+		super("Example1", "Liveness1", false);
 	}
 }
