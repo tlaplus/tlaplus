@@ -28,6 +28,11 @@ public class RandomConstantOverrideTest extends ModelCheckerTestCase {
 		ToolIO.out = testPrintStream;
 	}
 
+	@Override
+	protected boolean runWithDebugger() {
+		return false;
+	}
+
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));

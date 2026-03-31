@@ -126,6 +126,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private final int toolId;
     private final Defns defns; // Global definitions reachable from root
     private final ModelConfig config; // The model configuration.
+    private final Mode toolMode;
     private final OpDefEvaluator opDefEvaluator;
     private final SymbolNodeValueLookupProvider symbolNodeValueLookupProvider;
     private final TLAClass tlaClass;
@@ -176,7 +177,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		this.rootFile = rootFile;
 		this.toolId = toolId;
 		this.defns = defns;
-		this.config = config;
+            this.config = config;
+            this.toolMode = mode;
 		this.tlaClass = tlaClass;
 		this.processedDefs = new HashSet<OpDefNode>();
         this.initPredVec = new Vect<>(5);
@@ -389,6 +391,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
 	private boolean shouldCacheConstantOverride(final long randomAccessCountBeforeEvaluation) {
+		if (toolMode == Mode.MC_DEBUG) {
+			return false;
+		}
 		if (Boolean.getBoolean(AGGRESSIVE_CONSTANT_CACHING)) {
 			return true;
 		}
