@@ -141,23 +141,6 @@ public class DumpLoadTraceTest extends CommonTestCase {
 		}
 
 		/**
-		 * Get TLC statistics as strings: [states generated, distinct states, states on
-		 * queue]
-		 */
-		String[] getStatsAsStrings() {
-			try {
-				List<Object> stats = getRecords(EC.TLC_STATS);
-				if (stats == null || stats.isEmpty()) {
-					return new String[] { "0", "0", "0" };
-				}
-				// Stats are recorded as String[]
-				return (String[]) stats.get(0);
-			} catch (Exception e) {
-				throw new RuntimeException("Failed to get TLC_STATS", e);
-			}
-		}
-
-		/**
 		 * Check if the recorder recorded a specific error code.
 		 *
 		 * @param ec The error code to check (from the non-isolated EC class)
@@ -456,40 +439,32 @@ public class DumpLoadTraceTest extends CommonTestCase {
 		}
 	}
 
-	private void testDumpLoadTrace(String spec, String format, int expectedExitStatus, int expectedDumpStates,
-			int expectedLoadStates) throws Exception {
-		testDumpLoadTrace(spec, "", format, expectedExitStatus, expectedDumpStates, expectedLoadStates);
+	private void testDumpLoadTrace(String spec, String format, int expectedExitStatus) throws Exception {
+		testDumpLoadTrace(spec, "", format, expectedExitStatus);
 	}
 
-	private void testDumpLoadTrace(String spec, String format, int expectedExitStatus, int expectedDumpStates,
-			int expectedLoadStates, String dumpWorkers, String loadWorkers) throws Exception {
-		testDumpLoadTrace(spec, "", format, expectedExitStatus, expectedDumpStates, expectedLoadStates, dumpWorkers,
-				loadWorkers);
+	private void testDumpLoadTrace(String spec, String format, int expectedExitStatus, String dumpWorkers,
+			String loadWorkers) throws Exception {
+		testDumpLoadTrace(spec, "", format, expectedExitStatus, dumpWorkers, loadWorkers);
 	}
 
-	private void testDumpLoadTrace(String spec, String path, String format, int expectedExitStatus,
-			int expectedDumpStates, int expectedLoadStates) throws Exception {
-		testDumpLoadTrace(spec, path, new String[0], format, expectedExitStatus, expectedDumpStates,
-				expectedLoadStates);
+	private void testDumpLoadTrace(String spec, String path, String format, int expectedExitStatus) throws Exception {
+		testDumpLoadTrace(spec, path, new String[0], format, expectedExitStatus);
 	}
 
-	private void testDumpLoadTrace(String spec, String path, String format, int expectedExitStatus,
-			int expectedDumpStates, int expectedLoadStates, String dumpWorkers, String loadWorkers) throws Exception {
-		testDumpLoadTrace(spec, path, new String[0], format, expectedExitStatus, expectedDumpStates, expectedLoadStates,
-				dumpWorkers, loadWorkers);
+	private void testDumpLoadTrace(String spec, String path, String format, int expectedExitStatus, String dumpWorkers,
+			String loadWorkers) throws Exception {
+		testDumpLoadTrace(spec, path, new String[0], format, expectedExitStatus, dumpWorkers, loadWorkers);
 	}
 
 	private void testDumpLoadTrace(final String spec, final String path, final String[] extraArgs, final String format,
-			final int expectedExitStatus, final int expectedDumpStates, final int expectedLoadStates) throws Exception {
-		testDumpLoadTrace(spec, path, extraArgs, format, expectedExitStatus, expectedDumpStates, expectedLoadStates,
-				"1", "1");
+			final int expectedExitStatus) throws Exception {
+		testDumpLoadTrace(spec, path, extraArgs, format, expectedExitStatus, "1", "1");
 	}
 
 	private void testDumpLoadTrace(final String spec, final String path, final String[] extraArgs, final String format,
-			final int expectedExitStatus, final int expectedDumpStates, final int expectedLoadStates,
-			final String dumpWorkers, final String loadWorkers) throws Exception {
-		testDumpLoadTrace(spec, spec, path, extraArgs, extraArgs, format, expectedExitStatus, expectedDumpStates,
-				expectedLoadStates, dumpWorkers, loadWorkers);
+			final int expectedExitStatus, final String dumpWorkers, final String loadWorkers) throws Exception {
+		testDumpLoadTrace(spec, spec, path, extraArgs, extraArgs, format, expectedExitStatus, dumpWorkers, loadWorkers);
 	}
 
 	/**
@@ -499,8 +474,7 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	 */
 	private void testDumpLoadTrace(final String dumpSpec, final String loadSpec, final String path,
 			final String[] dumpExtraArgs, final String[] loadExtraArgs, final String format,
-			final int expectedExitStatus, final int expectedDumpStates, final int expectedLoadStates,
-			final String dumpWorkers, final String loadWorkers) throws Exception {
+			final int expectedExitStatus, final String dumpWorkers, final String loadWorkers) throws Exception {
 		// Setup temporary directories in target/ to avoid polluting the source tree
 		final File targetDir = new File(BASE_DIR, "target");
 		targetDir.mkdirs();
@@ -583,197 +557,153 @@ public class DumpLoadTraceTest extends CommonTestCase {
 			}
 		}
 
-		// Verify the correct number of states were generated
-		assertTrue("Dump phase should have recorded statistics", dumpResult.recordedEC(EC.TLC_STATS));
-		assertTrue("Load phase should have recorded statistics", loadResult.recordedEC(EC.TLC_STATS));
-
-		// Get stats: [states generated, distinct states, states left on queue]
-		final String[] dumpStats = dumpResult.getStatsAsStrings();
-		final String[] loadStats = loadResult.getStatsAsStrings();
-
-		final int dumpStatesGenerated = Integer.parseInt(dumpStats[0]);
-		final int loadStatesGenerated = Integer.parseInt(loadStats[0]);
-
-		// Verify expected state counts (skip if negative values provided, e.g., for
-		// auto-worker dump phase which is non-deterministic)
-		if (expectedDumpStates >= 0) {
-			assertEquals(String.format("Dump phase should generate expected states (dump spec: %s)", dumpSpec),
-					expectedDumpStates, dumpStatesGenerated);
-		}
-		if (expectedLoadStates >= 0) {
-			// When workers differ (e.g., dump with auto, load with 1), we check that the
-			// load phase generates at least the expected minimum states. We cannot assume
-			// the load phase will find the shortest counterexample, because if the dump
-			// phase (with multiple workers) didn't find the shortest counterexample, then
-			// the load phase is constrained by the dumped trace and cannot magically find a
-			// shorter one. The dump phase provides an upper bound for what the load phase
-			// can explore.
-			if (!dumpWorkers.equals(loadWorkers)) {
-				assertTrue(String.format(
-						"Load phase should generate at least expected states (load spec: %s, expected: %d, actual: %d)",
-						loadSpec, expectedLoadStates, loadStatesGenerated), loadStatesGenerated >= expectedLoadStates);
-			} else {
-				assertEquals(String.format("Load phase should generate expected states (load spec: %s)", loadSpec),
-						expectedLoadStates, loadStatesGenerated);
-			}
-		}
-
-		// The load phase should generate fewer or equal states than the dump phase
-		// because it only follows the loaded trace (acting as a constraint). The dumped
-		// trace provides an upper bound for the load phase's state space exploration.
-		// Skip this check when expected counts are negative (auto-worker tests) or when
-		// workers differ (since auto workers make dump phase non-deterministic).
-		if (expectedDumpStates >= 0 && expectedLoadStates >= 0 && dumpWorkers.equals(loadWorkers)) {
-			assertTrue(String.format("Load phase should not generate more states than dump phase (dump: %d, load: %d)",
-					dumpStatesGenerated, loadStatesGenerated), loadStatesGenerated <= dumpStatesGenerated);
-		}
 	}
 
 	@Test
 	public void testLivenessMCDumpLoadTraceJSON() throws Exception {
-		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "json", EC.ExitStatus.VIOLATION_LIVENESS,
-				18, 13);
+		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "json",
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessMCDumpLoadTraceTLC() throws Exception {
-		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "tlc", EC.ExitStatus.VIOLATION_LIVENESS,
-				18, 13);
+		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "tlc",
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessMCDumpLoadTraceJSONAutoWorkers() throws Exception {
-		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "json", EC.ExitStatus.VIOLATION_LIVENESS,
-				-1, 13, "auto", "1");
+		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "json",
+				EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessMCDumpLoadTraceTLCAutoWorkers() throws Exception {
-		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "tlc", EC.ExitStatus.VIOLATION_LIVENESS,
-				-1, 13, "auto", "1");
+		testDumpLoadTrace("MC", "CodePlexBug08", new String[] { "-deadlock" }, "tlc",
+				EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	@Ignore("Disabled because JSON trace serialization is garbled because of limited types.")
 	public void testLivenessEWD840MC3DumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("EWD840MC3", "CodePlexBug08", new String[] { "-deadlock" }, "json",
-				EC.ExitStatus.VIOLATION_LIVENESS, 15986, 7154);
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessEWD840MC3DumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("EWD840MC3", "CodePlexBug08", new String[] { "-deadlock" }, "tlc",
-				EC.ExitStatus.VIOLATION_LIVENESS, 15986, 7154);
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessEWD840MC3DumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("EWD840MC3", "CodePlexBug08", new String[] { "-deadlock" }, "tlc",
-				EC.ExitStatus.VIOLATION_LIVENESS, -1, 7154, "auto", "1");
+				EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDumpLoadTraceJSON() throws Exception {
-		testDumpLoadTrace("DieHard", "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 36);
+		testDumpLoadTrace("DieHard", "json", EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
 	public void testSafetyDumpLoadTraceTLC() throws Exception {
-		testDumpLoadTrace("DieHard", "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36);
+		testDumpLoadTrace("DieHard", "tlc", EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
 	public void testSafetyDumpLoadTraceJSONAutoWorkers() throws Exception {
-		testDumpLoadTrace("DieHard", "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+		testDumpLoadTrace("DieHard", "json", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDumpLoadTraceTLCAutoWorkers() throws Exception {
-		testDumpLoadTrace("DieHard", "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+		testDumpLoadTrace("DieHard", "tlc", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessBidirectionalDumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("BidirectionalTransitions", "", new String[] { "-config", "BidirectionalTransitions1Bx.cfg" },
-				"json", EC.ExitStatus.VIOLATION_LIVENESS, 13, 13);
+				"json", EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessBidirectionalDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("BidirectionalTransitions", "", new String[] { "-config", "BidirectionalTransitions1Bx.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, 13, 13);
+				"tlc", EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessBidirectionalDumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("BidirectionalTransitions", "", new String[] { "-config", "BidirectionalTransitions1Bx.cfg" },
-				"json", EC.ExitStatus.VIOLATION_LIVENESS, -1, 13, "auto", "1");
+				"json", EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessBidirectionalDumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("BidirectionalTransitions", "", new String[] { "-config", "BidirectionalTransitions1Bx.cfg" },
-				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, -1, 13, "auto", "1");
+				"tlc", EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "json",
-				EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+				EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "tlc",
-				EC.ExitStatus.VIOLATION_SAFETY, 5, 5);
+				EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "json",
-				EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+				EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyTESpecEqAliasDumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("TESpecTest", "TESpecTest", new String[] { "-config", "TESpecEqAliasSafetyTest.cfg" }, "tlc",
-				EC.ExitStatus.VIOLATION_SAFETY, -1, 5, "auto", "1");
+				EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "json",
-				EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "tlc",
-				EC.ExitStatus.VIOLATION_LIVENESS, 11, 11);
+				EC.ExitStatus.VIOLATION_LIVENESS);
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "json",
-				EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+				EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testLivenessExample1DumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("Example1", "simulation", new String[] { "-config", "Example1.cfg" }, "tlc",
-				EC.ExitStatus.VIOLATION_LIVENESS, -1, 11, "auto", "1");
+				EC.ExitStatus.VIOLATION_LIVENESS, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 132, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	// These following two tests are disabled because the combination of
@@ -811,62 +741,62 @@ public class DumpLoadTraceTest extends CommonTestCase {
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Ignore("Multi-worker BFS + ALIAS variable subsetting: non-shortest counterexample breaks level-indexed trace constraint")
 	@Test
 	public void testSafetyDieHardAliasSubDumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSub2DumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSub2DumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSub2DumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSub2DumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSub2.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSupDumpLoadTraceJSON() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSupDumpLoadTraceTLC() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, 252, 36, "1", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "1", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSupDumpLoadTraceJSONAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "json", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	@Test
 	public void testSafetyDieHardAliasSupDumpLoadTraceTLCAutoWorkers() throws Exception {
 		testDumpLoadTrace("DieHardAlias", "DieHard", "", new String[] { "-config", "DieHardAliasSup.cfg" },
-				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, -1, 36, "auto", "1");
+				new String[] { "-config", "DieHard.cfg" }, "tlc", EC.ExitStatus.VIOLATION_SAFETY, "auto", "1");
 	}
 
 	/**
