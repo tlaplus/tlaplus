@@ -29,7 +29,6 @@ import tlc2.output.MP;
 import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.EvalControl;
-import tlc2.tool.EvalException;
 import tlc2.tool.IContextEnumerator;
 import tlc2.tool.ITool;
 import tlc2.tool.ModelChecker;
