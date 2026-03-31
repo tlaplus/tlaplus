@@ -492,7 +492,11 @@ public interface EC
             final HashSet<Integer> s = new HashSet<>();
             for (final Field f : EC.class.getDeclaredFields()) {
                 if (f.getType() == int.class && Modifier.isStatic(f.getModifiers())) {
-                    try { s.add(f.getInt(null)); } catch (final IllegalAccessException ignored) {}
+                    try { 
+                        s.add(f.getInt(null)); 
+                    } catch (final IllegalAccessException exc) {
+                        exc.printStackTrace();
+                    }
                 }
             }
             ALL = Collections.unmodifiableSet(s);

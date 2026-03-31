@@ -20,7 +20,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
-package tlc2;
+package tlc2.output;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,6 +33,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import tla2sany.semantic.ErrorCode;
+import tlc2.TLC;
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import util.Assert.TLCRuntimeException;
@@ -214,12 +216,12 @@ public class WarningControlTest {
   }
 
   /**
-   * Combining {@code -nowarning} and {@code -messagesAsErrors} is rejected.
+   * Combining {@code -nowarning} and {@code -messagesAsErrors} is acceptable.
    */
   @Test
   public void testNowarningConflictWithmessagesAsErrors() {
     final TLC tlc = new TLC();
-    assertFalse("-nowarning + -messagesAsErrors must be rejected",
+    assertTrue("-nowarning + -messagesAsErrors is acceptable",
         tlc.handleParameters(new String[]{
             "-nowarning", "-messagesAsErrors", String.valueOf(SANY_WARNING_CODE), DUMMY_SPEC}));
   }

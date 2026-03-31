@@ -212,7 +212,7 @@ public class MP
 
     private static MP instance = null;
 	private static BroadcastMessagePrinterRecorder recorder = new BroadcastMessagePrinterRecorder();
-    private final Set<String> warningHistory;
+    private final util.Set warningHistory;
     private static final String CONFIG_FILE_ERROR = "TLC found an error in the configuration file at line %1%\n";
     // Thread-safe date/number formatting to avoid races across worker threads.
     private static final DateTimeFormatter SDF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -241,14 +241,6 @@ public class MP
     static
     {
         instance = new MP();
-        
-        final String suppressed = System.getProperty("tlc2.output.MP", "");
-        for (String i : suppressed.split(",")) {
-        	try {
-        		TLC_SUPPRESSED.add(Integer.parseInt(i.trim()));
-        	} catch (NumberFormatException ignored) {
-        	}
-		}
     }
     
     public static boolean isSuppressed(int messageCode) {
@@ -336,7 +328,7 @@ public class MP
      * {@link #SANY_SUPPRESSED}, and {@link #SANY_MESSAGES_AS_ERRORS}).  Intended for use by tests 
      * to restore MP to a clean state between test cases.
      */
-    public static void resetMessageControl() {
+     static void resetMessageControl() {
         TLC_SUPPRESSED.clear();
         TLC_MESSAGES_AS_ERRORS.clear();
         SANY_SUPPRESSED.clear();
@@ -348,7 +340,7 @@ public class MP
      */
     private MP()
     {
-        warningHistory = new HashSet<>();
+        warningHistory = new util.Set();
     }
 
     /**
@@ -1881,7 +1873,7 @@ public class MP
             // construct the message
             String message = getMessage(WARNING, errorCode, parameters);
             // if the message has not been printed
-            if (instance.warningHistory.add(message))
+            if (instance.warningHistory.put(message) == null)
             {
                 // print it
             	if (!isSuppressed(errorCode)) {
@@ -1910,7 +1902,7 @@ public class MP
             // construct the message
             String message = getMessage(WARNING, errorCode, new String[]{parameters});
             // if the message has not been printed
-            if (instance.warningHistory.add(message))
+            if (instance.warningHistory.put(message) == null)
             {
                 // print it
             	if (!isSuppressed(errorCode)) {

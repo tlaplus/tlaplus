@@ -507,7 +507,7 @@ public class TLC {
                     printErrorMsg("Error: -suppressMessages requires a comma-separated list of message codes.");
                     return false;
                 }
-                if (!parseMessageCodes(args[index++], sanySuppressedCodes, tlcSuppressedCodes, true)) {
+                if (!parseAndCategorizeMessageCodes(args[index++], sanySuppressedCodes, tlcSuppressedCodes, true)) {
                     return false;
                 }
             } else if (args[index].equals("-messagesAsErrors"))
@@ -517,7 +517,7 @@ public class TLC {
                     printErrorMsg("Error: -messagesAsErrors requires a comma-separated list of message codes.");
                     return false;
                 }
-                if (!parseMessageCodes(args[index++], sanyMessagesAsErrorCodes, tlcMessagesAsErrorCodes, false)) {
+                if (!parseAndCategorizeMessageCodes(args[index++], sanyMessagesAsErrorCodes, tlcMessagesAsErrorCodes, false)) {
                     return false;
                 }
             } else if (args[index].equals("-gzip"))
@@ -1163,9 +1163,8 @@ public class TLC {
 
         // Conflict check: -nowarning cannot be combined with per-code controls.
 		final boolean hasSuppressedCodes = !sanySuppressedCodes.isEmpty() || !tlcSuppressedCodes.isEmpty();
-		final boolean hasMessagesAsErrorCodes = !sanyMessagesAsErrorCodes.isEmpty() || !tlcMessagesAsErrorCodes.isEmpty();
-        if (!TLCGlobals.warn && (hasSuppressedCodes || hasMessagesAsErrorCodes)) {
-            printErrorMsg("Error: -nowarning cannot be combined with -suppressMessages or -messagesAsErrors.");
+        if (!TLCGlobals.warn && hasSuppressedCodes) {
+            printErrorMsg("Error: -nowarning cannot be combined with -suppressMessages.");
             return false;
         }
 		// Conflict check: -suppressMessages and -messagesAsErrors cannot overlap.
@@ -1606,7 +1605,8 @@ public class TLC {
     }
 
     /**
-     * Parses a comma-separated list of message codes into {@code tlcTarget} and {@code sanyTarget}.
+     * Parses and cotegorizes a comma-separated list of message codes into {@code tlcTarget} and 
+	 * {@code sanyTarget}.
      * Each code must be known to TLC ({@link EC#isKnownCode}) or to SANY
      * ({@link tla2sany.semantic.ErrorCode#fromStandardValue}).
      * If SANY code is an error, it is rejected. TLC has no per-code level metadata.
@@ -1615,13 +1615,14 @@ public class TLC {
      * @param sanyTarget The set to add SANY message codes to.
      * @param tlcTarget The set to add TLC message codes to.
      * @param suppressed Whether the message codes are suppressed.
-     * @return {@code true} on success; prints an error message and returns
+     * @return {@code true} on success
      *         {@code false} on the first invalid token.
      */
-    private boolean parseMessageCodes(final String arg, 
-                                      final Set<ErrorCode> sanyTarget,
-                                      final Set<Integer> tlcTarget,
-                                      final boolean suppressed) {
+    private boolean parseAndCategorizeMessageCodes(
+			final String arg, 
+			final Set<ErrorCode> sanyTarget,
+			final Set<Integer> tlcTarget,
+			final boolean suppressed) {
         for (String token : arg.split(",")) {
             token = token.trim();
             final int code;
@@ -1639,8 +1640,8 @@ public class TLC {
             try {
                 final tla2sany.semantic.ErrorCode sanyCode = tla2sany.semantic.ErrorCode.fromStandardValue(code);
                 // Check if the code is an error and if it is, and it is suppressed, print an error 
-                // message and return false. It's a best effort to prevent the user from suppressing 
-                // errors because we cannot do the same for TLC codes.
+                // message and return false. We do it for SANY codes only because TLC has no 
+				// per-code level metadata to distinguish between warnings and errors.
                 if (suppressed && sanyCode.getSeverityLevel() == tla2sany.semantic.ErrorCode.ErrorLevel.ERROR) {
                     printErrorMsg("Error: code " + code + " is an error and cannot be suppressed.");
                     return false;
