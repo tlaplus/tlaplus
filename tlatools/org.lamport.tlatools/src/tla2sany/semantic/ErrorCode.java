@@ -222,6 +222,14 @@ public enum ErrorCode {
       .collect(Collectors.toMap(code -> code.value, code -> code));
 
   /**
+   * Returns {@code true} if {@code value} corresponds to a known
+   * {@link ErrorCode} enum constant.
+   */
+  public static boolean isStandardValue(final int value) {
+    return codeMap.containsKey(value);
+  }
+
+  /**
    * Given the standardized error value, find and return the enum instance
    * to which it corresponds.
    *

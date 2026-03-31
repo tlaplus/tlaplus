@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -507,7 +509,21 @@ public class TLC {
                     printErrorMsg("Error: -suppressMessages requires a comma-separated list of message codes.");
                     return false;
                 }
-                if (!parseAndCategorizeMessageCodes(args[index++], sanySuppressedCodes, tlcSuppressedCodes, true)) {
+                try {
+                    Arrays.stream(args[index++].split(","))
+                          .map(String::trim)
+                          .mapToInt(Integer::parseInt)
+                          .forEach(code -> classifyMessageCode(code,
+                              tlcSuppressedCodes::add,
+                              sanyCode -> {
+                                  if (sanyCode.getSeverityLevel() == ErrorCode.ErrorLevel.ERROR) {
+                                      throw new IllegalArgumentException(
+                                          "code " + code + " is an error and cannot be suppressed.");
+                                  }
+                                  sanySuppressedCodes.add(sanyCode);
+                              }));
+                } catch (IllegalArgumentException e) {
+                    printErrorMsg("Error: " + e.getMessage());
                     return false;
                 }
             } else if (args[index].equals("-messagesAsErrors"))
@@ -517,7 +533,14 @@ public class TLC {
                     printErrorMsg("Error: -messagesAsErrors requires a comma-separated list of message codes.");
                     return false;
                 }
-                if (!parseAndCategorizeMessageCodes(args[index++], sanyMessagesAsErrorCodes, tlcMessagesAsErrorCodes, false)) {
+                try {
+                    Arrays.stream(args[index++].split(","))
+                          .map(String::trim)
+                          .mapToInt(Integer::parseInt)
+                          .forEach(code -> classifyMessageCode(code,
+                              tlcMessagesAsErrorCodes::add, sanyMessagesAsErrorCodes::add));
+                } catch (IllegalArgumentException e) {
+                    printErrorMsg("Error: " + e.getMessage());
                     return false;
                 }
             } else if (args[index].equals("-gzip"))
@@ -1605,54 +1628,20 @@ public class TLC {
     }
 
     /**
-     * Parses and cotegorizes a comma-separated list of message codes into {@code tlcTarget} and 
-	 * {@code sanyTarget}.
-     * Each code must be known to TLC ({@link EC#isKnownCode}) or to SANY
-     * ({@link tla2sany.semantic.ErrorCode#fromStandardValue}).
-     * If SANY code is an error, it is rejected. TLC has no per-code level metadata.
+     * Validates a single numeric code as either a TLC or SANY code and passes
+     * it to the appropriate consumer.
      *
-     * @param arg The comma-separated list of message codes.
-     * @param sanyTarget The set to add SANY message codes to.
-     * @param tlcTarget The set to add TLC message codes to.
-     * @param suppressed Whether the message codes are suppressed.
-     * @return {@code true} on success
-     *         {@code false} on the first invalid token.
+     * @throws IllegalArgumentException if the code is unknown.
      */
-    private boolean parseAndCategorizeMessageCodes(
-			final String arg, 
-			final Set<ErrorCode> sanyTarget,
-			final Set<Integer> tlcTarget,
-			final boolean suppressed) {
-        for (String token : arg.split(",")) {
-            token = token.trim();
-            final int code;
-            try {
-                code = Integer.parseInt(token);
-            } catch (final NumberFormatException e) {
-                printErrorMsg("Error: expected a message code, got: " + token);
-                return false;
-            }
-            // Validate: must be a known TLC code or a known SANY code.
-            if (EC.isKnownCode(code)) {
-                tlcTarget.add(code);
-                continue;
-            }
-            try {
-                final tla2sany.semantic.ErrorCode sanyCode = tla2sany.semantic.ErrorCode.fromStandardValue(code);
-                // Check if the code is an error and if it is, and it is suppressed, print an error 
-                // message and return false. We do it for SANY codes only because TLC has no 
-				// per-code level metadata to distinguish between warnings and errors.
-                if (suppressed && sanyCode.getSeverityLevel() == tla2sany.semantic.ErrorCode.ErrorLevel.ERROR) {
-                    printErrorMsg("Error: code " + code + " is an error and cannot be suppressed.");
-                    return false;
-                }
-                sanyTarget.add(sanyCode);
-            } catch (final IllegalArgumentException ignored) {
-                printErrorMsg("Error: unknown message code: " + code);
-                return false;
-            }
+    private static void classifyMessageCode(int code,
+            Consumer<Integer> onTlc, Consumer<ErrorCode> onSany) {
+        if (EC.isKnownCode(code)) {
+            onTlc.accept(code);
+        } else if (ErrorCode.isStandardValue(code)) {
+            onSany.accept(ErrorCode.fromStandardValue(code));
+        } else {
+            throw new IllegalArgumentException("unknown message code: " + code);
         }
-        return true;
     }
 
     /**
