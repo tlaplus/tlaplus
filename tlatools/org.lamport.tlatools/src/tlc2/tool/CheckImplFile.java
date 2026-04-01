@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SanyExitCode;
+import tla2sany.drivers.SanySettings;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
@@ -99,14 +101,14 @@ public class CheckImplFile extends CheckImpl
             return false;
 
         // Parse the trace file:
-        // REFACTOR: Call SANY.frontendparse
         SpecObj spec = new SpecObj(rfname, null);
+        SanyExitCode exitCode = SanyExitCode.ERROR;
         try
         {
             SanyOutput out = new SimpleSanyOutput(ToolIO.out, LogLevel.INFO);
-            SANY.frontEndInitialize();
-            SANY.frontEndParse(spec, out);
-            SANY.frontEndSemanticAnalysis(spec, out, true);
+            final SanySettings settings = SanySettings.forExternalCaller(
+                MP.getSanySuppressedCodes(), MP.getSanyMessagesAsErrorCodes());
+            exitCode = SANY.parse(spec, rfname, out, settings);
         } catch (Throwable e)
         {
             String msg = (e.getMessage()==null)?e.toString():e.getMessage();
@@ -114,6 +116,10 @@ public class CheckImplFile extends CheckImpl
         }
         if (!spec.parseErrors.isSuccess() || !spec.semanticErrors.isSuccess())
         {
+            Assert.fail(EC.TLC_PARSING_FAILED);
+        }
+        // Abort if SANY reported elevated errors.
+        if (exitCode != SanyExitCode.OK) {
             Assert.fail(EC.TLC_PARSING_FAILED);
         }
 
