@@ -25,6 +25,13 @@ LOCAL _TLCState(level) ==
 LOCAL _JsonTraceConstraint ==
     LET level == TLCGet("level")
         dump  == JsonDeserialize(_JsonTraceInputFile)
+        \* DOMAIN trace is meaningful only because we serialize TLA+ sets as JSON arrays. JSON has
+        \* no set type---only the world's favorite least-common-denominator of strings, numbers,
+        \* and nested lists---so on the wire every set is an ordered sequence. If that encoding
+        \* ever changed (or JSON miraculously grew a real set type), indexing states by DOMAIN
+        \* would stop matching what we dump.
+        \* Rebuilding vars likewise assumes the array order matches TLC's normalized set order from
+        \* when the trace was written; the format does not pin down a stronger invariant.
         trace == dump["counterexample"]["state"]
         \* JSON deserializes sets as tuples, so convert back to a set
         vars  == {dump["vars"][i] : i \in DOMAIN dump["vars"]}

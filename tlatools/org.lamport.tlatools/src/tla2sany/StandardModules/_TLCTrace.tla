@@ -20,7 +20,7 @@ LOCAL _TLCTrace0(verbose) ==
     IF CounterExample.state = {} \/ ("console" \in DOMAIN CounterExample /\ CounterExample["console"] = FALSE) THEN TRUE ELSE
         /\ LET trace == ToTrace(CounterExample)
                vars  == UNION { DOMAIN trace[i] : i \in DOMAIN trace }
-           IN _TLCTraceSerialize([trace |-> trace, vars |-> vars], _TLCTraceFile)
+           IN _TLCTraceSerialize([counterexample |-> CounterExample, vars |-> vars], _TLCTraceFile)
         /\ IF verbose THEN PrintT("CounterExample written: " \o _TLCTraceFile) ELSE TRUE
 
 LOCAL _TLCTraceSilent ==
@@ -44,22 +44,23 @@ LOCAL _TLCState(level) ==
 LOCAL _TLCTraceConstraint ==
     LET level == TLCGet("level")
         dump  == _TLCTraceFileDeserialized
-        trace == dump["trace"]
+        trace == dump["counterexample"]["state"]
         vars  == dump["vars"]
+	\* The trace (CounterExample.state) is a set of <<level, state>> pairs,
+	\* not a function/sequence.
 	\* For liveness properties, TLC trace dumps stop at the state *before* the
 	\* lasso is closed. When replaying such a trace, TLC may request a state with
-	\*   level = Len(dump) + 1,
-	\* which does not exist in the dump. In that case, the constraint
-	\* is intentionally vacuously satisfied.
-	\* Since the names of the spec’s variables are not known, Trace[level] is
-	\* used as a generic reference to the variables of the current state.
-    IN level \in DOMAIN trace => 
-            \* When loading a trace with a subset of variables, only check the variables
-            \* that exist in both the trace and the current state. This allows trace 
-            \* replay with specs that have different variable sets than the original spec
-            \* that produced the trace. Another scenario is when the spec uses ALIAS
-            \* to rename, add, or remove variables.
-            \A v \in vars \cap DOMAIN _TLCState(level): 
-                    _TLCState(level)[v] = trace[level][v]
+	\* a level that does not exist in the dump. In that case, no pair matches and
+	\* the implication is vacuously satisfied.
+    IN \A pair \in trace:
+            pair[1] = level =>
+                \* When loading a trace with a subset of variables, only check the
+                \* variables that exist in both the trace and the current state.
+                \* This allows trace replay with specs that have different variable
+                \* sets than the original spec that produced the trace. Another
+                \* scenario is when the spec uses ALIAS to rename, add, or remove
+                \* variables.
+                \A v \in vars \cap DOMAIN _TLCState(level):
+                        _TLCState(level)[v] = pair[2][v]
 
 =============================================================================
