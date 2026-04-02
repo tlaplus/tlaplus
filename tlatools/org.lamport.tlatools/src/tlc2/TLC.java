@@ -49,6 +49,7 @@ import tlc2.tool.impl.ParameterizedSpecObj.Constraint;
 import tlc2.tool.impl.ParameterizedSpecObj.InvariantTemplate;
 import tlc2.tool.impl.ParameterizedSpecObj.PostCondition;
 import tlc2.tool.impl.ParameterizedSpecObj.RuntimeInvariantTemplate;
+import tlc2.tool.impl.ParameterizedSpecObj.View;
 import tlc2.tool.impl.Tool;
 import tlc2.tool.management.ModelCheckerMXWrapper;
 import tlc2.tool.management.TLCStandardMBean;
@@ -746,12 +747,14 @@ public class TLC {
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
 								new Constraint("_TLCTrace", "_TLCTraceConstraint", "_TLCTraceInputFile", args[index++]));
+						params.putIfAbsent(ParameterizedSpecObj.VIEW, new View("_TLCTrace", "_TLCTraceView"));
 					} else if ("json".equalsIgnoreCase(fmt)) {
 						@SuppressWarnings("unchecked")
 						final List<Constraint> computeIfAbsent = (List<Constraint>) params
 								.computeIfAbsent(ParameterizedSpecObj.CONSTRAINTS, k -> new ArrayList<Constraint>());
 						computeIfAbsent.add(
 								new Constraint("_JsonTrace", "_JsonTraceConstraint", "_JsonTraceInputFile", args[index++]));
+						params.putIfAbsent(ParameterizedSpecObj.VIEW, new View("_JsonTrace", "_JsonTraceView"));
 					} else {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -loadTrace.");
 						return false;
