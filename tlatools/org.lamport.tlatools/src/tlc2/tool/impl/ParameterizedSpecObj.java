@@ -59,6 +59,7 @@ public class ParameterizedSpecObj extends SpecObj {
 	public static final String CONSTRAINTS = "CONSTRAINT";
 	public static final String POST_CONDITIONS = "POST_CONDITIONS";
 	public static final String INVARIANT = "INVARIANT";
+	public static final String VIEW = "VIEW";
 
 	private final Spec spec;
 	private final Map<String, Object> params;
@@ -114,6 +115,12 @@ public class ParameterizedSpecObj extends SpecObj {
 				rootModule.getRelatives().addExtendee(c.module);
 			}
 		}
+		if (firstCall && params.containsKey(VIEW)) {
+			final ModulePointer rootModule = pu.getRootModule();
+
+			final View view = (View) params.get(VIEW);
+			rootModule.getRelatives().addExtendee(view.module);
+		}
 		return pu;
 	}
 
@@ -154,6 +161,12 @@ public class ParameterizedSpecObj extends SpecObj {
 			for (final String module : inv.getModules()) {
 				processConstantsForModule(mt, module, new HashMap<>(), defns);
 			}
+		}
+
+		// Process constants for VIEW
+		if (params.containsKey(VIEW)) {
+			final View view = (View) params.get(VIEW);
+			processConstantsForModule(mt, view.module, view.constDefs, defns);
 		}
 
 		super.processConstantDefns(defns);
@@ -265,6 +278,27 @@ public class ParameterizedSpecObj extends SpecObj {
 		return res;
 	}
 
+	public static class View {
+
+		private final String module;
+		private final String operator;
+		private final Map<String, String> constDefs;
+
+		public View(final String module, final String operator) {
+			this(module, operator, new HashMap<>());
+		}
+
+		public View(final String module, final String operator, final String def, final String constDef) {
+			this(module, operator, Map.of(def, constDef));
+		}
+
+		public View(final String module, final String operator, Map<String, String> constDefs) {
+			this.module = module;
+			this.operator = operator;
+			this.constDefs = constDefs;
+		}
+	}
+
 	public static class Constraint {
 
 		private final String module;
@@ -280,6 +314,21 @@ public class ParameterizedSpecObj extends SpecObj {
 			this.operator = operator;
 			this.constDefs = constDefs;
 		}
+	}
+
+	@Override
+	public OpDefNode getView() {
+		if (!params.containsKey(VIEW)) {
+			return null;
+		}
+		final View view = (View) params.get(VIEW);
+		final ExternalModuleTable mt = getExternalModuleTable();
+		final ModuleNode moduleNode = mt.getModuleNode(view.module);
+		Assert.check(moduleNode != null, EC.GENERAL, "Could not find module: " + view.module);
+		final OpDefNode opDef = moduleNode.getOpDef(view.operator);
+		Assert.check(opDef != null, EC.GENERAL,
+				"Could not find operator: " + view.operator + " in module: " + view.module);
+		return opDef;
 	}
 
 	@Override

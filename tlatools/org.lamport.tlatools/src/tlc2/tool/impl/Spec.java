@@ -243,8 +243,17 @@ abstract class Spec
     public final SemanticNode getViewSpec()
     {
         String name = this.config.getView();
-        if (name.length() == 0)
-            return null;
+        if (name.length() == 0) {
+            final OpDefNode paramView = specProcessor.getSpecObj().getView();
+            if (paramView == null) {
+                return null;
+            }
+            if (paramView.getArity() != 0) {
+                Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG,
+                        new String[] { "view function", paramView.getName().toString() });
+            }
+            return paramView.getBody();
+        }
 
         Object view = this.defns.get(name);
         if (view == null)
