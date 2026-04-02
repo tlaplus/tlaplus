@@ -2,6 +2,7 @@
 LOCAL INSTANCE TLC
 LOCAL INSTANCE TLCExt
 LOCAL INSTANCE Sequences
+LOCAL INSTANCE Naturals
 
 \* This operator has a Java module override (tlc2.module._TLCTrace#ioDeserialize).
 LOCAL _TLCTraceDeserialize(absoluteFilename) ==
@@ -41,6 +42,16 @@ LOCAL _TLCTraceFileDeserialized ==
 LOCAL _TLCState(level) ==
 	Trace[level]
 
+\* A liveness counterexample's action graph contains a closing edge that
+\* completes the lasso. In a forward path s1->s2->...->sn every edge
+\* satisfies target[1] > source[1]; the closing edge is the unique edge
+\* where target[1] <= source[1] (back-to-state: <, stuttering: =).
+LOCAL _TLCTraceLassoTarget ==
+    LET actions == _TLCTraceFileDeserialized["counterexample"]["action"]
+    IN IF \E e \in actions : e[3][1] <= e[1][1]
+       THEN (CHOOSE e \in actions : e[3][1] <= e[1][1])[3][1]
+       ELSE 0
+
 LOCAL _TLCTraceConstraint ==
     LET level == TLCGet("level")
         dump  == _TLCTraceFileDeserialized
@@ -62,5 +73,16 @@ LOCAL _TLCTraceConstraint ==
                 \* variables.
                 \A v \in vars \cap DOMAIN _TLCState(level):
                         _TLCState(level)[v] = pair[2][v]
+
+\* VIEW for trace replay. Includes TLCGet("level") to prevent premature
+\* state collapsing within the trace. For liveness traces, the level
+\* beyond the trace is mapped to the lasso target so the cycle can close.
+LOCAL _TLCTraceView ==
+    LET level       == TLCGet("level")
+        trace       == _TLCTraceFileDeserialized["counterexample"]["state"]
+        lassoTarget == _TLCTraceLassoTarget
+    IN IF \E pair \in trace : pair[1] = level
+       THEN << level, _TLCState(level) >>
+       ELSE << lassoTarget, _TLCState(level) >>
 
 =============================================================================
