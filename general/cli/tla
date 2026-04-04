@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+JAVA="${JAVA_HOME:+$JAVA_HOME/bin/}java"
+JAR="${TLA_JAR:-}"
+
+if [ -z "$JAR" ]; then
+  echo "Error: tla2tools.jar not found." >&2
+  echo "Please set TLA_JAR to the path of tla2tools.jar." >&2
+  exit 1
+fi
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  tlc)
+    exec "$JAVA" -cp "$JAR" tlc2.TLC "$@"
+    ;;
+  sany)
+    exec "$JAVA" -cp "$JAR" tla2sany.SANY "$@"
+    ;;
+  repl)
+    exec "$JAVA" -cp "$JAR" tlc2.REPL "$@"
+    ;;
+  pcal)
+    exec "$JAVA" -cp "$JAR" pcal.trans "$@"
+    ;;
+  tla2tex)
+    exec "$JAVA" -cp "$JAR" tla2tex.TLA "$@"
+    ;;
+  ""|help|-h|--help)
+    cat <<EOF
+TLA+ CLI
+
+Usage:
+  tla <command> [args]
+
+Commands:
+  tlc       Run model checker
+  sany      Parse spec
+  repl      Start REPL
+  pcal      Translate PlusCal
+  tla2tex   Export to LaTeX
+
+Environment:
+  TLA_JAR   Path to tla2tools.jar
+EOF
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    exit 1
+    ;;
+esac
