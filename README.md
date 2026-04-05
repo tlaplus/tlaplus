@@ -47,8 +47,8 @@ TLA⁺ is used in safety-critical systems, so we have a contribution process in 
 
 License & Copyright
 -----------------
-Copyright © 199? HP Corporation
-Copyright © 2003 Microsoft Corporation
+Copyright © 199? HP Corporation  
+Copyright © 2003 Microsoft Corporation  
 Copyright © 2023 Linux Foundation
 
 Licensed under the [MIT License](LICENSE).
