@@ -1201,7 +1201,9 @@ public class TLC {
         // Conflict check: -nowarning cannot be combined with per-code controls.
 		final boolean hasSuppressedCodes = !sanySuppressedCodes.isEmpty() || !tlcSuppressedCodes.isEmpty();
         if (!TLCGlobals.warn && hasSuppressedCodes) {
-            printErrorMsg("Error: -nowarning cannot be combined with -suppressMessages.");
+            printErrorMsg("Error: -nowarning already suppresses all warnings, making"
+                + " -suppressMessages redundant. Remove -nowarning to suppress only the"
+                + " specified messages, or remove -suppressMessages to suppress all warnings.");
             return false;
         }
 		// Conflict check: -suppressMessages and -messagesAsErrors cannot overlap.
@@ -1826,7 +1828,7 @@ public class TLC {
 														true));
     	sharedArguments.add(new UsageGenerator.Argument("-messagesAsErrors", "codes",
 														"treat specific messages as errors; comma-separated list of\n"
-															+ "message codes; cannot be combined with -nowarning\n"
+															+ "message codes\n"
 														    + "SANY message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tla2sany/semantic/ErrorCode.java#L38\n"
 														    + "TLC message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tlc2/output/EC.java#L19",
 														true));
