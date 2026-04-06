@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,11 +24,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import model.InJarFilenameToStream;
 import model.ModelInJar;
+import tla2sany.semantic.ErrorCode;
 import tlc2.debug.TLCDebugger;
 import tlc2.output.EC;
 import tlc2.output.ErrorTraceMessagePrinterRecorder;
@@ -390,6 +393,39 @@ public class TLC {
 		
 		return true;
 	}
+    
+    /**
+     * Validates a single numeric code as either a TLC or SANY code and passes
+     * it to the appropriate consumer.
+     *
+     * @throws IllegalArgumentException if the code is unknown.
+     */
+    private static void classifyMessageCode(int code, Consumer<Integer> onTlc, Consumer<ErrorCode> onSany) {
+        if (EC.isKnownCode(code)) {
+            onTlc.accept(code);
+        } else if (ErrorCode.isStandardValue(code)) {
+            onSany.accept(ErrorCode.fromStandardValue(code));
+        } else {
+            throw new IllegalArgumentException("unknown message code: " + code);
+        }
+    }
+
+	/**
+	 * Generic method to check for overlap between two sets of codes
+	 * @param <T> the type of the codes
+	 * @param suppressedCodes the set of suppressed codes
+	 * @param messagesAsErrorCodes the set of messages as error codes
+	 * @return true if there is no overlap, false otherwise
+	 */
+	private <T> boolean checkForMessageCodeOverlap(final Set<T> suppressedCodes, final Set<T> messagesAsErrorCodes) {
+		final Set<T> intersection = new HashSet<>(suppressedCodes);
+		intersection.retainAll(messagesAsErrorCodes);
+		if (!intersection.isEmpty()) {
+			printErrorMsg("Error: The following codes were set to both -suppressMessages and -messagesAsErrors: " + intersection);
+			return false;
+		}
+		return true;
+	}
 
     /**
      * This method handles parameter arguments and prepares the actual call
@@ -414,6 +450,11 @@ public class TLC {
 		boolean generateTESpecBinaryTrace = true;
 		boolean forceGenerateTESpec = false;
 		Path teSpecOut = null;
+
+		final Set<Integer> tlcSuppressedCodes = new HashSet<>();
+		final Set<Integer> tlcMessagesAsErrorCodes = new HashSet<>();
+		final Set<ErrorCode> sanySuppressedCodes = new HashSet<>();
+		final Set<ErrorCode> sanyMessagesAsErrorCodes = new HashSet<>();
 		
         // SZ Feb 20, 2009: extracted this method to separate the 
         // parameter handling from the actual processing
@@ -475,6 +516,47 @@ public class TLC {
             {
                 index++;
                 TLCGlobals.warn = false;
+            } else if (args[index].equals("-suppressMessages"))
+            {
+                index++;
+                if (index >= args.length) {
+                    printErrorMsg("Error: -suppressMessages requires a comma-separated list of message codes.");
+                    return false;
+                }
+                try {
+                    Arrays.stream(args[index++].split(","))
+                          .map(String::trim)
+                          .mapToInt(Integer::parseInt)
+                          .forEach(code -> classifyMessageCode(code,
+                              tlcSuppressedCodes::add,
+                              sanyCode -> {
+                                  if (sanyCode.getSeverityLevel() == ErrorCode.ErrorLevel.ERROR) {
+                                      throw new IllegalArgumentException(
+                                          "code " + code + " is an error and cannot be suppressed.");
+                                  }
+                                  sanySuppressedCodes.add(sanyCode);
+                              }));
+                } catch (IllegalArgumentException e) {
+                    printErrorMsg("Error: " + e.getMessage());
+                    return false;
+                }
+            } else if (args[index].equals("-messagesAsErrors"))
+            {
+                index++;
+                if (index >= args.length) {
+                    printErrorMsg("Error: -messagesAsErrors requires a comma-separated list of message codes.");
+                    return false;
+                }
+                try {
+                    Arrays.stream(args[index++].split(","))
+                          .map(String::trim)
+                          .mapToInt(Integer::parseInt)
+                          .forEach(code -> classifyMessageCode(code,
+                              tlcMessagesAsErrorCodes::add, sanyMessagesAsErrorCodes::add));
+                } catch (IllegalArgumentException e) {
+                    printErrorMsg("Error: " + e.getMessage());
+                    return false;
+                }
             } else if (args[index].equals("-gzip"))
             {
                 index++;
@@ -1115,7 +1197,25 @@ public class TLC {
                 }
             }
         }
-		
+
+        // Conflict check: -nowarning cannot be combined with per-code controls.
+		final boolean hasSuppressedCodes = !sanySuppressedCodes.isEmpty() || !tlcSuppressedCodes.isEmpty();
+        if (!TLCGlobals.warn && hasSuppressedCodes) {
+            printErrorMsg("Error: -nowarning cannot be combined with -suppressMessages.");
+            return false;
+        }
+		// Conflict check: -suppressMessages and -messagesAsErrors cannot overlap.
+		if (!checkForMessageCodeOverlap(tlcSuppressedCodes, tlcMessagesAsErrorCodes)
+				|| !checkForMessageCodeOverlap(sanySuppressedCodes, sanyMessagesAsErrorCodes)) {
+			return false;
+		}
+
+        // Apply per-code message controls MP.
+		MP.addTlcSuppressed(tlcSuppressedCodes);
+		MP.addTlcMessagesAsErrors(tlcMessagesAsErrorCodes);
+		MP.addSanySuppressed(sanySuppressedCodes);
+		MP.addSanyMessagesAsErrors(sanyMessagesAsErrorCodes);
+
         startTime = System.currentTimeMillis();
 
 		if (mainFile == null) {
@@ -1718,6 +1818,18 @@ public class TLC {
 															+ "SPEC-directory/states if not specified", true));
     	sharedArguments.add(new UsageGenerator.Argument("-nowarning",
 														"disable all warnings; defaults to reporting warnings", true));
+    	sharedArguments.add(new UsageGenerator.Argument("-suppressMessages", "codes",
+														"suppress specific messages; comma-separated list of\n"
+															+ "message codes; cannot be combined with -nowarning\n"
+															+ "SANY message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tla2sany/semantic/ErrorCode.java#L38\n"
+															+ "TLC message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tlc2/output/EC.java#L19",
+														true));
+    	sharedArguments.add(new UsageGenerator.Argument("-messagesAsErrors", "codes",
+														"treat specific messages as errors; comma-separated list of\n"
+															+ "message codes; cannot be combined with -nowarning\n"
+														    + "SANY message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tla2sany/semantic/ErrorCode.java#L38\n"
+														    + "TLC message codes can be found in https://github.com/tlaplus/tlaplus/blob/master/tlatools/org.lamport.tlatools/src/tlc2/output/EC.java#L19",
+														true));
     	sharedArguments.add(new UsageGenerator.Argument("-recover", "id",
 														"recover from the checkpoint with the specified id", true));
     	sharedArguments.add(new UsageGenerator.Argument("-terse",
