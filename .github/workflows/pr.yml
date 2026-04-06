@@ -198,23 +198,22 @@ jobs:
           --enable_assertions
     - name: Parse tlaplus/examples modules
       run: |
-        # Skip Einstein.tla to avoid dependency on Apalache
-        python "$SCRIPT_DIR/parse_modules.py"                             \
-          --verbose                                                       \
-          --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
-          --apalache_path "$DEPS_DIR/apalache"                            \
-          --tlapm_lib_path "$DEPS_DIR/tlapm/library"                      \
-          --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
-          --skip "specifications/EinsteinRiddle/Einstein.tla"             \
-          --examples_root "$EXAMPLES_DIR"                                 \
-          --enable_assertions
-    - name: Run XMLExporter on tlaplus/examples modules
-      run: |
         set -o pipefail
+        # Skip Einstein.tla to avoid dependency on Apalache
         find "$EXAMPLES_DIR/specifications" \
         -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "*_TTrace_*.tla" -print0 |
         xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
-        'java -cp "'"$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar:$DEPS_DIR/apalache/lib/apalache.jar"'" \
+        'TLA_DIR=$(dirname "{TLA_FILE}") && \
+        java -ea -cp "'"$DIST_DIR/tla2tools.jar"'":$TLA_DIR:"'"$DEPS_DIR/community/modules.jar:$DEPS_DIR/tlapm/library"'" \
+        tla2sany.SANY -error-codes "{TLA_FILE}"'
+    - name: Run XMLExporter on tlaplus/examples modules
+      run: |
+        set -o pipefail
+        # Skip Einstein.tla to avoid dependency on Apalache
+        find "$EXAMPLES_DIR/specifications" \
+        -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "*_TTrace_*.tla" -print0 |
+        xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
+        'java -cp "'"$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar"'" \
         tla2sany.xml.XMLExporter -I "$(dirname "{TLA_FILE}")" -I "'"$DEPS_DIR/tlapm/library"'" "{TLA_FILE}"' > /dev/null
     - name: Model-check small tlaplus/examples models
       run: |
