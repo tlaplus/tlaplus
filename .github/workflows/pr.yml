@@ -71,6 +71,9 @@ jobs:
     - name: Publish unit test results
       uses: mikepenz/action-junit-report@db71d41eb79864e25ab0337e395c352e84523afe # v4
       if: always()
+      # Check-run creation requires checks:write, which the GITHUB_TOKEN lacks
+      # for fork PRs. The job summary is still produced before that step fails.
+      continue-on-error: true
       with:
           check_name: JUnit Test Report on ${{ matrix.operating-system }}
           report_paths: 'tlatools/org.lamport.tlatools/target/surefire-reports/TEST-*.xml'
