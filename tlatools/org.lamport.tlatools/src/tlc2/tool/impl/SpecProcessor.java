@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
+import tla2sany.drivers.SanyExitCode;
+import tla2sany.drivers.SanySettings;
 import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
@@ -400,6 +402,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             MP.printMessage(EC.TLC_SANY_START);
         }
 		final PrintStream ps = MP.isSuppressed(EC.TLC_SANY_START) ? new DelayedPrintStream(ToolIO.out) : ToolIO.out;
+        SanyExitCode exitCode = SanyExitCode.ERROR;
         try
         {
             // SZ Feb 20, 2009:
@@ -409,7 +412,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             // Only if something unexpected happens the
             // exception is thrown
             SanyOutput out = new SimpleSanyOutput(ps, LogLevel.INFO);
-            SANY.frontEndMain(specObj, this.rootFile, out);
+            final SanySettings settings = SanySettings.forExternalCaller(MP.getSanySuppressedCodes(), MP.getSanyMessagesAsErrorCodes());
+            exitCode = SANY.parse(specObj, this.rootFile, out, settings);
         } catch (FrontEndException e)
         {
         	if (ps instanceof DelayedPrintStream) {
@@ -436,6 +440,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		if (!specObj.semanticErrors.isSuccess()) {
 			Assert.fail(EC.TLC_PARSING_FAILED, specObj.semanticErrors.getErrors());
 		}
+        // Abort if SANY reported any elevated errors.
+        if (exitCode != SanyExitCode.OK) {
+            Assert.fail(EC.TLC_PARSING_FAILED);
+        }
 
         // Set the rootModule:
         this.moduleTbl = specObj.getExternalModuleTable();
