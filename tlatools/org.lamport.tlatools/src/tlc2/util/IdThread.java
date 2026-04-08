@@ -2,8 +2,12 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import tlc2.tool.TLCState;
 import tlc2.value.IValue;
+import util.UniqueString;
 
 /** An <code>IdThread</code> is a <code>Thread</code> with an
     integer identifier. */
@@ -32,6 +36,7 @@ public class IdThread extends Thread {
 	
     private final int id;
 	private IValue[] localValues = new IValue[4];
+	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
     /** Create a new thread with ID <code>id</code>. */
     public IdThread(int id) {
@@ -89,5 +94,17 @@ public class IdThread extends Thread {
 			this.localValues = vals;
 		}
 		this.localValues[idx] = val;
+	}
+
+	public IValue getNamedRegister(UniqueString name) {
+		return namedRegisters.get(name);
+	}
+
+	public void setNamedRegister(UniqueString name, IValue val) {
+		namedRegisters.put(name, val);
+	}
+
+	public Map<UniqueString, IValue> getNamedRegisters() {
+		return namedRegisters;
 	}
 }

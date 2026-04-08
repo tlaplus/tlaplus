@@ -82,6 +82,12 @@ public class TLCGetSet implements ValueConstants {
 
 	public static final UniqueString BEHAVIOR = UniqueString.of("behavior");
 	public static final UniqueString ALL_VALUES = UniqueString.of("all");
+	public static final UniqueString ALL_NAMED_VALUES = UniqueString.of("all:named");
+
+	// String keys starting with this prefix are mapped to per-worker named
+	// registers (Map<UniqueString, IValue> in each IdThread), avoiding the
+	// array-sizing overhead of integer-indexed registers.
+	public static final String NAMED_REGISTER_PREFIX = "s:";
 	
 	public static final UniqueString MODE = UniqueString.uniqueStringOf("mode");
 	public static final UniqueString DEADLOCK = UniqueString.uniqueStringOf("deadlock");
@@ -433,13 +439,45 @@ public class TLCGetSet implements ValueConstants {
              * TLCGet("all") ==
              *    [ i \in I |-> 
              *       [ w \in W |-> 
-             *         Eval(w, TLCGet(i) ] ]
+             *         Eval(w, TLCGet(i)) ] ]
 			 */
 			if (TLCGlobals.mainChecker != null) {
 				return TLCGlobals.mainChecker.getAllValues();
 			} else if (TLCGlobals.simulator != null) {
 				return TLCGlobals.simulator.getAllValues();
 			}
+		} else if (ALL_NAMED_VALUES == sv.val) {
+			/*
+			 * - Let  W  be the set  1..TLCGet("config").worker
+             * - Let  Eval(w, Op)  be an operator that evaluates the given operator  Op  
+             *   in the context of the w-th worker  s.t.  w \in W  .
+             * - Let  K  be the set of (strings)  k  that appear in all  TLCSet(k, v)
+             *   where k starts with "s:" (named registers) throughout a spec.
+             * 
+             * TLCGet("all:named") ==
+             *    [ k \in K |->
+             *       [ w \in W |->
+             *         Eval(w, TLCGet(k)) ] ]
+			 */
+			if (TLCGlobals.mainChecker != null) {
+				return TLCGlobals.mainChecker.getAllNamedRegisterValues();
+			} else if (TLCGlobals.simulator != null) {
+				return TLCGlobals.simulator.getAllNamedRegisterValues();
+			}
+		} else if (sv.val.toString().startsWith(NAMED_REGISTER_PREFIX)) {
+			Thread th = Thread.currentThread();
+			Value res = null;
+			if (th instanceof IdThread) {
+				res = (Value) ((IdThread) th).getNamedRegister(sv.val);
+			} else if (TLCGlobals.mainChecker != null) {
+				res = (Value) TLCGlobals.mainChecker.getNamedValue(0, sv.val);
+			} else if (TLCGlobals.simulator != null) {
+				res = (Value) TLCGlobals.simulator.getLocalNamedValue(sv.val);
+			}
+			if (res == null) {
+				throw new EvalException(EC.TLC_MODULE_TLCGET_UNDEFINED, String.valueOf(sv.val));
+			}
+			return res;
 		} else if (sv.val.startsWith("-D")) {
 			return new StringValue(System.getProperty(sv.val.substring(2), sv.val.toString()));
 		}
@@ -490,6 +528,16 @@ public class TLCGetSet implements ValueConstants {
 							throw new EvalException(EC.GENERAL, e.getMessage());
 						}
 					}
+				}
+				return BoolValue.ValTrue;
+			} else if (sv.val.toString().startsWith(NAMED_REGISTER_PREFIX)) {
+				Thread th = Thread.currentThread();
+				if (th instanceof IdThread) {
+					((IdThread) th).setNamedRegister(sv.val, val);
+				} else if (TLCGlobals.mainChecker != null) {
+					TLCGlobals.mainChecker.setAllNamedValues(sv.val, val);
+				} else if (TLCGlobals.simulator != null) {
+					TLCGlobals.simulator.setAllNamedValues(sv.val, val);
 				}
 				return BoolValue.ValTrue;
 			} else if (sv.val.startsWith("-D")) {

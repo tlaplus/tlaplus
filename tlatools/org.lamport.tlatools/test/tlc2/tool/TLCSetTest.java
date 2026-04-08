@@ -36,7 +36,7 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class TLCSetTest extends ModelCheckerTestCase {
 
 	public TLCSetTest() {
-		super("TLCSet");
+		super("TLCSet", new String[] { "-config", "TLCSetPost.cfg" });
 	}
 
 	@Test
