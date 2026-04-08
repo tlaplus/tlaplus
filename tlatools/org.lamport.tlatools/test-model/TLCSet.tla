@@ -3,9 +3,12 @@ EXTENDS Integers, TLC
 
 ASSUME TLCGet("config").mode = "bfs"
 
-ASSUME TLCGet("spec").inits = {[name |-> "Init", location |-> [beginLine |-> 12, beginColumn |-> 9, endLine |-> 23, endColumn |-> 40, module |-> "TLCSet"], coverage |-> [distinct |-> 0, generated |-> 0]]}
+ASSUME TLCGet("spec").inits = {[name |-> "Init", location |-> [beginLine |-> 15, beginColumn |-> 9, endLine |-> 26, endColumn |-> 40, module |-> "TLCSet"], coverage |-> [distinct |-> 0, generated |-> 0]]}
                 
-ASSUME TLCGet("spec").actions = {[name |-> "Next", location |-> [beginLine |-> 25, beginColumn |-> 9, endLine |-> 38, endColumn |-> 41, module |-> "TLCSet"], coverage |-> [distinct |-> 0, generated |-> 0]]}
+ASSUME TLCGet("spec").actions = {[name |-> "Next", location |-> [beginLine |-> 28, beginColumn |-> 9, endLine |-> 45, endColumn |-> 41, module |-> "TLCSet"], coverage |-> [distinct |-> 0, generated |-> 0]]}
+
+ASSUME TLCSet("s:counter", 0)
+ASSUME TLCSet("s:label", "hello")
 
 VARIABLES x
 
@@ -30,6 +33,10 @@ Next == /\ x' = x + 1
         /\ TLCGet("distinct") = x'
         /\ TLCGet("generated") = x'
         /\ TLCGet("diameter") = x' \* As byproduct check that trace is strictly monotonically increasing.
+        \* Named registers
+        /\ TLCGet("s:counter") = x
+        /\ TLCGet("s:label") = "hello"
+        /\ TLCSet("s:counter", x')
         \* New world
         /\ TLCGet("stats").duration >= 0
         /\ TLCGet("stats").queue = 0
@@ -38,6 +45,10 @@ Next == /\ x' = x + 1
         /\ TLCGet("stats").generated = x'
 
 Spec == Init /\ [][Next]_x
+
+PostCondition ==
+    /\ TLCGet("s:label") = "hello"
+    /\ TLCGet("s:counter") \in Nat
 
 ASSUME TLCGet("config").deadlock = FALSE
 ASSUME TLCGet("config").worker = 1

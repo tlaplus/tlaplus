@@ -464,6 +464,23 @@ public class TLCExt {
 				return defVal;
 			}
 			return res;
+		} else if (vidx instanceof StringValue) {
+			final StringValue strVal = (StringValue) vidx;
+			if (strVal.val.toString().startsWith(TLCGetSet.NAMED_REGISTER_PREFIX)) {
+				final Thread th = Thread.currentThread();
+				Value res = null;
+				if (th instanceof IdThread) {
+					res = (Value) ((IdThread) th).getNamedRegister(strVal.val);
+				} else if (TLCGlobals.mainChecker != null) {
+					res = (Value) tlc2.TLCGlobals.mainChecker.getNamedValue(0, strVal.val);
+				} else if (tlc2.TLCGlobals.simulator != null) {
+					res = (Value) tlc2.TLCGlobals.simulator.getLocalNamedValue(strVal.val);
+				}
+				if (res == null) {
+					return defVal;
+				}
+				return res;
+			}
 		}
 		return defVal;
 	}
