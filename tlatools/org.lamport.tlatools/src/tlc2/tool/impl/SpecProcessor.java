@@ -2298,7 +2298,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		return defns;
 	}
 
-	public java.util.List<ExprNode> getPostConditionSpecs() {
-		return this.specObj.getPostConditionSpecs();
+	public java.util.List<Action> getPostConditionSpecs() {
+		final java.util.List<Action> result = new ArrayList<>(this.specObj.getPostConditionSpecs());
+		return result;
 	}
 }

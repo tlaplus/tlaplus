@@ -296,13 +296,14 @@ abstract class Spec
         return def.getBody();
     }
 
-    public final ExprNode[] getPostConditionSpecs()
+    public final Action[] getPostConditionSpecs()
     {
-    	final List<ExprNode> res = this.specProcessor.getPostConditionSpecs();
-    	
-        String name = this.config.getPostCondition();
-        if (name.length() != 0)
-        {        	
+    	final List<Action> res = this.specProcessor.getPostConditionSpecs();
+
+        final Vect postConditions = this.config.getPostConditions();
+        for (int i = 0; i < postConditions.size(); i++)
+        {
+            final String name = (String) postConditions.elementAt(i);
         	Object type = this.defns.get(name);
         	if (type == null)
         	{
@@ -318,10 +319,10 @@ abstract class Spec
         		Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "post condition", name });
         		
         	}
-        	res.add(def.getBody());
+        	res.add(new Action(def.getBody(), Context.Empty, name));
         }
-        
-        return res.toArray(ExprNode[]::new);
+
+        return res.toArray(Action[]::new);
     }
 
     public final OpDefNode getCounterExampleDef()
