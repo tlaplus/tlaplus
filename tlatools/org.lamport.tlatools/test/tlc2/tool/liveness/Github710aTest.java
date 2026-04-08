@@ -72,8 +72,8 @@ public class Github710aTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 
 		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
 		// register.

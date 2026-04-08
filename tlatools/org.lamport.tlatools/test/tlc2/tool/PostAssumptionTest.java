@@ -43,8 +43,7 @@ public class PostAssumptionTest extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "97", "16", "0"));
 
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_ASSUMPTION_FALSE,
-				"line 53, col 3 to line 64, col 56 of module DieHardTLA"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_POSTCONDITION_FALSE, "PostCondition"));
 
 		assertZeroUncovered();
 	}

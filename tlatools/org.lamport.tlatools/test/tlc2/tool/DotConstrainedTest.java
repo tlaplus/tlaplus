@@ -112,8 +112,8 @@ public class DotConstrainedTest extends ModelCheckerTestCase {
 		assertEquals(IntValue.gen(4), allValue.get(0));
 		
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 	
 		assertZeroUncovered();
 	}

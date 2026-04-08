@@ -60,7 +60,7 @@ public class Github757Test extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.GENERAL));
 
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 	}
 }

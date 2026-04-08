@@ -95,7 +95,7 @@ public class AliasSafetySimuTest extends ModelCheckerTestCase {
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions );
 		
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 	}
 }

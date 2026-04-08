@@ -43,6 +43,8 @@ public class TLCSetTest extends ModelCheckerTestCase {
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 		assertZeroUncovered();
 	}
 

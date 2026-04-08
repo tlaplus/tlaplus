@@ -71,7 +71,7 @@ public class Github1087Test extends ModelCheckerTestCase {
 		assertEquals(IntValue.gen(2), allValue.get(0));
 		
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 	}
 }

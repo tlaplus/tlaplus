@@ -339,10 +339,18 @@ public class Simulator {
 		int errorCode = result.isError() ? result.error().errorCode : EC.NO_ERROR;
 		
 		// see tlc2.tool.Worker.doPostCheckAssumption()
+		final int pcErrorCode;
 		if (result.isError() && result.error().hasTrace()) {
-			errorCode = Math.max(this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample()), errorCode);
+			pcErrorCode = this.tool.checkPostConditionWithCounterExample(result.error().getCounterExample());
 		} else {
-			errorCode = Math.max(this.tool.checkPostCondition(), errorCode);
+			pcErrorCode = this.tool.checkPostCondition();
+		}
+		// Compare by exit status severity rather than raw EC code, because EC
+		// codes are not ordered by severity (e.g. TLC_POSTCONDITION_FALSE >
+		// TLC_TEMPORAL_PROPERTY_VIOLATED numerically, but liveness violations
+		// are more severe than postcondition failures).
+		if (EC.ExitStatus.errorConstantToExitStatus(pcErrorCode) > EC.ExitStatus.errorConstantToExitStatus(errorCode)) {
+			errorCode = pcErrorCode;
 		}
 
 		// Waking the progress thread serves double duty: it breaks

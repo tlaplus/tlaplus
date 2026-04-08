@@ -1068,7 +1068,7 @@ public class SpecObj
 		return this.parseUnitContext.get(this.getName());
 	}
 
-	public List<ExprNode> getPostConditionSpecs() {
+	public List<Action> getPostConditionSpecs() {
 		// overridden by sub-classes.
 		return new ArrayList<>();
 	}
