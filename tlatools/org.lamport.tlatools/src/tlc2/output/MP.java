@@ -574,6 +574,12 @@ public class MP
         case EC.TLC_ASSUMPTION_FALSE:
             b.append("Assumption %1% is false.");
             break;
+        case EC.TLC_POSTCONDITION_FALSE:
+            b.append("Postcondition %1% at %2% is false.");
+            break;
+        case EC.TLC_POSTCONDITION_EVALUATION_ERROR:
+            b.append("Evaluating postcondition %1% at %2% failed.\n%3%");
+            break;
         case EC.TLC_SANY_START:
             b.append("Starting SANY...");
             break;

@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import tlc2.TLC;
 import tlc2.output.EC;
 
 public class SimulationTest2PostCondition extends SuccessfulSimulationTestCase {
@@ -41,6 +40,6 @@ public class SimulationTest2PostCondition extends SuccessfulSimulationTestCase {
 	@Test
 	public void testSpec() {
 		super.testSpec();
-		assertTrue(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
+		assertTrue(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
 	}
 }

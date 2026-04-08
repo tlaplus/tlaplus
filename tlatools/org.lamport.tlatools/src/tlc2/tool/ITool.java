@@ -261,7 +261,7 @@ public interface ITool extends TraceApp, OpDefEvaluator {
 
 	SemanticNode getViewSpec();
 
-	ExprNode[] getPostConditionSpecs();
+	Action[] getPostConditionSpecs();
 
 	OpDefNode getCounterExampleDef();
 

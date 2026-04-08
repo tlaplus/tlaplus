@@ -68,8 +68,8 @@ public class OneBitMutexNoSymmetryTest extends ModelCheckerTestCase {
 				+ "line 97, col 16 to line 97, col 50 of module OneBitMutex: 0");
 
 		// Assert POSTCONDITION.
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_FALSE));
-		assertFalse(recorder.recorded(EC.TLC_ASSUMPTION_EVALUATION_ERROR));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 
 		// Check that POSTCONDITION wrote the number of generated states to a TLCSet
 		// register.
