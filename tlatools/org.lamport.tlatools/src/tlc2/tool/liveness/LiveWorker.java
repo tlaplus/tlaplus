@@ -933,6 +933,8 @@ public class LiveWorker implements Callable<Boolean> {
 				throw (EvalException) ee.getCause();
 			}
 			throw ee;
+		} finally {
+			executor.shutdown();
 		}
 		
 		/*
