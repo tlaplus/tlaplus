@@ -3,6 +3,7 @@ package tlc2.tool;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -511,6 +512,20 @@ public abstract class AbstractChecker
 		}
 	}
 
+	public final void setAllNamedValues(UniqueString name, IValue val) {
+		for (int i = 0; i < this.workers.length; i++) {
+			((IdThread) workers[i]).setNamedRegister(name, val);
+		}
+	}
+
+	public final List<IValue> getAllNamedValues(final UniqueString name) {
+		final List<IValue> result = new ArrayList<>(workers.length);
+		for (int i = 0; i < workers.length; i++) {
+			result.add(((IdThread) workers[i]).getNamedRegister(name));
+		}
+		return result;
+	}
+
 	public final List<IValue> getAllValue(final int idx) {
 		return Arrays.asList(workers).stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
@@ -518,7 +533,14 @@ public abstract class AbstractChecker
 	public final IValue getValue(int i, int idx) {
 		return workers[i].getLocalValue(idx);
 	}
-	
+
+	public final IValue getNamedValue(int i, UniqueString name) {
+		return ((IdThread) workers[i]).getNamedRegister(name);
+	}
+
+	// TODO: Only iterates indices from workers[0].localValues; indices written
+	// exclusively by other workers are silently omitted. Iterate up to the max
+	// localValues length across all workers.
 	public final Value getAllValues() {
 		final IValue[] localValues = ((IdThread) workers[0]).getLocalValues();
 		
@@ -533,6 +555,22 @@ public abstract class AbstractChecker
 				}
 				m.put(IntValue.gen(i), new TupleValue(vals));
 			}
+		}
+
+		return new FcnRcdValue(m);
+	}
+
+	// TODO: Only iterates keys from workers[0].namedRegisters; keys written
+	// exclusively by other workers are silently omitted. Iterate the union of
+	// key sets across all workers.
+	public final Value getAllNamedRegisterValues() {
+		final Map<Value, Value> m = new HashMap<>();
+		for (UniqueString key : ((IdThread) workers[0]).getNamedRegisters().keySet()) {
+			final Value[] vals = new Value[workers.length];
+			for (int j = 0; j < workers.length; j++) {
+				vals[j] = (Value) ((IdThread) workers[j]).getNamedRegister(key);
+			}
+			m.put(new StringValue(key), new TupleValue(vals));
 		}
 		return new FcnRcdValue(m);
 	}

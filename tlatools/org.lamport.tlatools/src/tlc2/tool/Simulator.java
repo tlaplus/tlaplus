@@ -537,16 +537,36 @@ public class Simulator {
 		return null;
 	}
 
+	public IValue getLocalNamedValue(UniqueString name) {
+		for (SimulationWorker w : workers) {
+			return w.getNamedRegister(name);
+		}
+		return null;
+	}
+
 	public void setAllValues(int idx, IValue val) {
 		for (SimulationWorker w : workers) {
 			w.setLocalValue(idx, val);
 		}
 	}
 
+	public void setAllNamedValues(UniqueString name, IValue val) {
+		for (SimulationWorker w : workers) {
+			w.setNamedRegister(name, val);
+		}
+	}
+
+	public List<IValue> getAllNamedValues(final UniqueString name) {
+		return workers.stream().map(w -> w.getNamedRegister(name)).collect(Collectors.toList());
+	}
+
 	public List<IValue> getAllValues(int idx) {
 		return workers.stream().map(w -> w.getLocalValue(idx)).collect(Collectors.toList());
 	}
 	
+	// TODO: Only iterates indices from workers[0].localValues; indices written
+	// exclusively by other workers are silently omitted. Iterate up to the max
+	// localValues length across all workers.
 	public final Value getAllValues() {
 		final IValue[] localValues = workers.get(0).getLocalValues();
 		
@@ -562,6 +582,23 @@ public class Simulator {
 				m.put(IntValue.gen(i), new TupleValue(vals));
 			}
 		}
+
+		return new FcnRcdValue(m);
+	}
+
+	// TODO: Only iterates keys from workers[0].namedRegisters; keys written
+	// exclusively by other workers are silently omitted. Iterate the union of
+	// key sets across all workers.
+	public final Value getAllNamedRegisterValues() {
+		final Map<Value, Value> m = new HashMap<>();
+		for (UniqueString key : workers.get(0).getNamedRegisters().keySet()) {
+			final Value[] vals = new Value[workers.size()];
+			for (int j = 0; j < vals.length; j++) {
+				vals[j] = (Value) workers.get(j).getNamedRegister(key);
+			}
+			m.put(new StringValue(key), new TupleValue(vals));
+		}
+
 		return new FcnRcdValue(m);
 	}
 
