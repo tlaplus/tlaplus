@@ -283,7 +283,7 @@ public abstract class TLCDebuggerExpression {
 		return bpOp;
 	}
 	
-	private static ExternalModuleTable resolveDependencies(final SpecProcessor processor, final ExternalModuleTable emt,
+	public static ExternalModuleTable resolveDependencies(final SpecProcessor processor, final ExternalModuleTable emt,
 			final List<String> dependencies, final Errors log) throws AbortException, ParseException, SemanticException {
 		for (String moduleName : dependencies) {
 			try (final InputStream moduleSource = new FileInputStream(

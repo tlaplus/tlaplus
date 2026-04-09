@@ -43,4 +43,14 @@ Spec == /\ Init /\ [][Next]_vars
 Termination == <>(pc = "Done")
 
 \* END TRANSLATION
+
+HalfWay == x = 5
+
+CrossFive == x = 4 /\ x' = 5
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["HalfWay"] = 1
+       /\ p["CrossFive"] = 1
+
 =============================================================================

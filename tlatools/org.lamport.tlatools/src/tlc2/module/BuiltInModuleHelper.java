@@ -76,6 +76,8 @@ public class BuiltInModuleHelper {
 					return true;
 				} else if (clazz == TLCEval.class && value == TLCEval.serialVersionUID) {
 					return true;
+				} else if (clazz == _Possible.class && value == _Possible.serialVersionUID) {
+					return true;
 				}
 				// TODO Add Toolbox.class here too should Toolbox.tla module ever get a module
 				// override.

@@ -1,4 +1,5 @@
 --------- MODULE MinimalSetOfNextStates ------------
+EXTENDS TLC
 VARIABLE x
 
 Init == x = 42
@@ -58,4 +59,13 @@ Next == \/ N1a
         \/ N5
            
 Inv == x \in {42,0,1,2,5,6,7}
+
+HasFive == x = 5
+
+LeaveInit == x = 42 /\ x' # 42
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["HasFive"] = 7
+       /\ p["LeaveInit"] = 8
 ====================================================
