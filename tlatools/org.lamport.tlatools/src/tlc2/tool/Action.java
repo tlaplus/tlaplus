@@ -23,7 +23,7 @@ import tlc2.util.Context;
 import tlc2.value.impl.Value;
 import util.UniqueString;
 
-public final class Action implements ToolGlobals, Serializable {
+public class Action implements ToolGlobals, Serializable {
 
 	// If S # {} join the the elements in S by "," and nest the output in ( and ).
 	// Equals the empty string if S = {}.
@@ -66,7 +66,7 @@ public final class Action implements ToolGlobals, Serializable {
 	  this(pred, con, UniqueString.of(actionName), false, false);
   }
 
-  private Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred, final boolean isInternal) {
+  protected Action(SemanticNode pred, Context con, UniqueString actionName, boolean isInitPred, final boolean isInternal) {
 	  this.pred = pred;
 	  this.con = con;
 	  this.actionName = actionName;
@@ -126,7 +126,7 @@ public final class Action implements ToolGlobals, Serializable {
 	  return actionName;
   }
   
-	public final String getNameOfDefault() {
+	public String getNameOfDefault() {
 		if (isNamed()) {
 			return getName().toString();
 		}
@@ -134,6 +134,10 @@ public final class Action implements ToolGlobals, Serializable {
 		// the string representation of the action (which has information
 		// about line, column etc).
 		return toString();
+	}
+
+	public SemanticNode getPred() {
+		return pred;
 	}
   
 	/**

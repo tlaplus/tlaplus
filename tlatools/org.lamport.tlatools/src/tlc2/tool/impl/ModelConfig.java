@@ -73,6 +73,7 @@ public class ModelConfig implements ValueConstants, Serializable {
     private static final String PostConditions = PostCondition + 'S';
     private static final String Periodic = "_PERIODIC";
     private static final String RLReward = "_RL_REWARD";
+    private static final String Possible = "_POSSIBLE";
     public static final String CheckDeadlock = "CHECK_DEADLOCK";
 
     private static final long serialVersionUID = 1L;
@@ -82,7 +83,7 @@ public class ModelConfig implements ValueConstants, Serializable {
      */
     public final static String[] ALL_KEYWORDS = { Constant, Constants, Constraint, Constraints, ActionConstraint,
             ActionConstraints, Invariant, Invariants, Init, Next, View, Symmetry, Spec, Prop, Props, Alias,
-            PostCondition, PostConditions, Periodic, RLReward, CheckDeadlock };
+            PostCondition, PostConditions, Periodic, RLReward, Possible, CheckDeadlock };
 
     private Hashtable configTbl;
     private Hashtable<String, String> overrides;
@@ -141,6 +142,8 @@ public class ModelConfig implements ValueConstants, Serializable {
         this.configTbl.put(PostConditions, temp);
         this.configTbl.put(Periodic, "");
         this.configTbl.put(RLReward, "");
+        temp = new Vect<>();
+        this.configTbl.put(Possible, temp);
         this.configTbl.put(CheckDeadlock, "undef");
         
         this.modConstants = new Hashtable<>();
@@ -161,6 +164,7 @@ public class ModelConfig implements ValueConstants, Serializable {
         Vect invariants = (Vect) this.configTbl.get(Invariant);
         Vect props = (Vect) this.configTbl.get(Prop);
         Vect postConditions = (Vect) this.configTbl.get(PostCondition);
+        Vect possible = (Vect) this.configTbl.get(Possible);
         try
         {
             // SZ 23.02.2009: separated file resolution from stream retrieval
@@ -466,6 +470,14 @@ public class ModelConfig implements ValueConstants, Serializable {
                             break;
                         actionConstraints.addElement(tt.image);
                     }
+                } else if (tval.equals(Possible))
+                {
+                    while ((tt = getNextToken(tmgr)).kind != TLAplusParserConstants.EOF)
+                    {
+                        if (this.configTbl.get(tt.image) != null)
+                            break;
+                        possible.addElement(tt.image);
+                    }
                 } else if (tval.equals(CheckDeadlock)) {
                     tt = getNextToken(tmgr);
                     if (tt.kind == TLAplusParserConstants.EOF)
@@ -726,6 +738,11 @@ public class ModelConfig implements ValueConstants, Serializable {
     public synchronized final Vect getInvariants()
     {
         return (Vect) this.configTbl.get(Invariant);
+    }
+
+    public synchronized final Vect getPossible()
+    {
+        return (Vect) this.configTbl.get(Possible);
     }
 
     public synchronized final String getSpec()

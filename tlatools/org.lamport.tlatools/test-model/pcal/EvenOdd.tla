@@ -111,6 +111,15 @@ Termination == <>(pc = "Done")
 
 \* END TRANSLATION
 
+InOdd == pc = "Odd1"
+
+CallOdd == pc = "Even1" /\ pc' = "Odd1"
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["InOdd"] = 3
+       /\ p["CallOdd"] = 3
+
 ==============================================
 
 

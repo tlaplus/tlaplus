@@ -136,4 +136,14 @@ Spec == Init /\ [][Next]_vars
 Constraint == \A i \in Proc : num[i] \leq MaxNum
 
 Invariant == \A i, j \in Proc : (pc[i] = "cs") /\ (pc[j] = "cs") => (i = j)
+
+InCS == \E i \in Proc : pc[i] = "cs"
+
+ChooseNumber == \E i \in Proc : pc[i] = "d1" /\ pc'[i] = "d2"
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["InCS"] = 113
+       /\ p["ChooseNumber"] = 180
+
 =============================================================================

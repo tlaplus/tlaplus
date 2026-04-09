@@ -1,9 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2021 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -11,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -23,18 +23,23 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.module;
+package tlc2.tool;
 
-import tlc2.overrides.ITLCOverrides;
+import tla2sany.semantic.OpDefNode;
+import tla2sany.semantic.SemanticNode;
+import tlc2.util.Context;
 
-// tlc2.tool.impl.SpecProcessor's "api" only loads class
-// "tlc2.overrides.TLCOverrides".
-public class TLCBuiltInOverrides implements ITLCOverrides {
+public class PossibleAction extends Action {
 
-	@SuppressWarnings("rawtypes")
+	private final OpDefNode userPredicate;
+
+	public PossibleAction(SemanticNode pred, Context con, OpDefNode userPredicate) {
+		super(pred, con, userPredicate.getName(), false, false);
+		this.userPredicate = userPredicate;
+	}
+
 	@Override
-	public Class[] get() {
-		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, _TLCTrace.class,
-				_JsonTrace.class, _Possible.class };
+	public SemanticNode getPred() {
+		return userPredicate.getBody();
 	}
 }

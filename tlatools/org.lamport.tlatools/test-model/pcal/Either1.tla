@@ -56,4 +56,13 @@ Termination == <>(pc = "Done")
 
 \* END TRANSLATION
 
+XBranch == pc = "b"
+
+ChooseX == pc = "a" /\ pc' = "b"
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["XBranch"] = 1
+       /\ p["ChooseX"] = 1
+
 =============================================================================

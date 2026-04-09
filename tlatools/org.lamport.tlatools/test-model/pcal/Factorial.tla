@@ -80,4 +80,14 @@ Termination == <>(pc = "Done")
 
 
 Invariant == result \in Nat
+
+Computing == pc = "p1" /\ arg1 > 0
+
+Multiply == result' > result
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["Computing"] = 5
+       /\ p["Multiply"] = 4
+
 =============================================================================
