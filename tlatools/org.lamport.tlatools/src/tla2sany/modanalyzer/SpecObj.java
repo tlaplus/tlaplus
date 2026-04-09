@@ -1088,6 +1088,11 @@ public class SpecObj
 		return new ArrayList<>();
 	}
 
+	public OpDefNode getView() {
+		// overridden by sub-classes.
+		return null;
+	}
+
 	public void processConstantDefns(final Defns defns) {
 		// overridden by sub-classes.
 	}
