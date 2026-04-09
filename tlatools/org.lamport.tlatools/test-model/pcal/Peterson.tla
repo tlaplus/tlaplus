@@ -1,5 +1,5 @@
 ------------------------------ MODULE Peterson ------------------------------ 
-
+EXTENDS TLC
 (***************************************************************************)
 (* This specification describes Peterson's algorithm.  It is a modification *)
 (* modification of one found on Wikipedia, written in terms of a single    *)
@@ -129,6 +129,15 @@ FairSpec == /\ Init
 DeadlockFree == \A i \in {0,1} : (pc[i] = "a1") ~> (pc[i] = "cs") 
 
 -----------------------------------------------------------------------------
+BothTrying == pc[0] \in {"a2","a3"} /\ pc[1] \in {"a2","a3"}
+
+EnterCS == \E i \in {0,1}: pc[i] # "cs" /\ pc'[i] = "cs"
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["BothTrying"] = 16
+       /\ p["EnterCS"] = 6
+
 (***************************************************************************)
 (* To prove mutual exclusion, we find an inductive invariant Inv that is   *)
 (* true initially and implies mutual exclusion.  In other words, we must   *)

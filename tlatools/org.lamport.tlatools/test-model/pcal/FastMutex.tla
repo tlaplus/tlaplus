@@ -1,6 +1,6 @@
 ------------------------------ MODULE FastMutex ----------------------------- 
 
-EXTENDS Naturals
+EXTENDS Naturals, TLC
 
 CONSTANT N
 
@@ -158,10 +158,19 @@ Spec == /\ Init /\ [][Next]_vars
 
 \* END TRANSLATION
 
+SomeoneInCS == \E i \in 1..N : pc[i] = "cs" /\ ~failed[i]
+
+Contention == \E i, k \in 1..N : i # k /\ pc[i] = "l6" /\ pc[k] = "l6"
+
 inCS(i) ==  (pc[i] = "cs") /\ (~failed[i])
 
 Invariant == \A i, k \in 1..N : (i # k) => ~ (inCS(i) /\ inCS(k))
 
 
 Liveness == []<> \E i \in 1..N : inCS(i)
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["SomeoneInCS"] = 292
+       /\ p["Contention"] = 16
 =============================================================================

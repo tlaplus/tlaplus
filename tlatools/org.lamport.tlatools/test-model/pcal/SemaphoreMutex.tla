@@ -1,6 +1,6 @@
 ---------------------------- MODULE SemaphoreMutex --------------------------
 
-EXTENDS Naturals
+EXTENDS Naturals, TLC
 
 CONSTANT N
 
@@ -72,4 +72,14 @@ inCS(i) ==  (pc[i] = "cs")
 Invariant == \A i, k \in 1..N : (i # k) => ~ (inCS(i) /\ inCS(k))
 
 Liveness == \A i \in 1..N : []<> inCS(i)
+
+SomeInCS == \E i \in 1..N : inCS(i)
+
+AcquireSem == \E i \in 1..N : pc[i] = "enter" /\ pc'[i] = "cs"
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["SomeInCS"] = 24
+       /\ p["AcquireSem"] = 12
+
 =============================================================================

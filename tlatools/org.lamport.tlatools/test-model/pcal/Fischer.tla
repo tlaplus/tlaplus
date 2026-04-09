@@ -134,4 +134,14 @@ inCS(i) ==  pc[i] = "cs"
 Invariant == \A i, k \in 1..N : (i # k) => ~ (inCS(i) /\ inCS(k))
 
 Liveness == []<> \E i \in 1..N : inCS(i)
+
+SomeInCS == \E i \in 1..N : inCS(i)
+
+ClaimLock == \E i \in 1..N : pc[i] = "d" /\ x' = i
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["SomeInCS"] = 147
+       /\ p["ClaimLock"] = 609
+
 =============================================================================

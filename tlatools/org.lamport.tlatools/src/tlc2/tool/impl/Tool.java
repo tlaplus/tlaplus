@@ -3688,11 +3688,11 @@ public abstract class Tool
 			    // which are always ExprNode instances.
 			    if (!isValid((ExprNode) pc.pred, ctxt)) {
 					return MP.printError(EC.TLC_POSTCONDITION_FALSE,
-							new String[] { pc.getNameOfDefault(), pc.pred.toString() });
+							new String[] { pc.getNameOfDefault(), pc.getPred().toString() });
 				}
 			} catch (Exception e) {
 				return MP.printError(EC.TLC_POSTCONDITION_EVALUATION_ERROR,
-						new String[] { pc.getNameOfDefault(), pc.pred.toString(), e.getMessage() });
+						new String[] { pc.getNameOfDefault(), pc.getPred().toString(), e.getMessage() });
 			}
 		}
 		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary

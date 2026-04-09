@@ -1,5 +1,5 @@
 ------------------------------ MODULE FairSeq ------------------------------
-EXTENDS Integers
+EXTENDS Integers, TLC
 (***************************************************************************
 PlusCal options (version 1.5)
 --algorithm FairSeq {
@@ -38,6 +38,16 @@ Spec == /\ Init /\ [][Next]_vars
 Termination == <>(pc = "Done")
 
 \* END TRANSLATION
+
+AtFive == x = 5
+
+FinishLoop == x = 9 /\ x' = 10
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["AtFive"] = 1
+       /\ p["FinishLoop"] = 1
+
 =============================================================================
 \* Modification History
 \* Last modified Sun Mar 20 10:13:11 PDT 2011 by lamport
