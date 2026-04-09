@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tlc2.tool.impl.ModelConfig.*;
+
 /**
  * Interface containing the error code constants 
  * @author Simon Zambrovski
@@ -357,6 +359,7 @@ public interface EC
 	    	
     	public static final int ERROR = 255;
 	    public static final int SUCCESS = 0;
+	    public static final int UNEXPECTED_SUCCESS = 1;
 	
 	    // (Safety/Liveness) Violations
 	    public static final int VIOLATION_ASSUMPTION = 10; 
@@ -375,16 +378,24 @@ public interface EC
 	    public static final int ERROR_CONFIG_PARSE = ERROR_SPEC_PARSE + 1;
 	    public static final int ERROR_STATESPACE_TOO_LARGE = ERROR_CONFIG_PARSE + 1;
 	    public static final int ERROR_SYSTEM = ERROR_STATESPACE_TOO_LARGE + 1;
-	
+
 	    /**
 	     * Returns an exit status for an error code.
 	     */
 	    public static int errorConstantToExitStatus(final int ec) {
+	      return errorConstantToExitStatus(ec, ModelResult.NO_VIOLATION);
+	    }
+
+	    /**
+	     * Returns an exit status for an error code, subject to comparison with
+	     * the expected TLC result.
+	     */
+	    public static int errorConstantToExitStatus(final int ec, final ModelResult expected) {
 	        // TODO Allocate a range of exit status to indicate classes of errors.
 	        // For a great example of potential classes see: https://github.com/tlaplus/tlaplus/pull/308#discussion_r285840112
 	    	switch (ec) {
 	    	case NO_ERROR:
-	    		return SUCCESS;
+	    	  return expected == ModelResult.NO_VIOLATION ? SUCCESS : UNEXPECTED_SUCCESS;
 	    	
 	    	// failures
 	    		
@@ -405,23 +416,23 @@ public interface EC
 	    		
 	        case TLC_INVARIANT_VIOLATED_INITIAL:
 	        case TLC_INVARIANT_VIOLATED_BEHAVIOR:
-				return VIOLATION_SAFETY;
+	          return expected == ModelResult.SAFETY_VIOLATION ? SUCCESS : VIOLATION_SAFETY;
 				
 	        case TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR:
 	        case TLC_ACTION_PROPERTY_EVALUATION_FAILED:
 	        case TLC_TEMPORAL_PROPERTY_VIOLATED:
 	        case TLC_PROPERTY_VIOLATED_INITIAL:
-				return VIOLATION_LIVENESS;
+	          return expected == ModelResult.LIVENESS_VIOLATION ? SUCCESS : VIOLATION_LIVENESS;
 				
 	        case TLC_DEADLOCK_REACHED:
-	        	return VIOLATION_DEADLOCK;
+	          return expected == ModelResult.DEADLOCK_VIOLATION ? SUCCESS : VIOLATION_DEADLOCK;
 	        	
 	        case TLC_ASSUMPTION_FALSE:
 	        case TLC_ASSUMPTION_EVALUATION_ERROR:
-	            return VIOLATION_ASSUMPTION;
+	          return expected == ModelResult.ASSUMPTION_VIOLATION ? SUCCESS : VIOLATION_ASSUMPTION;
 	        
 	        case TLC_VALUE_ASSERT_FAILED:
-	        	return VIOLATION_ASSERT;
+	          return expected == ModelResult.ASSERT_VIOLATION ? SUCCESS : VIOLATION_ASSERT;
 	        	
 	        // errors
 	        case TLC_CONFIG_VALUE_NOT_ASSIGNED_TO_CONSTANT_PARAM:
@@ -464,7 +475,7 @@ public interface EC
 			}
 	    }
 
-		private static final Set<Integer> knownExitValues = Stream.of(SUCCESS, FAILURE_LIVENESS_EVAL, FAILURE_SPEC_EVAL,
+		private static final Set<Integer> knownExitValues = Stream.of(SUCCESS, UNEXPECTED_SUCCESS, FAILURE_LIVENESS_EVAL, FAILURE_SPEC_EVAL,
 				FAILURE_SAFETY_EVAL, VIOLATION_SAFETY, VIOLATION_LIVENESS, VIOLATION_DEADLOCK, VIOLATION_ASSUMPTION,
 				VIOLATION_ASSERT, ERROR_CONFIG_PARSE, ERROR_SPEC_PARSE).collect(Collectors.toSet());
 		
