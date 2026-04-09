@@ -331,6 +331,30 @@ public final class Location implements Comparable<Location>
     public final UniqueString sourceAsUniqueString() {
     	return name;
     }
+
+    /**
+     * Given the source code of the module containing this location, this
+     * function returns the substring spanned by this location. The function
+     * will accept either Windows or Linux-style newlines in the source code,
+     * but the returned string will only have Linux-style newlines. In other
+     * words, if the source code has Windows-style newlines then the returned
+     * string will not be a real substring of the source code strictly
+     * speaking.
+     */
+    public String getSourceCodeExcerpt(final String sourceCode) {
+      final StringBuilder sb = new StringBuilder();
+      final String[] lines = sourceCode.split("\r?\n");
+      int currentLine = this.beginLine();
+      int readFromCol = this.beginColumn();
+      while (currentLine != this.endLine()) {
+        sb.append(lines[currentLine - 1].substring(readFromCol - 1, lines[currentLine - 1].length()));
+        sb.append("\n");
+        readFromCol = 1;
+        currentLine++;
+      }
+      sb.append(lines[currentLine - 1].substring(readFromCol - 1, this.endColumn()));
+      return sb.toString();
+    }
     
     /**
      * This method should be called by all tools to print the location, so
