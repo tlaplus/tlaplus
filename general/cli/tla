@@ -10,9 +10,70 @@ if [ -z "$JAR" ]; then
   exit 1
 fi
 
-cmd="${1:-}"
-shift || true
+print_help() {
+  cat <<EOF
+TLA+ CLI
 
+Usage:
+  tla <command> [args]
+
+Commands:
+  tlc       Run model checker
+  sany      Parse spec
+  repl      Start REPL
+  pcal      Translate PlusCal
+  tla2tex   Export to LaTeX
+
+Global options:
+  -h, --help     Show this help
+  --version      Show version
+
+Environment:
+  TLA_JAR   Path to tla2tools.jar
+EOF
+}
+
+print_version() {
+  echo "tla CLI version 1.0"
+}
+
+# No args → show help
+if [ $# -eq 0 ]; then
+  print_help
+  exit 0
+fi
+
+cmd="$1"
+
+# Handle global flags BEFORE shifting
+case "$cmd" in
+  -h|--help|help)
+    print_help
+    exit 0
+    ;;
+  --version)
+    print_version
+    exit 0
+    ;;
+esac
+
+# Only shift if it's a real subcommand
+case "$cmd" in
+  tlc|sany|repl|pcal|tla2tex)
+    shift
+    ;;
+  *)
+    # If it's a flag, stay quiet (important for tab completion)
+    if [[ "$cmd" == -* ]]; then
+      exit 0
+    fi
+
+    echo "Unknown command: $cmd" >&2
+    exit 1
+    ;;
+esac
+
+# Dispatch
 case "$cmd" in
   tlc)
     exec "$JAVA" -cp "$JAR" tlc2.TLC "$@"
@@ -28,27 +89,5 @@ case "$cmd" in
     ;;
   tla2tex)
     exec "$JAVA" -cp "$JAR" tla2tex.TLA "$@"
-    ;;
-  ""|help|-h|--help)
-    cat <<EOF
-TLA+ CLI
-
-Usage:
-  tla <command> [args]
-
-Commands:
-  tlc       Run model checker
-  sany      Parse spec
-  repl      Start REPL
-  pcal      Translate PlusCal
-  tla2tex   Export to LaTeX
-
-Environment:
-  TLA_JAR   Path to tla2tools.jar
-EOF
-    ;;
-  *)
-    echo "Unknown command: $cmd" >&2
-    exit 1
     ;;
 esac
