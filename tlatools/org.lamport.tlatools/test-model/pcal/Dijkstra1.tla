@@ -20,7 +20,7 @@ pj:   M[self] := M[self - 1];
   end algorithm
 
 ----------- MODULE Dijkstra1 -----------
-EXTENDS FiniteSets, Naturals
+EXTENDS FiniteSets, Naturals, TLC
 
 CONSTANT K, N
 
@@ -69,6 +69,10 @@ Spec == /\ Init /\ [][Next]_vars
 
 \* END TRANSLATION
 
+SingleToken == Cardinality({i \in ProcSet : \/ (i = 0 /\ M[0] = M[N-1]) \/ (i > 0 /\ M[i] # M[i-1])}) = 1
+
+TokenPasses == \E i \in ProcSet : pc[i] = "pj" /\ pc'[i] = "pi"
+
 HasToken(self) == \/ (self = 0) /\ (M[0] = M[N - 1])
                   \/ (self > 0) /\ (M[self] # M[self - 1])
 
@@ -81,4 +85,9 @@ EventuallyJustOneHoldsToken == <>[] (Cardinality(TokenHolders) = 1)
 THEOREM Spec => [] SomeoneHoldsToken
 
 THEOREM Spec => EventuallyJustOneHoldsToken
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["SingleToken"] = 2975
+       /\ p["TokenPasses"] = 7065
 ========================================

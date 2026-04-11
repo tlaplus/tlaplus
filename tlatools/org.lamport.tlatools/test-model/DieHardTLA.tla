@@ -1,5 +1,5 @@
 ------------------------------ MODULE DieHardTLA ------------------------------
-EXTENDS Integers, TLC
+EXTENDS Integers, TLC, _Possible
 
 VARIABLES small, big   
           
@@ -46,6 +46,15 @@ Next == \/ FillSmall
         
 Spec == Init /\ [][Next]_<<small, big>>   
 
+
+HasFour == big = 4
+
+PourAction == small' # small /\ big' # big
+
+PossibleCounts ==
+    LET p == _Counts
+    IN /\ p["HasFour"] = 8
+       /\ p["PourAction"] = 14
 
 PostCondition ==
   \* Evaluating the spec takes 97 states of which 16 are distinct.  The

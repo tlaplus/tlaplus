@@ -35,6 +35,6 @@ public class TLCBuiltInOverrides implements ITLCOverrides {
 	@Override
 	public Class[] get() {
 		return new Class[] { TLCGetSet.class, TLCEval.class, TLCExt.class, Json.class, _TLCTrace.class,
-				_JsonTrace.class };
+				_JsonTrace.class, _Possible.class };
 	}
 }

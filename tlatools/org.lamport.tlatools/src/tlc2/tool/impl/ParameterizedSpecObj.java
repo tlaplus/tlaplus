@@ -177,8 +177,8 @@ public class ParameterizedSpecObj extends SpecObj {
 	}
 
 	@Override
-	public List<ExprNode> getPostConditionSpecs() {
-		final List<ExprNode> res = new ArrayList<>();
+	public List<Action> getPostConditionSpecs() {
+		final List<Action> res = new ArrayList<>();
 
 		@SuppressWarnings("unchecked")
 		final List<PostCondition> pcs = (List<PostCondition>) params.getOrDefault(POST_CONDITIONS, new ArrayList<>());
@@ -190,7 +190,7 @@ public class ParameterizedSpecObj extends SpecObj {
 			final OpDefNode opDef = moduleNode.getOpDef(pc.operator);
 			Assert.check(opDef != null, EC.GENERAL,
 					"Could not find operator: " + pc.operator + " in module: " + pc.module);
-			res.add(opDef.getBody());
+			res.add(new Action(opDef.getBody(), Context.Empty, pc.operator));
 		}
 		return res;
 	}

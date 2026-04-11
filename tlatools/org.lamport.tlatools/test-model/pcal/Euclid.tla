@@ -90,4 +90,13 @@ Termination == <>(pc = "Done")
 Invariant == 
    (pc = "Done") => (v = GCD(u_ini, v_ini))
 
+Finished == pc = "Done"
+
+SwapOccurs == u < v /\ u' = v /\ v' = u
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["Finished"] = 800
+       /\ p["SwapOccurs"] = 698
+
 =============================================================================

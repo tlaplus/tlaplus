@@ -36,13 +36,15 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 public class TLCSetTest extends ModelCheckerTestCase {
 
 	public TLCSetTest() {
-		super("TLCSet");
+		super("TLCSet", new String[] { "-config", "TLCSetPost.cfg" });
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertFalse(recorder.recorded(EC.TLC_POSTCONDITION_EVALUATION_ERROR));
 		assertZeroUncovered();
 	}
 

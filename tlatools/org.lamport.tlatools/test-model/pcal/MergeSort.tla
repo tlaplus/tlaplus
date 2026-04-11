@@ -245,4 +245,14 @@ Termination == <>(pc = "Done")
 Invariant == 
    (pc = "Done") => \A x, y \in DOMAIN a :
                        (x < y) => a[x] \leq a[y]
+
+Sorted == pc = "Done"
+
+MergeStep == pc = "l7" /\ k' = k + 1
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["Sorted"] = 12
+       /\ p["MergeStep"] = 8
+
 =============================================================================

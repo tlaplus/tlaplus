@@ -53,4 +53,14 @@ Spec == /\ Init /\ [][Next]_vars
 Termination == <>(pc = "Done")
 
 \* END TRANSLATION
+
+AtStepC == pc = "c"
+
+PickTwo == pc = "b" /\ y' = 2
+
+PossibleCounts ==
+    LET p == TLCGet("all:named")["s:_possible"][1]
+    IN /\ p["AtStepC"] = 2
+       /\ p["PickTwo"] = 1
+
 =============================================================================

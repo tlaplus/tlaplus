@@ -3680,19 +3680,19 @@ public abstract class Tool
 
 	private final int checkPostConditionWithContext(final Context ctxt) {
 		// User request: http://discuss.tlapl.us/msg03658.html
-		final ExprNode[] postConditions = getPostConditionSpecs();
+		final Action[] postConditions = getPostConditionSpecs();
 		for (int i = 0; i < postConditions.length; i++) {
-			final ExprNode en = postConditions[i];
+			final Action pc = postConditions[i];
 			try {
-				if (!isValid(en, ctxt)) {
-					// It's not an assumption because the expression doesn't appear inside
-					// an ASSUME, but good enough for this prototype.
-					return MP.printError(EC.TLC_ASSUMPTION_FALSE, en.toString());
+				// Cast is safe: postconditions are constant-level operator bodies (OpDefNode.getBody()),
+			    // which are always ExprNode instances.
+			    if (!isValid((ExprNode) pc.pred, ctxt)) {
+					return MP.printError(EC.TLC_POSTCONDITION_FALSE,
+							new String[] { pc.getNameOfDefault(), pc.getPred().toString() });
 				}
 			} catch (Exception e) {
-				// tool.isValid(sn) failed to evaluate...
-				return MP.printError(EC.TLC_ASSUMPTION_EVALUATION_ERROR,
-						new String[] { en.toString(), e.getMessage() });
+				return MP.printError(EC.TLC_POSTCONDITION_EVALUATION_ERROR,
+						new String[] { pc.getNameOfDefault(), pc.getPred().toString(), e.getMessage() });
 			}
 		}
 		// The PostCheckAssumption/PostCondition cannot be stated as an ordinary

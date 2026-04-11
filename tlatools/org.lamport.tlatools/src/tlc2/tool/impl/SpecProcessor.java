@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -40,6 +41,7 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tla2sany.drivers.FrontEndException;
 import tla2sany.drivers.SANY;
@@ -49,15 +51,20 @@ import tla2sany.drivers.SemanticException;
 import tla2sany.modanalyzer.SpecObj;
 import tla2sany.output.LogLevel;
 import tla2sany.output.SanyOutput;
+import tla2sany.output.SilentSanyOutput;
 import tla2sany.output.SimpleSanyOutput;
 import tla2sany.parser.ParseException;
+import tla2sany.parser.SyntaxTreeNode;
+import tla2sany.parser.TLAplusParser;
 import tla2sany.semantic.APSubstInNode;
 import tla2sany.semantic.AbortException;
 import tla2sany.semantic.AssumeNode;
 import tla2sany.semantic.DecimalNode;
+import tla2sany.semantic.Errors;
 import tla2sany.semantic.ExprNode;
 import tla2sany.semantic.ExprOrOpArgNode;
 import tla2sany.semantic.ExternalModuleTable;
+import tla2sany.semantic.Generator;
 import tla2sany.semantic.LabelNode;
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.LevelConstants;
@@ -76,6 +83,7 @@ import tla2sany.semantic.SubstInNode;
 import tla2sany.semantic.SymbolNode;
 import tla2sany.semantic.TheoremNode;
 import tlc2.TLCGlobals;
+import tlc2.debug.TLCDebuggerExpression;
 import tlc2.module.BuiltInModuleHelper;
 import tlc2.module.TLCBuiltInOverrides;
 import tlc2.output.DelayedPrintStream;
@@ -89,6 +97,7 @@ import tlc2.tool.Action;
 import tlc2.tool.BuiltInOPs;
 import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
+import tlc2.tool.PossibleAction;
 import tlc2.tool.Specs;
 import tlc2.tool.TLCStateMut;
 import tlc2.tool.TLCStateMutExt;
@@ -153,6 +162,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private ExprNode[] actionConstraints; // Action constraints
     private ExprNode rlReward;
     private ExprNode periodic;
+    private final java.util.List<Action> possiblePostConditions = new ArrayList<>();
     private ExprNode[] assumptions; // Assumpt	ions
     private boolean[] assumptionIsAxiom; // assumptionIsAxiom[i] is true iff assumptions[i]
                                            // is an AXIOM.  Added 26 May 2010 by LL
@@ -934,6 +944,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         processRLReward();
         
         processPeriodic();
+
+        processConfigPossible();
     }
 
     /** 
@@ -1681,7 +1693,231 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	    
 	    this.actionConstraints = constrList.toArray(new ExprNode[0]);
 	}
-    
+
+	/**
+	 * Processes the _POSSIBLE config keyword by dynamically generating a TLA+ module
+	 * at runtime, parsing and semantically analyzing it via SANY, then wiring the
+	 * resulting operators into TLC's action constraints, postconditions, and periodic
+	 * expressions.
+	 *
+	 * <p>The POSSIBLE keyword names zero-arity predicates from the user's spec that
+	 * should be witnessed (evaluated to TRUE) in at least one reachable state.  Each
+	 * predicate must be wrapped in a {@code _Possible!_Track(pred, "pred")} call so
+	 * that per-worker counters are maintained via named registers.  Because the
+	 * predicate names come from the config file, this wrapping cannot be expressed
+	 * statically — a synthetic module is generated instead.</p>
+	 *
+	 * <p>For a spec {@code MySpec} with {@code POSSIBLE P1, P2}, the generated module
+	 * looks like:</p>
+	 * <pre>
+	 *   ---- MODULE _PossibleModule_nnn ----
+	 *   EXTENDS MySpec, _Possible
+	 *
+	 *   _PossibleAC_P1_nnn  == _Track(P1, "P1")
+	 *   _PossibleAC_P2_nnn  == _Track(P2, "P2")
+	 *   _PossiblePC_P1_nnn  == _CheckName("P1")
+	 *   _PossiblePC_P2_nnn  == _CheckName("P2")
+	 *   _PossiblePrint_nnn  == _PrintCounts
+	 *   ====
+	 * </pre>
+	 *
+	 * <p>The module extends the user's root module (to bring predicates into scope)
+	 * and {@code _Possible} (to access the tracking operators).  The generated source
+	 * is parsed and analyzed through the same SANY pipeline used by
+	 * {@link tlc2.debug.TLCDebuggerExpression#process}, with unresolved dependencies
+	 * loaded via {@link tlc2.debug.TLCDebuggerExpression#resolveDependencies}.  After
+	 * semantic analysis, {@code processConstantsDynamicExtendee} and
+	 * {@code processModuleOverrides} hook up Java overrides — notably
+	 * {@link tlc2.module._Possible#counts _Possible._Counts}.</p>
+	 *
+	 * <p>The generated operators are then wired into the model checker.  Each
+	 * {@code _PossibleAC_<name>_nnn} is routed to either model constraints or
+	 * action constraints based on the user predicate's SANY level:</p>
+	 * <ul>
+	 *   <li>State-level predicates ({@code level <= VariableLevel}) are appended
+	 *       to {@code this.modelConstraints}, so _Track is evaluated via
+	 *       {@code isInModel(state)} for every discovered state — including
+	 *       terminal/deadlock states that have no outgoing transitions.  This
+	 *       avoids false failures where a predicate is true only in such states
+	 *       but would never be tracked if wired through action constraints.</li>
+	 *   <li>Action-level predicates ({@code level >= ActionLevel}) are appended
+	 *       to {@code this.actionConstraints}, so _Track is evaluated on every
+	 *       transition via {@code isInActions(s1, s2)}.</li>
+	 *   <li>One operator per predicate avoids a CostModelCreator
+	 *       assertion failure when the coverage system walks a combined /\
+	 *       expression that shares the _Track LAMBDA body.</li>
+	 *   <li>One {@link PossibleAction} per predicate is added to
+	 *       {@code this.possiblePostConditions}.  Each wraps its generated check
+	 *       expression but reports the user's original predicate name and location
+	 *       in error messages.</li>
+	 *   <li>{@code _PossiblePrint_nnn} is set as {@code this.periodic} (if not
+	 *       already defined) to print running counts during model checking.</li>
+	 * </ul>
+	 *
+	 * <p>Finally, the {@code ASSUME TLCSet("s:_possible", <<>>)} from
+	 * {@code _Possible.tla} is extracted and appended to {@code this.assumptions}
+	 * so the per-worker named register is initialized before state exploration.</p>
+	 *
+	 * @see tlc2.debug.TLCDebuggerExpression#process
+	 * @see tlc2.module._Possible
+	 * @see tla2sany.StandardModules._Possible
+	 */
+	private void processConfigPossible() {
+	    final Vect possibleNames = this.config.getPossible();
+	    if (possibleNames.size() == 0) {
+	        return;
+	    }
+
+	    final OpDefNode[] userPredicates = new OpDefNode[possibleNames.size()];
+	    for (int i = 0; i < possibleNames.size(); i++) {
+	        final String name = (String) possibleNames.elementAt(i);
+	        final Object pred = this.defns.get(name);
+	        if (pred == null) {
+	            Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "possible", name });
+	        }
+	        if (!(pred instanceof OpDefNode)) {
+	            Assert.fail(EC.TLC_CONFIG_ID_MUST_NOT_BE_CONSTANT, new String[] { "possible", name });
+	        }
+	        final OpDefNode def = (OpDefNode) pred;
+	        if (def.getArity() != 0) {
+	            Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "possible", name });
+	        }
+	        // https://github.com/tlaplus/tlaplus/issues/827
+	        if (def.getLevel() >= LevelConstants.TemporalLevel) {
+	            Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE,
+	                new String[] { "possible", name, "a temporal formula; only state- and action-level predicates are supported" });
+	        }
+	        userPredicates[i] = def;
+	    }
+
+	    final String rootModName = this.rootModule.getName().toString();
+	    final String modName = this.rootModule.generateUnusedName("_PossibleModule_%s");
+	    final String printOpName = this.rootModule.generateUnusedName("_PossiblePrint_%s");
+
+	    // Generate one action constraint operator per predicate to avoid a
+	    // CostModelCreator assertion failure when the coverage system walks a
+	    // combined /\ expression that references the shared _Track LAMBDA
+	    // body multiple times under the same parent node.
+	    final String[] acOpNames = new String[possibleNames.size()];
+	    final StringBuilder acDefs = new StringBuilder();
+	    for (int i = 0; i < possibleNames.size(); i++) {
+	        final String name = (String) possibleNames.elementAt(i);
+	        acOpNames[i] = this.rootModule.generateUnusedName("_PossibleAC_" + name + "_%s");
+	        acDefs.append(acOpNames[i]).append(" == _Track(").append(name).append(", \"").append(name).append("\")\n\n");
+	    }
+
+	    final String[] pcOpNames = new String[possibleNames.size()];
+	    final StringBuilder pcDefs = new StringBuilder();
+	    for (int i = 0; i < possibleNames.size(); i++) {
+	        final String name = (String) possibleNames.elementAt(i);
+	        pcOpNames[i] = this.rootModule.generateUnusedName("_PossiblePC_" + name + "_%s");
+	        pcDefs.append(pcOpNames[i]).append(" == _CheckName(\"").append(name).append("\")\n\n");
+	    }
+
+	    final String moduleStr = String.format(
+	        "---- MODULE %s ----\nEXTENDS %s, _Possible\n\n%s%s%s == _PrintCounts\n\n====",
+	        modName, rootModName, acDefs, pcDefs, printOpName);
+
+	    try {
+	        final byte[] moduleBytes = moduleStr.getBytes(StandardCharsets.UTF_8);
+	        final TLAplusParser parser = new TLAplusParser(new SilentSanyOutput(), moduleBytes);
+	        final boolean syntaxOk = parser.parse();
+	        final SyntaxTreeNode syntaxRoot = parser.ParseTree;
+	        if (!syntaxOk || syntaxRoot == null) {
+	            Assert.fail(EC.TLC_PARSING_FAILED2, "POSSIBLE: syntax error in generated module");
+	            return;
+	        }
+
+	        final ExternalModuleTable emt = this.getModuleTbl();
+	        final Errors semanticLog = new Errors();
+
+	        TLCDebuggerExpression.resolveDependencies(this, emt,
+	            Stream.of(parser.dependencies())
+	                .filter(dep -> emt.getModuleNode(dep) == null)
+	                .collect(Collectors.toList()),
+	            semanticLog);
+
+	        final Generator gen = new Generator(emt, semanticLog);
+	        final ModuleNode module = gen.generate(syntaxRoot);
+	        if (module == null || semanticLog.isFailure()) {
+	            Assert.fail(EC.TLC_PARSING_FAILED2,
+	                "POSSIBLE: semantic analysis of generated module failed");
+	            return;
+	        }
+
+	        final Errors levelErrors = new Errors();
+	        module.levelCheck(levelErrors);
+	        if (levelErrors.isFailure()) {
+	            Assert.fail(EC.TLC_PARSING_FAILED2,
+	                "POSSIBLE: level checking of generated module failed\n" + levelErrors.toString());
+	            return;
+	        }
+
+	        processConstantsDynamicExtendee(module);
+	        processModuleOverrides(module, emt);
+
+	        final OpDefNode printOp = module.getOpDef(printOpName);
+
+	        // Partition _Track wrappers by the user predicate's level: state-level
+	        // predicates go into model constraints (evaluated per state via isInModel),
+	        // action-level predicates into action constraints (evaluated per transition
+	        // via isInActions).  This matters for terminal/deadlock states that have no
+	        // outgoing transitions: action constraints are never evaluated for them, so
+	        // a state-level predicate would never be tracked.
+	        final java.util.List<ExprNode> stateConstrs = new ArrayList<>();
+	        final java.util.List<ExprNode> actionConstrs = new ArrayList<>();
+	        for (int i = 0; i < possibleNames.size(); i++) {
+	            final OpDefNode acOp = module.getOpDef(acOpNames[i]);
+	            final ExprNode body = acOp.getBody();
+	            body.setToolObject(toolId, acOp);
+	            if (userPredicates[i].getLevel() <= LevelConstants.VariableLevel) {
+	                stateConstrs.add(body);
+	            } else {
+	                actionConstrs.add(body);
+	            }
+	        }
+	        if (!actionConstrs.isEmpty()) {
+	            final java.util.List<ExprNode> merged = new ArrayList<>(Arrays.asList(this.actionConstraints));
+	            merged.addAll(actionConstrs);
+	            this.actionConstraints = merged.toArray(ExprNode[]::new);
+	        }
+	        if (!stateConstrs.isEmpty()) {
+	            final java.util.List<ExprNode> merged = new ArrayList<>(Arrays.asList(this.modelConstraints));
+	            merged.addAll(stateConstrs);
+	            this.modelConstraints = merged.toArray(ExprNode[]::new);
+	        }
+
+	        for (int i = 0; i < possibleNames.size(); i++) {
+	            final OpDefNode pcOp = module.getOpDef(pcOpNames[i]);
+	            this.possiblePostConditions.add(
+	                new PossibleAction(pcOp.getBody(), Context.Empty, userPredicates[i]));
+	        }
+
+	        if (this.periodic == null) {
+	            this.periodic = printOp.getBody();
+	        }
+
+	        final ModuleNode possibleModule = emt.getModuleNode("_Possible");
+	        if (possibleModule != null) {
+	            final AssumeNode[] possibleAssumes = possibleModule.getAssumptions();
+	            if (possibleAssumes.length > 0) {
+	                final ExprNode[] newAssumptions = new ExprNode[this.assumptions.length + possibleAssumes.length];
+	                final boolean[] newIsAxiom = new boolean[this.assumptions.length + possibleAssumes.length];
+	                System.arraycopy(this.assumptions, 0, newAssumptions, 0, this.assumptions.length);
+	                System.arraycopy(this.assumptionIsAxiom, 0, newIsAxiom, 0, this.assumptions.length);
+	                for (int i = 0; i < possibleAssumes.length; i++) {
+	                    newAssumptions[this.assumptions.length + i] = possibleAssumes[i].getAssume();
+	                    newIsAxiom[this.assumptions.length + i] = possibleAssumes[i].getIsAxiom();
+	                }
+	                this.assumptions = newAssumptions;
+	                this.assumptionIsAxiom = newIsAxiom;
+	            }
+	        }
+	    } catch (ParseException | SemanticException | AbortException e) {
+	        Assert.fail(EC.TLC_PARSING_FAILED2, e);
+	    }
+	}
+
 	private final void processModelConstraints() {
 	    final java.util.List<ExprNode> constrList = new ArrayList<>();
 
@@ -2298,7 +2534,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 		return defns;
 	}
 
-	public java.util.List<ExprNode> getPostConditionSpecs() {
-		return this.specObj.getPostConditionSpecs();
+	public java.util.List<Action> getPostConditionSpecs() {
+		final java.util.List<Action> result = new ArrayList<>(this.specObj.getPostConditionSpecs());
+		result.addAll(possiblePostConditions);
+		return result;
 	}
 }
