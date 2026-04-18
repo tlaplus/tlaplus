@@ -1714,7 +1714,8 @@ public class MP
      * @return
      */
     public static String ECGeneralMsg(String cause, Throwable throwable) {
-        if (throwable instanceof ConfigFileException) {
+        if (throwable instanceof ConfigFileException
+                && ((ConfigFileException) throwable).getErrorCode() == EC.CFG_ERROR_READING_FILE) {
             return throwable.getMessage();
         }
         String msg = "TLC threw an unexpected exception.";
