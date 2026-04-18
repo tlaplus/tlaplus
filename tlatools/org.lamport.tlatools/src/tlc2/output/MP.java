@@ -13,6 +13,7 @@ import java.util.HashSet;
 
 import tla2sany.semantic.ErrorCode;
 import tlc2.TLCGlobals;
+import tlc2.tool.ConfigFileException;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateInfo;
 import tlc2.tool.liveness.LiveWorker;
@@ -1713,6 +1714,9 @@ public class MP
      * @return
      */
     public static String ECGeneralMsg(String cause, Throwable throwable) {
+        if (throwable instanceof ConfigFileException) {
+            return throwable.getMessage();
+        }
         String msg = "TLC threw an unexpected exception.";
         msg = msg
                 + "\nThis was probably caused by an error in the spec or model.";
