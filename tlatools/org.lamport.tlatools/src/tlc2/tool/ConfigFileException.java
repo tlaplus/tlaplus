@@ -11,6 +11,10 @@ import tlc2.output.MP;
  */
 public class ConfigFileException extends RuntimeException
 {
+    /**
+     * The error code for this exception, drawn from the error-code domain
+     * defined in {@link tlc2.output.EC} (e.g. {@code EC.CFG_ERROR_READING_FILE}).
+     */
     private final int errorCode;
 
     public ConfigFileException(int errorCode, String[] parameters)
@@ -25,6 +29,10 @@ public class ConfigFileException extends RuntimeException
         this.errorCode = errorCode;
     }
 
+    /**
+     * @return the error code for this exception, a constant from the
+     * error-code domain defined in {@link tlc2.output.EC}.
+     */
     public int getErrorCode()
     {
         return errorCode;
