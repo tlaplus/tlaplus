@@ -6330,9 +6330,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * We have to take the symbol declarations from pickContext and * put them into
 				 * the current symbol table. *
 				 *******************************************************************/
-				Enumeration e = pickContext.content();
-				while (e.hasMoreElements()) {
-					SymbolNode sym = ((Context.Pair) (e.nextElement())).getSymbol();
+				for (final Context.Pair p : pickContext.content()) {
+				  final SymbolNode sym = p.getSymbol();
 					symbolTable.addSymbol(sym.getName(), sym);
 				}
 			}
@@ -6352,10 +6351,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Added by LL on 24 June 2010
 			// Need to add the symbols in the context being popped to pfCtxt
 			// so they will be put into the context of the NonLeafProofNode.
-			Context topContext = symbolTable.getContext();
-			Enumeration e = topContext.content();
-			while (e.hasMoreElements()) {
-				SymbolNode sym = ((Context.Pair) (e.nextElement())).getSymbol();
+			for (final Context.Pair p : this.symbolTable.getContext().content()) {
+			  final SymbolNode sym = p.getSymbol();
 				pfCtxt.addSymbolToContext(sym.getName(), sym);
 			}
 			symbolTable.popContext();

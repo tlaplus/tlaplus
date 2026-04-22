@@ -386,8 +386,8 @@ public class ModuleNode extends SymbolNode {
 
     final Vector<OpDeclNode> contextVec = ctxt.getConstantDecls();
     constantDecls = new OpDeclNode[contextVec.size()];
-    for (int i = 0, j = constantDecls.length - 1; i < constantDecls.length; i++) {
-      constantDecls[j--] = contextVec.elementAt(i);
+    for (int i = 0; i < constantDecls.length; i++) {
+      constantDecls[i] = contextVec.elementAt(i);
     }
     return constantDecls;
   }
@@ -402,8 +402,8 @@ public class ModuleNode extends SymbolNode {
 
     final Vector<OpDeclNode> contextVec = ctxt.getVariableDecls();
     variableDecls = new OpDeclNode[contextVec.size()];
-    for (int i = 0, j = variableDecls.length - 1; i < variableDecls.length; i++) {
-      variableDecls[j--] = contextVec.elementAt(i);
+    for (int i = 0; i < variableDecls.length; i++) {
+      variableDecls[i] = contextVec.elementAt(i);
     }
     return variableDecls;
   }
@@ -1111,9 +1111,8 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 	public Collection<SymbolNode> getSymbols(final SymbolMatcher symbolMatcher) {
 		final List<SymbolNode> result = new ArrayList<SymbolNode>(); // TreeSet to order result.
 		
-		final Enumeration<Pair> content = this.ctxt.content();
-		while (content.hasMoreElements()) {
-			final SymbolNode aSymbol = content.nextElement().getSymbol();
+		for (final Pair p : this.ctxt.content()) {
+			final SymbolNode aSymbol = p.getSymbol();
 			if (symbolMatcher.matches(aSymbol)) {
 				result.add(aSymbol);
 			}
