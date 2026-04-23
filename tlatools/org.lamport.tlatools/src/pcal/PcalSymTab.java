@@ -468,6 +468,8 @@ public class PcalSymTab {
             ExtractIf((AST.If) ast, context, cType);
         else if (ast.getClass().equals(AST.WithObj.getClass()))
             ExtractWith((AST.With) ast, context, cType);
+        else if (ast.getClass().equals(AST.ActionObj.getClass()))
+            ExtractAction((AST.Action) ast, context, cType);
         else if (ast.getClass().equals(AST.WhenObj.getClass()))
             ExtractWhen((AST.When) ast, context, cType);
         else if (ast.getClass().equals(AST.PrintSObj.getClass()))
@@ -631,6 +633,9 @@ public class PcalSymTab {
     private void ExtractWith(AST.With ast, String context, String cType) {
         for (int i = 0; i < ast.Do.size(); i++)
             ExtractStmt((AST) ast.Do.elementAt(i), context, cType);
+    }
+
+    private void ExtractAction(AST.Action ast, String context, String cType) {
     }
 
     private void ExtractWhen(AST.When ast, String context, String cType) {
