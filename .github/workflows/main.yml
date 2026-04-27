@@ -272,6 +272,18 @@ jobs:
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
         git tag -f v1.8.0
+
+        ## Strip TLA+ string quotes and the println newline from the REPL output.
+        CALVER=$(java -cp tlatools/org.lamport.tlatools/dist/tla2tools.jar \
+                      tlc2.REPL 'TLCGet("revision").calver' \
+                 | tr -d '"' | tr -d '[:space:]')
+        if [ -z "$CALVER" ] || ! git check-ref-format --allow-onelevel "refs/tags/$CALVER"; then
+          echo "Refusing to tag: invalid CalVer string: '$CALVER'" >&2
+          exit 1
+        fi
+        echo "Tagging build as $CALVER"
+        git tag -a "$CALVER" -m "TLA+ Tools $CALVER"
+
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
 
       ##

@@ -104,6 +104,7 @@ public class TLCGetSet implements ValueConstants {
 	public static final UniqueString REV_DATE = UniqueString.uniqueStringOf("date");
 	public static final UniqueString COUNT = UniqueString.uniqueStringOf("count");
 	public static final UniqueString REV_TAG = UniqueString.uniqueStringOf("tag");
+	public static final UniqueString REV_CALVER = UniqueString.uniqueStringOf("calver");
 	
 	private static final UniqueString SPEC_IMPLIEDINITS = UniqueString.of("impliedinits");
 	private static final UniqueString SPEC_IMPLIEDACTIONS = UniqueString.of("impliedactions");
@@ -291,7 +292,7 @@ public class TLCGetSet implements ValueConstants {
 			/*
 			 * Add operator `TLC!TLCGet("revision")`.
 			 */
-			final UniqueString[] n = new UniqueString[4];
+			final UniqueString[] n = new UniqueString[5];
 			final Value[] v = new Value[n.length];
 			
 			n[0] = TLCGetSet.COUNT;
@@ -311,6 +312,9 @@ public class TLCGetSet implements ValueConstants {
 			
 			n[3] = TLCGetSet.REV_TAG;
 			v[3] = new StringValue(TLCGlobals.Version.revisionOrDev());
+
+			n[4] = TLCGetSet.REV_CALVER;
+			v[4] = new StringValue(TLCGlobals.Version.number());
 
 			return new RecordValue(n, v, false);
 		} else if (SPEC == sv.val) {
