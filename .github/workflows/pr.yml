@@ -229,6 +229,12 @@ jobs:
           # https://github.com/tlaplus/tlaplus/issues/1353
           "specifications/EinsteinRiddle/Einstein.cfg"
         )
+        # Apalache does not yet support Unicode specs:
+        # https://github.com/apalache-mc/apalache/issues/2995
+        APALACHE_FLAG=()
+        if [ "${{ matrix.unicode }}" = "true" ]; then
+          APALACHE_FLAG+=("--skip_apalache")
+        fi
         python "$SCRIPT_DIR/check_small_models.py"                        \
           --verbose                                                       \
           --tools_jar_path "$DIST_DIR/tla2tools.jar"                      \
@@ -237,7 +243,8 @@ jobs:
           --community_modules_jar_path "$DEPS_DIR/community/modules.jar"  \
           --examples_root "$EXAMPLES_DIR"                                 \
           --enable_assertions                                             \
-          --skip "${SKIP[@]}"
+          --skip "${SKIP[@]}"                                             \
+          "${APALACHE_FLAG[@]}"
     - name: Smoke-test large tlaplus/examples models
       run: |
         # SimKnuthYao requires certain number of states to have been generated
