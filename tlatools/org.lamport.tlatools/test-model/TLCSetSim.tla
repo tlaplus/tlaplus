@@ -32,6 +32,8 @@ ASSUME TLCGet("revision").tag \in STRING
 ASSUME TLCGet("revision").count \in Nat
 ASSUME TLCGet("revision").timestamp \in Nat
 ASSUME TLCGet("revision").date \in STRING
+ASSUME TLCGet("revision").calver \in STRING
+ASSUME TLCGet("revision").calver # ""
 ASSUME TLCGet("revision").tag = "development" => TLCGet("revision").count = 0 
 ASSUME TLCGet("revision").tag # "development" => TLCGet("revision").count > 7854
 ASSUME TLCGet("revision").tag # "development" => TLCGet("revision").timestamp > 1626748578
