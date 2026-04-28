@@ -5,7 +5,7 @@ import tlc2.output.MP;
 /**
  * Exceptions signaling errors in the config file
  * <br><b>Note:</b>This class is used instead of Assert.fail inside of the ModelConfig.
- * 
+ *
  * @author Simon Zambrovski
  * @version $Id$
  */
