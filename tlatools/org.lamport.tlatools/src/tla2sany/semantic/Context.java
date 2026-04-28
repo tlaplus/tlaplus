@@ -8,13 +8,15 @@
 
 package tla2sany.semantic;
 
-import java.util.Collection;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import tla2sany.explorer.ExploreNode;
 import tla2sany.explorer.ExplorerVisitor;
-import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.semantic.BuiltInOperators.BuiltInOperator;
 import tla2sany.utilities.Strings;
 import tla2sany.utilities.Vector;
@@ -88,42 +90,6 @@ public class Context implements ExploreNode {
     }
   } // class Pair
 
-  public class InitialSymbolEnumeration {
-
-    Enumeration<Pair> e = initialContext.content();
-
-    public boolean hasMoreElements() { return e.hasMoreElements(); }
-
-    public SymbolNode nextElement() {
-      return e.nextElement().getSymbol();
-    }
-  }
-
-  public class ContextSymbolEnumeration {
-
-    Enumeration<Pair> e = Context.this.content();
-
-    public boolean hasMoreElements() { return e.hasMoreElements(); }
-
-    public SymbolNode nextElement() {
-      return e.nextElement().getSymbol();
-    }
-
-   /* public Element export(Document doc) {
-      Element ret = doc.createElement("context");
-      while (hasMoreElements()) {
-        SymbolNode sn = nextElement();
-        Element en = doc.createElement("entry");
-        Element nm = doc.createElement("uniquename");
-        nm.appendChild(doc.createTextNode(sn.getName().toString()));
-        en.appendChild(nm);
-        en.appendChild(sn.exportDefinition(doc));
-        ret.appendChild(en);
-      }
-      return ret;
-    }*/
-  }
-
   private static Context initialContext = new Context(null);
                                       // the one, static unique Context with builtin operators
                                       // null ModuleTable arg because this is shared by all modules
@@ -131,17 +97,35 @@ public class Context implements ExploreNode {
   private ExternalModuleTable exMT;   // The external ModuleTable that this context's SymbolTable
                                       // belongs to is null for global context shared by all modules.
 
-  private Hashtable<Object, Pair>      table;       // Mapping from symbol name to Pair's that include SymbolNode's
-  private Pair           lastPair;    // Pair added last to the this.table
+  /**
+   * Mapping from name to {@link Pair} including a {@link SymbolNode}. The
+   * name key can either be a {@link UniqueString} or a {@link SymbolTable.ModuleName}.
+   * This map preserves insertion order; a previous implementation did not,
+   * which led to instability further up the stack as the safety and liveness
+   * checkers can change their state exploration order based in part on the
+   * order of elements in this table. While this was not a bug as such, it
+   * made it difficult to change the workings of the parser without causing
+   * unit test failures that were difficult to diagnose as spurious or not.
+   */
+  private final Map<Object, Pair> table = new LinkedHashMap<>();
+
+  /**
+   * The definition most recently added to the table, forming the head of a
+   * linked list. The {@link Context.Pair#link} field points to the preceding
+   * definition. With the transition of {@link Context#table} to use the
+   * {@link LinkedHashMap} type, this is redundant; however, the existing
+   * {@link Context#duplicate} method makes use of it which is called from
+   * {@link SymbolTable}, and this interaction is sufficiently intricate that
+   * removing this field can be left to future work.
+   */
+  private Pair lastPair = null;
 
   /**
    * exMT is the ExternalModuleTable containing the module whose
    * SymbolTable this Context is part of (or null).
    */
   public Context(ExternalModuleTable mt) {
-    table = new Hashtable<>();
     this.exMT = mt;
-    this.lastPair = null;
   }
 
   /*
@@ -164,8 +148,7 @@ public class Context implements ExploreNode {
   }
   
 	public static boolean isBuiltIn(final ExploreNode exploreNode) {
-		final Collection<Pair> pairs = initialContext.table.values();
-		for (Pair p : pairs) {
+		for (Pair p : Context.getGlobalContext().content()) {
 			if (exploreNode == p.info) {
 				return true;
 			}
@@ -199,7 +182,7 @@ public class Context implements ExploreNode {
    * one exists; else returns null
    */
   public SymbolNode getSymbol(Object name) {
-    Pair r = (Pair)table.get(name);
+    Pair r = table.get(name);
     if (r != null) {
       return r.info;
     }
@@ -227,19 +210,11 @@ public class Context implements ExploreNode {
   }
 
   /**
-   * Returns Enumeration of the elements of the Hashtable "Table",
-   * which are pair of the form (Pair link, SymbolNode sn)
+   * Iterates through all definitions in this context, in the order they were
+   * defined or inlined.
    */
-  Enumeration<Pair> content() {
-    return table.elements();
-  }
-
-  /**
-   * Returns a new ContextSymbolEnumeration object, which enumerates
-   * the SymbolNodes of THIS context
-   */
-  public ContextSymbolEnumeration getContextSymbolEnumeration() {
-    return new ContextSymbolEnumeration();
+  Iterable<Pair> content() {
+    return this.table.values();
   }
 
   /**
@@ -248,9 +223,7 @@ public class Context implements ExploreNode {
    */
   public <T> Vector<T> getByClass(Class<T> template) {
     final Vector<T> result = new Vector<>();
-    Enumeration<Pair> list = table.elements();
-    while (list.hasMoreElements()) {
-      Pair elt = list.nextElement();
+    for (Pair elt : this.content()) {
       if (template.isInstance(elt.info)) {
         result.addElement(template.cast(elt.info));
       }
@@ -303,11 +276,8 @@ public class Context implements ExploreNode {
    */
   public Vector<OpDeclNode> getConstantDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
-    Enumeration<Pair> list = table.elements();
-
     final Vector<OpDeclNode> result = new Vector<>();
-    while (list.hasMoreElements()) {
-      Pair elt = list.nextElement();
+    for (final Pair elt : this.content()) {
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
          ((OpDeclNode)elt.info).getKind() == ASTConstants.ConstantDeclKind  )
         result.addElement( (OpDeclNode)(elt.info) );
@@ -319,11 +289,9 @@ public class Context implements ExploreNode {
   /* Returns vector of OpDeclNodes that represent VARIABLE declarations  */
   public Vector<OpDeclNode> getVariableDecls() {
     Class<? extends SemanticNode> templateClass = OpDeclNode.class;
-    Enumeration<Pair> list = table.elements();
 
     final Vector<OpDeclNode> result = new Vector<>();
-    while (list.hasMoreElements()) {
-      Pair elt = list.nextElement();
+    for (final Pair elt : this.content()) {
       if (templateClass.isInstance(elt.info) &&     // true for superclasses too.
            ((OpDeclNode)elt.info).getKind() == ASTConstants.VariableDeclKind  )
         result.addElement( (OpDeclNode)(elt.info) );
@@ -336,11 +304,9 @@ public class Context implements ExploreNode {
    */
   public Vector<ModuleNode> getModDefs() {
     Class<? extends SemanticNode> template = ModuleNode.class;
-    Enumeration<Pair> list = table.elements();
 
     final Vector<ModuleNode> result = new Vector<>();
-    while (list.hasMoreElements()) {
-      Pair elt = list.nextElement();
+    for (final Pair elt : this.content()) {
       if (template.isInstance(elt.info))    // true for superclasses too.
         result.addElement( (ModuleNode)(elt.info) );
     }
@@ -396,7 +362,7 @@ public class Context implements ExploreNode {
 					table.put(sName, new Pair(sn));
 				} else {
 					// If this Context DOES contain this name
-					SymbolNode symbol = ((Pair) table.get(sName)).info;
+					SymbolNode symbol = table.get(sName).info;
 					if (symbol != sn) {
 						// if the two SymbolNodes with the same name are distinct nodes,
 						// We issue a warning or do nothing if they are instances of the same Java
@@ -453,6 +419,7 @@ public class Context implements ExploreNode {
     Pair    current   = null;
     boolean firstTime = true;
 
+    final List<Pair> pairs = new ArrayList<>();
     while (p != null) {
       if (firstTime) {
         current = new Pair(null, p.info);     // Does NOT link to or update this.lastPair
@@ -463,9 +430,18 @@ public class Context implements ExploreNode {
 	current.link = new Pair(null,p.info); // Note: causes sharing of reference in link.info
         current = current.link;
       }
-      dup.table.put(current.info.getName(), current);
+      pairs.add(current);
       p = p.link;
     }
+
+    // Above iteration proceeds from last definition to first definition;
+    // thus reverse the definitions so they are entered into the table in the
+    // correct order.
+    Collections.reverse(pairs);
+    for (final Pair pair : pairs) {
+      dup.table.put(pair.info.getName(), pair);
+    }
+
     return dup;
   }
 
@@ -504,7 +480,7 @@ public class Context implements ExploreNode {
       if (b || (!initialContext.table.containsKey(key) &&
 		(naturalsContext == null ||
 		 !naturalsContext.table.containsKey(key)))) {
-        SymbolNode symbNode  = ((Pair)(table.get(key))).info;
+        SymbolNode symbNode = table.get(key).info;
 	ctxtEntries.addElement("\nContext Entry: " + key.toString() + "  "
                     + String.valueOf(((SemanticNode)symbNode).myUID).toString() + " "
                     + Strings.indentSB(2,(symbNode.toString(depth-1, errors))));
@@ -525,10 +501,7 @@ public class Context implements ExploreNode {
 
   public void walkGraph(Hashtable<Integer, ExploreNode> semNodesTable, ExplorerVisitor visitor) {
 	  visitor.preVisit(this);
-    UniqueString key;
-    Enumeration<?>  e = table.keys();
-
-    while (e.hasMoreElements()) {
+    for (final Object next : this.table.keySet()) {
       /*********************************************************************
       * Bug fix attempted by LL on 19 Apr 2007.                            *
       *                                                                    *
@@ -542,16 +515,15 @@ public class Context implements ExploreNode {
       * getContextEntryStringVector later on.  I decided to stop wasting   *
       * time on this.                                                      *
       *********************************************************************/
-      Object next = e.nextElement();
       if (next instanceof SymbolTable.ModuleName) {
-         key = ((SymbolTable.ModuleName) next).name ;
+         final UniqueString key = ((SymbolTable.ModuleName) next).name ;
          System.out.println("Bug in debugging caused by inner module " +
                              key.toString());
          System.out.println("SANY will throw a null pointer exception.");
         }
       else {
-        key = (UniqueString) next;
-        ((Pair)table.get(key)).info.walkGraph(semNodesTable, visitor);
+        final UniqueString key = (UniqueString) next;
+        table.get(key).info.walkGraph(semNodesTable, visitor);
        } ;
        visitor.postVisit(this);
     }

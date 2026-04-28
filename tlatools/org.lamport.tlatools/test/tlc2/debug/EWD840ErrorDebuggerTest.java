@@ -67,11 +67,11 @@ public class EWD840ErrorDebuggerTest extends TLCDebuggerTestCase {
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
 		assertTLCStateFrame(stackFrames[--i], 20, 6, 20, 34, RM, Context.Empty, vars);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
-		assertTLCStateFrame(stackFrames[--i], 21, 6, 21, 31, RM, Context.Empty, vars[0], vars[2], vars[3]);
+		assertTLCStateFrame(stackFrames[--i], 21, 6, 21, 31, RM, Context.Empty, vars[1], vars[2], vars[3]);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
-		assertTLCStateFrame(stackFrames[--i], 22, 6, 22, 13, RM, Context.Empty, vars[0], vars[2]);
+		assertTLCStateFrame(stackFrames[--i], 22, 6, 22, 13, RM, Context.Empty, vars[2], vars[3]);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
-		assertTLCStateFrame(stackFrames[--i], 23, 6, 23, 21, RM, Context.Empty, vars[2]);
+		assertTLCStateFrame(stackFrames[--i], 23, 6, 23, 21, RM, Context.Empty, vars[3]);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
 		assertTLCStateFrame(stackFrames[--i], 14, 13, 14, 22, MDL, Context.Empty);
 		assertNull(((TLCStackFrame) stackFrames[i]).exception);
