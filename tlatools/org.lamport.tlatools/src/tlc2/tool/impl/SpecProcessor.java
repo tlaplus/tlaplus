@@ -1697,17 +1697,17 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	/**
 	 * Processes the _POSSIBLE config keyword by dynamically generating a TLA+ module
 	 * at runtime, parsing and semantically analyzing it via SANY, then wiring the
-	 * resulting operators into TLC's action constraints, postconditions, and periodic
-	 * expressions.
+	 * resulting operators into TLC's action constraints and postconditions.
 	 *
-	 * <p>The POSSIBLE keyword names zero-arity predicates from the user's spec that
-	 * should be witnessed (evaluated to TRUE) in at least one reachable state.  Each
-	 * predicate must be wrapped in a {@code _Possible!_Track(pred, "pred")} call so
-	 * that per-worker counters are maintained via named registers.  Because the
-	 * predicate names come from the config file, this wrapping cannot be expressed
-	 * statically — a synthetic module is generated instead.</p>
+	 * <p>The {@code _POSSIBLE} keyword (as written in the .cfg file) names zero-arity
+	 * predicates from the user's spec that should be witnessed (evaluated to TRUE) in
+	 * at least one reachable state.  Each predicate must be wrapped in a
+	 * {@code _Possible!_Track(pred, "pred")} call so that per-worker counters are
+	 * maintained via named registers.  Because the predicate names come from the
+	 * config file, this wrapping cannot be expressed statically — a synthetic module
+	 * is generated instead.</p>
 	 *
-	 * <p>For a spec {@code MySpec} with {@code POSSIBLE P1, P2}, the generated module
+	 * <p>For a spec {@code MySpec} with {@code _POSSIBLE P1, P2}, the generated module
 	 * looks like:</p>
 	 * <pre>
 	 *   ---- MODULE _PossibleModule_nnn ----
@@ -1717,7 +1717,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	 *   _PossibleAC_P2_nnn  == _Track(P2, "P2")
 	 *   _PossiblePC_P1_nnn  == _CheckName("P1")
 	 *   _PossiblePC_P2_nnn  == _CheckName("P2")
-	 *   _PossiblePrint_nnn  == _PrintCounts
 	 *   ====
 	 * </pre>
 	 *
@@ -1750,8 +1749,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	 *       {@code this.possiblePostConditions}.  Each wraps its generated check
 	 *       expression but reports the user's original predicate name and location
 	 *       in error messages.</li>
-	 *   <li>{@code _PossiblePrint_nnn} is set as {@code this.periodic} (if not
-	 *       already defined) to print running counts during model checking.</li>
 	 * </ul>
 	 *
 	 * @see tlc2.debug.TLCDebuggerExpression#process
@@ -1788,7 +1785,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
 	    final String rootModName = this.rootModule.getName().toString();
 	    final String modName = this.rootModule.generateUnusedName("_PossibleModule_%s");
-	    final String printOpName = this.rootModule.generateUnusedName("_PossiblePrint_%s");
 
 	    // Generate one action constraint operator per predicate to avoid a
 	    // CostModelCreator assertion failure when the coverage system walks a
@@ -1811,8 +1807,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	    }
 
 	    final String moduleStr = String.format(
-	        "---- MODULE %s ----\nEXTENDS %s, _Possible\n\n%s%s%s == _PrintCounts\n\n====",
-	        modName, rootModName, acDefs, pcDefs, printOpName);
+	        "---- MODULE %s ----\nEXTENDS %s, _Possible\n\n%s%s\n\n====",
+	        modName, rootModName, acDefs, pcDefs);
 
 	    try {
 	        final byte[] moduleBytes = moduleStr.getBytes(StandardCharsets.UTF_8);
@@ -1820,7 +1816,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	        final boolean syntaxOk = parser.parse();
 	        final SyntaxTreeNode syntaxRoot = parser.ParseTree;
 	        if (!syntaxOk || syntaxRoot == null) {
-	            Assert.fail(EC.TLC_PARSING_FAILED2, "POSSIBLE: syntax error in generated module");
+	            Assert.fail(EC.TLC_PARSING_FAILED2, "_POSSIBLE: syntax error in generated module");
 	            return;
 	        }
 
@@ -1837,7 +1833,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	        final ModuleNode module = gen.generate(syntaxRoot);
 	        if (module == null || semanticLog.isFailure()) {
 	            Assert.fail(EC.TLC_PARSING_FAILED2,
-	                "POSSIBLE: semantic analysis of generated module failed");
+	                "_POSSIBLE: semantic analysis of generated module failed");
 	            return;
 	        }
 
@@ -1845,14 +1841,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	        module.levelCheck(levelErrors);
 	        if (levelErrors.isFailure()) {
 	            Assert.fail(EC.TLC_PARSING_FAILED2,
-	                "POSSIBLE: level checking of generated module failed\n" + levelErrors.toString());
+	                "_POSSIBLE: level checking of generated module failed\n" + levelErrors.toString());
 	            return;
 	        }
 
 	        processConstantsDynamicExtendee(module);
 	        processModuleOverrides(module, emt);
-
-	        final OpDefNode printOp = module.getOpDef(printOpName);
 
 	        // Partition _Track wrappers by the user predicate's level: state-level
 	        // predicates go into model constraints (evaluated per state via isInModel),
@@ -1887,10 +1881,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 	            final OpDefNode pcOp = module.getOpDef(pcOpNames[i]);
 	            this.possiblePostConditions.add(
 	                new PossibleAction(pcOp.getBody(), Context.Empty, userPredicates[i]));
-	        }
-
-	        if (this.periodic == null) {
-	            this.periodic = printOp.getBody();
 	        }
 	    } catch (ParseException | SemanticException | AbortException e) {
 	        Assert.fail(EC.TLC_PARSING_FAILED2, e);
