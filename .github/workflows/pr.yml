@@ -215,9 +215,9 @@ jobs:
         # Skip Apalache-specific examples.
         find "$EXAMPLES_DIR/specifications" \
         -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "IndInv_apa.tla" -and -not -name "*_TTrace_*.tla" -print0 |
-        xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
-        'java -cp "'"$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar"'" \
-        tla2sany.xml.XMLExporter -I "$(dirname "{TLA_FILE}")" -I "'"$DEPS_DIR/tlapm/library"'" "{TLA_FILE}"' > /dev/null
+        xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) -I {TLA_FILE} \
+        java -cp "$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar" \
+        tla2sany.xml.XMLExporter -I "$DEPS_DIR/tlapm/library" "{TLA_FILE}" > /dev/null
     - name: Model-check small tlaplus/examples models
       run: |
         SKIP=(

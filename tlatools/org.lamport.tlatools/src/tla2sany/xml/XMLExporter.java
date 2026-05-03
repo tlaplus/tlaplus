@@ -13,6 +13,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -87,6 +89,7 @@ public class XMLExporter {
     List<String> tips = new ArrayList<String>();
     tips.add("Only one root TLA+ file can be parsed per run.");
     tips.add("Multiple directory search paths can be given by providing multiple -I arguments.");
+    tips.add("The .tla file's parent directory is added as an include directory by default.");
     tips.add("XML schema validation does not require network access.");
     UsageGenerator.displayUsage(
         out,
@@ -195,9 +198,6 @@ public class XMLExporter {
 
     lastarg++;
 
-    String[] paths = new String[pathsLs.size()];
-    for (int i = 0; i < paths.length; i++) paths[i] = (String) pathsLs.get(i);
-
     if (args.length - lastarg != 1)
       throw new XMLExportingException(
           XMLExporterExitCode.ARGS_PARSING_FAILURE,
@@ -210,7 +210,19 @@ public class XMLExporter {
 
     String tla_name = args[lastarg++];
 
-    final ExternalModuleTable spec = XMLExporter.parseSpec(tla_name, paths);
+    // Make best-effort attempt at getting the spec path's parent directory
+    // and adding it to the list of include paths.
+    try {
+      final Path specParentDir = Path.of(tla_name).getParent();
+      if (specParentDir != null) {
+        pathsLs.addFirst(specParentDir.toString());
+      }
+    } catch (InvalidPathException e) {
+      // Ignore this; if the path is really invalid, SANY will fail when it
+      // tries to load the spec, and will provide nice error reporting.
+    }
+
+    final ExternalModuleTable spec = XMLExporter.parseSpec(tla_name, pathsLs.toArray(new String[0]));
     XMLExporter.specToXMLStream(
         spec,
         restricted,
