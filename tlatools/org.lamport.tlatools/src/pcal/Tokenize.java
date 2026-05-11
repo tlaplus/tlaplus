@@ -614,6 +614,20 @@ public class Tokenize
       * calls of TokenOut.)                                                *
       *********************************************************************/
 
+    private static boolean inDefineBlock = false ;
+    /*********************************************************************
+    * When true, a top-level `,' (one at parenDepth 0 and not inside a   *
+    * \A/\E quantifier) is NOT treated as an expression terminator.      *
+    * This is needed when tokenizing the body of a PlusCal `define'      *
+    * block, which is a sequence of TLA+ unit-level constructs that may  *
+    * legitimately contain top-level commas, e.g. inside the `WITH'      *
+    * clause of an INSTANCE statement:                                   *
+    *                                                                    *
+    *     INSTANCE M WITH A <- {}, B <- {}                               *
+    *                                                                    *
+    * See GitHub issue tlaplus/tlaplus#136.                              *
+    *********************************************************************/
+
     private static String prevToken = " " ;
       /*********************************************************************
       * Used by TokenOut to remember the previous token for figuring out   *
@@ -658,7 +672,14 @@ public class Tokenize
                                         || prevToken.equals("[")
                                         || prevToken.equals(","))))
                         || (   (   (    token.equals(",") 
-                                     && ! inQuantifier)
+                                     && ! inQuantifier
+                                     && ! inDefineBlock)
+                                /******************************************
+                                * `! inDefineBlock' added for issue       *
+                                * tlaplus/tlaplus#136 to permit a top-    *
+                                * level comma inside an INSTANCE ... WITH *
+                                * clause within a PlusCal `define' block. *
+                                ******************************************/
                                 || token.equals(")") 
                                 || token.equals("}") 
                                    /****************************************
@@ -854,6 +875,22 @@ public class Tokenize
     public static TLAExpr TokenizeExpr(PcalCharReader charReader) throws TokenizerException
       { TLAExpr exp = InnerTokenize(charReader, true) ;
         return exp ; }
+
+    /*************************************************************************
+    * Like TokenizeExpr, but tokenizes the body of a PlusCal `define' block. *
+    * The only difference is that a top-level `,' (one at parenDepth 0 and   *
+    * not inside an unmatched \A/\E quantifier) is NOT treated as an         *
+    * expression terminator.  This is required because the body of a         *
+    * `define' block is a sequence of TLA+ unit-level constructs that can    *
+    * legitimately contain top-level commas, e.g. inside the WITH clause of  *
+    * an INSTANCE statement.  See GitHub issue tlaplus/tlaplus#136.          *
+    *************************************************************************/
+    public static TLAExpr TokenizeDefineBlock(PcalCharReader charReader) throws TokenizerException
+      { boolean savedInDefineBlock = inDefineBlock ;
+        inDefineBlock = true ;
+        try { return InnerTokenize(charReader, true) ; }
+        finally { inDefineBlock = savedInDefineBlock ; }
+      }
 
     public static String GetAlgorithmToken(PcalCharReader charReader) throws TokenizerException
       { InnerTokenize(charReader, false) ;

@@ -338,7 +338,7 @@ public class ParseAlgorithm
        if (PeekAtAlgToken(1).equals("define"))
          { MustGobbleThis("define") ;
            if (cSyntax) {GobbleThis("{") ;} ;
-           defs = GetExpr() ;
+           defs = GetDefineExpr() ;
            if (pSyntax) 
              { GobbleThis("end") ;
                GobbleThis("define") ; }
@@ -863,6 +863,21 @@ public class ParseAlgorithm
      }
 
    public static TLAExpr GetExpr() throws ParseAlgorithmException
+     { return getExprInternal(false) ;
+     }
+
+   /************************************************************************
+   * Like GetExpr, but used to read the body of a PlusCal `define' block.  *
+   * In a `define' block, top-level commas (i.e. commas at paren-depth 0)  *
+   * are part of the contained TLA+ unit-level constructs - in particular  *
+   * the WITH clause of an INSTANCE statement - and must not terminate the *
+   * expression.  See GitHub issue tlaplus/tlaplus#136.                    *
+   ************************************************************************/
+   public static TLAExpr GetDefineExpr() throws ParseAlgorithmException
+     { return getExprInternal(true) ;
+     }
+
+   private static TLAExpr getExprInternal(boolean defineBlock) throws ParseAlgorithmException
      { if (LATsize != 0)
          {PcalDebug.ReportBug(
                "ParseAlgorithm: GetExpr called after lookahead");
@@ -870,7 +885,8 @@ public class ParseAlgorithm
         TLAExpr result;
         try
         {
-            result = Tokenize.TokenizeExpr(charReader);
+            result = defineBlock ? Tokenize.TokenizeDefineBlock(charReader)
+                                 : Tokenize.TokenizeExpr(charReader);
         } catch (TokenizerException e)
         {
             throw new ParseAlgorithmException(e.getMessage());
