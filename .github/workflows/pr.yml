@@ -202,9 +202,9 @@ jobs:
     - name: Parse tlaplus/examples modules
       run: |
         set -o pipefail
-        # Skip Einstein.tla to avoid dependency on Apalache
+        # Skip Apalache-specific examples.
         find "$EXAMPLES_DIR/specifications" \
-        -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "*_TTrace_*.tla" -print0 |
+        -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "IndInv_apa.tla" -and -not -name "*_TTrace_*.tla" -print0 |
         xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
         'TLA_DIR=$(dirname "{TLA_FILE}") && \
         java -ea -cp "'"$DIST_DIR/tla2tools.jar"'":$TLA_DIR:"'"$DEPS_DIR/community/modules.jar:$DEPS_DIR/tlapm/library"'" \
@@ -212,9 +212,9 @@ jobs:
     - name: Run XMLExporter on tlaplus/examples modules
       run: |
         set -o pipefail
-        # Skip Einstein.tla to avoid dependency on Apalache
+        # Skip Apalache-specific examples.
         find "$EXAMPLES_DIR/specifications" \
-        -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "*_TTrace_*.tla" -print0 |
+        -type f -iname "*.tla" -not -name "Einstein.tla" -and -not -name "IndInv_apa.tla" -and -not -name "*_TTrace_*.tla" -print0 |
         xargs --verbose --null --no-run-if-empty --max-procs=$(nproc) --replace={TLA_FILE} sh -c \
         'java -cp "'"$DIST_DIR/tla2tools.jar:$DEPS_DIR/community/modules.jar"'" \
         tla2sany.xml.XMLExporter -I "$(dirname "{TLA_FILE}")" -I "'"$DEPS_DIR/tlapm/library"'" "{TLA_FILE}"' > /dev/null
