@@ -192,12 +192,62 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			if (val instanceof OpDefNode) {
 				OpDefNode opDef = (OpDefNode) val;
 				opcode = BuiltInOPs.getOpCode(opDef.getName());
-				// Skip syntactic expansion of recursive operators: astToLive
-				// would endlessly inline the self-referential body. Instead,
-				// fall through to the level-based handling below, which wraps
-				// the call opaquely and lets Tool.eval handle the recursion
-				// at runtime against concrete states.
-				if (opcode == 0 && !opDef.getInRecursive()) {
+				// Decide whether to expand this user-defined operator
+				// (translate its body in place of the call).
+				//
+				// Non-RECURSIVE operators are always expanded so the
+				// liveness translator sees the operator's structure.
+				//
+				// RECURSIVE operators are dispatched by opDef's level:
+				//
+				//   1. level == TemporalLevel: expand (issue #1389).
+				//      The liveness tableau is a LiveExprNode tree
+				//      (LNEven / LNAll / LNAction / ...).  Tool.eval
+				//      evaluates an expression against state(s) and
+				//      returns an IValue (the operator's value -- a
+				//      boolean, integer, set, ...); it rejects temporal
+				//      operators outright and cannot translate a call
+				//      such as Reach(3) into the corresponding
+				//      LiveExprNode subtree.  The body MUST therefore
+				//      be expanded here so the temporal structure is
+				//      visible to the tableau.  Example:
+				//
+				//        RECURSIVE Reach(_)
+				//        Reach(n) == IF n = 0 THEN <>(x = TRUE)
+				//                              ELSE Reach(n - 1)
+				//        PROPERTY Reach(3)
+				//
+				//   2. level <= ActionLevel: do NOT expand.  Tool.eval
+				//      evaluates the call against concrete states at
+				//      state-exploration time, which already handles the
+				//      recursion.  Example:
+				//
+				//        RECURSIVE Fact(_)
+				//        Fact(n) == IF n = 0 THEN 1 ELSE n * Fact(n - 1)
+				//
+				//      (Reached only when such an operator appears
+				//      directly inside a temporal property.)
+				//
+				// Whether the expansion in case 1 terminates is a
+				// separate concern from this decision: it depends on the
+				// body's IF guard evaluating to a constant during tableau
+				// construction.  See the OPCODE_ite handling below.  If a
+				// guard depends on a state variable the JVM eventually
+				// raises a StackOverflowError that TLC.process translates
+				// into EC.SYSTEM_STACK_OVERFLOW.  Other branch-selection
+				// constructs (CASE, /\, \/, =>) are not handled here;
+				// users should write recursive operators with IF (the
+				// most natural form for recursion in TLA+, and every
+				// other branch-selection construct is reducible to it).
+				boolean expand = opcode == 0;
+				boolean recursive = false;
+				if (expand && opDef.getInRecursive()) {
+					recursive = true;
+					// Use ITool#getLevelBound (same helper as line 115);
+					// only expand when the level exceeds ActionLevel.
+					expand = tool.getLevelBound(expr, con, tool.getId()) > LevelConstants.ActionLevel;
+				}
+				if (expand) {
 					try {
 						FormalParamNode[] formals = opDef.getParams();
 						Context con1 = con;
@@ -217,7 +267,25 @@ public class Liveness implements ToolGlobals, ASTConstants {
 							return res;
 						}
 						return astToLive(tool, expr, con, level);
-					} catch (Exception e) { /* SKIP */
+					} catch (Exception e) {
+						// Non-RECURSIVE operators keep the historic
+						// "swallow and fall through to the level-based
+						// handling" semantics; Tool.eval evaluates the
+						// call against concrete states at state-
+						// exploration time.
+						//
+						// RECURSIVE operators at TemporalLevel have no
+						// such fallback: Tool.eval returns an IValue and
+						// rejects temporal operators, so the tableau's
+						// LiveExprNode subtree must come from expansion
+						// alone. Re-throw rather than fall through.
+						// Re-throw also prevents an enclosing OPCODE_ite
+						// from catching the failure and retrying via the
+						// disjunctive expansion, which would re-enter the
+						// recursion.
+						if (recursive) {
+							throw e;
+						}
 					}
 				}
 			} else if (val instanceof IBoolValue) {
@@ -366,6 +434,35 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		// across all conforming TLA+ implementations.
 		case OPCODE_ite: // IfThenElse
 		{
+			// If the guard evaluates to a constant boolean, translate
+			// only the chosen branch.  Required for expanding RECURSIVE
+			// operators at TemporalLevel whose recursion terminates via
+			// such a guard (issue #1389):
+			//
+			//   RECURSIVE ap(_)
+			//   ap(u) == IF u THEN [][TRUE]_x ELSE ap(~u)
+			//   Prop  == ap(TRUE)
+			//
+			// Without this, the ELSE branch would also be translated and
+			// the recursion would not terminate.  When the guard depends
+			// on state, fall through to the disjunctive expansion below.
+			// The astToLive call on the chosen branch is OUTSIDE the try
+			// block so a failure from translating it is not swallowed and
+			// retried via the disjunctive expansion (which would re-enter
+			// the recursion).
+			ExprNode chosen = null;
+			try {
+				final IValue guard = tool.eval((ExprNode) args[0], con, TLCState.Empty);
+				if (guard instanceof IBoolValue) {
+					chosen = (ExprNode) (((IBoolValue) guard).getVal() ? args[1] : args[2]);
+				}
+			} catch (Exception e) {
+				// Guard does not evaluate to a constant; fall through to
+				// the disjunctive expansion.
+			}
+			if (chosen != null) {
+				return astToLive(tool, chosen, con);
+			}
 			LiveExprNode guard = astToLive(tool, (ExprNode) args[0], con);
 			LiveExprNode e1 = astToLive(tool, (ExprNode) args[1], con);
 			LiveExprNode e2 = astToLive(tool, (ExprNode) args[2], con);
