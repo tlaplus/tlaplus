@@ -350,6 +350,20 @@ public class Liveness implements ToolGlobals, ASTConstants {
 			}
 			return astToLive(tool, expr, con, level);
 		}
+		// Note: OPCODE_case is  NOT handled here.  TLA+ gives CASE an
+		// "unspecified-choice" semantics when more than one guard is true
+		// (Lamport, Specifying Systems §16.1.4).  For example:
+		//
+		//     CASE 1 \in Int -> []P [] 1 \in Int -> []~P
+		//
+		// is a syntactically legal expression whose value is unspecified
+		// by the language -- a conforming implementation may pick
+		// []P or []~P.  TLC's runtime evaluator (Tool.java, OPCODE_case)
+		// resolves this first-match, but that is a tool-specific
+		// choice, not a property of the spec. Presumably, Liveness
+		// deliberately rejects CASE in temporal properties to force users
+		// to rewrite using IF/THEN/ELSE, which has unambiguous semantics
+		// across all conforming TLA+ implementations.
 		case OPCODE_ite: // IfThenElse
 		{
 			LiveExprNode guard = astToLive(tool, (ExprNode) args[0], con);
