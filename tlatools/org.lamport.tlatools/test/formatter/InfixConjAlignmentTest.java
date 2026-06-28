@@ -106,6 +106,24 @@ public class InfixConjAlignmentTest {
         assertAstPreserved(spec);
     }
 
+    /**
+     * An infix /\ whose left subtree already contains a conjunction list must
+     * keep a following operand separate from that list. The quantified expression
+     * is a compact operand that reliably triggers the old wrapping issue.
+     */
+    @Test
+    public void testInfixConjWithNestedConjListKeepsFollowingOperandSeparate() throws Exception {
+        var spec = "----- MODULE test -----\n" +
+                "CONSTANTS S, A, B, C, D, E, F\n" +
+                "Test == /\\ A\n" +
+                "        /\\ B\n" +
+                "/\\ C\n" +
+                "/\\ \\E e \\in S:\n" +
+                "    /\\ D = e /\\ E = F\n" +
+                "====";
+        assertAstPreserved(spec, 40);
+    }
+
     @Test
     public void testNestedInfixDisjWithQuantifier() throws Exception {
         var spec = "----- MODULE test -----\n" +

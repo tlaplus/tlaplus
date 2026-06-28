@@ -39,12 +39,10 @@ public class InfixExprConstruct implements TlaConstruct {
         Doc operator = context.buildChild(opNode);
         Doc rightOperand = context.buildChild(node.zero()[2]);
 
-        int leftKind = leftNode.getKind();
-        boolean leftIsConjDisjList = leftKind == NodeKind.CONJ_LIST.getId()
-                || leftKind == NodeKind.DISJ_LIST.getId();
+        boolean leftContainsConjDisjList = containsConjDisjList(leftNode);
 
-        if (leftIsConjDisjList) {
-            // Left is a bulleted list: put operator+right on a new line.
+        if (leftContainsConjDisjList) {
+            // Left contains a bulleted list: put operator+right on a new line.
             // Do NOT use .align() -- alignment would place operator+right at the same
             // column as the list items, causing SANY to absorb it into the list.
             return leftOperand
@@ -56,5 +54,32 @@ public class InfixExprConstruct implements TlaConstruct {
                         .appendSpace(operator)
                         .appendLineOrSpace(rightOperand).indent(indentSize)
         );
+    }
+
+    private static boolean containsConjDisjList(TreeNode node) {
+        if (node == null) {
+            return false;
+        }
+        int kind = node.getKind();
+        if (kind == NodeKind.CONJ_LIST.getId() || kind == NodeKind.DISJ_LIST.getId()) {
+            return true;
+        }
+        TreeNode[] zero = node.zero();
+        if (zero != null) {
+            for (TreeNode child : zero) {
+                if (containsConjDisjList(child)) {
+                    return true;
+                }
+            }
+        }
+        TreeNode[] one = node.one();
+        if (one != null) {
+            for (TreeNode child : one) {
+                if (containsConjDisjList(child)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
