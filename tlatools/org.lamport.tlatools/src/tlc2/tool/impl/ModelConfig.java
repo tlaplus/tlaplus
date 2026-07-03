@@ -22,6 +22,7 @@ import tla2sany.parser.TLAplusParserTokenManager;
 import tla2sany.parser.Token;
 import tla2sany.parser.TokenMgrError;
 import tlc2.output.EC;
+import tlc2.output.MP;
 import tlc2.tool.ConfigFileException;
 import tlc2.util.Vect;
 import tlc2.value.IValue;
@@ -171,8 +172,10 @@ public class ModelConfig implements ValueConstants, Serializable {
             InputStream fis = FileUtil.newFIS(resolver.resolve(this.configFileName, false));
             if (fis == null)
             {
-                throw new ConfigFileException(EC.CFG_ERROR_READING_FILE, new String[] { this.configFileName,
+                MP.printError(EC.CFG_ERROR_READING_FILE, new String[] { this.configFileName,
                         "File not found." });
+                System.exit(EC.ExitStatus.errorConstantToExitStatus(EC.CFG_ERROR_READING_FILE));
+                return; // unreachable: System.exit above terminates the JVM
             }
             if (this.configFileName.endsWith(TLAConstants.Files.TLA_EXTENSION)) {
 				fis = MonolithSpecExtractor.config(fis,
@@ -507,8 +510,9 @@ public class ModelConfig implements ValueConstants, Serializable {
             this.rawConstants = rawConstants.stream().map(buf -> buf.toString()).collect(Collectors.toList());
         } catch (IOException e)
         {
-            throw new ConfigFileException(EC.CFG_ERROR_READING_FILE,
-                    new String[] { this.configFileName, e.getMessage() }, e);
+            MP.printError(EC.CFG_ERROR_READING_FILE,
+                    new String[] { this.configFileName, e.getMessage() });
+            System.exit(EC.ExitStatus.errorConstantToExitStatus(EC.CFG_ERROR_READING_FILE));
         }
     }
 
