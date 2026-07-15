@@ -28,8 +28,8 @@
           "relationship": "direct",
           "scope": "development"
         },
-        "tlatools/org.lamport.tlatools/lib/gson/gson-2.8.6.jar": {
-          "package_url": "pkg:maven/com.google.code.gson/gson@2.8.6",
+        "tlatools/org.lamport.tlatools/lib/gson/gson-2.14.0.jar": {
+          "package_url": "pkg:maven/com.google.code.gson/gson@2.14.0",
           "relationship": "direct",
           "scope": "runtime"
         },
