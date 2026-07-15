@@ -53,13 +53,13 @@
           "relationship": "direct",
           "scope": "runtime"
         },
-        "tlatools/org.lamport.tlatools/lib/javax.mail/mailapi-1.6.3.jar": {
-          "package_url": "pkg:maven/com.sun.mail/mailapi@1.6.3",
+        "tlatools/org.lamport.tlatools/lib/javax.mail/mailapi-1.6.8.jar": {
+          "package_url": "pkg:maven/com.sun.mail/mailapi@1.6.8",
           "relationship": "direct",
           "scope": "runtime"
         },
-        "tlatools/org.lamport.tlatools/lib/javax.mail/smtp-1.6.3.jar": {
-          "package_url": "pkg:maven/com.sun.mail/smtp@1.6.3",
+        "tlatools/org.lamport.tlatools/lib/javax.mail/smtp-1.6.8.jar": {
+          "package_url": "pkg:maven/com.sun.mail/smtp@1.6.8",
           "relationship": "direct",
           "scope": "runtime"
         },
