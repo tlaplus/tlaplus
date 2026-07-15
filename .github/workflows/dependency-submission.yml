@@ -1,0 +1,88 @@
+name: Vendored JAR Dependency Submission
+
+# This repository vendors its Java dependencies as binary *.jar files rather
+# than resolving them via a package manager, so GitHub's dependency graph cannot
+# discover them automatically.  The Maven coordinates of each tracked JAR under
+# tlatools/org.lamport.tlatools/lib/ are maintained by hand in that folder's
+# vendored-jars.json and submitted here so they appear in the dependency graph
+# and receive Dependabot alerts.  The "drift check" step fails the build if a
+# tracked JAR is missing from that file, prompting a manual update.
+# https://docs.github.com/en/rest/dependency-graph/dependency-submission
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'tlatools/org.lamport.tlatools/lib/**/*.jar'
+      - 'tlatools/org.lamport.tlatools/lib/vendored-jars.json'
+      - '.github/workflows/dependency-submission.yml'
+  pull_request:
+    paths:
+      - 'tlatools/org.lamport.tlatools/lib/**/*.jar'
+      - 'tlatools/org.lamport.tlatools/lib/vendored-jars.json'
+      - '.github/workflows/dependency-submission.yml'
+  schedule:
+    # Re-submit weekly so the snapshot stays current even without JAR changes.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  LIB_DIR: tlatools/org.lamport.tlatools/lib
+  DATA_FILE: tlatools/org.lamport.tlatools/lib/vendored-jars.json
+
+jobs:
+  submit-vendored-jars:
+    name: Submit vendored JARs
+    runs-on: ubuntu-latest
+    permissions:
+      # Required to submit dependency snapshots.
+      contents: write
+    steps:
+      - name: Clone tlaplus/tlaplus
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Check for unlisted JARs
+        run: |
+          tracked="$(git ls-files -- "$LIB_DIR" | grep '\.jar$' | sort -u)"
+          listed="$(jq -r '(.manifests[].resolved | keys[]), (._ignore[])' "$DATA_FILE" | sort -u)"
+          missing="$(comm -23 <(printf '%s\n' "$tracked") <(printf '%s\n' "$listed"))"
+          if [ -n "$missing" ]; then
+            echo "::error::These tracked JARs are not listed in $DATA_FILE (add them to 'resolved' or '_ignore'):"
+            printf '%s\n' "$missing"
+            exit 1
+          fi
+          echo "All tracked JARs under $LIB_DIR are accounted for."
+
+      - name: Build dependency snapshot
+        run: |
+          jq \
+            --arg sha "$GITHUB_SHA" \
+            --arg ref "$GITHUB_REF" \
+            --arg id "$GITHUB_RUN_ID" \
+            --arg url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --arg scanned "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            'del(._comment, ._ignore) + {
+               sha: $sha,
+               ref: $ref,
+               scanned: $scanned,
+               job: { correlator: "vendored-jars", id: $id, html_url: $url }
+             }' \
+            "$DATA_FILE" > snapshot.json
+
+      - name: Submit dependency snapshot
+        # Skip the API submission on pull requests (drift check still runs).
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl --fail-with-body -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/dependency-graph/snapshots" \
+            -d @snapshot.json
