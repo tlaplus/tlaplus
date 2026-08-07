@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tla2sany.semantic.LevelConstants;
 import tlc2.TLCGlobals;
 import tlc2.overrides.TLAPlusOperator;
 import tlc2.tool.AbstractChecker;
@@ -45,7 +46,10 @@ public class _Possible implements ValueConstants {
 
 	private static final UniqueString KEY = UniqueString.uniqueStringOf("s:_possible");
 
-	@TLAPlusOperator(identifier = "_Counts", module = "_Possible", warn = false)
+	// minLevel keeps _Counts out of TLC's constant folding: its value only exists
+	// once a checker runs, so folding it at startup would bake in an empty record
+	// and turn a POSTCONDITION reading it into a rejected constant-level one.
+	@TLAPlusOperator(identifier = "_Counts", module = "_Possible", warn = false, minLevel = LevelConstants.VariableLevel)
 	public static Value counts() {
 		final List<IValue> perWorker;
 		if (TLCGlobals.mainChecker != null) {
