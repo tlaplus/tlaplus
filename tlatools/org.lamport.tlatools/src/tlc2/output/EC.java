@@ -74,6 +74,7 @@ public interface EC
     public static final int TLC_ASSUMPTION_EVALUATION_ERROR = 2105;
     public static final int TLC_POSTCONDITION_FALSE = 2404;
     public static final int TLC_POSTCONDITION_EVALUATION_ERROR = 2405;
+    public static final int TLC_POSSIBLE_UNWITNESSED = 2780;
     public static final int TLC_STATE_NOT_COMPLETELY_SPECIFIED_INITIAL = 2106;
 
     public static final int TLC_INVARIANT_VIOLATED_INITIAL = 2107;
@@ -422,6 +423,7 @@ public interface EC
 	        case TLC_ASSUMPTION_EVALUATION_ERROR:
 	        case TLC_POSTCONDITION_FALSE:
 	        case TLC_POSTCONDITION_EVALUATION_ERROR:
+	        case TLC_POSSIBLE_UNWITNESSED:
 	            return VIOLATION_ASSUMPTION;
 	        
 	        case TLC_VALUE_ASSERT_FAILED:

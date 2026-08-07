@@ -43,7 +43,10 @@ public class PossibleFailNoTransTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
-		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSTCONDITION_FALSE, "BigJump", 0));
+		assertTrue(recorder.recorded(EC.TLC_POSSIBLE_UNWITNESSED));
+		// BigJump is an action, but SpecOnlyInit permits no transitions, so no
+		// transition can witness it. The name comes from the PossibleAction rather
+		// than from the record of witness counts, so the error names it either way.
+		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSSIBLE_UNWITNESSED, "BigJump", 0));
 	}
 }

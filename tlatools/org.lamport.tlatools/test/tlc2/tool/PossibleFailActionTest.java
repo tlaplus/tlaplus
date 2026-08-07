@@ -35,8 +35,8 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 
 /**
  * Exercises the _POSSIBLE feature with a single action-level predicate that is
- * never witnessed by any transition. The failure must be reported as a
- * postcondition violation naming the user's predicate.
+ * never witnessed by any transition. The failure must be reported as an
+ * unwitnessed possibility condition naming the user's predicate.
  */
 public class PossibleFailActionTest extends ModelCheckerTestCase {
 
@@ -48,8 +48,8 @@ public class PossibleFailActionTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
+		assertTrue(recorder.recorded(EC.TLC_POSSIBLE_UNWITNESSED));
 		// The error message must identify the user's original predicate name.
-		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSTCONDITION_FALSE, "BigJump", 0));
+		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSSIBLE_UNWITNESSED, "BigJump", 0));
 	}
 }

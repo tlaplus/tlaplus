@@ -44,6 +44,7 @@ import tlc2.tool.IContextEnumerator;
 import tlc2.tool.INextStateFunctor;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
+import tlc2.tool.PossibleAction;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateFun;
@@ -3687,7 +3688,13 @@ public abstract class Tool
 				// Cast is safe: postconditions are constant-level operator bodies (OpDefNode.getBody()),
 			    // which are always ExprNode instances.
 			    if (!isValid((ExprNode) pc.pred, ctxt)) {
-					return MP.printError(EC.TLC_POSTCONDITION_FALSE,
+					// A PossibleAction checks a single predicate and reports the user's name
+					// and location for it, so this names an unwitnessed predicate even when
+					// the record of counts that _CheckName printed omits it entirely.  Since
+					// the loop returns here, only the first unwitnessed predicate is named.
+					final int errorCode = pc instanceof PossibleAction ? EC.TLC_POSSIBLE_UNWITNESSED
+							: EC.TLC_POSTCONDITION_FALSE;
+					return MP.printError(errorCode,
 							new String[] { pc.getNameOfDefault(), pc.getPred().toString() });
 				}
 			} catch (Exception e) {
