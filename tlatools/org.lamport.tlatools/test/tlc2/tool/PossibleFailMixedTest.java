@@ -35,20 +35,26 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 
 /**
  * Exercises the _POSSIBLE feature with several predicates where only some are
- * never witnessed. This pins down the current error-reporting behavior so
- * regressions surface if it changes:
- * <ul>
- * <li>The failure is reported as {@link EC#TLC_POSTCONDITION_FALSE}.</li>
- * <li>The error identifies the first failing predicate in config order (here
- * {@code Unreachable}, a state-level predicate), not a shared placeholder like
- * {@code _Possible}.</li>
- * </ul>
+ * never witnessed ({@code Unreachable} and {@code BigJump}). The failure must
+ * be reported as {@link EC#TLC_POSSIBLE_UNWITNESSED} and must name one of the
+ * unwitnessed predicates rather than a shared placeholder like
+ * {@code _Possible}.
  *
  * <p>
- * Note: {@link tlc2.tool.impl.Tool#checkPostConditionWithContext} returns on
- * the first failure, so later failing predicates (e.g. {@code BigJump}) are not
- * individually listed in the error output. If that behavior ever changes to
- * enumerate all failing possibles, this test needs to be updated accordingly.
+ * Which one TLC names is not a guarantee of the feature: _POSSIBLE leaves it
+ * unspecified, because
+ * {@link tlc2.tool.impl.Tool#checkPostConditionWithContext} reports the first
+ * predicate whose check fails and the order in which the checks run is an
+ * implementation detail. The assertion below pins down today's outcome
+ * ({@code Unreachable}) so that a change becomes visible rather than silent; it
+ * is not a contract, so reordering the checks may legitimately require updating
+ * the expected name here.
+ * </p>
+ *
+ * <p>
+ * Only one predicate is named either way. The record of witness counts printed
+ * before the error is what identifies every unwitnessed predicate, including
+ * {@code BigJump}.
  * </p>
  */
 public class PossibleFailMixedTest extends ModelCheckerTestCase {
@@ -60,10 +66,9 @@ public class PossibleFailMixedTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_POSTCONDITION_FALSE));
-		// Predicates are evaluated in the order they appear in the config
-		// (AtOne, AllDone, WrapAround, Unreachable, BigJump). The first three
-		// are witnessed, so the first failure is Unreachable.
-		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSTCONDITION_FALSE, "Unreachable", 0));
+		assertTrue(recorder.recorded(EC.TLC_POSSIBLE_UNWITNESSED));
+		// Unreachable and BigJump are both unwitnessed; TLC currently names the
+		// former. See the class comment: this pins down behavior, not a contract.
+		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_POSSIBLE_UNWITNESSED, "Unreachable", 0));
 	}
 }

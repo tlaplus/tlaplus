@@ -577,6 +577,12 @@ public class MP
         case EC.TLC_POSTCONDITION_FALSE:
             b.append("Postcondition %1% at %2% is false.");
             break;
+        case EC.TLC_POSSIBLE_UNWITNESSED:
+            b.append("The _POSSIBLE predicate %1% at %2% was never witnessed.\n"
+                    + "Others may be unwitnessed too; only witnessed predicates appear with a\n"
+                    + "non-zero count in the record printed above.\n"
+                    + "See https://explain.tlapl.us/possible-conditions for additional details.");
+            break;
         case EC.TLC_POSTCONDITION_EVALUATION_ERROR:
             b.append("Evaluating postcondition %1% at %2% failed.\n%3%");
             break;
