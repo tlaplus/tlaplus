@@ -42,7 +42,7 @@ public class ETest5 extends SuiteETestCase {
 	public void testSpec() {
 		assertFalse(recorder.recorded(EC.GENERAL));
 		assertSubstring("*** Errors: 1\n");
-		assertSubstring("line 13, col 17 to line 13, col 20 of module etest5\n");
+		assertSubstring("line 13, col 15 to line 13, col 20 of module etest5\n");
 		assertSubstring("Unknown operator: `M!Init'.");
 	}
 }

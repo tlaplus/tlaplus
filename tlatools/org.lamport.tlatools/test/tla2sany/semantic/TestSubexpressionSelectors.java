@@ -38,8 +38,20 @@ import tla2sany.parser.ParseException;
 import tla2sany.semantic.Errors.ErrorDetails;
 
 /**
- * Tests error handling for unresolved operators used with subexpression
- * selectors.
+ * Subexpression selectors like op!&lt;&lt;!&gt;&gt; navigate into the parse
+ * tree of the operator they are applied to. When the operator itself cannot be
+ * resolved, SANY has nothing to navigate into and should report an ordinary
+ * unresolved-symbol error. Instead, two or more consecutive non-name selectors
+ * following an unresolved name make {@link Generator#selectorToNode} reach an
+ * {@link ErrorCode#INTERNAL_ERROR} check ("Internal error: should have name
+ * here.") and abort the parse. That error code is documented as being reserved
+ * for assertions about SANY's own state, so reaching it from a syntactically
+ * valid spec is a bug.
+ *
+ * These reproducers were found while running the standardized TLA⁺ syntax
+ * corpus (also present in test/tla2sany/corpus) through SANY as part of the
+ * work to use SANY as TLAPM's parser backend; see
+ * https://github.com/tlaplus/tlapm/pull/275#issuecomment-5241074153
  */
 public class TestSubexpressionSelectors {
 
@@ -83,13 +95,46 @@ public class TestSubexpressionSelectors {
 	/**
 	 * Once lookup exhausts a compound operator name, the selector index points at
 	 * its final segment. The diagnostic must name the complete unresolved operator,
-	 * not just that segment.
+	 * not just that segment, and point at all of it - columns 8 to 16 hold
+	 * module!op.
 	 */
 	@Test
 	public void testUnresolvedCompoundOperatorName() throws ParseException {
 		final Errors log = process("use == module!op");
 		assertRejectedWithUserFacingError(log);
-		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, log.getErrorDetails().get(0).getCode());
-		Assert.assertEquals("Unknown operator: `module!op'.", log.getErrorDetails().get(0).getMessage());
+		final ErrorDetails error = log.getErrorDetails().get(0);
+		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, error.getCode());
+		Assert.assertEquals("Unknown operator: `module!op'.", error.getMessage());
+		Assert.assertEquals("line 2, col 8 to line 2, col 16 of module Test", error.getLocation().toString());
+	}
+
+	/**
+	 * The minimal form of the bug: an unresolved operator name followed by the two
+	 * tree navigation selectors !&lt;&lt; and !&gt;&gt;. Removing either selector
+	 * produces the expected "Unknown operator" error instead.
+	 */
+	@Test
+	public void testConsecutiveTreeNavigationSelectors() throws ParseException {
+		final Errors log = process("tree_nav == op!<<!>>");
+		assertRejectedWithUserFacingError(log);
+		final ErrorDetails error = log.getErrorDetails().get(0);
+		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, error.getCode());
+		Assert.assertEquals("Unknown operator: `op'.", error.getMessage());
+		Assert.assertEquals("line 2, col 13 to line 2, col 14 of module Test", error.getLocation().toString());
+	}
+
+	/**
+	 * The form found in the syntax corpus, exercising every kind of subexpression
+	 * tree navigation selector at once. See the "Subexpression Tree Navigation"
+	 * test in test/tla2sany/corpus/subexpressions.txt.
+	 */
+	@Test
+	public void testAllTreeNavigationSelectors() throws ParseException {
+		final Errors log = process("tree_nav == op(a, b)!<<!>>!3!(x, y)!:!@");
+		assertRejectedWithUserFacingError(log);
+		final ErrorDetails error = log.getErrorDetails().get(0);
+		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, error.getCode());
+		Assert.assertEquals("Unknown operator: `op'.", error.getMessage());
+		Assert.assertEquals("line 2, col 13 to line 2, col 14 of module Test", error.getLocation().toString());
 	}
 }

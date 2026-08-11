@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import tla2sany.parser.Operators;
 import tla2sany.parser.SyntaxTreeNode;
 import tla2sany.parser.TLAplusParserConstants;
+import tla2sany.st.Location;
 import tla2sany.st.SyntaxTreeConstants;
 import tla2sany.st.TreeNode;
 import tla2sany.utilities.Strings;
@@ -649,6 +650,10 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * Local algorithm variables. *
 		 ***********************************************************************/
 		UniqueString curName = null;
+		// The source of every part of curName, so that an error about that name can
+		// point at it. Assigned wherever curName is, hence null exactly when
+		// curName is.
+		Location curNameLoc = null;
 		UniqueString newName = null; // Initial value set to make Eclipse happy.
 		SemanticNode curNode = null;
 		SemanticNode newNode;
@@ -773,7 +778,16 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					; // if (newName != null)
 					if (newSymbolNode == null) {
-						curName = newName;
+						// Only a name extends the compound name accumulated so far;
+						// a selector like !<< leaves it unchanged. Overwriting it
+						// with null would discard that name and make the
+						// (curName == null) check above hold on the next iteration,
+						// reporting an internal error for input like op!<<!>> where
+						// op is undefined.
+						if (newName != null) {
+							curNameLoc = extendedBy(curNameLoc, sel.opsSTN[idx].getLocation());
+							curName = newName;
+						}
 						if (sel.args[idx] != null) {
 							// sel.args[idx].heirs() is the array of SyntaxTreeNode objects
 							// representing:
@@ -789,9 +803,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} // while (newNode == null)
 
 				if (newSymbolNode == null) {
-					int eidx = (idx < sel.args.length) ? idx : (sel.args.length - 1);
 					errors.addError(ErrorCode.SYMBOL_UNDEFINED,
-							sel.opsSTN[eidx].getLocation(),
+							curNameLoc,
 							"Unknown operator: `" + curName + "'.");
 					return nullOAN;
 				}
@@ -810,6 +823,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				/****************************************************************
 				 * A version of curNode "cast" as a SymbolNode. *
 				 ****************************************************************/
+				curNameLoc = extendedBy(curNameLoc, sel.opsSTN[idx].getLocation());
 				curName = newName;
 				switch (curSymbolNode.getKind()) {
 				case ConstantDeclKind:
@@ -971,6 +985,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							}
 							; // for
 							curName = null;
+							curNameLoc = null;
 							if (sel.ops[idx + 1] == NameSel) {
 								mode = FollowingLabels;
 							} else {
@@ -2039,6 +2054,21 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		return oan;
 
 	} // selectorToNode
+
+	/**
+	 * The location of a compound name extended by the next part of it. Both parts
+	 * are expected to be in the same module, the second one following the first.
+	 *
+	 * @param name The location of the name so far, or null if it has no parts yet.
+	 * @param part The location of the part extending it.
+	 * @return The location spanning both.
+	 */
+	private static Location extendedBy(final Location name, final Location part) {
+		return null == name
+				? part
+				: new Location(name.sourceAsUniqueString(), name.beginLine(), name.beginColumn(), part.endLine(),
+						part.endColumn());
+	}
 
 	private static String selectorItemToString(Selector sel, int idx) {
 		String selStr = sel.opNames[idx].toString();
