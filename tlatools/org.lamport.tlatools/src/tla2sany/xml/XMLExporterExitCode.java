@@ -67,7 +67,15 @@ public enum XMLExporterExitCode {
    * Indicates that the exported XML does not satisfy the schema. This is a
    * bug in the XML exporting code, or the schema itself.
    */
-  XML_SCHEMA_VALIDATION_FAILURE (6);
+  XML_SCHEMA_VALIDATION_FAILURE (6),
+
+  /**
+   * Indicates that the spec contains a character that XML 1.0 cannot represent
+   * in character data, such as a form feed or the null character. Unlike the
+   * other XML failures this is a property of the spec rather than a bug in the
+   * exporter, so the spec has to change for the export to succeed.
+   */
+  XML_UNREPRESENTABLE_CHARACTER (7);
 
   private final int code;
 
