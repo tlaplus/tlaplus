@@ -32,9 +32,11 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -133,13 +135,17 @@ public class XMLExporter {
         ToolIO.err.println("ERROR: " + e.getMessage());
         printUsage(ToolIO.err);
         return error.code();
-      } else {
+      } else if (error.isBug()) {
         ToolIO.err.println(e.toString());
-        if (error.isBug()) {
-          ToolIO.err.println(
-            "This is likely a bug in the XML Exporter; please report to " +
-            "https://github.com/tlaplus/tlaplus/issues"
-          );
+        ToolIO.err.println(
+          "This is likely a bug in the XML Exporter; please report to " +
+          "https://github.com/tlaplus/tlaplus/issues"
+        );
+        return error.code();
+      } else {
+        ToolIO.err.println("ERROR: " + e.getMessage());
+        if (null != e.getNestedException()) {
+          e.getNestedException().printStackTrace(ToolIO.err);
         }
 
         return error.code();
@@ -362,6 +368,20 @@ public class XMLExporter {
           }
       }
 
+      final Node unrepresentable = findUnrepresentableCharacterData(doc);
+      if (null != unrepresentable) {
+        throw new XMLExportingException(
+            XMLExporterExitCode.XML_UNREPRESENTABLE_CHARACTER,
+            String.format(
+                "The spec contains the character U+%04X in %s. XML 1.0 cannot "
+                + "represent that character in character data, not even as a "
+                + "numeric character reference, so the spec cannot be exported "
+                + "until the character is removed from it.",
+                unrepresentableCodePoint(unrepresentable.getNodeValue()),
+                describeLocation(unrepresentable)),
+            null);
+      }
+
       //Create XML file
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
@@ -406,6 +426,108 @@ public class XMLExporter {
     } catch (SAXException se) {
       throw new XMLExportingException(XMLExporterExitCode.XML_SCHEMA_VALIDATION_FAILURE, "Failed to validate XML", se);
     }
+  }
+
+  /**
+   * The first code point in the given character data that XML 1.0 cannot
+   * represent, following its Char production. TLA⁺ string literals and
+   * comments may hold control characters, for example through the \f escape,
+   * and XML 1.0 admits only tab, line feed and carriage return among them -
+   * not even as a numeric character reference. XML 1.1 would widen the set,
+   * but no consumer of this output reads it: OCaml's xmlm, which TLAPM parses
+   * the export with, checks character references against the XML 1.0 Char
+   * production whichever version the document declares, and expat rejects
+   * them as well. A spec holding such a character therefore cannot be
+   * exported until https://github.com/tlaplus/tlaplus/issues/1313 settles how
+   * string values are to be represented.
+   *
+   * @param data The character data to inspect; may be null.
+   * @return The offending code point, or -1 if there is none.
+   */
+  private static int unrepresentableCodePoint(final String data) {
+    if (null == data) {
+      return -1;
+    }
+
+    for (int i = 0; i < data.length(); ) {
+      final int codePoint = data.codePointAt(i);
+      final boolean representable =
+          0x09 == codePoint || 0x0A == codePoint || 0x0D == codePoint
+          || (codePoint >= 0x20 && codePoint <= 0xD7FF)
+          || (codePoint >= 0xE000 && codePoint <= 0xFFFD)
+          || (codePoint >= 0x10000 && codePoint <= 0x10FFFF);
+      if (!representable) {
+        return codePoint;
+      }
+
+      i += Character.charCount(codePoint);
+    }
+
+    return -1;
+  }
+
+  /**
+   * Searches the given node and its descendants for character data that XML
+   * 1.0 cannot represent, in document order.
+   *
+   * @param node The node to inspect, along with its attributes and descendants.
+   * @return The first node holding such character data, or null if there is none.
+   */
+  private static Node findUnrepresentableCharacterData(final Node node) {
+    switch (node.getNodeType()) {
+      case Node.TEXT_NODE:
+      case Node.CDATA_SECTION_NODE:
+      case Node.COMMENT_NODE:
+      case Node.ATTRIBUTE_NODE:
+      case Node.PROCESSING_INSTRUCTION_NODE:
+        if (unrepresentableCodePoint(node.getNodeValue()) >= 0) {
+          return node;
+        }
+        break;
+      default:
+        break;
+    }
+
+    final NamedNodeMap attributes = node.getAttributes();
+    if (null != attributes) {
+      for (int i = 0; i < attributes.getLength(); i++) {
+        final Node found = findUnrepresentableCharacterData(attributes.item(i));
+        if (null != found) {
+          return found;
+        }
+      }
+    }
+
+    for (Node child = node.getFirstChild(); null != child; child = child.getNextSibling()) {
+      final Node found = findUnrepresentableCharacterData(child);
+      if (null != found) {
+        return found;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Describes where in the XML output the given character data sits, so that
+   * an error message can point at the part of the spec that produced it.
+   *
+   * @param node The character data node to describe.
+   * @return A human-readable description of the node's position.
+   */
+  private static String describeLocation(final Node node) {
+    if (Node.ATTRIBUTE_NODE == node.getNodeType()) {
+      final Element owner = ((Attr) node).getOwnerElement();
+      return null == owner
+          ? "the " + node.getNodeName() + " attribute"
+          : "the " + node.getNodeName() + " attribute of the "
+              + owner.getNodeName() + " element";
+    }
+
+    final Node parent = node.getParentNode();
+    return null == parent
+        ? "the exported document"
+        : "the " + parent.getNodeName() + " element";
   }
 
   static void insertRootName(Document doc, Element rootElement, final ExternalModuleTable spec) {
