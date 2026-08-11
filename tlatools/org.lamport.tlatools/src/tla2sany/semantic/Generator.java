@@ -773,7 +773,15 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					; // if (newName != null)
 					if (newSymbolNode == null) {
-						curName = newName;
+						// Only a name extends the compound name accumulated so far;
+						// a selector like !<< leaves it unchanged. Overwriting it
+						// with null would discard that name and make the
+						// (curName == null) check above hold on the next iteration,
+						// reporting an internal error for input like op!<<!>> where
+						// op is undefined.
+						if (newName != null) {
+							curName = newName;
+						}
 						if (sel.args[idx] != null) {
 							// sel.args[idx].heirs() is the array of SyntaxTreeNode objects
 							// representing:

@@ -38,8 +38,20 @@ import tla2sany.parser.ParseException;
 import tla2sany.semantic.Errors.ErrorDetails;
 
 /**
- * Tests error handling for unresolved operators used with subexpression
- * selectors.
+ * Subexpression selectors like op!&lt;&lt;!&gt;&gt; navigate into the parse
+ * tree of the operator they are applied to. When the operator itself cannot be
+ * resolved, SANY has nothing to navigate into and should report an ordinary
+ * unresolved-symbol error. Instead, two or more consecutive non-name selectors
+ * following an unresolved name make {@link Generator#selectorToNode} reach an
+ * {@link ErrorCode#INTERNAL_ERROR} check ("Internal error: should have name
+ * here.") and abort the parse. That error code is documented as being reserved
+ * for assertions about SANY's own state, so reaching it from a syntactically
+ * valid spec is a bug.
+ *
+ * These reproducers were found while running the standardized TLA⁺ syntax
+ * corpus (also present in test/tla2sany/corpus) through SANY as part of the
+ * work to use SANY as TLAPM's parser backend; see
+ * https://github.com/tlaplus/tlapm/pull/275#issuecomment-5241074153
  */
 public class TestSubexpressionSelectors {
 
@@ -91,5 +103,28 @@ public class TestSubexpressionSelectors {
 		assertRejectedWithUserFacingError(log);
 		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, log.getErrorDetails().get(0).getCode());
 		Assert.assertEquals("Unknown operator: `module!op'.", log.getErrorDetails().get(0).getMessage());
+	}
+
+	/**
+	 * The minimal form of the bug: an unresolved operator name followed by the two
+	 * tree navigation selectors !&lt;&lt; and !&gt;&gt;. Removing either selector
+	 * produces the expected "Unknown operator" error instead.
+	 */
+	@Test
+	public void testConsecutiveTreeNavigationSelectors() throws ParseException {
+		final Errors log = process("tree_nav == op!<<!>>");
+		assertRejectedWithUserFacingError(log);
+		Assert.assertEquals(ErrorCode.SYMBOL_UNDEFINED, log.getErrorDetails().get(0).getCode());
+		Assert.assertEquals("Unknown operator: `op'.", log.getErrorDetails().get(0).getMessage());
+	}
+
+	/**
+	 * The form found in the syntax corpus, exercising every kind of subexpression
+	 * tree navigation selector at once. See the "Subexpression Tree Navigation"
+	 * test in test/tla2sany/corpus/subexpressions.txt.
+	 */
+	@Test
+	public void testAllTreeNavigationSelectors() throws ParseException {
+		assertRejectedWithUserFacingError(process("tree_nav == op(a, b)!<<!>>!3!(x, y)!:!@"));
 	}
 }
