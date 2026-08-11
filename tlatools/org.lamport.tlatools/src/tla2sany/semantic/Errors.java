@@ -158,22 +158,6 @@ public class Errors {
     return new AbortException(message, this);
   }
 
-  /**
-   * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
-   */
-  @Deprecated
-  public final void addWarning(ErrorCode code, Location loc, String str) {
-    this.addMessage(code, loc, str);
-  }
-
-  /**
-   * Use {@link Errors#addMessage(ErrorCode, Location, String) } method instead.
-   */
-  @Deprecated
-  public final AbortException addError(ErrorCode code, Location loc, String str) {
-    return this.addMessage(code, loc, str);
-  }
-
   public final boolean isSuccess() {
     return this.getErrorDetails().isEmpty();
   }

@@ -765,7 +765,7 @@ public class OpDefNode extends OpDefOrDeclNode
     //   since a module instance node should not be under an OpApplNode
     if (this.getKind() == ModuleInstanceKind) {
       // Would have already been caught by "incomplete name" error.
-      errors.addError(
+      errors.addMessage(
         ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
         loc,
         "Module instance identifier where operator should be."
@@ -778,7 +778,7 @@ public class OpDefNode extends OpDefOrDeclNode
         for ( int i = 0; i < args.length; i++ ) {
           if (args[i] instanceof OpArgNode) {
             // Another duplicate arity check.
-            errors.addError(
+            errors.addMessage(
               ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
               loc,
               "Illegal expression used as argument " + (i+1)
@@ -789,7 +789,7 @@ public class OpDefNode extends OpDefOrDeclNode
         }
       }
       else  {// null arg vector; supposedly cannot happen
-        throw errors.addError(ErrorCode.INTERNAL_ERROR,
+        throw errors.addMessage(ErrorCode.INTERNAL_ERROR,
                         loc, "Internal error: null args vector for operator '" +
                         this.getName() + "' that should take variable number of args.");
       }
@@ -797,7 +797,7 @@ public class OpDefNode extends OpDefOrDeclNode
     else {
       // It is an operator with a fixed number of params (possibly zero)
       if (args == null | params == null) { // args vector should never be null
-        throw errors.addError(ErrorCode.INTERNAL_ERROR,
+        throw errors.addMessage(ErrorCode.INTERNAL_ERROR,
                         loc, "Internal error: Null args or params vector for operator '" +
                         this.getName() + "'.");
       }
@@ -805,7 +805,7 @@ public class OpDefNode extends OpDefOrDeclNode
         // if the number of args does not match the number of params
         if (params.length != args.length) {
           // Another duplicate arity check.
-          errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+          errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
                           loc, "Wrong number of arguments (" + args.length +
                           ") given to operator '" + this.getName() + "', \nwhich requires " +
                           params.length + " arguments.");
@@ -821,7 +821,7 @@ public class OpDefNode extends OpDefOrDeclNode
             for ( int i = 0; i < params.length; i++ ) {
               if (args[i] instanceof OpArgNode) {
                 // Another duplicate arity check.
-                errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+                errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
                                 loc, "Non-expression used as argument number " + (i + 1)
                                 + " to BuiltIn operator '"
                                 + this.getName() + "'.");
@@ -836,7 +836,7 @@ public class OpDefNode extends OpDefOrDeclNode
               if (params[i].getArity() == 0) {
                 if (args[i] instanceof OpArgNode) {
                   // Another duplicate arity check.
-                  errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+                  errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
                                   loc, "Operator used in argument number " + (i+1)
                                   + " has incorrect number of arguments.");
                   result = false;
@@ -845,21 +845,21 @@ public class OpDefNode extends OpDefOrDeclNode
               else if (params[i].getArity() > 0) {
                 // OpArgNode of correct arity must be passed in this arg position
                 if (! matchingOpArgOperand(args[i],i)) {
-                  errors.addError(ErrorCode.HIGHER_ORDER_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
+                  errors.addMessage(ErrorCode.HIGHER_ORDER_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
                                   loc, "Argument number " + (i+1) + " to operator '"
                                   + this.getName() + "' \nshould be a " + params[i].getArity()
                                   + "-parameter operator.");
                   result = false;
                 }
               } else { // if params[i].getArity() < 0
-                errors.addError(ErrorCode.INTERNAL_ERROR, loc,
+                errors.addMessage(ErrorCode.INTERNAL_ERROR, loc,
                                 "Internal error: Operator '" + this.getName() +
                                 "' indicates that it requires \na negative number of arguments.");
               }
             } // end for
           }
           else {
-            throw errors.addError(ErrorCode.INTERNAL_ERROR, Location.nullLoc,
+            throw errors.addMessage(ErrorCode.INTERNAL_ERROR, Location.nullLoc,
                             "Internal error: operator neither BuiltIn nor UserDefined" +
                             " \nin call to OpDefNode.match()");
           }

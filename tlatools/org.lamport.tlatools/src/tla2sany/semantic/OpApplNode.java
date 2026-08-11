@@ -522,7 +522,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
         if (opd != null) {
           if (opd.getLevel() > opDef.getMaxLevel(i)) {
             if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
-              errors.addError(
+              errors.addMessage(
                  ErrorCode.OPERATOR_LEVEL_CONSTRAINTS_EXCEEDED,
                  this.stn.getLocation(),
                  "Level error in applying operator " + opDef.getName() +
@@ -548,7 +548,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             for (int j = 0; j < alen; j++) {
               if (opdDef.getMaxLevel(j) < opDef.getMinMaxLevel(i, j)) {
                 if (opDefLevelCheck && opd.levelCheck(itr, errors)) {
-                  errors.addError(
+                  errors.addMessage(
                     ErrorCode.HIGHER_ORDER_OPERATOR_PARAMETER_LEVEL_CONSTRAINT_NOT_MET,
                     this.stn.getLocation(),
                     "Level error in applying operator " + opDef.getName() + ":\n"
@@ -566,7 +566,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
                     this.operands[j].getLevel() > opdDef.getMaxLevel(k)) {
                   if (opd.levelCheck(itr, errors) &&
                       this.operands[j].levelCheck(itr, errors)) {
-                    errors.addError(
+                    errors.addMessage(
                        ErrorCode.HIGHER_ORDER_OPERATOR_COPARAMETER_LEVEL_CONSTRAINTS_EXCEEDED,
                        this.stn.getLocation(),
                        "Level error in applying operator " + opDef.getName() +
@@ -587,7 +587,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           boolean rangeLevelCheck = range.levelCheck(itr, errors) ;
           if (range.getLevel() > ActionLevel) {
             if (rangeLevelCheck) {
-              errors.addError(
+              errors.addMessage(
                 ErrorCode.QUANTIFICATION_WITH_TEMPORAL_LEVEL_BOUND,
                 this.stn.getLocation(),
                 "Level error in applying operator " + opDef.getName() +
@@ -1036,7 +1036,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
           && (arg.getKind() == OpApplKind)) {
         if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                            "$SquareAct")) {
-          errors.addError(
+          errors.addMessage(
             ErrorCode.ALWAYS_PROPERTY_SENSITIVE_TO_STUTTERING,
             stn.getLocation(),
             "[] followed by action not of form [A]_v.");
@@ -1054,7 +1054,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             && (arg.getKind() == OpApplKind)) {
           if (!((OpApplNode) arg).operator.getName().toString().equals(
                                                              "$AngleAct")) {
-            errors.addError(
+            errors.addMessage(
               ErrorCode.EVENTUALLY_PROPERTY_SENSITIVE_TO_STUTTERING,
               stn.getLocation(),
               "<> followed by action not of form <<A>>_v.");
@@ -1069,7 +1069,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     if (opName.equals("~>") || opName.equals("-+->")) {
       if (   (this.getArgs()[0].getLevel() == ActionLevel)
           || (this.getArgs()[1].getLevel() == ActionLevel)) {
-          errors.addError(
+          errors.addMessage(
              ErrorCode.BINARY_TEMPORAL_OPERATOR_WITH_ACTION_LEVEL_PARAMETER,
              stn.getLocation(),
              "Action used where only temporal formula or " +
@@ -1102,7 +1102,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
     		if (pop.equals("$DisjList")) {
     			pop = "Disjunction list" ;
     		}
-    		errors.addError(
+    		errors.addMessage(
     			ErrorCode.LOGICAL_OPERATOR_WITH_MIXED_ACTION_TEMPORAL_PARAMETERS,
     			stn.getLocation(),
     			pop + " has both temporal formula and action as arguments.");
@@ -1118,7 +1118,7 @@ public class OpApplNode extends ExprNode implements ExploreNode {
             || opName.equals("$BoundedForall"))) {
       for (int i = 0; i < this.ranges.length; i++) {
           if (this.ranges[i].getLevel() == ActionLevel) {
-              errors.addError(
+              errors.addMessage(
                  ErrorCode.QUANTIFIED_TEMPORAL_FORMULA_WITH_ACTION_LEVEL_BOUND,
                  this.ranges[i].stn.getLocation(),
                  "Action-level bound of quantified temporal formula.");
