@@ -177,7 +177,7 @@ public class TheoremNode extends LevelNode {
 //                  || (oanOp.getName() == OP_pfcase)))) {
 //      if(   (this.proof.level == TemporalLevel)
 //         && (this.theoremExprOrAssumeProve.level < TemporalLevel)) {
-//          errors.addError(
+//          errors.addMessage(
 //            stn.getLocation(),
 //            "Non-temporal theorem has temporal-level proof.");
 //          return false;
@@ -200,7 +200,7 @@ public class TheoremNode extends LevelNode {
        && (this.theoremExprOrAssumeProve.level == TemporalLevel)) {
      for (int i = 0; i < oan.ranges.length; i++) {
        if (oan.ranges[i].getLevel() != ConstantLevel) {
-         errors.addError(
+         errors.addMessage(
                    ErrorCode.QUANTIFIED_TEMPORAL_PICK_FORMULA_WITH_NON_CONSTANT_BOUND,
                    oan.ranges[i].stn.getLocation(),
                    "Non-constant bound of temporal PICK.");
@@ -264,7 +264,7 @@ public class TheoremNode extends LevelNode {
                  || (name == OP_witness)
                  || (name == OP_have) )
              && (oanode.getLevel() != ConstantLevel)) {
-                   errors.addError(
+                   errors.addMessage(
                      ErrorCode.TEMPORAL_PROOF_GOAL_WITH_NON_CONSTANT_TAKE_WITNESS_HAVE,
                      oanode.stn.getLocation(),
                      "Non-constant TAKE, WITNESS, or HAVE " +
@@ -276,7 +276,7 @@ public class TheoremNode extends LevelNode {
            * recursively call LevelCheckTemporal on its proof.             *
            ****************************************************************/
            if (oanode.getLevel() != ConstantLevel){
-               errors.addError(
+               errors.addMessage(
                  ErrorCode.TEMPORAL_PROOF_GOAL_WITH_NON_CONSTANT_CASE,
                  oanode.stn.getLocation(),
                  "Non-constant CASE for temporal goal.") ;

@@ -276,7 +276,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 			if (fullyQualifiedOp == null && compoundIDUS != S_at) {
 				// if not in the symbol table and not "@", then it is an unresolved symbol
-				errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+				errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 						treeNode.getLocation(), "Could not find declaration or definition of symbol '"
 						+ UniqueString.uniqueStringOf(compoundID.toString()) + "'.");
 			}
@@ -438,7 +438,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						} else if (us == AtUS) {
 							ops[i] = AtSel;
 						} else {
-							throw errors.addError(
+							throw errors.addMessage(
 								ErrorCode.INTERNAL_ERROR,
 								stn.getLocation(),
 								"Internal error: Unexpected selector `" + stn.getImage() + "'."
@@ -457,7 +457,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * seems better to report a mysterious error and * let processing continue in
 					 * the hopes that it will generate * a later, more useful error. *
 					 ***************************************************************/
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						stn.getLocation(),
 						"Unexpected token found."
@@ -519,7 +519,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				 * we report a not very helpful error in the hopes that further * processing
 				 * will produce a more useful error message. *
 				 *******************************************************************/
-				errors.addError(ErrorCode.INTERNAL_ERROR, genId.getLocation(), "Was expecting a GeneralId.");
+				errors.addMessage(ErrorCode.INTERNAL_ERROR, genId.getLocation(), "Was expecting a GeneralId.");
 				break;
 			}
 			;
@@ -551,7 +551,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// It would be nice if this produced a more helpful error
 						// message, but I have no idea if there are other bad inputs
 						// that can cause it.
-						throw errors.addError(
+						throw errors.addMessage(
 							ErrorCode.INTERNAL_ERROR,
 							prefixElts[i].getLocation(),
 							"Internal error: IdPrefixElement has other than 2 or 3 heirs."
@@ -696,7 +696,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 *********************************************************************/
 			if ((((sel.ops[idx] != NameSel) && (sel.ops[idx] != NullSel)) || (expectedArity != 0))
 					&& (sel.args[idx] != null)) {
-				errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+				errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 						sel.opsSTN[idx].getLocation(),
 						"Selector `" + selectorItemToString(sel, idx) + "' should not have argument(s).");
 				return nullOAN;
@@ -706,7 +706,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * Check that, if sel.args[idx] != null, then it is an OpArgs node. *
 			 *********************************************************************/
 			if ((sel.args[idx] != null) && (sel.args[idx].getKind() != N_OpArgs)) {
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					sel.args[idx].getLocation(),
 					"Internal error: Unexpected syntax node kind."
@@ -747,12 +747,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 					if ((curName == null) && (sel.ops[idx] != NameSel)) {
 						if (idx == 0) {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Need name or step number here, not `" + sel.opNames[idx] + "'.");
 							return nullOAN;
 						} else {
-							throw errors.addError(
+							throw errors.addMessage(
 								ErrorCode.INTERNAL_ERROR,
 								sel.opsSTN[idx].getLocation(),
 								"Internal error: should have name here."
@@ -798,7 +798,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				if (newSymbolNode == null) {
 					int eidx = (idx < sel.args.length) ? idx : (sel.args.length - 1);
-					errors.addError(ErrorCode.SYMBOL_UNDEFINED,
+					errors.addMessage(ErrorCode.SYMBOL_UNDEFINED,
 							sel.opsSTN[eidx].getLocation(),
 							"Unknown operator: `" + curName + "'.");
 					return nullOAN;
@@ -806,7 +806,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				;
 
 				if (newSymbolNode.getKind() == ModuleKind) {
-					errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+					errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							sel.opsSTN[idx].getLocation(),
 							"Module name (" + sel.opNames[idx].toString() + ") not allowed here.");
 					return nullOAN;
@@ -835,13 +835,13 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 * but I wouldn't swear to it. *
 					 **************************************************************/
 					if (idx != 0) {
-						throw errors.addError(
+						throw errors.addMessage(
 							ErrorCode.INTERNAL_ERROR,
 							sel.selSTN.getLocation(),
 							"Internal error: impossible naming of declaration."
 						);
 					} else if (sel.ops.length != 1) {
-						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+						errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 								sel.opsSTN[idx].getLocation(),
 								"Cannot take subexpression of `" + curName.toString() + "'.");
 						return nullOAN;
@@ -882,7 +882,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * +cal then if opDefArityFound + Len(tempArgs) # nodeArity *
 						 **************************************************************/
 						if (opDefArityFound + tempArgs.size() != nodeArity) {
-							errors.addError(ErrorCode.OPERATOR_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
+							errors.addMessage(ErrorCode.OPERATOR_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
 									(opArgs == null) ? sel.selSTN.getLocation() : sel.args[idx].getLocation(),
 									"The operator " + curName.toString() + " requires " + (nodeArity - opDefArityFound)
 											+ " arguments.");
@@ -929,7 +929,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 					if (curNode.getKind() == ModuleInstanceKind) {
 						if ((idx == sel.ops.length - 1) && !(isDef || isFact)) {
-							errors.addError(ErrorCode.OPERATOR_NAME_INCOMPLETE,
+							errors.addMessage(ErrorCode.OPERATOR_NAME_INCOMPLETE,
 									sel.opsSTN[idx].getLocation(),
 									"Operator name " + curName.toString() + " is incomplete.");
 							return nullOAN;
@@ -946,7 +946,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 **************************************************************/
 						if ((curNode.getKind() == UserDefinedOpKind) && (!((OpDefNode) curNode).isDefined)
 								&& (sel.ops.length != 1)) {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(), "Subexpression of  `" + curName.toString()
 									+ "' used inside the operator's definition.");
 							return nullOAN;
@@ -1019,7 +1019,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					break;
 
 				default:
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
 						"Internal error: unexpected node kind."
@@ -1036,7 +1036,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (((prevMode == FindingOpName) && (curNode.getKind() != UserDefinedOpKind)
 						&& (curNode.getKind() != ThmOrAssumpDefKind))
 						|| ((prevMode != FindingOpName) && (curNode.getKind() != LabelKind))) {
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						sel.selSTN.getLocation(),
 						"Unexpected node kind in FollowingLabels mode."
@@ -1048,7 +1048,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				if (newLabelNode == null) {
 					// This would be a general "unknown operator" error
-					errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+					errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 							sel.opsSTN[idx].getLocation(),
 							"Cannot find label `" + sel.opNames[idx].toString() + "'.");
 					return nullOAN;
@@ -1058,7 +1058,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				curNode = newLabelNode;
 
 				if (illegalLabelRef(newLabelNode, sel.opsSTN[idx])) {
-					errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+					errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							sel.opsSTN[idx].getLocation(),
 							"Accessing subexpression labeled `" + sel.opNames[idx].toString()
 									+ "' of ASSUME/PROVE clause within the scope of "
@@ -1074,7 +1074,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 ****************************************************************/
 					if (newLabelNode
 							.getArity() != ((sel.args[idx] == null) ? 0 : (sel.args[idx].heirs().length - 1) / 2)) {
-						errors.addError(ErrorCode.LABEL_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
+						errors.addMessage(ErrorCode.LABEL_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
 								sel.opsSTN[idx].getLocation(),
 								"Label `" + sel.opNames[idx].toString() + "' used with wrong number of arguments.");
 						return nullOAN;
@@ -1110,7 +1110,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (sel.ops[idx] == ColonSel) {
 					if ((prevMode == FindingSubExpr) || !(((idx == sel.ops.length - 1) && (prevMode == FindingOpName))
 							|| ((idx < sel.ops.length - 1) && (sel.ops[idx + 1] == NameSel)))) {
-						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+						errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 								sel.opsSTN[idx].getLocation(),
 								"`!:' can be used only after a name and either at the "
 										+ "end after an\noperator name or before an operator name.");
@@ -1118,7 +1118,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					} // if ( (prevMode == FindingSubExpr) ...)
 				} // if (sel.ops[idx] == ColonSel)
 				else if (curNode == null) {
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 						sel.opsSTN[idx].getLocation(),
 						"Subexpression selection failed, probably due to "
@@ -1129,7 +1129,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					if (ArgNum(sel.ops[idx], 1) == 1) {
 						curNode = ((LetInNode) curNode).getBody();
 					} else {
-						errors.addError(
+						errors.addMessage(
 							ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							sel.opsSTN[idx].getLocation(),
 							"A LET/IN expression has only one operand."
@@ -1148,7 +1148,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						int temp = ArgNum(sel.ops[idx], opNode.getArity());
 						if (temp == -1) {
 							reportSelectorError(sel, idx);
-//               errors.addError(sel.opsSTN[idx].getLocation(),
+//               errors.addMessage(sel.opsSTN[idx].getLocation(),
 //                               "NoNexistent operand specified by `"
 //                                + sel.opNames[idx].toString() + "'.");
 							return nullOAN;
@@ -1163,7 +1163,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 							int temp = ArgNum(sel.ops[idx], curArgs.length);
 							if (temp == -1) {
-//                 errors.addError(sel.opsSTN[idx].getLocation(),
+//                 errors.addMessage(sel.opsSTN[idx].getLocation(),
 //                                 "NonExistent operand specified by `"
 //                                  + sel.opNames[idx].toString() + "'.");
 								reportSelectorError(sel, idx);
@@ -1172,7 +1172,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							;
 							curOpApplNode = (OpApplNode) curArgs[temp - 1];
 							if (curOpApplNode.getOperator().getName() != OP_pair) {
-								throw errors.addError(
+								throw errors.addMessage(
 									ErrorCode.INTERNAL_ERROR,
 									sel.opsSTN[idx].getLocation(),
 									"Internal error: Expecting $Pair and didn't find it."
@@ -1184,7 +1184,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 						else if (opNode.getName() == OP_case) { // $Case
 							if (idx == sel.ops.length - 1) {
-								errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+								errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 										sel.opsSTN[idx].getLocation(),
 										"Subexpression of CASE must have form !i!j.");
 								return nullOAN;
@@ -1198,7 +1198,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							;
 							curOpApplNode = (OpApplNode) curArgs[temp - 1];
 							if (curOpApplNode.getOperator().getName() != OP_pair) {
-								throw errors.addError(
+								throw errors.addMessage(
 									ErrorCode.INTERNAL_ERROR,
 									sel.opsSTN[idx].getLocation(),
 									"Internal error: Expecting $Pair and didn't find it."
@@ -1208,7 +1208,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							idx = idx + 1;
 							temp = ArgNum(sel.ops[idx], 2);
 							if (temp == -1) {
-								errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+								errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 										sel.opsSTN[idx].getLocation(),
 										"Second selector for CASE subexpression must specify "
 												+ " one of two operands.");
@@ -1217,7 +1217,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							;
 							curNode = curOpApplNode.getArgs()[temp - 1];
 							if (curNode == null) {
-								errors.addError(
+								errors.addMessage(
 									ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Selecting OTHER in a CASE statement."
@@ -1245,7 +1245,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							 * * Change made 25 Oct 2007. *
 							 ************************************************************/
 							if (temp > 1) {
-								errors.addError(
+								errors.addMessage(
 									ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Selecting subexpression of an EXCEPT not yet implemented."
@@ -1261,7 +1261,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							if (temp > 1) {
 								curOpApplNode = (OpApplNode) curNode;
 								if (curOpApplNode.getOperator().getName() != OP_pair) {
-									throw errors.addError(
+									throw errors.addMessage(
 										ErrorCode.INTERNAL_ERROR,
 										sel.opsSTN[idx].getLocation(),
 										"Internal error: Expecting $Pair and didn't find it."
@@ -1339,7 +1339,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 										 *****************************************************/
 										int numOfArgs = (sel.args[idx].heirs().length - 1) / 2;
 										if (temp.length != numOfArgs) {
-											errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+											errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 													sel.opsSTN[idx].getLocation(),
 													"Selector with " + numOfArgs
 															+ " argument(s) used for quantifier with " + temp.length
@@ -1373,7 +1373,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					} // else if (opNode.getKind() == BuiltInKind)
 
 					else {
-						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+						errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 								sel.opsSTN[idx].getLocation(), "Choosing operand `"
 								+ selectorItemToString(sel, idx) + "' of subexpression with no operands.");
 						return nullOAN;
@@ -1394,7 +1394,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * AssumeProve, but with inAPsuffices set * to true. *
 						 **************************************************************/
 						if (ArgNum(sel.ops[idx], 1) != 1) {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Accessing non-existent subexpression of " + "a SUFFICES");
 							return nullOAN;
@@ -1415,7 +1415,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						;
 
 						if (illegalAPPosRef(curAPNode, temp)) {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Accessing ASSUME/PROVE clause within the scope of "
 											+ "a declaration\n from outside that declaration's scope.");
@@ -1433,7 +1433,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 								 * Extra conjunct added to if test to allow selection of a * NEW clause as a
 								 * fact. *
 								 ************************************************************/
-								errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+								errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 										sel.opsSTN[idx].getLocation(),
 										"Selected a subexpression of a NEW clause of an ASSUME.");
 								return nullOAN;
@@ -1448,7 +1448,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				else if (curNode.getKind() == OpArgKind) {
 					SymbolNode opNode = ((OpArgNode) curNode).getOp();
 					if ((opNode.getKind() != UserDefinedOpKind) || (opNode.getName() != S_lambda)) {
-						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+						errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 								sel.opsSTN[idx].getLocation(),
 								"Trying to select subexpression of an operator argument.");
 						return nullOAN;
@@ -1456,7 +1456,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					;
 					OpDefNode opDefOpNode = (OpDefNode) opNode;
 					if ((sel.ops[idx] != NullSel) && (sel.ops[idx] != AtSel)) {
-						errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+						errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 								sel.opsSTN[idx].getLocation(),
 								"Cannot use !" + sel.opNames[idx].toString() + " to select subexpression of a LAMBDA.");
 						return nullOAN;
@@ -1465,7 +1465,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					if (sel.ops[idx] == NullSel) {
 						int numOfArgs = (sel.args[idx].heirs().length - 1) / 2;
 						if (opDefOpNode.getArity() != numOfArgs) {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"Selector with " + numOfArgs + "arguments used for LAMBDA expression taking "
 											+ opDefOpNode.getArity() + " arguments.");
@@ -1487,7 +1487,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				else if ((curNode.getKind() == UserDefinedOpKind) || (curNode.getKind() == BuiltInKind)
 						|| (curNode.getKind() == NumberedProofStepKind)) {
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
 						"Internal error: " + " Should not have been able to select this node."
@@ -1498,7 +1498,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						|| (curNode.getKind() == NumeralKind) || (curNode.getKind() == StringKind)
 						|| (curNode.getKind() == FormalParamKind) || (curNode.getKind() == ConstantDeclKind)
 						|| (curNode.getKind() == VariableDeclKind) || (curNode.getKind() == BoundSymbolKind)) {
-					errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+					errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							sel.opsSTN[idx].getLocation(),
 							"Selecting subexpression of expression that has none.");
 					return nullOAN;
@@ -1510,7 +1510,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} // else if (curNode.getKind() == LabelKind)
 
 				else {
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[idx].getLocation(),
 						"Internal error: Unknown node kind."
@@ -1538,14 +1538,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 							mode = FindingOpName;
 							firstFindingOpName = false;
 						} else {
-							errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+							errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 									sel.opsSTN[idx].getLocation(),
 									"A name selector here must be from a LET clause.");
 							return nullOAN;
 						}
 					} // if (sel.ops[idx+1] == NameSel)
 					else if (sel.ops[idx + 1] == ColonSel) {
-						errors.addError(
+						errors.addMessage(
 							ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							sel.opsSTN[idx].getLocation(),
 							"!: should not follow an operand selector."
@@ -1559,7 +1559,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				break; // case FindingSubExpr
 
 			default:
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					sel.selSTN.getLocation(),
 					"Internal error: Unexpected mode"
@@ -1582,7 +1582,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				return (AssumeProveNode) curNode;
 			}
 			;
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 				sel.selSTN.getLocation(),
 				"Selected ASSUME/PROVE instead of expression."
@@ -1600,7 +1600,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				return (LevelNode) curNode;
 			}
 			;
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 				sel.selSTN.getLocation(),
 				"Selected a NEW declaration as an expression or operator."
@@ -1627,7 +1627,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 																													// +cal
 																													// code
 					((curNode.getKind() == ModuleInstanceKind) && isDef))) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.SYMBOL_UNDEFINED,
 					sel.selSTN.getLocation(),
 					"DEF clause entry should describe a defined operator."
@@ -1637,7 +1637,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			;
 			if ((curNode.getKind() == NumberedProofStepKind)
 					&& (((OpDefNode) curNode).getStepNode().getKind() != DefStepKind)) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					sel.selSTN.getLocation(),
 					"DEF clause entry refers to a non-definition step."
@@ -1649,7 +1649,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		; // if (expectedArity < 0)
 
 		if (curNode.getKind() == NumberedProofStepKind) {
-			errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					sel.selSTN.getLocation(), isFact ? "Step number of non-fact used as a fact"
 					: "Step number of non-expression step used as an expression.");
 			return nullOAN;
@@ -1668,7 +1668,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			;
 
 			if (expectedArity != temp) {
-				errors.addError(ErrorCode.HIGHER_ORDER_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
+				errors.addMessage(ErrorCode.HIGHER_ORDER_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
 						sel.selSTN.getLocation(),
 						"Expected arity " + expectedArity + " but found operator of arity " + temp + ".");
 				return nullOAN;
@@ -1700,7 +1700,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				nodeParams = ((OpDefNode) curNode).getParams();
 			} else {
 				if (curNode.getKind() != ThmOrAssumpDefKind) {
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						sel.opsSTN[sel.opsSTN.length - 1].getLocation(),
 						"Internal Error: Found unexpected node kind after FindingOpName"
@@ -1762,7 +1762,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * +cal: if expectedArity = 0 then ... elsif *
 			 *********************************************************************/
 			if (expectedArity == 0) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 					sel.selSTN.getLocation(),
 					"Selected operator argument when expression expected."
@@ -1776,7 +1776,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 *********************************************************************/
 			int temp = params.size() + curOpArgNode.getArity();
 			if (expectedArity != temp) {
-				errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+				errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 						sel.selSTN.getLocation(), "Expected operator of arity " + expectedArity
 						+ " but selected operator has arity " + temp + ".");
 				return nullOAN;
@@ -1821,7 +1821,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * curNode is a LabelNode naming an ASSUME/PROVE. *
 		 ***********************************************************/
 		) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.ASSUME_PROVE_USED_WHERE_EXPRESSION_REQUIRED,
 				sel.selSTN.getLocation(),
 				"ASSUME/PROVE used where an expression is required."
@@ -1858,7 +1858,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * OP_suffices added by LL 16 Feb 2009. *
 			 *******************************************************************/
 			if (exprType != null) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.PROOF_STEP_NON_EXPRESSION_USED_AS_EXPRESSION,
 					sel.selSTN.getLocation(),
 					exprType + " proof step selected instead of expression."
@@ -1919,7 +1919,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				return (OpDefNode) curNode;
 			} else {
 				// This would be an "incomplete name" error.
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					sel.selSTN.getLocation(),
 					"Module instantiation selected instead of expression."
@@ -1932,7 +1932,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * curNode should be an expression node. *
 		 ***********************************************************************/
 		if (!(curNode instanceof ExprNode)) {
-			throw errors.addError(
+			throw errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				sel.selSTN.getLocation(),
 				"Internal error: Expected expression node."
@@ -1993,7 +1993,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (expectedArity > 0) {
 			if (paramsArray.length != expectedArity) {
 				// Another duplicate arity check.
-				errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+				errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 						sel.selSTN.getLocation(), "Expected operator argument with arity " + expectedArity
 						+ " but found one of arity " + paramsArray.length + ".");
 				return nullOAN;
@@ -2007,7 +2007,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		if (paramsArray.length != allArgs.size()) {
 			// Another duplicate arity check.
-			errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					sel.selSTN.getLocation(),
 					"Expected " + paramsArray.length + " arguments but found " + allArgs.size() + ".");
 			return nullOAN;
@@ -2064,7 +2064,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * Just a method to perform error reporting when an error is detected * when
 		 * executing selectorToNode. *
 		 ***********************************************************************/
-		errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+		errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 				sel.opsSTN[idx].getLocation(),
 				"Nonexistent operand specified by `" + selectorItemToString(sel, idx) + "'.");
 	}
@@ -2078,7 +2078,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 ***********************************************************************/
 		boolean val = (node == null);
 		if (val) {
-			errors.addError(ErrorCode.INTERNAL_ERROR,
+			errors.addMessage(ErrorCode.INTERNAL_ERROR,
 					sel.opsSTN[idx].getLocation(), "An unexpected null node specified by "
 					+ selectorItemToString(sel, idx) + "'." + "\nThis is probably due to a previous error.");
 		}
@@ -2239,7 +2239,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// Added 4 Mar 2009.
 				if (uohn.facts.length + uohn.defs.length == 0) {
 					// This check should be moved to the syntax level.
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						definitions[lvi].getLocation(),
 						"Empty USE or HIDE statement."
@@ -2264,7 +2264,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				processRecursive(definitions[lvi], currentModule);
 				break;
 			default:
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					definitions[lvi].getLocation(),
 					"Internal error: Syntax node of kind " + definitions[lvi].getKind()
@@ -2297,7 +2297,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (extendee == null) {
 					extendee = moduleTable.getModuleNode(extendeeID);
 					if (extendee == null) {
-						throw errors.addError(
+						throw errors.addMessage(
 							ErrorCode.INTERNAL_ERROR,
 							treeNodes[lvi].getLocation(),
 							"Could not find module " + extendeeID
@@ -2311,7 +2311,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (context != null) {
 					symbolTable.getContext().mergeExtendContext(context, errors);
 				} else {
-					errors.addError(ErrorCode.INTERNAL_ERROR,
+					errors.addMessage(ErrorCode.INTERNAL_ERROR,
 							treeNodes[lvi].getLocation(),
 							"Couldn't find context for module `" + extendeeID + "'.");
 				}
@@ -2334,7 +2334,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 			if (us == S_at) {
 				// Should be enforced at syntax level
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
 					treeNodes[lvi].getLocation(),
 					"Attempted to declare '@' as a variable."
@@ -2385,7 +2385,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		} else {
 			// There isn't any sort of other *fix type in the language, so
 			// this check seems unreachable.
-			errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 				treeNode.getLocation(),
 				"Unknown parameter declaration `" + treeNode.getUS() + "'."
 			);
@@ -2409,7 +2409,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
 			if (treeNodes[lvi].getUS() == S_at) {
 				// Should be enforced at syntax level
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
 					treeNodes[lvi].getLocation(),
 					"Attempted to declare '@' as a constant."
@@ -2523,7 +2523,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			// Process the operator
 			name = Operators.resolveSynonym(ss[1].getUS());
 		} else {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				children[0].getLocation(),
 				"Unknown parameter declaration `" + children[0].getUS() + "'."
@@ -2569,7 +2569,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					}
 					; // if
 					if (!paramsMatch) {
-						errors.addError(ErrorCode.RECURSIVE_OPERATOR_DECLARATION_DEFINITION_ARITY_MISMATCH,
+						errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_DECLARATION_DEFINITION_ARITY_MISMATCH,
 								treeNode.getLocation(), "Definition of " + odn.getName()
 								+ " has different arity than " + "its RECURSIVE declaration.");
 					}
@@ -2582,14 +2582,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					 ***************************************************************/
 				} // if (odn.letInLevel == curLevel)
 				else {
-					errors.addError(ErrorCode.RECURSIVE_OPERATOR_DEFINED_IN_WRONG_LET_IN_LEVEL,
+					errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_DEFINED_IN_WRONG_LET_IN_LEVEL,
 							treeNode.getLocation(),
 							"Recursive operator " + name.toString() + " defined at wrong LET/IN level.");
 					odn = null;
 				} // else
 			} // if (odn != null) ...
 			else {
-				errors.addError(ErrorCode.SYMBOL_REDEFINED,
+				errors.addMessage(ErrorCode.SYMBOL_REDEFINED,
 						treeNode.getLocation(),
 						"Operator " + name.toString() + " already defined or declared.");
 			}
@@ -2797,21 +2797,21 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						/*************************************************************
 						 * RECURSIVE declaration had parameters. *
 						 *************************************************************/
-						errors.addError(ErrorCode.RECURSIVE_OPERATOR_DECLARATION_DEFINITION_ARITY_MISMATCH,
+						errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_DECLARATION_DEFINITION_ARITY_MISMATCH,
 								treeNode.getLocation(), "Function " + odn.getName()
 								+ " has operator arguments in " + "its RECURSIVE declaration.");
 					}
 					;
 				} // if (odn.letInLevel == curLevel)
 				else {
-					errors.addError(ErrorCode.RECURSIVE_OPERATOR_DEFINED_IN_WRONG_LET_IN_LEVEL,
+					errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_DEFINED_IN_WRONG_LET_IN_LEVEL,
 							treeNode.getLocation(),
 							"Recursive function " + name.toString() + " defined at wrong LET/IN level.");
 					odn = null;
 				} // else
 			} // if (odn != null) ...
 			else {
-				errors.addError(ErrorCode.SYMBOL_REDEFINED,
+				errors.addMessage(ErrorCode.SYMBOL_REDEFINED,
 						treeNode.getLocation(),
 						"Function name `" + name.toString() + "' already defined or declared.");
 			}
@@ -2907,7 +2907,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (curLevel < MaxLetInLevel) {
 			curLevel++;
 		} else {
-			throw errors.addError(
+			throw errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				treeNode.getLocation(),
 				"LETs nested more than " + MaxLetInLevel + " deep."
@@ -2943,7 +2943,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				break;
 
 			default:
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					syntaxTreeNode[lvi].getLocation(),
 					"Internal error: found unexpected syntax tree node in LET."
@@ -3025,7 +3025,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (opn == null) {
 				// An unknown infix operator would have been caught at the
 				// syntax parser level. Check almost certainly unreachable.
-				errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+				errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 						treeNode.getLocation(),
 						"Couldn't resolve infix operator symbol `" + genID.getCompoundIDUS() + "'.");
 				return null;
@@ -3048,7 +3048,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (opn == null) {
 				// An unknown prefix operator would have been caught at the
 				// syntax parser level. Check almost certainly unreachable.
-				errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+				errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 						treeNode.getLocation(),
 						"Couldn't resolve prefix operator symbol `" + genID.getCompoundIDUS() + "'.");
 				return null;
@@ -3065,7 +3065,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (opn == null) {
 				// An unknown postfix operator would have been caught at the
 				// syntax parser level. Check almost certainly unreachable.
-				errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+				errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 						treeNode.getLocation(),
 						"Couldn't resolve postfix " + "operator symbol `" + genID.getCompoundIDUS() + "'.");
 				return null;
@@ -3109,7 +3109,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					&& (((SyntaxTreeNode) sTreeNode.heirs()[0]).heirs().length == 0)) {
 				if (excStack.isEmpty() || excSpecStack.isEmpty()) {
 					// if either stack is empty, then @ used in improper EXCEPT context
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
 						sTreeNode.getLocation(),
 						"@ used where its meaning is not defined."
@@ -3147,14 +3147,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * // if the symbol is "@" then check for errors and // return an AtNode if
 		 * none. if (genID.getCompoundIDUS() == S_at) { if (excStack.empty() ||
 		 * excSpecStack.empty()) { // if either stack is empty, then @ used in improper
-		 * EXCEPT context errors.addError(treeNode.getLocation(), "@ used where its
+		 * EXCEPT context errors.addMessage(treeNode.getLocation(), "@ used where its
 		 * meaning is not defined."); } else { // So, the context for @ is proper, then
 		 * construct the // AtNode and return it return new
 		 * AtNode((OpApplNode)excStack.peek(), (OpApplNode)excSpecStack.peek()); } }
 		 * else if (genID.getFullyQualifiedOp() == null || genID.getArgs() == null) { //
 		 * If it is not an "@" symbol, it may still be an unresolved symbol return
 		 * nullOAN; } else if (genID.getFullyQualifiedOp().getKind() == ModuleKind) {
-		 * errors.addError( treeNode.getLocation(), "Module name '" +
+		 * errors.addMessage( treeNode.getLocation(), "Module name '" +
 		 * genID.getFullyQualifiedOp().getName() + "' used as operator."); return
 		 * nullOAN; } else { // but if there are no problems then we are in a situation
 		 * in // which return the appropriate OpApplNode an N_GenID node in // the
@@ -3175,7 +3175,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * SymbolNode symNode = genID.getFullyQualifiedOp() ;
 		 * 
 		 * if (symNode.getKind() == ThmOrAssumpDefKind) {
-		 * errors.addError(treeNode.getLocation(), "Theorem or Assumption name used as
+		 * errors.addMessage(treeNode.getLocation(), "Theorem or Assumption name used as
 		 * expression.") ; }; OpApplNode retVal = // return new OpApplNode(symNode,
 		 * genID.getArgs(), treeNode, cm); functions.recursionCheck(symNode.getName());
 		 * return retVal ; }
@@ -3198,7 +3198,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * be a GeneralId node and an OpArgs node, but let's be * sure. *
 			 *********************************************************************/
 			if ((genIdNode.getKind() != N_GeneralId) || (opApplNode.getKind() != N_OpArgs)) {
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					treeNode.getLocation(),
 					"Internal error: OpAppl node with unexpected children."
@@ -3305,7 +3305,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						// function itself). Note: one cannot define a function
 						// with 0 arguments in TLA+.
 						if (numArgs >= 2 && numParms != numArgs) {
-							errors.addError(ErrorCode.FUNCTION_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
+							errors.addMessage(ErrorCode.FUNCTION_GIVEN_INCORRECT_NUMBER_OF_ARGUMENTS,
 									treeNode.getLocation(),
 									"Function '" + ((OpApplNode) sns[0]).getOperator().getName() + "' is defined with "
 											+ numParms + " parameters, but is applied to " + numArgs + " arguments.");
@@ -3402,7 +3402,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return processLetIn(treeNode, children, cm);
 
 		case N_Lambda:
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.LAMBDA_GIVEN_WHERE_EXPRESSION_REQUIRED,
 				treeNode.getLocation(),
 				"LAMBDA expression used where an expression is required."
@@ -3419,7 +3419,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				// ASSUME/PROVE statements were at one time permitted in more
 				// places, and that is why this check (and some other related
 				// logic for processing USE/HIDE blocks) is present.
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					treeNode.getLocation(),
 					"Labeled ASSUME/PROVE used where an expression is required."
@@ -3430,7 +3430,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		default:
 			// If new syntax constructs are added to the language but not yet
 			// implemented by the semantic checker, this will be triggered.
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				treeNode.getLocation(),
 				"Unsupported expression type `" + treeNode.getImage() + "'."
@@ -3509,7 +3509,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 		;
 		if ((goal.getBody() == null) || (goal.getBody().getKind() != AssumeProveKind)) {
-			throw errors.addError(
+			throw errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				stn.getLocation(),
 				"Internal error: Expecting label to be in AssumeProveNode, but it's not."
@@ -3582,7 +3582,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (children[0].getImage().equals("[]ASSUME")) {
 			isBoxAssumeProve = true;
 			if (!proveString.equals("[]PROVE")) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 					children[0].getLocation(),
 					"[]ASSUME matched by PROVE instead of []PROVE"
@@ -3590,7 +3590,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			}
 		} else {
 			if (!proveString.equals("PROVE")) {
-				errors.addError(
+				errors.addMessage(
 					ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 					children[0].getLocation(),
 					"ASSUME matched by []PROVE instead of PROVE"
@@ -3623,7 +3623,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		if (isBoxAssumeProve) {
 			if (symbolTable.resolveSymbol(S_InAssume) != null) {
-				errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+				errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 						children[0].getLocation(),
 						"[]ASSUME used within the scope of an ordinary ASSUME's assumptions");
 			}
@@ -4047,7 +4047,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			labels[lvi] = ((StringNode) sops[0]).getRep();
 			for (int cmpIndex = 0; cmpIndex < lvi; cmpIndex++) {
 				if (labels[lvi].compareTo(labels[cmpIndex]) == 0) {
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.RECORD_CONSTRUCTOR_FIELD_REDEFINITION,
 						syntaxTreeNode[0].getLocation(),
 						"Non-unique fields in constructor."
@@ -4213,7 +4213,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// arity that mainOp expects of argument number <argPosition>
 
 		if (mainOp == null) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				mainSTN.getLocation(),
 				"Unable to generate expression or operator argument; "
@@ -4226,7 +4226,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (mainOp instanceof ModuleNode) {
 			// Attempting to pass in a module node as an operator application
 			// would have already been caught by an "incomplete name" error.
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 				mainSTN.getLocation(),
 				"Module name '" + mainOp.getName() + "' used as operator."
@@ -4238,7 +4238,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		if (argPosition + 1 > mainOp.getArity()) {
 			// One of many duplicate arity-matching checks that would have
 			// been caught long before this point.
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 				mainSTN.getLocation(),
 				"Too many arguments for operator '" + mainOp.getName()
@@ -4304,7 +4304,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			if (!(argRoot.getImage().equals("N_GeneralId") || argRoot.getImage().equals("N_GenInfixOp")
 					|| argRoot.getImage().equals("N_GenNonExpPrefixOp") || argRoot.getImage().equals("N_GenPostfixOp")
 					|| argRoot.getImage().equals("N_GenPrefixOp") || argRoot.getImage().equals("N_Lambda"))) {
-				errors.addError(ErrorCode.HIGHER_ORDER_OPERATOR_REQUIRED_BUT_EXPRESSION_GIVEN,
+				errors.addMessage(ErrorCode.HIGHER_ORDER_OPERATOR_REQUIRED_BUT_EXPRESSION_GIVEN,
 						argRoot.getLocation(),
 						"An expression appears as argument number " + (argPosition + 1)
 								+ " (counting from 1) to operator '" + mainOp.getName()
@@ -4321,7 +4321,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					return new OpArgNode(argOp, argRoot, mn);
 				} // if
 				else {
-					errors.addError(ErrorCode.LAMBDA_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
+					errors.addMessage(ErrorCode.LAMBDA_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
 							mainSTN.getLocation(),
 							"Lambda expression with arity " + argOp.getArity() + " used as argument "
 									+ (argPosition + 1) + " of operator `" + mainOp.getName()
@@ -4363,7 +4363,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} else if (genID.getArgs().length > 0) {
 					// This error would already have been caught in other
 					// arity-checking code.
-					errors.addError(
+					errors.addMessage(
 							ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 							mainSTN.getLocation(),
 							"Expression used in argument position " + (argPosition + 1)
@@ -4373,7 +4373,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} else {
 					// This error would already have been caught in other
 					// arity-checking code.
-					errors.addError(
+					errors.addMessage(
 							ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 							mainSTN.getLocation(),
 							"Operator with incorrect arity passed as argument. " + "\nOperator '" + argOp.getName()
@@ -4718,7 +4718,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					id = child.heirs()[1].getUS();
 					count = 1;
 				} else {
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						treeNode.getLocation(),
 						"Internal error: Error in formal params part of parse tree."
@@ -4744,14 +4744,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		ModuleNode instanceeModule = symbolTable.resolveModule(children[1].getUS());
 
 		if (instanceeCtxt == null) {
-			errors.addError(ErrorCode.INTERNAL_ERROR,
+			errors.addMessage(ErrorCode.INTERNAL_ERROR,
 					children[1].getLocation(),
 					"Module " + children[1].getImage() + " does not have a context.");
 			return nullODN;
 		}
 
 		if (instanceeModule == null) {
-			errors.addError(ErrorCode.INTERNAL_ERROR,
+			errors.addMessage(ErrorCode.INTERNAL_ERROR,
 					children[1].getLocation(),
 					"Module name " + children[1].getImage() + " is not known" + " in current context.");
 			return nullODN;
@@ -4987,7 +4987,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// illegal substitution target
 
 		if (targetSymbol == null || !(targetSymbol instanceof OpDeclNode)) {
-			errors.addError(ErrorCode.INSTANCE_SUBSTITUTION_ILLEGAL_SYMBOL_REDEFINITION,
+			errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_ILLEGAL_SYMBOL_REDEFINITION,
 					substTarget.getLocation(), "Identifier '" + substTarget.getUS() + "' is not a legal"
 					+ " target of a substitution. \nA legal target must be a declared"
 					+ " CONSTANT or VARIABLE in the module being instantiated."
@@ -5025,7 +5025,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		int expectedArity = targetSymbol.getArity();
 		int actualArity = substValue instanceof OpArgNode ? ((OpArgNode) substValue).getArity() : 0;
 		if (actualArity != expectedArity) {
-			errors.addError(ErrorCode.INSTANCE_SUBSTITUTION_OPERATOR_CONSTANT_INCORRECT_ARITY,
+			errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_OPERATOR_CONSTANT_INCORRECT_ARITY,
 					substValue.getLocation(), "An operator must be substituted for symbol '"
 					+ targetSymbol.getName() + "', and it must have arity " + expectedArity + ".");
 		}
@@ -5058,7 +5058,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				opArgSyntaxNode.isKind(N_GenPostfixOp))) {
 			// Another duplicate arity check.
-			errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					opArgSyntaxNode.getLocation(),
 					"Arity " + targetSymbol.getArity() + " operator (not an expression) is expected"
 							+ " \nto substitute for CONSTANT '" + targetSymbol.getName() + "'.");
@@ -5075,7 +5075,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 * argument. *
 			 *********************************************************************/
 			if (targetSymbol.getArity() <= 0) {
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					opArgSyntaxNode.getLocation(),
 					"Internal error: expected to find arity > 0."
@@ -5098,7 +5098,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				if (errors.getNumErrors() > 0) {
 					return nullOpArg;
 				}
-				throw errors.addError(
+				throw errors.addMessage(
 					ErrorCode.INTERNAL_ERROR,
 					opArgSyntaxNode.getLocation(),
 					"Internal error: Expected an operator argument but found something else."
@@ -5124,7 +5124,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			return new OpArgNode(genID.getFullyQualifiedOp(), opArgSyntaxNode, mn);
 		} else if (genID.getArgs().length > 0) {
 			// Another duplicate arity check
-			errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 					opArgSyntaxNode.getLocation(),
 					"Arity " + targetSymbol.getArity() + " operator (not an expression) is expected"
 							+ " to substitute for CONSTANT '" + targetSymbol.getName() + "'.");
@@ -5267,7 +5267,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// and as a declaration.
 		Context instanceeCtxt = this.getContext(moduleId);
 		if (instanceeCtxt == null) {
-			throw errors.addError(
+			throw errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				children[1].getLocation(),
 				"Internal error: No context available for module `" + moduleId.toString() + "'."
@@ -5286,7 +5286,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		}
 
 		if (instanceeModuleNode == null) {
-			throw errors.addError(
+			throw errors.addMessage(
 				ErrorCode.INTERNAL_ERROR,
 				children[1].getLocation(),
 				"Could not find module " + moduleId.toString()
@@ -5789,7 +5789,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				String oimage = STN.originalImage.toString();
 				if ((!oimage.equals(STN.image.toString()))
 						&& ((oimage.charAt(1) == '*') || (oimage.charAt(1) == '+'))) {
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.PROOF_STEP_WITH_IMPLICIT_LEVEL_CANNOT_HAVE_NAME,
 						stepNumSTN.getLocation(),
 						"<*> and <+> cannot be used for a named step."
@@ -5915,7 +5915,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 				if (uohn.facts.length + uohn.defs.length == 0) {
 					// Should be enforced at syntax level
-					errors.addError(ErrorCode.INTERNAL_ERROR, stepBodySTN.getLocation(), "Empty USE or HIDE statement.");
+					errors.addMessage(ErrorCode.INTERNAL_ERROR, stepBodySTN.getLocation(), "Empty USE or HIDE statement.");
 				}
 				;
 				uohn.factCheck(errors);
@@ -6045,7 +6045,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 										.resolveSymbol(Operators.resolveSynonym(genID.getCompoundIDUS()));
 								if (opn == null) {
 									// An unknown infix operator would have been caught at syntax level
-									errors.addError(
+									errors.addMessage(
 										ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 										curExpr.getLocation(),
 										"Couldn't resolve infix operator symbol `" + genID.getCompoundIDUS() + "'."
@@ -6251,7 +6251,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					break;
 
 				default:
-					throw errors.addError(
+					throw errors.addMessage(
 						ErrorCode.INTERNAL_ERROR,
 						stn.getLocation(),
 						"Internal error: Unexpected SyntaxTreeNode kind: " + heirs[i].getKind()
@@ -6407,7 +6407,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			 *********************************************************************/
 			if (facts.length + defs.length == 0) {
 				// This check should be moved to the syntax level.
-				errors.addError(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Empty BY");
+				errors.addMessage(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Empty BY");
 			}
 			;
 		} else {
@@ -6456,7 +6456,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 		if (nextTok >= heirs.length) {
 			// This check should be moved to the syntax level.
-			errors.addError(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Empty BY, USE, or HIDE");
+			errors.addMessage(ErrorCode.INTERNAL_ERROR, stn.getLocation(), "Empty BY, USE, or HIDE");
 			return new UseOrHideNode(kind, stn, new LevelNode[0], new SymbolNode[0], isOnly);
 		}
 		Vector<LevelNode> vec = new Vector<>();
@@ -6493,7 +6493,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				} else {
 					// BY MODULE Naturals syntax is likely to be removed:
 					// https://github.com/tlaplus/rfcs/issues/18
-					errors.addError(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
+					errors.addMessage(ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							heirs[nextTok].getLocation(),
 							"Module `" + moduleId + "' used without being extended or instantiated.");
 				}
@@ -6559,7 +6559,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					} else {
 						// BY DEF MODULE Naturals syntax is likely to be removed:
 						// https://github.com/tlaplus/rfcs/issues/18
-						errors.addError(
+						errors.addMessage(
 							ErrorCode.UNSUPPORTED_LANGUAGE_FEATURE,
 							heirs[nextTok].getLocation(),
 							"Module `" + moduleId + "' used without being extended or instantiated."
@@ -6584,7 +6584,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						 * selectorToNode. But a little redundancy can't hurt. * But a little redundancy
 						 * can't hurt. *
 						 ***************************************************************/
-						errors.addError(ErrorCode.SYMBOL_UNDEFINED,
+						errors.addMessage(ErrorCode.SYMBOL_UNDEFINED,
 								heirs[nextTok].getLocation(),
 								"DEF clause entry should describe a defined operator.");
 					} // else
@@ -6698,7 +6698,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 *********************************************************************/
 
 		if (!inOpDefNode()) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.LABEL_NOT_IN_DEFINITION_OR_PROOF_STEP,
 				stn.getLocation(),
 				"Label not in definition or proof step."
@@ -6708,7 +6708,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		;
 
 		if (noLabelsAllowed()) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.LABEL_NOT_ALLOWED_IN_NESTED_ASSUME_PROVE_WITH_NEW,
 				stn.getLocation(),
 				"Label not allowed within scope of declaration in nested ASSUME/PROVE."
@@ -6724,7 +6724,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * generateExpression. *
 		 ***********************************************************************/
 		if (!((excStack.isEmpty() || excSpecStack.isEmpty()))) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.LABEL_NOT_ALLOWED_IN_FUNCTION_EXCEPT,
 				stn.getLocation(),
 				"Labels inside EXCEPT clauses are not yet implemented."
@@ -6795,7 +6795,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					// parameter errors, specifically for the case where the
 					// parameter is coincidentally the name of an existing
 					// definition such as an operator, constant, or variable.
-					errors.addError(
+					errors.addMessage(
 						ErrorCode.LABEL_PARAMETER_UNNECESSARY,
 						argSyntaxNode.getLocation(),
 						"Illegal parameter " + argName.toString() + " of label `" + name.toString() + "'."
@@ -6824,7 +6824,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * by the method. *
 		 *********************************************************************/
 		if (!addLabelNodeToSet(retVal)) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.LABEL_REDEFINITION,
 				stn.getLocation(),
 				"Duplicate label `" + name.toString() + "'."
@@ -6951,7 +6951,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		for (int i = 0; i < odns.length; i++) {
 			if (!opParams.add(odns[i])) {
 				retVal = false;
-				errors.addError(ErrorCode.LABEL_PARAMETER_REPETITION,
+				errors.addMessage(ErrorCode.LABEL_PARAMETER_REPETITION,
 						ln.stn.getLocation(), "Repeated formal parameter " + odns[i].getName().toString()
 						+ " \nin label `" + ln.getName().toString() + "'.");
 			}
@@ -6964,7 +6964,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			for (int j = 0; j < ops.length; j++) {
 				if (!opParams.remove(ops[j])) {
 					retVal = false;
-					errors.addError(ErrorCode.LABEL_PARAMETER_MISSING,
+					errors.addMessage(ErrorCode.LABEL_PARAMETER_MISSING,
 							ln.stn.getLocation(), "Label " + ln.getName().toString()
 							+ " must contain formal parameter `" + ops[j].getName().toString() + "'.");
 				}
@@ -6979,7 +6979,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				FormalParamNode nd = (FormalParamNode) iter.next();
 				res = res + nd.getName().toString() + "  ";
 			} // while
-			errors.addError(ErrorCode.LABEL_PARAMETER_UNNECESSARY, ln.stn.getLocation(), res);
+			errors.addMessage(ErrorCode.LABEL_PARAMETER_UNNECESSARY, ln.stn.getLocation(), res);
 		} // if
 		return retVal;
 	}
@@ -7265,7 +7265,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		 * declaration in a RECURSIVE statement and its definition. *
 		 ***********************************************************************/
 		if (unresolvedSum > 0) {
-			errors.addError(
+			errors.addMessage(
 				ErrorCode.RECURSIVE_SECTION_CONTAINS_ILLEGAL_DEFINITION,
 				tn.getLocation(),
 				type + " may not appear within " + "a recursive definition section."
@@ -7277,7 +7277,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		/***********************************************************************
 		 * Called at the end of a LET clause and at the end of processing a * module to
 		 * check for operators that were declared in a RECURSIVE * statement but not
-		 * defined. It calls errors.addError to report any * that it finds. *
+		 * defined. It calls errors.addMessage to report any * that it finds. *
 		 ***********************************************************************/
 		/***********************************************************************
 		 * The number of operators declared in RECURSIVE statements within the * LET but
@@ -7291,7 +7291,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			for (int i = 0; i < cm.recursiveDecls.size(); i++) {
 				OpDefNode odn = cm.recursiveDecls.elementAt(i);
 				if ((odn.letInLevel == curLevel) && odn.inRecursive && (!odn.isDefined)) {
-					errors.addError(ErrorCode.RECURSIVE_OPERATOR_DECLARED_BUT_NOT_DEFINED,
+					errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_DECLARED_BUT_NOT_DEFINED,
 							odn.getTreeNode().getLocation(),
 							"Symbol " + odn.getName().toString() + " declared in RECURSIVE statement but not defined.");
 				}

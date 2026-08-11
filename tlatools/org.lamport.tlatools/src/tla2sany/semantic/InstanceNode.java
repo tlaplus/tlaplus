@@ -167,7 +167,7 @@ public class InstanceNode extends LevelNode {
       if (!this.module.isConstant(errors)) {
         if (mexp.getLevel() > mparam.getLevel()) {
           if (mexp.levelCheck(itr, errors) && mparam.levelCheck(itr, errors)) {
-            errors.addError(
+            errors.addMessage(
                ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
                this.stn.getLocation(),
                "Level error in instantiating module '" + module.getName() +
@@ -188,7 +188,7 @@ public class InstanceNode extends LevelNode {
         if (   (   (op.getKind() == UserDefinedOpKind)
                 || (op.getKind() == BuiltInKind))
             && ( ! ((OpDefNode) op).isLeibniz)) {
-          errors.addError(
+          errors.addMessage(
                ErrorCode.INSTANCE_SUBSTITUTION_NON_LEIBNIZ_OPERATOR,
                this.stn.getLocation(),
                "Error in instantiating module '" + module.getName() +
@@ -210,7 +210,7 @@ public class InstanceNode extends LevelNode {
       if (plevel != null &&
           mexp.getLevel() > plevel.intValue()) {
         if (mexp.levelCheck(itr, errors)) {
-          errors.addError(ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
+          errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
             this.stn.getLocation(),
             "Level error in instantiating module '" + module.getName() +
             "':\nThe level of the expression or operator substituted for '" +
@@ -237,7 +237,7 @@ public class InstanceNode extends LevelNode {
               * Apparently, we only bother reporting this error if level   *
               * checking opDef didn't cause an error.                      *
               *************************************************************/
-              errors.addError(
+              errors.addMessage(
             	ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINT_NOT_MET,
                 this.stn.getLocation(),
                 "Level error in instantiating module '" + module.getName() +
@@ -268,7 +268,7 @@ public class InstanceNode extends LevelNode {
                    ((OpDefNode)op).getMaxLevel(alp.i)) {
               if (opLevelCheck &&
                   this.substs[j].getExpr().levelCheck(itr, errors)) {
-                errors.addError(
+                errors.addMessage(
                    ErrorCode.INSTANCE_SUBSTITUTION_COPARAMETER_LEVEL_CONSTRAINTS_EXCEEDED,
                    this.stn.getLocation(),
                    "Level error when instantiating module '" +
