@@ -278,13 +278,13 @@ public class SpecObj
                 * location to the error message.                                   *
                 *******************************************************************/
                 if (nextExtenderOrInstancerModule == null) {
-                  throw errors.addError(
+                  throw errors.addMessage(
                       ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
                       Location.nullLoc,
                       "Cannot find source file for module " + name
                   );
                 } else {
-                  throw errors.addError(
+                  throw errors.addMessage(
                       ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
                       Location.moduleLocation(nextExtenderOrInstancerModule.getName()),
                       "Cannot find source file for module " + name
@@ -387,7 +387,7 @@ public class SpecObj
             if (referencee == parseUnit)
             {
                 // Circularity detected
-                throw errors.addError(
+                throw errors.addMessage(
                     ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
                     Location.nullLoc,
                     "Circular dependency among .tla files; dependency cycle is:\n\n  "
@@ -1002,7 +1002,7 @@ public class SpecObj
     	       modify the translation.
     	       TLC called: By default, a warning should be raised.  It should be considered
     	          the same as Case 2. */
-    		    errors.addWarning(
+    		    errors.addMessage(
     		        ErrorCode.PLUSCAL_ALGORITHM_AND_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
     		        "Both the PlusCal algorithm and its TLA+ translation in module "
@@ -1019,7 +1019,7 @@ public class SpecObj
      	          TLC but raise a transient window with a warning that is easily ignored.  
      	          For case (2), it should be possible to put something in a translation 
      	          comment to disable the warning. */
-    		    errors.addWarning(
+    		    errors.addMessage(
     		        ErrorCode.PLUSCAL_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
     		        "The TLA+ translation in module " + parseUnit.getName()
@@ -1031,14 +1031,14 @@ public class SpecObj
      	         for not generating the warning.  So, it doesn't matter if its inconvenient
      	         to turn off the warning, but turning it off should affect only the current
      	         spec; and it should be easy to turn back on. */
-    		    errors.addWarning(
+    		    errors.addMessage(
     		        ErrorCode.PLUSCAL_ALGORITHM_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
     		        "The PlusCal algorithm in module " + parseUnit.getName()
     		        + " has changed since its last translation."
     		    );
     		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
-    		    errors.addError(
+    		    errors.addMessage(
     		        ErrorCode.INTERNAL_ERROR,
     		        Location.moduleLocation(parseUnit.getName()),
     		        "A unexpected problem was encountered attempting to validate"
@@ -1046,7 +1046,7 @@ public class SpecObj
     		    );
     		}
     	} catch (final IOException e) {
-    	    errors.addError(
+    	    errors.addMessage(
     	        ErrorCode.INTERNAL_ERROR,
     	        Location.moduleLocation(parseUnit.getName()),
     	        "Encountered an exception while attempt to validate "
