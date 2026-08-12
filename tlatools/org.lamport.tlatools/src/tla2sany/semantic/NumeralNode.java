@@ -56,7 +56,8 @@ public class NumeralNode extends ExprNode {
         throw errors.addMessage(
           ErrorCode.INTERNAL_ERROR,
           stn.getLocation(),
-          "Unknown numeral format: " + num
+          "Unknown numeral format: %s",
+          num
         );
      }
      num = num.substring(2);

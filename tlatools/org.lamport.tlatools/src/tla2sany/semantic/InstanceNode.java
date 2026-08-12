@@ -170,10 +170,12 @@ public class InstanceNode extends LevelNode {
             errors.addMessage(
                ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
                this.stn.getLocation(),
-               "Level error in instantiating module '" + module.getName() +
-               "':\nThe level of the expression or operator substituted for '"
-                   + mparam.getName() +
-               "' \nmust be at most " + mparam.getLevel() + ".");
+               "Level error in instantiating module '%s':\n"
+                   + "The level of the expression or operator substituted for '%s' \n"
+                   + "must be at most %s.",
+               module.getName(),
+               mparam.getName(),
+               mparam.getLevel());
           }
           this.levelCorrect = false;
          } //  if (mexp.getLevel() > mparam.getLevel())
@@ -191,9 +193,10 @@ public class InstanceNode extends LevelNode {
           errors.addMessage(
                ErrorCode.INSTANCE_SUBSTITUTION_NON_LEIBNIZ_OPERATOR,
                this.stn.getLocation(),
-               "Error in instantiating module '" + module.getName() +
-               "':\n A non-Leibniz operator substituted for '"
-                   + mparam.getName() + "'.");
+               "Error in instantiating module '%s':\n"
+                   + " A non-Leibniz operator substituted for '%s'.",
+               module.getName(),
+               mparam.getName());
             } // if ;
         } // if (mexp.getKind() == OpArgKind) ;
       } // for i
@@ -212,9 +215,12 @@ public class InstanceNode extends LevelNode {
         if (mexp.levelCheck(itr, errors)) {
           errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINTS_EXCEEDED,
             this.stn.getLocation(),
-            "Level error in instantiating module '" + module.getName() +
-            "':\nThe level of the expression or operator substituted for '" +
-            mparam.getName() + "' \nmust be at most " + plevel + ".");
+            "Level error in instantiating module '%s':\n"
+                + "The level of the expression or operator substituted for '%s' \n"
+                + "must be at most %s.",
+            module.getName(),
+            mparam.getName(),
+            plevel);
         }
         this.levelCorrect = false;
       }
@@ -240,9 +246,13 @@ public class InstanceNode extends LevelNode {
               errors.addMessage(
             	ErrorCode.INSTANCE_SUBSTITUTION_LEVEL_CONSTRAINT_NOT_MET,
                 this.stn.getLocation(),
-                "Level error in instantiating module '" + module.getName() +
-                  "':\nThe level of the argument " + j + " of the operator " +
-                  opDef.getName() + " \nmust be at least " + plevel + ".");
+                "Level error in instantiating module '%s':\n"
+                    + "The level of the argument %s of the operator %s \n"
+                    + "must be at least %s.",
+                module.getName(),
+                j,
+                opDef.getName(),
+                plevel);
             }
             this.levelCorrect = false;
           }
@@ -271,11 +281,13 @@ public class InstanceNode extends LevelNode {
                 errors.addMessage(
                    ErrorCode.INSTANCE_SUBSTITUTION_COPARAMETER_LEVEL_CONSTRAINTS_EXCEEDED,
                    this.stn.getLocation(),
-                   "Level error when instantiating module '" +
-                      module.getName() + "':\nThe level of the argument " +
-                      alp.i + " of the operator " +
-                      pi.getName() + "' \nmust be at most " +
-                      ((OpDefNode)op).getMaxLevel(alp.i) + ".");
+                      "Level error when instantiating module '%s':\n"
+                          + "The level of the argument %s of the operator %s' \n"
+                          + "must be at most %s.",
+                      module.getName(),
+                      alp.i,
+                      pi.getName(),
+                      ((OpDefNode)op).getMaxLevel(alp.i));
               }
               this.levelCorrect = false;
             }

@@ -281,14 +281,16 @@ public class SpecObj
                   throw errors.addMessage(
                       ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
                       Location.nullLoc,
-                      "Cannot find source file for module " + name
+                      "Cannot find source file for module %s",
+                      name
                   );
                 } else {
                   throw errors.addMessage(
                       ErrorCode.MODULE_FILE_CANNOT_BE_FOUND,
                       Location.moduleLocation(nextExtenderOrInstancerModule.getName()),
-                      "Cannot find source file for module " + name
-                      + " imported in module " + nextExtenderOrInstancerModule.getName() + "."
+                      "Cannot find source file for module %s imported in module %s.",
+                      name,
+                      nextExtenderOrInstancerModule.getName()
                   );
                 }
             }
@@ -390,8 +392,8 @@ public class SpecObj
                 throw errors.addMessage(
                     ErrorCode.MODULE_DEPENDENCIES_ARE_CIRCULAR,
                     Location.nullLoc,
-                    "Circular dependency among .tla files; dependency cycle is:\n\n  "
-                    + pathToString(circularPath)
+                    "Circular dependency among .tla files; dependency cycle is:\n\n  %s",
+                    pathToString(circularPath)
                 );
             } else
             {
@@ -1005,8 +1007,9 @@ public class SpecObj
     		    errors.addMessage(
     		        ErrorCode.PLUSCAL_ALGORITHM_AND_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
-    		        "Both the PlusCal algorithm and its TLA+ translation in module "
-    		        + parseUnit.getName() + " have changed since the last translation."
+    		        "Both the PlusCal algorithm and its TLA+ translation in module %s have "
+    		            + "changed since the last translation.",
+    		        parseUnit.getName()
     		    );
     		} else if (results.contains(ValidationResult.TLA_DIVERGENCE_EXISTS)) {
       	      /* The algorithm hash is valid and the translation hash is invalid.
@@ -1022,8 +1025,8 @@ public class SpecObj
     		    errors.addMessage(
     		        ErrorCode.PLUSCAL_TRANSLATION_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
-    		        "The TLA+ translation in module " + parseUnit.getName()
-    		        + " has changed since its last translation."
+    		        "The TLA+ translation in module %s has changed since its last translation.",
+    		        parseUnit.getName()
     		    );
     		} else if (results.contains(ValidationResult.PCAL_DIVERGENCE_EXISTS)) {
        	      /* The algorithm hash is invalid and the translation hash is valid.
@@ -1034,23 +1037,25 @@ public class SpecObj
     		    errors.addMessage(
     		        ErrorCode.PLUSCAL_ALGORITHM_CHANGED_SINCE_LAST_TRANSLATION,
     		        Location.moduleLocation(parseUnit.getName()),
-    		        "The PlusCal algorithm in module " + parseUnit.getName()
-    		        + " has changed since its last translation."
+    		        "The PlusCal algorithm in module %s has changed since its last translation.",
+    		        parseUnit.getName()
     		    );
     		} else if (results.contains(ValidationResult.ERROR_ENCOUNTERED)) {
     		    errors.addMessage(
     		        ErrorCode.INTERNAL_ERROR,
     		        Location.moduleLocation(parseUnit.getName()),
-    		        "A unexpected problem was encountered attempting to validate"
-    		        + " the specification for " + parseUnit.getName()
+					"An unexpected problem was encountered attempting to validate the "
+    		            + "specification for %s",
+    		        parseUnit.getName()
     		    );
     		}
     	} catch (final IOException e) {
     	    errors.addMessage(
     	        ErrorCode.INTERNAL_ERROR,
     	        Location.moduleLocation(parseUnit.getName()),
-    	        "Encountered an exception while attempt to validate "
-    	        + f.getAbsolutePath() + " - " + e.getMessage()
+    	        "Encountered an exception while attempt to validate %s - %s",
+    	        f.getAbsolutePath(),
+				String.valueOf(e.getMessage())
     	    );
     	}
 	}
