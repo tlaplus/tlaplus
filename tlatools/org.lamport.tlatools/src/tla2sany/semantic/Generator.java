@@ -792,7 +792,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					int eidx = (idx < sel.args.length) ? idx : (sel.args.length - 1);
 					errors.addError(ErrorCode.SYMBOL_UNDEFINED,
 							sel.opsSTN[eidx].getLocation(),
-							"Unknown operator: `" + selectorItemToString(sel, eidx) + "'.");
+							"Unknown operator: `" + curName + "'.");
 					return nullOAN;
 				}
 				;
