@@ -41,7 +41,7 @@ Prop ==
 PostCondition ==
     TLCGet("spec") = [ impliedinits |-> {},
                 impliedactions |-> 
-                    { [ name |-> "Prop",
+                    { [ coverage |-> [count |-> 3], name |-> "Prop",
                         location |-> 
                             [ beginLine |-> 39,
                                 beginColumn |-> 10,

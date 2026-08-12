@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corporation. All rights reserved.
  *
  * The MIT License (MIT)
  * 
@@ -79,5 +80,9 @@ public abstract class SuiteTestCase extends ModelCheckerTestCase {
 		} else {
 			assertZeroUncovered();
 		}
+		assertAdditionalCoverage();
+	}
+
+	protected void assertAdditionalCoverage() {
 	}
 }

@@ -1,10 +1,9 @@
 /*******************************************************************************
- * Copyright (c) 2016 Microsoft Research. All rights reserved. 
  * Copyright (c) 2026 NVIDIA Corporation. All rights reserved.
  *
  * The MIT License (MIT)
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
@@ -12,8 +11,8 @@
  * so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software. 
- * 
+ * copies or substantial portions of the Software.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -24,31 +23,38 @@
  * Contributors:
  *   Markus Alexander Kuppe - initial API and implementation
  ******************************************************************************/
-package tlc2.tool.suite;
+package tlc2.tool.coverage;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 import tlc2.output.EC;
 
-public class Test55 extends SuiteTestCase {
-	public Test55() {
-		super("3", "2", "0", "1");
+public class ImpliedCoverageTest extends AbstractCoverageTest {
+
+	public ImpliedCoverageTest() {
+		super("Implied");
 	}
 
-	@Override
-	protected void assertAdditionalCoverage() {
+	@Test
+	public void testSpec() {
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_SEARCH_DEPTH, "3"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "3", "3", "0"));
+		assertFalse(recorder.recorded(EC.GENERAL));
 		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
-		assertCoverage("<Init line 9, col 1 to line 9, col 4 of module test55>: 1:1\n"
-				+ "  line 9, col 9 to line 9, col 13 of module test55: 1\n"
-				+ "<Next line 10, col 1 to line 10, col 4 of module test55>: 1:2\n"
-				+ "  line 10, col 9 to line 10, col 18 of module test55: 2\n"
-				+ "<Invariant line 13, col 1 to line 13, col 9 of module test55>\n"
-				+ "  line 13, col 14 to line 14, col 20 of module test55: 2\n"
-				+ "<Action line 7, col 1 to line 7, col 41 of module test55>\n"
-				+ "  line 7, col 33 to line 7, col 33 of module test55: 1\n"
-				+ "  line 8, col 10 to line 8, col 14 of module test55a: 1\n"
-				+ "<Action line 7, col 1 to line 7, col 41 of module test55>\n"
-				+ "  line 7, col 41 to line 7, col 41 of module test55: 1\n"
-				+ "  line 8, col 21 to line 8, col 25 of module test55a: 1");
+
+		assertCoverage("<Init line 6, col 1 to line 6, col 4 of module Implied>: 1:1\n"
+				+ "  line 6, col 9 to line 6, col 13 of module Implied: 1\n"
+				+ "<Next line 7, col 1 to line 7, col 4 of module Implied>: 2:2\n"
+				+ "  line 7, col 9 to line 7, col 13 of module Implied: 2\n"
+				+ "  |line 7, col 9 to line 7, col 9 of module Implied: 3\n"
+				+ "  line 7, col 18 to line 7, col 27 of module Implied: 2\n"
+				+ "<Action line 10, col 17 to line 10, col 25 of module Implied>\n"
+				+ "  line 10, col 17 to line 10, col 25 of module Implied: 1\n"
+				+ "<Action line 12, col 31 to line 12, col 48 of module Implied>\n"
+				+ "  line 12, col 31 to line 12, col 48 of module Implied: 2");
 	}
 }
