@@ -327,7 +327,7 @@ public class CostModelCreator extends ExplorerVisitor {
 			if (this.substs.containsKey(exploreNode)) {
 				final Subst subst = this.substs.get(exploreNode);
 				assert subst.getExpr() == oan.getNode();
-				subst.setCM(oan);
+				root.putSubst(subst, oan);
 			}
 			
 			final CostModelNode parent = stack.peek();

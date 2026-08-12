@@ -492,7 +492,7 @@ public abstract class Tool
             Context c1 = c;
             for (int i = 0; i < subs.length; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? cm.getSubst(sub) : cm, toolId));
             }
             this.getInitStates(init1.getBody(), acts, c1, ps, states, cm);
             return;
@@ -969,7 +969,7 @@ public abstract class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? cm.getSubst(sub) : cm, toolId));
   	}
   	return this.getNextStates(action, pred1.getBody(), acts, c1, s0, s1, nss, cm);
   }
@@ -1867,7 +1867,7 @@ public abstract class Tool
   	Context c1 = c;
   	for (int i = 0; i < slen; i++) {
   	  Subst sub = subs[i];
-  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, coverage ? sub.getCM() : cm, toolId));
+  	  c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, true, coverage ? cm.getSubst(sub) : cm, toolId));
   	}
   	return this.eval(expr1.getBody(), c1, s0, s1, control, cm);
   }
@@ -3004,7 +3004,7 @@ public abstract class Tool
             Context c1 = c;
             for (int i = 0; i < slen; i++) {
               Subst sub = subs[i];
-              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? sub.getCM() : cm, toolId));
+              c1 = c1.cons(sub.getOp(), this.getVal(sub.getExpr(), c, false, coverage ? cm.getSubst(sub) : cm, toolId));
             }
             return this.enabled(pred1.getBody(), acts, c1, s0, s1, cm);
           }
