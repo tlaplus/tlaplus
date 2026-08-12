@@ -26,6 +26,7 @@
 package tlc2.tool.coverage;
 
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.Subst;
 
 public interface CostModel {
 
@@ -83,6 +84,11 @@ public interface CostModel {
 		}
 		
 		@Override
+		public final CostModel getSubst(final Subst subst) {
+			return this;
+		}
+		
+		@Override
 		public final String toString() {
 			return "DO_NOT_RECORD";
 		}
@@ -122,6 +128,17 @@ public interface CostModel {
 	CostModel get(final SemanticNode sn);
 	
 	CostModel getAndIncrement(final SemanticNode eon);
+	
+	/**
+	 * The CostModel of the expression that the given module instantiation
+	 * substitutes for a parameter, in the scope of this CostModel's root.
+	 * <p>
+	 * A Subst belongs to the semantic graph and is thus shared by every action,
+	 * invariant, and property whose evaluation passes through the instantiation.
+	 * Each of them has its own OpApplNodeWrapper for the substituted expression,
+	 * which is why the lookup starts at the root instead of at the Subst.
+	 */
+	CostModel getSubst(final Subst subst);
 	
 	CostModel getRoot();
 

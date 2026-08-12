@@ -33,6 +33,7 @@ import java.util.Set;
 
 import tla2sany.semantic.OpApplNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.Subst;
 import tla2sany.st.Location;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -154,6 +155,11 @@ public class OpApplNodeWrapper extends CostModelNode implements Comparable<OpApp
 	public CostModelNode getRoot() {
 		assert this.root instanceof ActionWrapper;
 		return this.root;
+	}
+	
+	@Override
+	public CostModel getSubst(final Subst subst) {
+		return getRoot().getSubst(subst);
 	}
 	
 	private final Set<Integer> seen = new HashSet<>();

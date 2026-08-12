@@ -25,8 +25,12 @@
  ******************************************************************************/
 package tlc2.tool.coverage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tla2sany.semantic.LetInNode;
 import tla2sany.semantic.SemanticNode;
+import tla2sany.semantic.Subst;
 import tla2sany.semantic.SubstInNode;
 import tla2sany.st.Location;
 import tlc2.output.EC;
@@ -41,10 +45,29 @@ public final class ActionWrapper extends CostModelNode {
 	
 	private final Action action;
 	private final Relation relation;
+	// The expressions that module instantiations substitute for parameters, in the
+	// scope of this root. Written while the CostModel is created and read-only
+	// afterwards, which is what makes it safe for the workers to share.
+	private final Map<Subst, CostModel> substs = new HashMap<>();
 	
 	public ActionWrapper(final Action action, Relation rel) {
 		this.action = action;
 		this.relation = rel;
+	}
+	
+	void putSubst(final Subst subst, final CostModelNode cmn) {
+		// A root that instantiates the same module more than once visits a Subst more
+		// than once. All but the last wrapper are dropped, as they were when the
+		// CostModel lived on the Subst.
+		this.substs.put(subst, cmn);
+	}
+
+	@Override
+	public CostModel getSubst(final Subst subst) {
+		// A root that never visited the Subst has no wrapper to count into. Returning
+		// this instance instead would add the count of the substituted expression to
+		// the action's own statistics.
+		return this.substs.getOrDefault(subst, DO_NOT_RECORD);
 	}
 	
 	/* (non-Javadoc)
