@@ -65,7 +65,7 @@ public class RecordedSanyOutput implements SanyOutput {
     public String getText() {
       return
           (null == this.stream
-          ? String.format(this.format, this.args)
+          ? 0 == this.args.length ? this.format : String.format(this.format, this.args)
           : this.stream.toString()) + '\n';
     }
 
