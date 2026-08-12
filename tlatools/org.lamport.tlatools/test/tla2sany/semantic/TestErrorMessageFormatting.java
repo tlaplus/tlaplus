@@ -36,13 +36,14 @@ import tla2sany.st.Location;
 
 /**
  * {@link Errors.ErrorDetails#getMessage()} renders a recorded message by
- * passing it to {@link String#format}. Call sites therefore have to keep symbol
- * names taken from the spec out of the format string: TLA⁺'s grammar includes
- * the infix operators % and %%, so a symbol name can look like a format
- * specifier and thereby either crash the parser with
- * {@link java.util.UnknownFormatConversionException} or silently corrupt the
- * message it is shown. Names passed as parameters are safe because
- * {@link String#format} does not scan its arguments.
+ * passing it to {@link String#format} whenever the call site supplied
+ * parameters. Call sites therefore have to keep symbol names taken from the
+ * spec out of the format string: TLA⁺'s grammar includes the infix operators %
+ * and %%, so a symbol name can look like a format specifier and thereby either
+ * crash the parser with {@link java.util.UnknownFormatConversionException} or
+ * silently corrupt the message it is shown. Names passed as parameters are safe
+ * because {@link String#format} does not scan its arguments, and messages
+ * recorded without any parameters are safe because they are rendered verbatim.
  *
  * These reproducers were found while running the standardized TLA⁺ syntax
  * corpus (also present in test/tla2sany/corpus) through SANY as part of the
@@ -87,6 +88,19 @@ public class TestErrorMessageFormatting {
 			found |= error.contains(expected);
 		}
 		Assert.assertTrue("No error mentions " + expected + "; got:\n" + rendered, found);
+	}
+
+	/**
+	 * The {@link Errors} class should record and return message text verbatim; the
+	 * text is not written by the user of the parser and so cannot be expected to
+	 * escape percent signs.
+	 */
+	@Test
+	public void testPercentSignInMessageTextIsNotAFormatSpecifier() {
+		final Errors log = new Errors();
+		final String message = "Couldn't resolve infix operator symbol `%'.";
+		log.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK, Location.nullLoc, message);
+		Assert.assertEquals(message, log.getErrorDetails().get(0).getMessage());
 	}
 
 	/**

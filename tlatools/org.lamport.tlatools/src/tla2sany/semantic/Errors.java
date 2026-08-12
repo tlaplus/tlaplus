@@ -67,7 +67,14 @@ public class Errors {
     }
 
     public String getMessage() {
-      return String.format(this.format, this.parameters);
+      // Callers that name a symbol from the spec pass that name as a
+      // parameter, so it is never scanned for format specifiers; a symbol
+      // named % or %% therefore cannot corrupt the message. Callers with
+      // nothing to interpolate get their text verbatim, which keeps a
+      // percent sign in that text from being read as a specifier too.
+      return 0 == this.parameters.length
+          ? this.format
+          : String.format(this.format, this.parameters);
     }
 
     public List<Object> getParameters() {
@@ -144,7 +151,8 @@ public class Errors {
    *
    * @param code The standardized error code associated with the message.
    * @param loc A spec location associated with the message.
-   * @param format A message into which parameters are interpolated.
+   * @param format A message into which parameters are interpolated; used
+   *               verbatim if no parameters are given.
    * @param parameters A list of standardized values attached to the error.
    * @return An exception which can optionally be thrown by the caller.
    */
