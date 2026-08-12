@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corporation. All rights reserved.
  *
  * The MIT License (MIT)
  * 
@@ -415,7 +416,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
 		
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
-        if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
+        if (Boolean.parseBoolean(System.getProperty(CostModelCreator.class.getName() + ".implied", "true"))) {
     		for (Action impliedInits : tool.getImpliedInits()) {
     			impliedInits.cm = collector.getCM(impliedInits, Relation.PROP);
     		}
@@ -520,7 +521,7 @@ public class CostModelCreator extends ExplorerVisitor {
 		}
         
         // https://github.com/tlaplus/tlaplus/issues/413#issuecomment-577304602
-        if (Boolean.getBoolean(CostModelCreator.class.getName() + ".implied")) {
+        if (Boolean.parseBoolean(System.getProperty(CostModelCreator.class.getName() + ".implied", "true"))) {
     		for (Action impliedInits : tool.getImpliedInits()) {
     			impliedInits.cm.report();
     		}

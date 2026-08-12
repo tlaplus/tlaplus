@@ -1,5 +1,6 @@
 /*******************************************************************************
  * Copyright (c) 2016 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corporation. All rights reserved.
  *
  * The MIT License (MIT)
  * 
@@ -25,8 +26,30 @@
  ******************************************************************************/
 package tlc2.tool.suite;
 
+import static org.junit.Assert.assertFalse;
+
+import tlc2.output.EC;
+
 public class Test56 extends SuiteTestCase {
 	public Test56() {
 		super("9", "6", "0", "3");
+	}
+
+	@Override
+	protected void assertAdditionalCoverage() {
+		assertFalse(recorder.recorded(EC.TLC_COVERAGE_MISMATCH));
+		assertCoverage("<Init line 10, col 1 to line 10, col 4 of module test56>: 3:3\n"
+				+ "  line 10, col 25 to line 10, col 29 of module test56: 3\n"
+				+ "  line 10, col 18 to line 10, col 21 of module test56: 1\n"
+				+ "<Next line 11, col 1 to line 11, col 4 of module test56>: 3:6\n"
+				+ "  line 11, col 9 to line 11, col 16 of module test56: 6\n"
+				+ "<Action line 14, col 15 to line 14, col 33 of module test56>\n"
+				+ "  line 14, col 15 to line 14, col 33 of module test56: 6\n"
+				+ "  |line 14, col 16 to line 14, col 30 of module test56: 6\n"
+				+ "  ||line 14, col 16 to line 14, col 18 of module test56: 6\n"
+				+ "  ||line 14, col 22 to line 14, col 30 of module test56: 6\n"
+				+ "  |||line 8, col 14 to line 8, col 37 of module test56: 6\n"
+				+ "  ||||line 8, col 15 to line 8, col 18 of module test56: 6\n"
+				+ "  ||||line 8, col 24 to line 8, col 37 of module test56: 12");
 	}
 }
