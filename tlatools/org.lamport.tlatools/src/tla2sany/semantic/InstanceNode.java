@@ -250,9 +250,9 @@ public class InstanceNode extends LevelNode {
                     + "The level of the argument %s of the operator %s \n"
                     + "must be at least %s.",
                 module.getName(),
-                j,
+                j + 1,
                 opDef.getName(),
-                plevel);
+                alevel);
             }
             this.levelCorrect = false;
           }
