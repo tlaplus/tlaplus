@@ -121,13 +121,14 @@ public class Linter {
 							&& !allRecords.stream().filter(r -> Records.sameDomain(r, record))
 									.flatMap(r -> getFieldPairs(r).stream())
 									.anyMatch(Linter::isBuiltFromDeclarations)) {
-						errors.addMessage(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, lhs.getLocation(), String
-								.format("The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
+						errors.addMessage(ErrorCode.RECORD_CONSTRUCTOR_FIELD_NAME_CLASH, lhs.getLocation(),
+										"The field name \"%1$s\" in the record constructor is identical to the existing definition or declaration\n"
 										+ "named %1$s, located at %2$s.\n"
 										+ "The field in the record will not take the value of the %1$s definition or declaration.\n"
 										+ "In TLA+, field names in records are strings, regardless of any similarly named declarations or definitions.\n"
-										+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.", lhs.getRep(),
-										s.getLocation()));
+												+ "Therefore, DOMAIN [%1$s |-> ...] = {\"%1$s\"} holds true.",
+										lhs.getRep(),
+										s.getLocation());
 					}
 				}
 			}

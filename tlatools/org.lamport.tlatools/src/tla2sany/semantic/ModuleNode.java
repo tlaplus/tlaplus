@@ -874,8 +874,9 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
             if (curNode.maxLevels[j] < ActionLevel) {
                errors.addMessage(ErrorCode.RECURSIVE_OPERATOR_PRIMES_PARAMETER,
                              curNode.getTreeNode().getLocation(),
-                             "Argument " + (j+1) + " of recursive operator "
-                               + curNode.getName() + " is primed") ;
+                             "Argument %s of recursive operator %s is primed",
+                             (j+1),
+                             curNode.getName());
             } ; // if
            } ; // for j
           maxRecursiveLevel = Math.max(maxRecursiveLevel, curNode.level) ;

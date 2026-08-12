@@ -230,7 +230,8 @@ public class SubstInNode extends ExprNode {
         errors.addMessage(
           ErrorCode.INSTANCE_SUBSTITUTION_SYMBOL_REDEFINED_MULTIPLE_TIMES,
           stn.getLocation(),
-          "Multiple substitutions for symbol '" + lhs.toString() + "' in substitution."
+          "Multiple substitutions for symbol '%s' in substitution.",
+          lhs.toString()
         );
       }
       else {
@@ -295,9 +296,11 @@ public class SubstInNode extends ExprNode {
       if ( j >= this.substs.length ) {
         errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_MISSING_SYMBOL,
 			stn.getLocation(),
-			"Substitution missing for symbol " + opName + " declared at " +
-			decls.elementAt(i).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getName() + "." );
+			"Substitution missing for symbol %s declared at %s \n"
+			    + "and instantiated in module %s.",
+			opName,
+			decls.elementAt(i).getTreeNode().getLocation(),
+			instantiatingModule.getName());
       }
     }
   }

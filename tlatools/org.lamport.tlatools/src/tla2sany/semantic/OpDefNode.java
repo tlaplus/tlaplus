@@ -781,8 +781,9 @@ public class OpDefNode extends OpDefOrDeclNode
             errors.addMessage(
               ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
               loc,
-              "Illegal expression used as argument " + (i+1)
-              + " to operator '" + this.getName() + "'."
+              "Illegal expression used as argument %s to operator '%s'.",
+              (i+1),
+              this.getName()
             );
             result = false;
           }
@@ -790,25 +791,31 @@ public class OpDefNode extends OpDefOrDeclNode
       }
       else  {// null arg vector; supposedly cannot happen
         throw errors.addMessage(ErrorCode.INTERNAL_ERROR,
-                        loc, "Internal error: null args vector for operator '" +
-                        this.getName() + "' that should take variable number of args.");
+                        loc,
+                        "Internal error: null args vector for operator '%s' that should take "
+                            + "variable number of args.",
+                        this.getName());
       }
     }
     else {
       // It is an operator with a fixed number of params (possibly zero)
       if (args == null | params == null) { // args vector should never be null
         throw errors.addMessage(ErrorCode.INTERNAL_ERROR,
-                        loc, "Internal error: Null args or params vector for operator '" +
-                        this.getName() + "'.");
+                        loc,
+                        "Internal error: Null args or params vector for operator '%s'.",
+                        this.getName());
       }
       else { // Normal case: params != null & args != null
         // if the number of args does not match the number of params
         if (params.length != args.length) {
           // Another duplicate arity check.
           errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
-                          loc, "Wrong number of arguments (" + args.length +
-                          ") given to operator '" + this.getName() + "', \nwhich requires " +
-                          params.length + " arguments.");
+                          loc,
+                          "Wrong number of arguments (%s) given to operator '%s', \n"
+                              + "which requires %s arguments.",
+                          args.length,
+                          this.getName(),
+                          params.length);
           result = false;
         }
         else {
@@ -822,9 +829,10 @@ public class OpDefNode extends OpDefOrDeclNode
               if (args[i] instanceof OpArgNode) {
                 // Another duplicate arity check.
                 errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
-                                loc, "Non-expression used as argument number " + (i + 1)
-                                + " to BuiltIn operator '"
-                                + this.getName() + "'.");
+                                loc,
+                                "Non-expression used as argument number %s to BuiltIn operator '%s'.",
+                                (i + 1),
+                                this.getName());
                 result = false;
               }
             }
@@ -837,8 +845,9 @@ public class OpDefNode extends OpDefOrDeclNode
                 if (args[i] instanceof OpArgNode) {
                   // Another duplicate arity check.
                   errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
-                                  loc, "Operator used in argument number " + (i+1)
-                                  + " has incorrect number of arguments.");
+                                  loc,
+                                  "Operator used in argument number %s has incorrect number of arguments.",
+                                  (i+1));
                   result = false;
                 }
               }
@@ -846,15 +855,20 @@ public class OpDefNode extends OpDefOrDeclNode
                 // OpArgNode of correct arity must be passed in this arg position
                 if (! matchingOpArgOperand(args[i],i)) {
                   errors.addMessage(ErrorCode.HIGHER_ORDER_OPERATOR_ARGUMENT_HAS_INCORRECT_ARITY,
-                                  loc, "Argument number " + (i+1) + " to operator '"
-                                  + this.getName() + "' \nshould be a " + params[i].getArity()
-                                  + "-parameter operator.");
+                                  loc,
+                                  "Argument number %s to operator '%s' \n"
+                                      + "should be a %s-parameter operator.",
+                                  (i+1),
+                                  this.getName(),
+                                  params[i].getArity());
                   result = false;
                 }
               } else { // if params[i].getArity() < 0
-                errors.addMessage(ErrorCode.INTERNAL_ERROR, loc,
-                                "Internal error: Operator '" + this.getName() +
-                                "' indicates that it requires \na negative number of arguments.");
+                errors.addMessage(ErrorCode.INTERNAL_ERROR,
+                                loc,
+                                "Internal error: Operator '%s' indicates that it requires \n"
+                                    + "a negative number of arguments.",
+                                this.getName());
               }
             } // end for
           }
