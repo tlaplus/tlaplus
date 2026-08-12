@@ -216,8 +216,9 @@ public class APSubstInNode extends LevelNode {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
         errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
-			stn.getLocation(), "Multiple substitutions for symbol '" +
-			lhs.toString() + "' in substitution.");
+			stn.getLocation(),
+			"Multiple substitutions for symbol '%s' in substitution.",
+			lhs.toString());
       }
       else {
 	// if it is an implicit subst, then replacing it with an
@@ -258,7 +259,8 @@ public class APSubstInNode extends LevelNode {
       else {
         errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 			stn.getLocation(),
-			"Illegal identifier '" + lhs + "' in LHS of substitution." );
+			"Illegal identifier '%s' in LHS of substitution.",
+			lhs);
       }
     }
   }
@@ -286,9 +288,11 @@ public class APSubstInNode extends LevelNode {
       if ( j >= this.substs.length ) {
         errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 			stn.getLocation(),
-			"Substitution missing for symbol " + opName + " declared at " +
-			decls.elementAt(i).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getName() + "." );
+			"Substitution missing for symbol %s declared at %s \n"
+			    + "and instantiated in module %s.",
+			opName,
+			decls.elementAt(i).getTreeNode().getLocation(),
+			instantiatingModule.getName());
       }
     }
   }
