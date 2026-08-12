@@ -422,7 +422,7 @@ public class Context implements ExploreNode {
 									ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_CONFLICT,
 									sn.getTreeNode().getLocation(),
 									"The %s of '%s' conflicts with \nits %s at %s.",
-									kindOfNode(symbol),
+									kindOfNode(sn),
 									sName.toString(),
 									kindOfNode(symbol),
 									symbol.getTreeNode().getLocation());
