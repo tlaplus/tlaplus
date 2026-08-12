@@ -59,7 +59,7 @@ public class SimpleSanyOutput implements SanyOutput {
 
   @Override
   public void log(LogLevel level, String format, Object... args) {
-    this.getStream(level).println(String.format(format, args));
+    this.getStream(level).println(0 == args.length ? format : String.format(format, args));
   }
 
   @Override
