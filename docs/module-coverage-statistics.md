@@ -58,7 +58,7 @@ End of statistics.
 Each block of coverage statistics corresponds to either a variable declaration, a definition (like `Init`, `Inc`, or `Dec`), or an expression inside the definition.
 
 ### Variable Declaration:
-The line `<x line 4, col 11 to line 4, col 11 of module Foobar>:10` indicates that TLC found 10 distinct values for the (declared) variable `x`.
+The line `<x line 4, col 11 to line 4, col 11 of module Foobar>: 10` indicates that TLC found 10 distinct values for the (declared) variable `x`.
 
 ### State-level expressions (`Init`):
 
@@ -97,6 +97,7 @@ Spec ==
     Init /\ [][Next]_x
 
 =====
+```
 
 ```
 The coverage statistics at 2025-04-02 18:28:21
@@ -118,4 +119,54 @@ This tells us:
 
 The sub-expression `({Cardinality(x) + 1})` was evaluated 10 times, and TLC incurred an allocation cost of 18 across those 10 evaluations. This cost represents internal overhead, such as memory allocation or structural copying involved in creating the new set value.
 
-These costs can highlight performance hotspots in your specification—helpful for optimizing large models where memory usage or computational effort may become significant.
+These costs can highlight performance hotspots in your specification—helpful for optimizing large models where memory usage or computational effort may become significant. High costs typically come from `SUBSET S`, function sets `[A -> B]`, set comprehensions, `Cardinality`, and quantification over large sets. Cost measures the work per step rather than the number of states, but the two usually travel together, because the expression that enumerates a large set is often also the one that produces many successors.
+
+## Using Coverage as a Diagnosis
+
+Coverage is a profiling tool: it identifies expensive formulas and sources of state-space explosion. It is not structural or source coverage of the kind used with programming languages.
+
+TLA+ is a state-based formalism. There is no program counter, and a formula is not a statement that executes. TLC records how often it evaluated a formula while generating and checking states. Statement, branch, or MC/DC coverage would be a different concept, not a more detailed form of this report.
+
+### Reading variable coverage
+
+The number of distinct values per variable is the most direct handle on the size of the state space, since the product of these numbers bounds it. Read the report looking for outliers.
+
+A variable with significantly more values than the others is usually what drives state space explosion. The usual offenders are history variables and logs that only grow, unbounded counters, and message queues or sequences that accumulate duplicates. Ask whether anything in the invariants and properties actually observes the variable, whether a sequence can be replaced by a set or a counter, and whether a `CONSTRAINT` should bound it.
+
+A variable with suspiciously *few* values deserves attention as well. A counter that never gets past 1 usually means the constants are too small or that some behavior is unreachable.
+
+### Reading expression coverage
+
+The indented lines beneath a definition report how often TLC evaluated each subexpression and, where the evaluation allocated, at what cost. Neither number is elapsed time; together they locate the subexpression that accounts for most of the work in that definition.
+
+| Pattern                                                     | Reading                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Evaluated far more often than the expression containing it  | The expression sits inside an enumeration (`\E`, `\A`, a set comprehension, `CHOOSE`) and is re-evaluated per element. If it does not depend on the bound identifier, lift it out of the enumeration, into a `LET` above it or a separate definition. |
+| Counts dropping from one conjunct to the next               | TLC evaluates a conjunct list in order and stops at the first `FALSE`, so the drop marks the selective conjunct. Put the cheapest and most selective conjuncts first, so that expensive ones are reached less often.                                 |
+| Cost much larger than the number of evaluations             | The expression allocates on every evaluation. Enumerating `SUBSET S` or `[A -> B]` to pick one element is the usual case; construct the element directly instead, or shrink the set it ranges over.                                                  |
+
+Before rewriting an expensive operator by hand, check whether the [CommunityModules](https://modules.tlapl.us) already define it. They collect operators that recur across specifications, and a number of them come with Java module overrides. An override is not merely a constant-factor speedup: where the TLA+ definition has to be written constructively and TLC therefore enumerates, the Java implementation can use an algorithm of lower complexity.
+
+### Reading action coverage
+
+Recall that next-state actions print `distinct:generated`.
+
+| Pattern                                                     | Reading                                                                                                                                                                                                                                             |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Large first number                                          | This action is a main source of distinct states; effort spent constraining it shrinks the state space.                                                                                                                                              |
+| First number much smaller than the second (including `0:N`) | Most generated successors were already in the state space. That costs time, not memory, and it is expected of an action that mostly leads back to states other actions already reach. It is a correctness issue only if you expected the action to add distinct states. |
+| Both numbers 0                                              | The action never produced a successor. Look at its subexpressions: non-zero counts mean TLC tried it and found it disabled; zeros throughout suggest it is unreachable or not a disjunct of the next-state relation.                                 |
+| Many actions each with a large first number                 | A genuine interleaving explosion. Consider coarsening atomicity, that is, merging steps whose interleaving no invariant or property can observe.                                                                                                     |
+
+A large number of initial states is easy to overlook, and it is a common reason for a state space that is already large before model checking begins. The first number of the `Init` entry reports that count (`Init` uses a related but not identical pair of counters to next-state actions).
+
+### Coverage is not free
+
+TLC collects coverage in a way that Java's just-in-time compiler can eliminate entirely when it is disabled, so enabling it costs real throughput. TLC says as much when it finishes:
+
+```
+End of statistics (please note that for performance reasons large models
+are best checked with coverage and cost statistics disabled).
+```
+
+Use coverage on short diagnostic runs, and turn it off for the long production run.
