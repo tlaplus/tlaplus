@@ -170,3 +170,84 @@ are best checked with coverage and cost statistics disabled).
 ```
 
 Use coverage on short diagnostic runs, and turn it off for the long production run.
+
+Most of that overhead comes from counting every subexpression evaluation. If the numbers you are after are the per-action, per-init, and per-variable ones, there is a middle ground: the system property `-Dtlc2.TLCGlobals.coverage=N` maintains those counters alone, and leaves them to be read from within the specification rather than printed. See *Advantages and limitations of `TLCGet("spec").actions`* below.
+
+## Coverage data in `TLCGet("spec")`
+
+The coverage report above is written for a human reader, and its custom format takes some work to parse. Part of the same data is also available to the specification itself. `TLCGet("spec")` returns a record describing the elements of the specification TLC is checking, and when coverage collection is enabled, most of those elements carry an extra `coverage` field holding the counters TLC kept for them.
+
+Evaluate it from a `POSTCONDITION`, where the counters have reached their final values. For the `Foobar` module above, with `TLC` added to its `EXTENDS`,
+
+```tla
+PostCondition ==
+    PrintT(TLCGet("spec").actions)
+```
+
+together with `POSTCONDITION PostCondition` in the configuration file, prints
+
+```tla
+{ [ coverage |-> [generated |-> 9, distinct |-> 0],
+    name |-> "Dec",
+    location |->
+        [ beginLine |-> 15,
+          beginColumn |-> 5,
+          endLine |-> 17,
+          endColumn |-> 17,
+          module |-> "Foobar" ] ],
+  [ coverage |-> [generated |-> 10, distinct |-> 10],
+    name |-> "Inc",
+    location |->
+        [ beginLine |-> 10,
+          beginColumn |-> 5,
+          endLine |-> 12,
+          endColumn |-> 17,
+          module |-> "Foobar" ] ] }
+```
+
+Besides `actions`, the record has the fields `inits`, `invariants`, `temporals`, `impliedinits`, `impliedactions`, `impliedtemporals`, `constraints`, `actionconstraints`, and `variables`. Each is a set of records carrying a `name` and a `location`, plus a `coverage` for the kinds TLC keeps counters for
+
+### Advantages and limitations of `TLCGet("spec").actions`
+
+The record exposes the header line of each block of the report, and only the header line:
+
+| Field | `coverage` | What the counter is |
+| ----- | ---------- | ------------------- |
+| `inits`, `actions` | `generated`, `distinct` | The `distinct:generated` pair the header line prints |
+| `invariants`, `impliedinits`, `impliedactions` | `count` | How often the body was evaluated, read off one of its subexpressions, chosen arbitrarily if there are several. The header line itself prints no number |
+| `variables` | `distinct` | The number of distinct values of the declared variable |
+
+What the record adds:
+
+**Parameters of a sub-action.** `Step(self)` with `self \in {1, 2, 3}` yields one element per context, each with a `context` field (`[self |-> 1]`) and a `parameters` field (`<<"self">>`), where the report prints a single block for all three.
+
+**Names for implied initial predicates and implied actions.** The report labels them with the generic `<Action ...>`; the records carry the name of the `PROPERTY` they come from.
+
+**Counters without a report.** `-coverage N` fills in every field above, but also prints the report every `N` minutes. The system property `-Dtlc2.TLCGlobals.coverage=3` maintains the counters and prints nothing; bit 1 enables the action and init counters, bit 2 the variable ones. An invariant's `count` stays 0, since subexpression counters are maintained under `-coverage` alone. Note that `-coverage 0` does not suppress the report either: the value is an interval in minutes, and 0 makes TLC print at every progress interval.
+
+Where the record falls short:
+
+**No subexpression counts and no costs.** The indented lines have no counterpart, which rules out the diagnoses described above: an invariant that holds vacuously in every state and one that is evaluated in full report the same `count`. The `evaluations:cost` pair belongs to a subexpression and is not exposed either.
+
+**No counters for constraints or temporal formulas.** Elements of `constraints` and `actionconstraints` carry `name` and `location` only, although the report does print a `distinct:generated` pair for each `CONSTRAINT` and `ACTION_CONSTRAINT`. Temporal formulas have no counters in either rendering, because liveness is not checked by evaluating a formula once per state.
+
+**Counters are per definition, not per context.** All contexts of `Step(self)` share one cost model and report the same totals, so summing `coverage.generated` over `actions` counts each evaluation once per parameter value.
+
+**Locations point at the body, not at the name.** The report prints `<Inc line 9, col 1 to line 9, col 3 of module Foobar>`, the location of the name; the record gives lines 10 to 12, the location of the body. The two renderings cannot be matched up by location.
+
+**Counts above 2^31-1 come out as -1.** TLC's integers are 32 bit, and a count that does not fit is replaced silently rather than reported as an error. Counts of that size are ordinary on a model large enough to be worth profiling.
+
+**In simulation mode, `distinct` is meaningless.** An action reports `distinct` equal to `generated`, a variable reports 0.
+
+Finally, mind where you call `TLCGet("spec")`. In a `POSTCONDITION` the workers have finished and the numbers are final; in an invariant or a constraint it is a snapshot taken while the workers count, so the numbers race with evaluation and need not be consistent with one another.
+
+### Serializing the data
+
+Since this is an ordinary TLA+ value, any operator that accepts a value can consume it, and the format is the user's choice. `PrintT` above writes the value in TLA+ syntax, which is already machine-readable and can be pasted back into a specification. The `Json` module is one alternative among several: `Json!ToJson` converts a value to a JSON string, `Json!JsonSerialize` writes a tuple of values to a file as JSON, and `Json!ndJsonSerialize` writes newline-delimited JSON. Replacing the `PostCondition` above with
+
+```tla
+PostCondition ==
+    JsonSerialize("coverage.json", <<TLCGet("spec")>>)
+```
+
+writes the whole record to `coverage.json`. Records become JSON objects, and sets and tuples become JSON arrays. Since `JsonSerialize` takes a tuple of values, the file holds an array whose single element is the record. The Community Modules add further serialization operators, and because the coverage data is a plain record you can also compute a format of your own in TLA+ before writing it out.
