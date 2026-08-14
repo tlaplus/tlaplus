@@ -21,6 +21,7 @@ public class StatePoolWriter extends Thread {
     private TLCState[] buf;     
     private File poolFile;           // the file to be written
     private StatePoolReader reader;  // the consumer if not null
+    private boolean finished;
 
     
   public StatePoolWriter(int bufSize) {
@@ -32,6 +33,7 @@ public class StatePoolWriter extends Thread {
     this.buf = new TLCState[bufSize];
     this.poolFile = null;
     this.reader = reader;
+    this.finished = false;
   }
 
   /*
@@ -96,6 +98,11 @@ public class StatePoolWriter extends Thread {
     }
   }
 
+  public final synchronized void setFinished() {
+    this.finished = true;
+    this.notifyAll();
+  }
+
   /**
    * Write "buf" to "poolFile". The objects in the queue are written
    * using Java's object serialization facilities.
@@ -105,11 +112,10 @@ public class StatePoolWriter extends Thread {
       synchronized(this) {
 	while (true) {
 	  while (this.poolFile == null) {
-	    this.wait();
-	    // we are done without ever receiving a pool file
-	    if(this.poolFile == null) {
-	    	return;
+	    if (this.finished) {
+	      return;
 	    }
+	    this.wait();
 	  }
 	  ValueOutputStream vos = new ValueOutputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {
