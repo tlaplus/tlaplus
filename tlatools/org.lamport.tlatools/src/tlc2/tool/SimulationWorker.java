@@ -234,21 +234,26 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		private final LongAdder numOfGenStates;
 		private final AtomicLong numOfGenTraces;
 		
-		private final AtomicLong welfordM2AndMean;
+		// Per-worker local Welford state for computing trace length statistics.
+		// Each worker maintains its own n, mean, and M2; these are combined at
+		// reporting time using Welford's parallel/partitioned algorithm.
+		// This avoids the concurrency bug where the shared AtomicLong approach
+		// diverged from numOfGenTraces at high worker counts (e.g. 128 cores).
+		// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm
+		private volatile long localN;
+		private volatile double localMean;
+		private volatile double localM2;
 		
 		// Adjacency Matrix with link weights.
 		final long[][] actionStats;
 
 		public SimulationWorkerStatistics(final String traceActions, final LongAdder numOfGenStates,
-				final AtomicLong numOfGenTraces, final AtomicLong m2AndMean) {
+				final AtomicLong numOfGenTraces) {
 			this.traceActions = traceActions;
 			
 			// Cheap (constant): Aggregated statistics about the number of generated states and traces.
 			this.numOfGenStates = numOfGenStates;
 			this.numOfGenTraces = numOfGenTraces;
-			
-			// Cheap (constant): Aggregated statistics about the average length, SD, ... about the traces.
-			this.welfordM2AndMean = m2AndMean;
 
 			// Moderate (quadratic in the number of actions): 
 			if (traceActions != null) {
@@ -280,23 +285,35 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			//no-op
 		}
 
-		public void collectPostTrace(final TLCState s) {
+		public synchronized void collectPostTrace(final TLCState s) {
 			// Take the minimum of maxTraceDepth and getLevel here because - historically -
 			// the for loop above would add the chosen next-state from loop N in loop N+1.
 			// Thus, the final state that is generated before traceCnt = maxTraceDepth,
 			// wasn't getting added to the stateVec (check git history) whose length was
-			// passed to welfordM2AndMean.
-			welfordM2AndMean.accumulateAndGet(Math.min(maxTraceDepth, s.getLevel()), (acc, tl) -> {
-				// Welford's online algorithm (m2 and mean stuffed into high and low of the
-				// atomiclong because welfordM2AndMean is updated concurrently by multiple workers).
-				// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-				int mean = (int) (acc & 0x00000000FFFFFFFFL);
-				long m2 = acc >>> 32;
-				final long delta = tl - mean;
-				mean += delta / Math.max(numOfGenTraces.longValue(), 1); // max(..., 1) to prevent div-by-zero
-				m2 += delta * (tl - mean);
-				return m2 << 32 | (mean & 0xFFFFFFFFL);
-			});
+			// passed to the Welford update.
+			final long tl = Math.min(maxTraceDepth, s.getLevel());
+			// Welford's online algorithm (single-threaded, per-worker).
+			// https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+			localN++;
+			final double delta = tl - localMean;
+			localMean += delta / localN;
+			final double delta2 = tl - localMean;
+			localM2 += delta * delta2;
+		}
+		
+		/** Returns the number of traces this worker has incorporated into its Welford state. */
+		public long getLocalN() {
+			return localN;
+		}
+		
+		/** Returns this worker's local running mean of trace lengths. */
+		public double getLocalMean() {
+			return localMean;
+		}
+		
+		/** Returns this worker's local M2 (sum of squared deviations from the mean). */
+		public double getLocalM2() {
+			return localM2;
 		}
 		
 		//*************************** Reporting **************************//
@@ -356,8 +373,8 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		 * fingerprinting of values and states is really expensive.
 		 */
 		public ExtendedSimulationWorkerStatistics(String traceActions, LongAdder numOfGenStates,
-				AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
-			super(traceActions, numOfGenStates, numOfGenTraces, m2AndMean);
+				AtomicLong numOfGenTraces) {
+			super(traceActions, numOfGenStates, numOfGenTraces);
 			
 			// Prob: Cheap (constant) in space.
 			// Naive: Expensive (linear) in space, i.e., number of states.
@@ -434,12 +451,12 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			long seed, int maxTraceDepth, long maxTraceNum, boolean checkDeadlock, String traceFile,
 			ILiveCheck liveCheck) {
 		this(id, tool, resultQueue, seed, maxTraceDepth, maxTraceNum, null, checkDeadlock, traceFile, liveCheck,
-				new LongAdder(), new AtomicLong(), new AtomicLong());
+				new LongAdder(), new AtomicLong());
 	}
 
 	public SimulationWorker(int id, ITool tool, BlockingQueue<SimulationWorkerResult> resultQueue,
 			long seed, int maxTraceDepth, long maxTraceNum, String traceActions, boolean checkDeadlock, String traceFile,
-			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces, AtomicLong m2AndMean) {
+			ILiveCheck liveCheck, LongAdder numOfGenStates, AtomicLong numOfGenTraces) {
 		super(id);
 		this.localRng = new RandomGenerator(seed);
 		this.tool = tool;
@@ -450,8 +467,23 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		this.traceFile = traceFile;
 		this.liveCheck = liveCheck;
 		this.statistics = Simulator.EXTENDED_STATISTICS
-				? new ExtendedSimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces, m2AndMean)
-				: new SimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces, m2AndMean);
+				? new ExtendedSimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces)
+				: new SimulationWorkerStatistics(traceActions, numOfGenStates, numOfGenTraces);
+	}
+
+	/** Returns the number of traces this worker has incorporated into its Welford state. */
+	public long getLocalN() {
+		return statistics.getLocalN();
+	}
+
+	/** Returns this worker's local running mean of trace lengths. */
+	public double getLocalMean() {
+		return statistics.getLocalMean();
+	}
+
+	/** Returns this worker's local M2 (sum of squared deviations from the mean). */
+	public double getLocalM2() {
+		return statistics.getLocalM2();
 	}
 	
 	/**
