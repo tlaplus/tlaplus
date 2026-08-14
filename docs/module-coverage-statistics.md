@@ -205,7 +205,9 @@ together with `POSTCONDITION PostCondition` in the configuration file, prints
           module |-> "Foobar" ] ] }
 ```
 
-Besides `actions`, the record has the fields `inits`, `invariants`, `temporals`, `impliedinits`, `impliedactions`, `impliedtemporals`, `constraints`, `actionconstraints`, and `variables`. Each is a set of records carrying a `name` and a `location`, plus a `coverage` for the kinds TLC keeps counters for
+Besides `actions`, the record has the fields `inits`, `invariants`, `temporals`, `impliedinits`, `impliedactions`, `impliedtemporals`, `constraints`, `actionconstraints`, and `variables`. Each is a set of records carrying a `name` and a `location`, plus a `coverage` for the kinds TLC keeps counters for.
+
+Note: The `implied` fields come from refinement checking, where a `PROPERTY` is itself a specification: `PROPERTY ASpec` with `ASpec == AInit /\ [][ANext]_vars` asks whether the specification under `SPECIFICATION` implies `ASpec`. TLC decomposes such a property by level, so `AInit` is an element of `impliedinits`, evaluated on every initial state, `[][ANext]_vars` is an element of `impliedactions`, evaluated on every step, and any temporal conjunct is an element of `impliedtemporals`, which the liveness algorithm checks against the fairness conditions in `temporals`.
 
 ### Advantages and limitations of `TLCGet("spec").actions`
 
