@@ -773,8 +773,10 @@ public class Simulator {
 				long l = aggregateActionStats[i][j];
 				if (l > 0L) {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
-					// write a gazillion decimal places truncated by graphviz anyway).
-					final double loglogWeight = Math.log10(Math.log10(l+1)); // +1 to prevent negative inf.
+					// write a gazillion decimal places truncated by graphviz anyway). The inner +1
+					// prevents negative inf and the outer one keeps the weight positive, because a
+					// weight of zero marks an arc as unseen and a negative penwidth is invalid.
+					final double loglogWeight = Math.log10(Math.log10(l + 1) + 1);
 					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
 							.doubleValue());
@@ -851,8 +853,10 @@ public class Simulator {
 				long l = reducedAggregateActionStats[i][j];
 				if (l > 0L) {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
-					// write a gazillion decimal places truncated by graphviz anyway).
-					final double loglogWeight = Math.abs(Math.log10(Math.log10(l + 1))); // +1 to prevent negative inf.
+					// write a gazillion decimal places truncated by graphviz anyway). The inner +1
+					// prevents negative inf and the outer one keeps the weight positive, because a
+					// weight of zero marks an arc as unseen and a negative penwidth is invalid.
+					final double loglogWeight = Math.log10(Math.log10(l + 1) + 1);
 					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP).doubleValue());
 				} else if (!idToAction.get(j).isInitPredicate()) {
