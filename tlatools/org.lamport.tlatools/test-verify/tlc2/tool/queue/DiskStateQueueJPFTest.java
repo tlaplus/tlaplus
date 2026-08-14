@@ -50,31 +50,6 @@ public class DiskStateQueueJPFTest extends TestJPF {
 
 	private static final int ENQUEUES = BUF_SIZE + 1;
 
-	private static final class SpillAndDrainTask implements Runnable {
-
-		private final DiskStateQueue queue;
-		private final TLCState[] states;
-
-		private SpillAndDrainTask(final DiskStateQueue queue, final TLCState[] states) {
-			this.queue = queue;
-			this.states = states;
-		}
-
-		@Override
-		public void run() {
-			final TLCState state = this.queue.sDequeue();
-			if (state == null) {
-				this.queue.finishAll();
-				return;
-			}
-			this.queue.sEnqueue(this.states);
-			// Force the spill to complete before shutdown, excluding the independent
-			// lost-shutdown-notification counterexample.
-			this.queue.sDequeue();
-			this.queue.finishAll();
-		}
-	}
-
 	private static final class DistinctDummyTLCState extends DummyTLCState {
 
 		private DistinctDummyTLCState() {
@@ -94,7 +69,7 @@ public class DiskStateQueueJPFTest extends TestJPF {
 
 	@Test
 	public void testDeadlockFreedom() throws InterruptedException {
-		if (verifyDeadlock("+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
+		if (verifyNoPropertyViolation("+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
 				// Avoid choices when references are first published; monitor synchronization remains explored.
 				"+vm.shared.break_on_exposure=false",
 				"+test.report.console.finished=result,statistics,error")) {
@@ -115,7 +90,7 @@ public class DiskStateQueueJPFTest extends TestJPF {
 				states[i] = new DistinctDummyTLCState(i + 1L);
 			}
 			for (int i = 0; i < WORKERS; i++) {
-				threads.add(new Thread(new SpillAndDrainTask(queue, states), "Worker" + i));
+				threads.add(new Thread(new WorkerTask(1, queue, states), "Worker" + i));
 			}
 			threads.add(new Thread(new MainTask(queue), "Suspend"));
 			for (final Thread thread : threads) {

@@ -231,9 +231,7 @@ public class DiskStateQueue extends StateQueue {
 
 	public void finishAll() {
 		super.finishAll();
-		synchronized (this.writer) {
-			this.writer.notifyAll();
-		}
+		this.writer.setFinished();
 		synchronized (this.reader) {
 			this.reader.setFinished();
 			this.reader.notifyAll();
