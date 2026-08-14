@@ -712,12 +712,74 @@ public class Simulator {
 			writeActionFlowGraphFull();
 		}
 	}
-	
-	private void writeActionFlowGraphFull() throws IOException {		
+
+	private static final class ActionFlowGraphSnapshot {
+		private final Action[] actions;
+		private final long[][] actionStats;
+
+		private ActionFlowGraphSnapshot(final Action[] actions, final long[][] actionStats) {
+			this.actions = actions;
+			this.actionStats = actionStats;
+		}
+	}
+
+	private enum ActionContexts { KEEP, REDUCE }
+
+	private ActionFlowGraphSnapshot getActionFlowGraphSnapshot(final ActionContexts contexts) {
 		// The number of actions is expected to be low (dozens commons and hundreds are
 		// rare). This is why the code below isn't optimized for performance.
-		final Vect<Action> initAndNext = tool.getSpecActions();
-		final int len = initAndNext.size();
+		final Vect<Action> specActions = tool.getSpecActions();
+		final int len = specActions.size();
+		final Action[] actions = new Action[len];
+		for (int i = 0; i < len; i++) {
+			actions[i] = specActions.elementAt(i);
+		}
+
+		// Element-wise sum the statistics from all workers.
+		final long[][] aggregateActionStats = new long[len][len];
+		for (SimulationWorker sw : this.workers) {
+			final long[][] workerStats = sw.statistics.actionStats;
+			for (int i = 0; i < len; i++) {
+				for (int j = 0; j < len; j++) {
+					aggregateActionStats[i][j] += workerStats[i][j];
+				}
+			}
+		}
+
+		if (contexts == ActionContexts.KEEP) {
+			return new ActionFlowGraphSnapshot(actions, aggregateActionStats);
+		}
+
+		// Reduce contexts of the same action definition to one vertex.
+		final List<Action> reducedActions = new ArrayList<>();
+		final Map<Location, Integer> actionToId = new HashMap<>();
+		final int[] actionsToDistinctActions = new int[len];
+		for (Action action : actions) {
+			Integer id = actionToId.get(action.getDefinition());
+			if (id == null) {
+				id = reducedActions.size();
+				actionToId.put(action.getDefinition(), id);
+				reducedActions.add(action);
+			}
+			actionsToDistinctActions[action.getId()] = id;
+		}
+
+		final long[][] reducedActionStats = new long[reducedActions.size()][reducedActions.size()];
+		for (int i = 0; i < len; i++) {
+			final int originActionId = actionsToDistinctActions[i];
+			for (int j = 0; j < len; j++) {
+				final int nextActionId = actionsToDistinctActions[j];
+				reducedActionStats[originActionId][nextActionId] += aggregateActionStats[i][j];
+			}
+		}
+
+		return new ActionFlowGraphSnapshot(reducedActions.toArray(new Action[reducedActions.size()]),
+				reducedActionStats);
+	}
+	
+	private void writeActionFlowGraphFull() throws IOException {		
+		final ActionFlowGraphSnapshot snapshot = getActionFlowGraphSnapshot(ActionContexts.KEEP);
+		final int len = snapshot.actions.length;
 		
 		// Clusters of actions that have the same context:
 		// CONSTANT Proc
@@ -726,7 +788,7 @@ public class Simulator {
 		// Next == \E p \in Proc : A(p)
 		final Map<String, Set<Integer>> clusters = new HashMap<>();
 		for (int i = 0; i < len; i++) {
-			final String con = initAndNext.elementAt(i).con.toString();
+			final String con = snapshot.actions[i].con.toString();
 			if (!clusters.containsKey(con)) {
 				clusters.put(con, new HashSet<>());	
 			}
@@ -743,34 +805,15 @@ public class Simulator {
 			
 			final Set<Integer> ids = cluster.getValue();
 			for (Integer id : ids) {
-				dotActionWriter.write(initAndNext.elementAt(id), id);
+				dotActionWriter.write(snapshot.actions[id], id);
 			}
 			dotActionWriter.writeSubGraphEnd();
 		}					
-		
-		// Element-wise sum the statistics from all workers.
-		long[][] aggregateActionStats = new long[len][len];
-		final List<SimulationWorker> workers = Simulator.this.workers;
-		for (SimulationWorker sw : workers) {
-			final long[][] s = sw.statistics.actionStats;
-			for (int i = 0; i < len; i++) {
-				for (int j = 0; j < len; j++) {
-					aggregateActionStats[i][j] += s[i][j];
-				}
-			}
-		}
-		
-		// Create a map from id to action name.
-		final Map<Integer, Action> idToActionName = new HashMap<>();
-		for (int i = 0; i < initAndNext.size(); i++) {
-			Action action = initAndNext.elementAt(i);
-			idToActionName.put(action.getId(), action);
-		}
 
 		// Write stats to dot file as edges between the action vertices.
 		for (int i = 0; i < len; i++) {
 			for (int j = 0; j < len; j++) {
-				long l = aggregateActionStats[i][j];
+				long l = snapshot.actionStats[i][j];
 				if (l > 0L) {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
 					// write a gazillion decimal places truncated by graphviz anyway). The inner +1
@@ -780,7 +823,7 @@ public class Simulator {
 					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP)
 							.doubleValue());
-				} else if (!idToActionName.get(j).isInitPredicate()) {
+				} else if (!snapshot.actions[j].isInitPredicate()) {
 					// Only draw an unseen arc if the sink is not an initial prediate.
 					dotActionWriter.write(i, j);
 				}
@@ -792,65 +835,22 @@ public class Simulator {
 	}
 
 	private void writeActionFlowGraphBasic() throws IOException {
-		// The number of actions is expected to be low (dozens commons and hundreds a
-		// rare). This is why the code below isn't optimized for performance.
-		final Vect<Action> initAndNext = tool.getSpecActions();
-		final int len = initAndNext.size();
-		
-		// Element-wise sum the statistics from all workers.
-		long[][] aggregateActionStats = new long[len][len];
-		final List<SimulationWorker> workers = Simulator.this.workers;
-		for (SimulationWorker sw : workers) {
-			final long[][] s = sw.statistics.actionStats;
-			for (int i = 0; i < len; i++) {
-				for (int j = 0; j < len; j++) {
-					aggregateActionStats[i][j] += s[i][j];
-				}
-			}
-		}
-		
-		// Create mappings from distinct ids to action ids and name.
-		final Map<Integer, Action> idToAction = new HashMap<>();
-		final Map<Location, Integer> actionToId = new HashMap<>();
-		for (int i = 0; i < initAndNext.size(); i++) {
-			final Action action = initAndNext.elementAt(i);
-			
-			if (!actionToId.containsKey(action.getDefinition())) {
-				int id = idToAction.size();
-				idToAction.put(id, action);
-				actionToId.put(action.getDefinition(), id);
-			}
-		}
-		final Map<Integer, Integer> actionsToDistinctActions = new HashMap<>();
-		for (int i = 0; i < initAndNext.size(); i++) {
-			final Action action = initAndNext.elementAt(i);
-			actionsToDistinctActions.put(action.getId(), actionToId.get(action.getDefinition()));
-		}
+		final ActionFlowGraphSnapshot snapshot = getActionFlowGraphSnapshot(ActionContexts.REDUCE);
+		final int len = snapshot.actions.length;
 		
 		// Override previous basic file.
 		final DotActionWriter dotActionWriter = new DotActionWriter(
 				Simulator.this.tool.getRootName() + "_actions.dot", "");
 
 		// Identify actions in the dot file.
-		idToAction.forEach((id, a) -> dotActionWriter.write(a, id));
-		
-		// Having the aggregated action stats, reduce it to account for only
-		// the distinct action names.
-		long[][] reducedAggregateActionStats = new long[idToAction.size()][idToAction.size()];
 		for (int i = 0; i < len; i++) {
-			// Find origin id.
-			final int originActionId = actionsToDistinctActions.get(i);
-			for (int j = 0; j < len; j++) {
-				// Find next id.
-				final int nextActionId = actionsToDistinctActions.get(j);
-				reducedAggregateActionStats[originActionId][nextActionId] += aggregateActionStats[i][j];
-			}
+			dotActionWriter.write(snapshot.actions[i], i);
 		}
 
 		// Write stats to dot file as edges between the action vertices.
-		for (int i = 0; i < idToAction.size(); i++) {
-			for (int j = 0; j < idToAction.size(); j++) {
-				long l = reducedAggregateActionStats[i][j];
+		for (int i = 0; i < len; i++) {
+			for (int j = 0; j < len; j++) {
+				long l = snapshot.actionStats[i][j];
 				if (l > 0L) {
 					// LogLog l (to keep the graph readable) and round to two decimal places (to not
 					// write a gazillion decimal places truncated by graphviz anyway). The inner +1
@@ -859,7 +859,7 @@ public class Simulator {
 					final double loglogWeight = Math.log10(Math.log10(l + 1) + 1);
 					dotActionWriter.write(i, j,
 							BigDecimal.valueOf(loglogWeight).setScale(2, RoundingMode.HALF_UP).doubleValue());
-				} else if (!idToAction.get(j).isInitPredicate()) {
+				} else if (!snapshot.actions[j].isInitPredicate()) {
 					// Only draw an unseen arc if the sink is not an initial prediate.
 					dotActionWriter.write(i, j);
 				}
