@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Sat 23 February 2008 at 10:12:59 PST by lamport
 //      modified on Fri Aug 10 15:07:36 PDT 2001 by yuanyu
@@ -40,7 +41,7 @@ implements Enumerable, Reducible {
 		        if (cmp != 0) {
 					return cmp;
 				}
-				if (this.size() == 0) {
+				if (this.isEmpty()) {
 					// empty intervals are equal, regardless of the low value
 					return 0;
 				}
@@ -59,7 +60,7 @@ implements Enumerable, Reducible {
     try {
       if (obj instanceof IntervalValue) {
         IntervalValue intv = (IntervalValue)obj;
-        if (this.size() == 0) return intv.size() == 0;
+        if (this.isEmpty()) return intv.isEmpty();
         return (this.low == intv.low) && (this.high == intv.high);
       }
       // Well, we have to convert them to sets and compare.
@@ -111,6 +112,11 @@ implements Enumerable, Reducible {
 
   @Override
   public final boolean isFinite() { return true; }
+
+  @Override
+  public boolean isEmpty() {
+    return this.high < this.low;
+  }
 
   @Override
   public final int size() {
@@ -183,7 +189,7 @@ implements Enumerable, Reducible {
   @Override
   public final Value cup(Value set) {
     try {
-      if (this.size() == 0) return set;
+      if (this.isEmpty()) return set;
 
       if (set instanceof Reducible) {
         ValueVec cupElems = new ValueVec();

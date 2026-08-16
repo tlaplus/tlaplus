@@ -1,6 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
-// Copyright (c) 2021, Oracle and/or its affiliates.
+// Copyright (c) 2021, 2025, Oracle and/or its affiliates.
 // Last modified on Wed 12 Jul 2017 at 16:10:00 PST by ian morris nieves
 //      modified on Mon 30 Apr 2007 at 13:46:07 PST by lamport
 //      modified on Fri Aug 10 15:10:16 PDT 2001 by yuanyu
@@ -156,6 +156,12 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
+  }
+
+  @Override
+  public boolean isEmpty() {
+    // SUBSET S is never empty.  (It always contains {}.)
+    return false;
   }
 
   @Override
