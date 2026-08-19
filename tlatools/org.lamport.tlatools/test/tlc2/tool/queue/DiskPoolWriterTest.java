@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import org.junit.After;
 import org.junit.Test;
 
+import util.FileUtil;
+
 public class DiskPoolWriterTest {
 
 	private static final long TIMEOUT_MILLIS = 5000L;
@@ -24,13 +26,7 @@ public class DiskPoolWriterTest {
 			this.queue.finishAll();
 		}
 		if (this.diskDirectory != null) {
-			final File[] files = this.diskDirectory.listFiles();
-			if (files != null) {
-				for (File file : files) {
-					file.delete();
-				}
-			}
-			this.diskDirectory.delete();
+			FileUtil.deleteDir(this.diskDirectory, true);
 		}
 	}
 
