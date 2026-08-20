@@ -9,12 +9,18 @@ on:
       - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/fp/OffHeapDiskFPSetJPFTest.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/StateQueue.java'
       - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/queue/StateQueueJPFTest.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/DiskStateQueue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolWriter.java'
+      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/util/StatePoolWriterJPFTest.java'
   pull_request:
     paths:
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/fp/OffHeapDiskFPSet.java'
       - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/fp/OffHeapDiskFPSetJPFTest.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/StateQueue.java'
       - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/queue/StateQueueJPFTest.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/DiskStateQueue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolWriter.java'
+      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/util/StatePoolWriterJPFTest.java'
 
 jobs:
   run-tlc-test-verify:
