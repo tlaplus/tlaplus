@@ -20,6 +20,10 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
+/**
+ * The set of functions [S -> T], whose elements are all functions f with
+ * DOMAIN f = S and f[x] \in T for all x \in S.
+ */
 public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final Value domain;        /* Function domain  */
   public final Value range;         /* Function range   */
@@ -68,6 +72,14 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM \A S, T : \A f : f \in [S -> T] <=> /\ IsAFcn(f)
+  //                                             /\ DOMAIN f = S
+  //                                             /\ \A x \in S : f[x] \in T
+  //
+  // where IsAFcn(f) == f = [x \in DOMAIN f |-> f[x]].
+  //
+  // The three conjuncts are toFcnRcd, the comparison of the domains, and the
+  // loop over the function's values below.
   @Override
   public final boolean member(Value elem) {
     try {
@@ -106,6 +118,8 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
+  //         PROVE  IsFiniteSet([S -> T])
   @Override
   public final boolean isFinite() {
     try {
@@ -147,6 +161,22 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW T
+  //         PROVE  /\ IsFiniteSet([{} -> T])
+  //                /\ Cardinality([{} -> T]) = 1
+  //
+  // THEOREM ASSUME NEW S, NEW T, NEW x, x \notin S,
+  //                IsFiniteSet(T), IsFiniteSet([S -> T])
+  //         PROVE  /\ IsFiniteSet([S \cup {x} -> T])
+  //                /\ Cardinality([S \cup {x} -> T]) = Cardinality(T) * Cardinality([S -> T])
+  //
+  // The two theorems are an induction on the domain: the empty domain admits one
+  // function, and every further element x multiplies the number of functions by
+  // Cardinality(T), because a function on S \cup {x} is a function on S plus a
+  // value for x. The hypothesis x \notin S is what makes x one more element.
+  //
+  // The loop below is that induction, i.e. one multiplication per element of the
+  // domain, and not the closed form Cardinality(T)^Cardinality(S).
   @Override
   public final int size() {
     try {

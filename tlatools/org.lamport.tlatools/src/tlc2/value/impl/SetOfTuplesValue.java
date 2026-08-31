@@ -18,7 +18,18 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
+/**
+ * The Cartesian product S_1 \X S_2 \X ... \X S_n, whose elements are the n-tuples
+ * <<e_1, e_2, ..., e_n>> with e_i \in S_i.
+ */
 public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
+  // One set per component instead of nesting two-component values, because an
+  // n-ary Cartesian product is a set of n-tuples and not a set of nested pairs:
+  //
+  // THEOREM \A S, T, U : \A s \in S, t \in T, u \in U : S \X T \X U # (S \X T) \X U
+  //
+  // e.g. {1} \X {2} \X {3} = {<<1, 2, 3>>}, whereas the elements of
+  // ({1} \X {2}) \X {3} = {<<<<1, 2>>, 3>>} have the domain 1..2.
   public final Value[] sets;
   protected SetEnumValue tupleSet;
 
@@ -86,6 +97,28 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  // THEOREM \A S, T : \A t : t \in S \X T <=> /\ IsAFcn(t)
+  //                                           /\ DOMAIN t = 1..2
+  //                                           /\ t[1] \in S
+  //                                           /\ t[2] \in T
+  //
+  // where IsAFcn(t) == t = [x \in DOMAIN t |-> t[x]].
+  //
+  // DOMAIN t = 1..2 is why toTuple accepts a function whose domain is 1..n, i.e.
+  // a product is a set of functions:
+  //
+  // THEOREM \A S : S \X S = [1..2 -> S]
+  //
+  // A function whose domain is an interval other than 1..2 is not an element of
+  // S \X T, whence the comparison of the lengths below, whereas a value whose
+  // domain is no set of integers is not a tuple at all, which TLC reports as an
+  // error.
+  //
+  // Both theorems are the case n = 2 of the claim about S_1 \X ... \X S_n. A
+  // theorem has to fix n because TLA+ requires the components of a product to be
+  // written out; an arbitrary n has to be stated as a set of functions on 1..n,
+  // i.e. as a construct other than the one that the loop below decides membership
+  // for. The loop runs for any n >= 2, which is what \X yields.
   @Override
   public final boolean member(Value elem) {
     try {
@@ -168,6 +201,13 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
+  //         PROVE  /\ IsFiniteSet(S \X T)
+  //                /\ Cardinality(S \X T) = Cardinality(S) * Cardinality(T)
+  //
+  // The loop below is that product over any number of components, which is why
+  // this class computes the size without enumerating the set. isFinite above is
+  // the IsFiniteSet conjunct.
   @Override
   public final int size() {
     try {

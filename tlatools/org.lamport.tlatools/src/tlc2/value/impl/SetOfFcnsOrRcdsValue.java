@@ -29,7 +29,26 @@ import java.math.BigInteger;
 
 import tlc2.value.RandomEnumerableValues;
 
+/**
+ * Base class for the set of functions [S -> T] (SetOfFcnsValue) and the set of records
+ * [h_1: S_1, ..., h_n: S_n] (SetOfRcdsValue). Both are sets of functions whose
+ * cardinality is a product of the cardinalities of their constituent sets, which is why
+ * they share the (big-integer) subset enumeration below.
+ */
 public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
+
+	// A record is a function whose domain is the set of its field names, which is
+	// why SetOfRcdsValue shares this class with SetOfFcnsValue:
+	//
+	// THEOREM \A S, T : [h: S, g: T] \subseteq [{"h", "g"} -> S \cup T]
+	// THEOREM \A S : [h: S, g: S] = [{"h", "g"} -> S]
+	//
+	// Both theorems are the case n = 2 of the claim about [h_1: S_1, ..., h_n: S_n].
+	// A theorem has to fix n because TLA+ requires the fields of a record set to be
+	// written out; an arbitrary n has to be stated as a set of functions from a set
+	// of field names to the union of the field sets, i.e. as a construct other than
+	// the one that SetOfRcdsValue implements for any n >= 1. There is no n = 0
+	// because [] is not TLA+; the record without fields is the empty function <<>>.
 
 	@Override
 	public EnumerableValue getRandomSubset(final int kOutOfN) {

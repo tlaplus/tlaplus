@@ -21,6 +21,10 @@ import tlc2.value.Values;
 import util.Assert;
 import util.UniqueString;
 
+/**
+ * The set of records [h_1: S_1, h_2: S_2, ..., h_n: S_n], whose elements are the
+ * records [h_1 |-> e_1, ..., h_n |-> e_n] with e_i \in S_i.
+ */
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final UniqueString[] names;      // The names of the fields.
   public final Value[] values;            // The values of the fields.
@@ -86,6 +90,17 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM \A S, T : \A r : r \in [h: S, g: T] <=> /\ IsAFcn(r)
+  //                                                 /\ DOMAIN r = {"h", "g"}
+  //                                                 /\ r.h \in S
+  //                                                 /\ r.g \in T
+  //
+  // where IsAFcn(r) == r = [x \in DOMAIN r |-> r[x]].
+  //
+  // DOMAIN r = {"h", "g"} is why the comparison of the field names below is an
+  // equality and not a lookup: a record whose domain is a strict superset of
+  // {"h", "g"} is not an element of [h: S, g: T], even if r.h \in S and
+  // r.g \in T.
   @Override
   public final boolean member(Value elem) {
     try {
@@ -158,6 +173,13 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
+  //         PROVE  /\ IsFiniteSet([h: S, g: T])
+  //                /\ Cardinality([h: S, g: T]) = Cardinality(S) * Cardinality(T)
+  //
+  // The loop below is that product over any number of fields, which is why this
+  // class computes the size without enumerating the set. isFinite above is the
+  // IsFiniteSet conjunct.
   @Override
   public final int size() {
     try {
