@@ -41,6 +41,7 @@ import tlc2.value.IBoolValue;
 import tlc2.value.IValue;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.IntValue;
+import tlc2.value.impl.TupleValue;
 import util.UniqueString;
 
 public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
@@ -65,12 +66,12 @@ public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
 		
 		final TLCStateInfo first = (TLCStateInfo) ((Object[]) actual.get(0))[0];
 		if (isExtendedTLCState()) {
-			assertEquals("<_init line 27, col 5 to line 29, col 24 of module "+getModuleName()+">", first.info);
+			assertEquals("<_init line 31, col 5 to line 35, col 24 of module "+getModuleName()+">", first.info);
 		} else {
 			assertTrue(((String) first.info).startsWith("<Initial predicate>"));
 		}
 		final Map<UniqueString, IValue> firstState = first.state.getVals();
-		assertEquals(3, firstState.size());
+		assertEquals(5, firstState.size());
 		
 		// Check x and y values are within defined ranges.
 		final IntValue firstX = (IntValue) firstState.get(UniqueString.uniqueStringOf("x"));
@@ -80,17 +81,34 @@ public class RandomSubsetTest_TTraceTest extends TTraceModelCheckerTestCase {
 
 		// Check z is true
 		assertEquals(BoolValue.ValTrue, (IBoolValue) firstState.get(UniqueString.uniqueStringOf("z")));
+
+		// Check the tuples are elements of Product and BigProduct.
+		final IValue firstP = firstState.get(UniqueString.uniqueStringOf("p"));
+		assertTupleIn(firstP, 200);
+		final IValue firstQ = firstState.get(UniqueString.uniqueStringOf("q"));
+		assertTupleIn(firstQ, 4000);
 		
 		final TLCStateInfo second = (TLCStateInfo) ((Object[]) actual.get(1))[0];
-		assertTrue(((String) second.info).startsWith("<_next line 33, col 5 to line 41, col 29 of module "+getModuleName()+">"));
+		assertTrue(((String) second.info).startsWith("<_next line 39, col 5 to line 51, col 29 of module "+getModuleName()+">"));
 		final Map<UniqueString, IValue> secondState = second.state.getVals();
-		assertEquals(3, secondState.size());
-		// UNCHANGED x,y
+		assertEquals(5, secondState.size());
+		// UNCHANGED x,y,p,q
 		assertEquals(firstX.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("x"))).val);
 		assertEquals(firstY.val, ((IntValue) secondState.get(UniqueString.uniqueStringOf("y"))).val);
+		assertEquals(firstP, secondState.get(UniqueString.uniqueStringOf("p")));
+		assertEquals(firstQ, secondState.get(UniqueString.uniqueStringOf("q")));
 		// Check z is false
 		assertEquals(BoolValue.ValFalse, (IBoolValue) secondState.get(UniqueString.uniqueStringOf("z")));
 
 		assertZeroUncovered();
+	}
+
+	private static void assertTupleIn(final IValue value, final int n) {
+		final TupleValue tuple = (TupleValue) value;
+		assertEquals(3, tuple.elems.length);
+		for (int i = 0; i < tuple.elems.length; i++) {
+			final int component = ((IntValue) tuple.elems[i]).val;
+			assertTrue(1 <= component && component <= n);
+		}
 	}
 }
