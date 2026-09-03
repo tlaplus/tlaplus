@@ -49,6 +49,26 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 	// of field names to the union of the field sets, i.e. as a construct other than
 	// the one that SetOfRcdsValue implements for any n >= 1. There is no n = 0
 	// because [] is not TLA+; the record without fields is the empty function <<>>.
+	//
+	// What the subclasses share is neither equals nor member nor size, but that an
+	// index in 0..(Cardinality(this) - 1) determines an element without enumerating
+	// its predecessors. Both are a product of the constituent sets that Product
+	// reports below, so an index read in the mixed radix of their cardinalities
+	// yields one value per constituent, and those values make up an element.
+
+	// The constituent sets of this set, one per digit of the index that the
+	// enumerators below decode, from the most to the least significant, and the
+	// element that one value per constituent set makes up. SetOfFcnsValue repeats its
+	// co-domain once per element of the domain, i.e. its radix is fixed, whereas
+	// SetOfRcdsValue reports one set per field.
+	abstract class Product {
+
+		abstract SetEnumValue[] constituents();
+
+		abstract Value elementOf(Value[] values);
+	}
+
+	protected abstract Product product();
 
 	@Override
 	public EnumerableValue getRandomSubset(final int kOutOfN) {
@@ -73,21 +93,32 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 	@Override
 	public ValueEnumeration elements(final int k) {
 		if (needBigInteger()) {
-			return getBigSubsetEnumerator(k);
+			return new BigIntegerSubsetEnumerator(k);
 		} else {
-			return getSubsetEnumerator(k, size());
+			return new SubsetEnumerator(k, size());
 		}
 	}
 
-	protected abstract BigIntegerSubsetEnumerator getBigSubsetEnumerator(int k);
-
-	protected abstract SubsetEnumerator getSubsetEnumerator(int k, int n);
-
 	protected abstract boolean needBigInteger();
 
-	abstract class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
-		public SubsetEnumerator(final int k, final int n) {
+	final class SubsetEnumerator extends EnumerableValue.SubsetEnumerator {
+
+		private final Product product;
+		private final SetEnumValue[] constituents;
+		private final int[] rescaleBy;
+
+		SubsetEnumerator(final int k, final int n) {
 			super(k, n);
+
+			this.product = product();
+			this.constituents = product.constituents();
+			this.rescaleBy = new int[constituents.length];
+
+			int numElems = 1; // 1 to avoid div by zero in elementAt
+			for (int i = constituents.length - 1; i >= 0; i--) {
+				rescaleBy[i] = numElems;
+				numElems *= constituents[i].elems.size();
+			}
 		}
 
 		@Override
@@ -98,18 +129,31 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 			return elementAt(nextIndex());
 		}
 
-		protected abstract Value elementAt(int nextIndex);
+		Value elementAt(final int idx) {
+			assert 0 <= idx && idx < size();
+
+			final Value[] values = new Value[constituents.length];
+			for (int i = 0; i < values.length; i++) {
+				final ValueVec elems = constituents[i].elems;
+				values[i] = elems.elementAt((idx / rescaleBy[i]) % elems.size());
+			}
+			return product.elementOf(values);
+		}
 	}
 
-	abstract class BigIntegerSubsetEnumerator implements ValueEnumeration {
+	final class BigIntegerSubsetEnumerator implements ValueEnumeration {
 
-		protected final BigInteger x;
-		protected final BigInteger a;
+		private final BigInteger x;
+		private final BigInteger a;
 
-		protected final int k;
-		
-		protected BigInteger sz;
-		protected int i;
+		private final int k;
+
+		private final Product product;
+		private final SetEnumValue[] constituents;
+		private final BigInteger[] rescaleBy;
+
+		private final BigInteger sz;
+		private int i;
 
 		public BigIntegerSubsetEnumerator(final int k) {
 			this.k = k;
@@ -120,6 +164,19 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 			// http://primes.utm.edu/lists/2small/0bit.html
 			// (2^63 - 25)
 			this.x = BigInteger.valueOf(Long.MAX_VALUE - 24L);
+
+			this.product = product();
+			this.constituents = product.constituents();
+			this.rescaleBy = new BigInteger[constituents.length];
+
+			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
+			for (int j = constituents.length - 1; j >= 0; j--) {
+				rescaleBy[j] = numElems;
+				numElems = numElems.multiply(BigInteger.valueOf(constituents[j].elems.size()));
+			}
+
+			// The size of the (enumerated) SetOfFcnsOrRcdsValue needs BigInteger.
+			this.sz = numElems;
 		}
 
 		private BigInteger nextIndex() {
@@ -146,6 +203,14 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 			return elementAt(nextIndex());
 		}
 
-		protected abstract Value elementAt(BigInteger nextIndex);
+		private Value elementAt(final BigInteger idx) {
+			final Value[] values = new Value[constituents.length];
+			for (int j = 0; j < values.length; j++) {
+				final ValueVec elems = constituents[j].elems;
+				final BigInteger mod = BigInteger.valueOf(elems.size());
+				values[j] = elems.elementAt(idx.divide(rescaleBy[j]).mod(mod).intValueExact());
+			}
+			return product.elementOf(values);
+		}
 	}
 }

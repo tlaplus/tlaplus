@@ -8,7 +8,7 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
 
 import tlc2.TLCGlobals;
@@ -556,80 +556,38 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 	
 	@Override
-	protected tlc2.value.impl.SetOfFcnsOrRcdsValue.SubsetEnumerator getSubsetEnumerator(int k, int n) {
-		return new SubsetEnumerator(k, n);
+	protected Product product() {
+		return new FcnProduct();
 	}
 
-	class SubsetEnumerator extends SetOfFcnsOrRcdsValue.SubsetEnumerator {
+	final class FcnProduct extends Product {
+
 		private final SetEnumValue domSet;
 		private final SetEnumValue rangeSet;
-		private final int mod;
-		
-		SubsetEnumerator(final int k, final int n) {
-			super(k, n);
-			domSet = (SetEnumValue) domain.toSetEnum();
-			domSet.normalize();
 
-			rangeSet = (SetEnumValue) range.toSetEnum();
-
-			mod = range.size();
-		}
-
-		@Override
-		protected Value elementAt(final int idx) {
-			assert 0 <= idx && idx < size();
-
-			final Value[] range = new Value[domSet.size()];
-
-			for (int i = 0; i < domSet.size(); i++) {
-				final int elementAt = (int) (Math.floor(idx / Math.pow(mod, i)) % mod);
-				range[range.length - 1 - i] = rangeSet.elems.elementAt(elementAt);
-			}
-
-			return new FcnRcdValue(domSet.elems, range, true);
-		}
-	}
-
-	@Override
-	protected tlc2.value.impl.SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator getBigSubsetEnumerator(int k) {
-		return new BigIntegerSubsetEnumerator(k);
-	}
-	
-	class BigIntegerSubsetEnumerator extends SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator {
-		
-		private final SetEnumValue domSet;
-		private final SetEnumValue rangeSet;
-		private final BigInteger bMod;
-		private final int mod;
-
-		public BigIntegerSubsetEnumerator(final int k) {
-			super(k);
+		FcnProduct() {
 			this.domSet = (SetEnumValue) domain.toSetEnum();
 			this.domSet.normalize();
-			
-			this.rangeSet = (SetEnumValue) range.toSetEnum();
-			this.mod = range.size();
-			this.bMod = BigInteger.valueOf(mod);
 
-			this.sz = bMod.pow(domSet.size());
+			this.rangeSet = (SetEnumValue) range.toSetEnum();
+		}
+
+		// [S -> T] is the product of one co-domain per element of the domain, i.e. the
+		// radix is the same for every digit. Every entry is the co-domain enumerated
+		// once, however large S is.
+		@Override
+		SetEnumValue[] constituents() {
+			final SetEnumValue[] constituents = new SetEnumValue[domSet.size()];
+			Arrays.fill(constituents, rangeSet);
+			return constituents;
 		}
 
 		@Override
-		protected Value elementAt(final BigInteger idx) {
-			final Value[] range = new Value[domSet.size()];
-
-			for (int i = 0; i < domSet.size(); i++) {
-				final long scale = (long) Math.pow(mod, i);
-				final BigInteger bScale = BigInteger.valueOf(scale);
-				// idx2 is the index in the range (0,range.size^domset.size] 
-				final BigInteger idx2 = idx.divide(bScale);
-				final int elementAt = idx2.mod(bMod).intValueExact();
-				range[range.length - 1 - i] = rangeSet.elems.elementAt(elementAt);
-			}
-
-			return new FcnRcdValue(domSet.elems, range, true);
+		Value elementOf(final Value[] values) {
+			return new FcnRcdValue(domSet.elems, values, true);
 		}
 	}
+
 	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
 		return super.toTLCVariable(variable, rnd);
 	}
