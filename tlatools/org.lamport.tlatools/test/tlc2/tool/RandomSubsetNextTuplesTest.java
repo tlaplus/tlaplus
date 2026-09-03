@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Microsoft Research. All rights reserved. 
+ * Copyright (c) 2026 NVIDIA Corp. All rights reserved. 
  *
  * The MIT License (MIT)
  * 
@@ -29,49 +29,60 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.TTraceModelCheckerTestCase;
+import tlc2.tool.liveness.ModelCheckerTestCase;
+import tlc2.value.IValue;
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.TupleValue;
+import util.UniqueString;
 
-public abstract class RandomSubset_TTrace extends TTraceModelCheckerTestCase {
+public class RandomSubsetNextTuplesTest extends ModelCheckerTestCase {
 
-	private final int x;
-	private final int y;
-	private final String p;
-	private final String q;
-
-	public RandomSubset_TTrace(Class<?> clazz, final int x, final int y, final String p, final String q) {		
-		super(clazz, ExitStatus.VIOLATION_SAFETY);
-		this.x = x;
-		this.y = y;
-		this.p = p;
-		this.q = q;
+	public RandomSubsetNextTuplesTest() {
+		super("RandomSubsetNextTuples", ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertFalse(recorder.recorded(EC.TLC_BUG));
 		assertFalse(recorder.recorded(EC.GENERAL));
-		
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "1"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2", "2", "0"));
-		assertEquals(2, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
-		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
-		final List<String> expectedTrace = new ArrayList<String>();
-		expectedTrace.add(state("TRUE"));
-		expectedTrace.add(state("FALSE"));
-		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "4"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "5461", "5461", "4095"));
+
+		assertTrue(recorder.recorded(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT));
+
+		final List<Object> records = recorder.getRecords(EC.TLC_STATE_PRINT2);
+		assertEquals(7, records.size());
+
+		int y = 0;
+		for (Object record : records) {
+			final Object[] objs = (Object[]) record;
+			final Map<UniqueString, IValue> vals = ((TLCStateInfo) objs[0]).state.getVals();
+
+			assertEquals(y++, ((IntValue) vals.get(UniqueString.uniqueStringOf("y"))).val);
+			assertEquals(y, objs[1]);
+
+			assertTupleIn(vals.get(UniqueString.uniqueStringOf("p")), 200);
+			assertTupleIn(vals.get(UniqueString.uniqueStringOf("q")), 4000);
+		}
+
+		assertZeroUncovered();
 	}
 
-	private String state(final String z) {
-		return "/\\ p = " + p + "\n" + "/\\ q = " + q + "\n" + "/\\ x = " + x + "\n" + "/\\ y = " + y + "\n"
-				+ "/\\ z = " + z;
+	private static void assertTupleIn(final IValue value, final int n) {
+		final TupleValue tuple = (TupleValue) value;
+		assertEquals(3, tuple.elems.length);
+		for (int i = 0; i < tuple.elems.length; i++) {
+			final int component = ((IntValue) tuple.elems[i]).val;
+			assertTrue(1 <= component && component <= n);
+		}
 	}
-
 }

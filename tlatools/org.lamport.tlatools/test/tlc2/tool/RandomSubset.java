@@ -42,14 +42,18 @@ public abstract class RandomSubset extends ModelCheckerTestCase {
 
 	private final int x;
 	private final int y;
+	private final String p;
+	private final String q;
 
-	public RandomSubset(final long seed, final int x, final int y) {
-		// Initial seed with a randomly chosen but fixed value for x and y to be
+	public RandomSubset(final long seed, final int x, final int y, final String p, final String q) {
+		// Initial seed with a randomly chosen but fixed value for x, y, p, and q to be
 		// predictable. The two subclasses chose different values to test that different
 		// seeds result in different values.
 		super("RandomSubset", new String[] {"-seed", Long.toString(seed)}, ExitStatus.VIOLATION_SAFETY);
 		this.x = x;
 		this.y = y;
+		this.p = p;
+		this.q = q;
 	}
 
 	@Test
@@ -57,15 +61,20 @@ public abstract class RandomSubset extends ModelCheckerTestCase {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
 		assertFalse(recorder.recorded(EC.GENERAL));
 		
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "2002"));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "2003", "2003", "2001"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INIT_GENERATED1, "8008"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "8009", "8009", "8007"));
 		assertEquals(2, recorder.getRecordAsInt(EC.TLC_SEARCH_DEPTH));
 
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>();
-		expectedTrace.add("/\\ x = " + x + "\n" + "/\\ y = " + y + "\n" + "/\\ z = TRUE");
-		expectedTrace.add("/\\ x = " + x + "\n" + "/\\ y = " + y + "\n" + "/\\ z = FALSE");
+		expectedTrace.add(state("TRUE"));
+		expectedTrace.add(state("FALSE"));
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
+	}
+
+	private String state(final String z) {
+		return "/\\ p = " + p + "\n" + "/\\ q = " + q + "\n" + "/\\ x = " + x + "\n" + "/\\ y = " + y + "\n"
+				+ "/\\ z = " + z;
 	}
 
 }

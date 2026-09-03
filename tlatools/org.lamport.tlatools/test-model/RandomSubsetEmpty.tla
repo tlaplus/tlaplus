@@ -37,4 +37,16 @@ ASSUME RandomSubset(1, [n1 : [Nat -> {}]]) = {}
 \* picking one element neither overflows nor reaches for a big integer.
 ASSUME RandomSubset(1, [((1..50000) \X (1..50000)) -> {}]) = {}
 ASSUME RandomSubset(1, [n1 : 1..50000, n2 : 1..50000, n3 : {}]) = {}
+
+\* The same cases for a Cartesian product, whose components TLC asks in the
+\* same order, plus an empty component among more than two and components that
+\* are themselves an empty set of functions, of records, or of tuples.
+ASSUME RandomSubset(1, {} \X Nat) = {}
+ASSUME RandomSubset(1, {} \X (Nat \ {0})) = {}
+ASSUME RandomSubset(1, Nat \X {} \X Nat) = {}
+ASSUME RandomSubset(1, [Nat -> {}] \X Nat) = {}
+ASSUME RandomSubset(1, [n1 : Nat, n2 : {}] \X Nat) = {}
+ASSUME RandomSubset(1, (Nat \X {}) \X Nat) = {}
+ASSUME RandomSubset(1, (1..50000) \X (1..50000) \X {}) = {}
+ASSUME RandomSubset(1, {} \X (1..50000) \X (1..50000)) = {}
 ============================================================================

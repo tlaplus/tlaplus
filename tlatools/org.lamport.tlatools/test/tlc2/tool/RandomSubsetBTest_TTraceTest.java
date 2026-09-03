@@ -28,6 +28,6 @@ package tlc2.tool;
 public class RandomSubsetBTest_TTraceTest extends RandomSubset_TTrace {
 
 	public RandomSubsetBTest_TTraceTest() {
-        super(RandomSubsetBTest.class, 48268, 100000000);		
+        super(RandomSubsetBTest.class, 604, 100000000, "<<15, 152, 5>>", "<<86, 170, 1612>>");		
 	}
 }
