@@ -39,7 +39,7 @@
           "scope": "development"
         },
         "tlatools/org.lamport.tlatools/lib/jacocoant.jar": {
-          "package_url": "pkg:maven/org.jacoco/org.jacoco.ant@0.8.3",
+          "package_url": "pkg:maven/org.jacoco/org.jacoco.ant@0.8.15",
           "relationship": "direct",
           "scope": "development"
         },
