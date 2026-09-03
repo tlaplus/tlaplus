@@ -5,12 +5,6 @@
 \* proof, because they state what TLC refuses to answer instead of a TLA+
 \* fact.
 \*
-\* TLC does not yet answer every comparison below. The commented out
-\* assumptions are the ones it gets wrong: it decides the ones marked "wrong"
-\* the wrong way, refuses the ones marked "refused" with an error, and raises
-\* an error other than the expected one for the ones marked "other error".
-\* The commits that make TLC answer them uncomment them.
-\*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 
@@ -18,96 +12,96 @@ EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 \* Sets of functions that denote {<<>>}, i.e. the empty domain decides.
 
 ASSUME UnitEmptyRangeEnum
-\* ASSUME UnitEmptyRangeSym         \* wrong
+ASSUME UnitEmptyRangeSym
 ASSUME UnitSingletonRangeEnum
-\* ASSUME UnitSingletonRangeSym     \* wrong
+ASSUME UnitSingletonRangeSym
 ASSUME UnitTripleRangeEnum
-\* ASSUME UnitTripleRangeSym        \* wrong
-\* ASSUME UnitNatRangeSym           \* refused
+ASSUME UnitTripleRangeSym
+ASSUME UnitNatRangeSym
 
 ASSUME UnitIntervalEnum
-\* ASSUME UnitIntervalSym           \* wrong
-\* ASSUME UnitIntervalNatSym        \* refused
+ASSUME UnitIntervalSym
+ASSUME UnitIntervalNatSym
 
 ASSUME UnitCapEnum
-\* ASSUME UnitCapSym                \* wrong
+ASSUME UnitCapSym
 ASSUME UnitCupEnum
-\* ASSUME UnitCupSym                \* wrong
+ASSUME UnitCupSym
 ASSUME UnitDiffEnum
-\* ASSUME UnitDiffSym               \* wrong
+ASSUME UnitDiffSym
 ASSUME UnitUnionEmptyEnum
-\* ASSUME UnitUnionEmptySym         \* wrong
+ASSUME UnitUnionEmptySym
 ASSUME UnitUnionOfEmptyEnum
-\* ASSUME UnitUnionOfEmptySym       \* wrong
+ASSUME UnitUnionOfEmptySym
 ASSUME UnitFilterEnum
-\* ASSUME UnitFilterSym             \* wrong
+ASSUME UnitFilterSym
 
 ASSUME UnitRcdFieldEnum
-\* ASSUME UnitRcdFieldSym           \* wrong
-\* ASSUME UnitRcdNatFieldSym        \* refused
-\* ASSUME UnitRcdFieldNatSym        \* wrong
+ASSUME UnitRcdFieldSym
+ASSUME UnitRcdNatFieldSym
+ASSUME UnitRcdFieldNatSym
 
 ASSUME UnitTupleEnum
-\* ASSUME UnitTupleSym              \* wrong
-\* ASSUME UnitTupleNatFirstSym      \* refused
-\* ASSUME UnitTupleNatSecondSym     \* wrong
-\* ASSUME UnitTupleStrFirstSym      \* refused
+ASSUME UnitTupleSym
+ASSUME UnitTupleNatFirstSym
+ASSUME UnitTupleNatSecondSym
+ASSUME UnitTupleStrFirstSym
 
-\* ASSUME UnitFcnSetSym             \* refused
-\* ASSUME UnitFcnSetNestedSym       \* refused
+ASSUME UnitFcnSetSym
+ASSUME UnitFcnSetNestedSym
 ASSUME UnitDiffNestedUnitEnum
 ASSUME UnitDiffNestedUnitSym
 
-\* ASSUME UnitRcdFcnSetSym          \* refused
-\* ASSUME UnitRcdRcdSym             \* wrong
-\* ASSUME UnitRcdTupleSym           \* wrong
-\* ASSUME UnitTupleFcnSetSym        \* refused
-\* ASSUME UnitTupleRcdSym           \* wrong
-\* ASSUME UnitTupleTupleSym         \* wrong
+ASSUME UnitRcdFcnSetSym
+ASSUME UnitRcdRcdSym
+ASSUME UnitRcdTupleSym
+ASSUME UnitTupleFcnSetSym
+ASSUME UnitTupleRcdSym
+ASSUME UnitTupleTupleSym
 
 -----------------------------------------------------------------------------
 \* Sets of functions that are empty, i.e. the empty co-domain decides.
 
 ASSUME EmptySingletonEnum
-\* ASSUME EmptySingletonSym         \* wrong
+ASSUME EmptySingletonSym
 ASSUME EmptyIntervalEnum
-\* ASSUME EmptyIntervalSym          \* wrong
+ASSUME EmptyIntervalSym
 
 ASSUME EmptyCapEnum
-\* ASSUME EmptyCapSym               \* wrong
+ASSUME EmptyCapSym
 ASSUME EmptyCupEnum
-\* ASSUME EmptyCupSym               \* wrong
+ASSUME EmptyCupSym
 ASSUME EmptyDiffEnum
-\* ASSUME EmptyDiffSym              \* wrong
+ASSUME EmptyDiffSym
 ASSUME EmptyUnionEnum
-\* ASSUME EmptyUnionSym             \* wrong
+ASSUME EmptyUnionSym
 ASSUME EmptyFilterEnum
-\* ASSUME EmptyFilterSym            \* wrong
+ASSUME EmptyFilterSym
 
 ASSUME EmptySubsetEmptyEnum
-\* ASSUME EmptySubsetEmptySym       \* refused
-\* ASSUME EmptySubsetNatSym         \* refused
+ASSUME EmptySubsetEmptySym
+ASSUME EmptySubsetNatSym
 
 ASSUME EmptyRcdEnum
-\* ASSUME EmptyRcdSym               \* refused
-\* ASSUME EmptyRcdNatSym            \* refused
+ASSUME EmptyRcdSym
+ASSUME EmptyRcdNatSym
 
 ASSUME EmptyTupleEnum
-\* ASSUME EmptyTupleSym             \* refused
-\* ASSUME EmptyTupleNatSym          \* refused
+ASSUME EmptyTupleSym
+ASSUME EmptyTupleNatSym
 
-\* ASSUME EmptyNatSym               \* refused
-\* ASSUME EmptyIntSym               \* refused
-\* ASSUME EmptySeqSym               \* refused
-\* ASSUME EmptyStrSym               \* refused
+ASSUME EmptyNatSym
+ASSUME EmptyIntSym
+ASSUME EmptySeqSym
+ASSUME EmptyStrSym
 
-\* ASSUME EmptyRcdRangeSym          \* wrong
-\* ASSUME EmptyTupleRangeSym        \* wrong
-\* ASSUME EmptyRcdFcnSetRangeSym    \* wrong
-\* ASSUME EmptyTupleFcnSetRangeSym  \* wrong
-\* ASSUME EmptyFcnSetRangeSym       \* wrong
+ASSUME EmptyRcdRangeSym
+ASSUME EmptyTupleRangeSym
+ASSUME EmptyRcdFcnSetRangeSym
+ASSUME EmptyTupleFcnSetRangeSym
+ASSUME EmptyFcnSetRangeSym
 
-\* ASSUME EmptyFcnSetSym            \* refused
+ASSUME EmptyFcnSetSym
 
 -----------------------------------------------------------------------------
 \* Sets of records that are empty, i.e. a single empty field decides.
@@ -313,10 +307,10 @@ ASSUME AssertError("Attempted to check equality of the set {<<>>} with the value
 \* rule that every value is in Any (tlc2.module.AnySet#member, which no set
 \* satisfies) as Any # {}. Refusing a reflexive comparison is acceptable for
 \* the same reason.
-\* ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
-\*                    [{"ref"} -> {}] = [Any -> {}])  \* other error
-\* ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
-\*                    [Any -> {}] = [Any -> {}])  \* other error
+ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
+                   [{"ref"} -> {}] = [Any -> {}])
+ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
+                   [Any -> {}] = [Any -> {}])
 ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
                    [ref : {}] = [n1 : Any, n2 : {}])
 ASSUME AssertError("Shouldn't call isEmpty() on value ANY",

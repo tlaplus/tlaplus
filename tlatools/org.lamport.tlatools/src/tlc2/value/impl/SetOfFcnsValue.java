@@ -56,10 +56,41 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ESE_UnitDomain ==
+  //   ASSUME NEW S, NEW T, S = {}
+  //   PROVE  [S -> T] = { <<>> }
+  //
+  // THEOREM ESE_EmptyRange ==
+  //   ASSUME NEW S, NEW T, NEW w, w \in S, T = {}
+  //   PROVE  [S -> T] = {}
+  //
+  // THEOREM ESE_DomainDecides ==
+  //   ASSUME NEW S, NEW T, NEW R, NEW w, w \in R
+  //   PROVE  [S -> R] = [T -> R] <=> S = T
+  //
+  // THEOREM ESE_RangeDecides ==
+  //   ASSUME NEW S, NEW R, NEW Q, NEW w, w \in S
+  //   PROVE  [S -> R] = [S -> Q] <=> R = Q
+  //
+  // The witness w that the last two theorems need is what the two guards below
+  // rule out first: an empty domain makes [S -> T] the singleton { <<>> }
+  // whatever T is, and an empty co-domain makes it {} whatever the non-empty S
+  // is. Either set being one of the two therefore settles the equality on its
+  // own, and only the sets that are neither are left for the domains and the
+  // co-domains to decide.
   public final boolean equals(Object obj) {
     try {
       if (obj instanceof SetOfFcnsValue) {
         SetOfFcnsValue fcns = (SetOfFcnsValue)obj;
+
+        boolean isUnit1 = this.domain.isEmpty();
+        boolean isUnit2 = fcns.domain.isEmpty();
+        if (isUnit1 || isUnit2) { return isUnit1 == isUnit2; }
+
+        boolean isEmpty1 = this.range.isEmpty();
+        boolean isEmpty2 = fcns.range.isEmpty();
+        if (isEmpty1 || isEmpty2) { return isEmpty1 == isEmpty2; }
+
         return (this.domain.equals(fcns.domain) &&
           this.range.equals(fcns.range));
       }
