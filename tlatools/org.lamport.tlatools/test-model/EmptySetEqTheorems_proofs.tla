@@ -391,6 +391,30 @@ THEOREM ESE_NatIntDiffer == Nat # Int
   <1>3. QED BY <1>1, <1>2
 
 (***************************************************************************)
+(* Congruence, which decides a comparison that none of the rules above      *)
+(* reaches. Every TLA+ value is a set, but TLA+ does not say what the       *)
+(* elements of a value such as 1 are, so neither 1 = {} nor 1 # {} is       *)
+(* provable and no witness w \in 1 can be supplied. Each of the three       *)
+(* constructors is a function of its arguments all the same, so equal       *)
+(* arguments denote the same set whatever the arguments contain.            *)
+(***************************************************************************)
+
+THEOREM ESE_FcnSetCongruence ==
+  ASSUME NEW S, NEW T
+  PROVE  [S -> T] = [S -> T]
+  OBVIOUS
+
+THEOREM ESE_RcdSetCongruence ==
+  ASSUME NEW S, NEW T
+  PROVE  [n1 : S, n2 : T] = [n1 : S, n2 : T]
+  OBVIOUS
+
+THEOREM ESE_TupleSetCongruence ==
+  ASSUME NEW S, NEW T
+  PROVE  S \X T = S \X T
+  OBVIOUS
+
+(***************************************************************************)
 (* Where the two sets are of different constructors. A record is a          *)
 (* function on a set of strings and a tuple is a function on 1..n, so a     *)
 (* set of records and a Cartesian product are sets of functions as well,    *)

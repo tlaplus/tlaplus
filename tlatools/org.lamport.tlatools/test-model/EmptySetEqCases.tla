@@ -262,6 +262,25 @@ TupNatIntDiffer == (Nat \X {"d1"}) # (Int \X {"d1"})
 TupStrReflexive == (STRING \X {"d1"}) = (STRING \X {"d1"})
 
 -----------------------------------------------------------------------------
+\* Sets built from a value whose emptiness TLA+ leaves open, i.e. congruence
+\* is the only means left to decide these. Every TLA+ value is a set, but
+\* TLA+ does not say what the elements of 1, "s", or <<1>> are, so neither
+\* 1 = {} nor 1 # {} is provable and no rule about an empty domain, field, or
+\* component applies. The three constructors are functions of their arguments
+\* all the same, which settles a comparison of a set with itself whatever the
+\* arguments contain.
+\*
+\* Only the reflexive form belongs here. [1 -> 2] # [1 -> 3] is out of reach
+\* for the same reason 1 # {} is, because both sets are { <<>> } when 1 = {}.
+
+FcnIntReflexive    == [1 -> 2] = [1 -> 2]
+FcnStrLitReflexive == [{"d1"} -> "s"] = [{"d1"} -> "s"]
+FcnTupleReflexive  == [<<1>> -> {"d1"}] = [<<1>> -> {"d1"}]
+
+RcdIntReflexive    == [n1 : 1, n2 : {"d1"}] = [n1 : 1, n2 : {"d1"}]
+TupIntReflexive    == (1 \X {"d1"}) = (1 \X {"d1"})
+
+-----------------------------------------------------------------------------
 \* The operators that have to agree with the comparisons above. TLC answers
 \* these for the sets it can enumerate and gives up for the rest, i.e. it
 \* stays silent instead of contradicting the comparisons.
