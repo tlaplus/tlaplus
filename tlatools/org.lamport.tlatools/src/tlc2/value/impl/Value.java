@@ -176,24 +176,46 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
             SetDiffValue diff = (SetDiffValue)this;
             return diff.elements().nextElement() == null;
           }
+        // THEOREM ESE_FcnSetEmpty ==
+        //   ASSUME NEW S, NEW T
+        //   PROVE  [S -> T] = {} <=> (S # {} /\ T = {})
+        //
+        // [{} -> T] is { <<>> } for every T, which is why the empty domain rules
+        // out the empty set instead of implying it.
         case SETOFFCNSVALUE:
           {
             SetOfFcnsValue fcns = (SetOfFcnsValue)this;
-            return fcns.elements().nextElement() == null;
+            return !fcns.domain.isEmpty() && fcns.range.isEmpty();
           }
+        // THEOREM ESE_RcdSetEmpty ==
+        //   ASSUME NEW S, NEW T
+        //   PROVE  [n1 : S, n2 : T] = {} <=> (S = {} \/ T = {})
         case SETOFRCDSVALUE:
           {
             SetOfRcdsValue srv = (SetOfRcdsValue)this;
-            return srv.elements().nextElement() == null;
+            for (int i = 0; i < srv.values.length; i++) {
+              if (srv.values[i].isEmpty()) { return true; }
+            }
+            return false;
           }
+        // THEOREM ESE_TupleSetEmpty ==
+        //   ASSUME NEW S, NEW T
+        //   PROVE  S \X T = {} <=> (S = {} \/ T = {})
         case SETOFTUPLESVALUE:
           {
             SetOfTuplesValue stv = (SetOfTuplesValue)this;
-            return stv.elements().nextElement() == null;
+            for (int i = 0; i < stv.sets.length; i++) {
+              if (stv.sets[i].isEmpty()) { return true; }
+            }
+            return false;
           }
+        // THEOREM ESE_SubsetNonEmpty ==
+        //   ASSUME NEW S
+        //   PROVE  SUBSET S # {}
+        //
+        // SUBSET S always contains {}.
         case SUBSETVALUE:
           {
-            // SUBSET S is never empty.  (It always contains {}.)
             return false;
           }
         case UNIONVALUE:
@@ -205,6 +227,13 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
           {
             SetPredValue spv = (SetPredValue)this;
             return spv.elements().nextElement() == null;
+          }
+        // An overridden value such as Nat, Int, or Seq(S) cannot be enumerated,
+        // which is why the module that defines it has to answer this.
+        case USERVALUE:
+          {
+            UserValue uv = (UserValue)this;
+            return uv.userObj.isEmpty();
           }
         default:
           Assert.fail("Shouldn't call isEmpty() on value " + Values.ppr(this.toString()), getSource());

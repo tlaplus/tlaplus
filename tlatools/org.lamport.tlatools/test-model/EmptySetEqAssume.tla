@@ -119,12 +119,12 @@ ASSUME RcdEmptyArityEnum
 ASSUME RcdEmptyAritySym
 ASSUME RcdEmptyIntervalEnum
 ASSUME RcdEmptyIntervalSym
-\* ASSUME RcdEmptyNatFieldSym       \* refused
+ASSUME RcdEmptyNatFieldSym
 ASSUME RcdEmptyFieldNatSym
-\* ASSUME RcdEmptySeqFieldSym       \* refused
-\* ASSUME RcdEmptyStrFieldSym       \* refused
+ASSUME RcdEmptySeqFieldSym
+ASSUME RcdEmptyStrFieldSym
 
-\* ASSUME RcdEmptyFcnSetSym         \* refused
+ASSUME RcdEmptyFcnSetSym
 ASSUME RcdEmptyRcdSym
 ASSUME RcdEmptyTupleSym
 ASSUME RcdEmptyThenDiffSym
@@ -139,12 +139,12 @@ ASSUME TupEmptyArityEnum
 ASSUME TupEmptyAritySym
 ASSUME TupEmptyIntervalEnum
 ASSUME TupEmptyIntervalSym
-\* ASSUME TupEmptyNatFirstSym       \* refused
+ASSUME TupEmptyNatFirstSym
 ASSUME TupEmptyNatSecondSym
-\* ASSUME TupEmptySeqFirstSym       \* refused
-\* ASSUME TupEmptyStrFirstSym       \* refused
+ASSUME TupEmptySeqFirstSym
+ASSUME TupEmptyStrFirstSym
 
-\* ASSUME TupEmptyFcnSetSym         \* refused
+ASSUME TupEmptyFcnSetSym
 ASSUME TupEmptyRcdSym
 ASSUME TupEmptyTupleSym
 ASSUME TupEmptyThenDiffSym
@@ -203,13 +203,13 @@ ASSUME RangeNatIntDiffer
 ASSUME DomainFcnSetReflexive
 ASSUME RangeNestedUnitDomainDiffer
 
-\* ASSUME RcdNatReflexive           \* refused
-\* ASSUME RcdNatIntDiffer           \* refused
-\* ASSUME RcdStrReflexive           \* refused
+ASSUME RcdNatReflexive
+ASSUME RcdNatIntDiffer
+ASSUME RcdStrReflexive
 
-\* ASSUME TupNatReflexive           \* refused
-\* ASSUME TupNatIntDiffer           \* refused
-\* ASSUME TupStrReflexive           \* refused
+ASSUME TupNatReflexive
+ASSUME TupNatIntDiffer
+ASSUME TupStrReflexive
 
 -----------------------------------------------------------------------------
 \* The operators that have to agree with the comparisons above.
@@ -317,10 +317,10 @@ ASSUME AssertError("Attempted to check equality of the set {<<>>} with the value
 \*                    [{"ref"} -> {}] = [Any -> {}])  \* other error
 \* ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
 \*                    [Any -> {}] = [Any -> {}])  \* other error
-\* ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
-\*                    [ref : {}] = [n1 : Any, n2 : {}])  \* other error
-\* ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
-\*                    ({"ref"} \X {}) = (Any \X {}))  \* other error
+ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
+                   [ref : {}] = [n1 : Any, n2 : {}])
+ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
+                   ({"ref"} \X {}) = (Any \X {}))
 
 \* An operator other than = that gives up where = decides: [Nat -> {}] is
 \* empty and [{} -> Nat] denotes {<<>>} above, so \notin and \subseteq have an

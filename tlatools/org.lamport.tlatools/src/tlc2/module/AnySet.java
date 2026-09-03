@@ -41,6 +41,12 @@ public class AnySet extends UserObj
         return false;
     }
 
+    // isEmpty is deliberately not overridden, which makes TLC refuse to say
+    // whether ANY is empty.  TLA+ defines Any as CHOOSE x : TRUE, a fixed but
+    // unspecified value, so [Any -> {}] is { <<>> } if Any = {} and {}
+    // otherwise, and nothing decides which.  That member above accepts every
+    // value is a fiction of TLC's, because no set contains every value.
+
     @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {

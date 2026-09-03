@@ -247,6 +247,15 @@ public class Integers extends UserObj implements ValueConstants
         return false;
     }
 
+    // THEOREM Int # {}
+    //
+    // The witness is 0 \in Int.
+    @Override
+    public final boolean isEmpty()
+    {
+        return false;
+    }
+
     @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {

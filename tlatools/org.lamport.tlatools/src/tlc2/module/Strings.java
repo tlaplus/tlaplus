@@ -53,6 +53,15 @@ public class Strings extends UserObj
         return false;
     }
 
+    // THEOREM STRING # {}
+    //
+    // The witness is "" \in STRING.
+    @Override
+    public final boolean isEmpty()
+    {
+        return false;
+    }
+
     @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {
