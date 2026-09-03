@@ -6,6 +6,7 @@
 package tlc2.value.impl;
 
 import tla2sany.semantic.ExprNode;
+import util.Assert;
 
 public abstract class UserObj {
 
@@ -16,6 +17,12 @@ public abstract class UserObj {
   public abstract boolean member(Value val);
 
   public abstract boolean isFinite();
+
+  /* True iff this object has no member.  */
+  public boolean isEmpty() {
+    Assert.fail("Shouldn't call isEmpty() on value " + this.toString());
+    return false;   // make compiler happy
+  }
   
   /* The String representation.    */
   public abstract StringBuffer toString(StringBuffer sb, int offset, boolean swallow);

@@ -35,6 +35,7 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 
   /* Constructor */
   public SetOfTuplesValue(Value[] sets) {
+	  assert sets.length > 0; // \X takes two or more components, i.e. there is no nullary product; see tlc2.tool.Tool.evalAppl(OpApplNode, Context, TLCState, TLCState, int) case for OPCODE_cp
     this.sets = sets;
     this.tupleSet = null;
   }
@@ -43,6 +44,8 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  // Unused and scheduled for removal: it builds a unary product, which no TLA+
+  // expression denotes. Tighten the assert above to "> 1" once it is gone.
   public SetOfTuplesValue(Value val) {
 	  this(new Value[1]);
     this.sets[0] = val;

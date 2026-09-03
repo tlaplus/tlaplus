@@ -33,6 +33,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   /* Constructor */
   public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
 	  assert names.length == values.length; // see tlc2.tool.Tool.evalAppl(OpApplNode, Context, TLCState, TLCState, int) case for OPCODE_sor
+	  assert values.length > 0; // a record set spells out its fields and there is no syntax for none of them; [] parses as the box operator
     this.names = names;
     this.values = values;
     this.rcdSet = null;

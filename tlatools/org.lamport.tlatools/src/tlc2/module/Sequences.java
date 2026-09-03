@@ -417,6 +417,18 @@ public class Sequences extends UserObj implements ValueConstants
         return this.size != Integer.MAX_VALUE;
     }
 
+    // THEOREM ASSUME NEW S
+    //         PROVE  Seq(S) # {}
+    //
+    // The witness is <<>> \in Seq(S): the empty sequence is shorter than any
+    // bound this.size >= 0 and has no element that would have to be in
+    // this.range, i.e. member above returns true for it.
+    @Override
+    public final boolean isEmpty()
+    {
+        return this.size < 0;
+    }
+
     @Override
     public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow)
     {

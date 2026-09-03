@@ -109,12 +109,10 @@ public class ValueTest {
 		// SetPredValue needs the parsed predicate of a spec, which JUnit
 		// cannot easily supply.
 
-		// isEmpty refuses an overridden value until the commit that lets each
-		// module answer for itself, which uncomments the four assertions.
-//		assertFalse("Nat", Naturals.Nat().isEmpty());
-//		assertFalse("Int", Integers.Int().isEmpty());
-//		assertFalse("STRING", Strings.STRING().isEmpty());
-//		assertFalse("Seq({})", Sequences.Seq(set()).isEmpty());
+		assertFalse("Nat", Naturals.Nat().isEmpty());
+		assertFalse("Int", Integers.Int().isEmpty());
+		assertFalse("STRING", Strings.STRING().isEmpty());
+		assertFalse("Seq({})", Sequences.Seq(set()).isEmpty());
 
 		try {
 			AnySet.ANY().isEmpty();
