@@ -1,9 +1,10 @@
 -------------------------- MODULE EmptySetEqAssume --------------------------
 \* TLC checks every assumption at startup (Tool#checkAssumptions). Each name
 \* below is a comparison defined in EmptySetEqCases.tla and proved in
-\* EmptySetEqCases_proofs.tla. The AssertError assumptions at the end have no
-\* proof, because they state what TLC refuses to answer instead of a TLA+
-\* fact.
+\* EmptySetEqCases_proofs.tla. The AssertError assumptions at the end mostly
+\* have no proof, because they state what TLC refuses to answer instead of a
+\* TLA+ fact; the last five are proved and say so, i.e. they record a
+\* limitation.
 \*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
@@ -217,7 +218,8 @@ ASSUME SubsetEmptyDomain
 
 -----------------------------------------------------------------------------
 \* The comparisons that TLC refuses to answer. Giving up is acceptable for
-\* these sets, whereas a wrong answer is not.
+\* these sets, whereas a wrong answer is not, except for the last two
+\* assumptions of this section, which TLA+ does decide.
 
 \* A domain or a co-domain that TLC cannot enumerate.
 ASSUME AssertError("Attempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
@@ -352,4 +354,31 @@ ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the do
                    { } = [[Nat -> {"d1"}] -> {}])
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
                    { <<>> } = [[Nat -> {}] -> {"d2"}])
+
+\* The five assumptions of this section that record a limitation instead of an
+\* acceptable refusal. EmptySetEqCases_proofs.tla derives each of them from
+\* ESE_FcnSetCongruence, ESE_RcdSetCongruence, or ESE_TupleSetCongruence, i.e.
+\* TLA+ determines all five to be TRUE. A set is a function of the arguments
+\* of its constructor, so a comparison of a set with itself holds whatever
+\* those arguments contain, and no emptiness is needed to decide it.
+\*
+\* TLC decides a comparison the other way round: SetOfRcdsValue#equals tests
+\* the emptiness of the field sets, SetOfTuplesValue#equals that of the
+\* components, and SetOfFcnsValue#equals that of the domain and the co-domain,
+\* each before comparing them. Congruence follows from the comparison that
+\* these tests precede, whereas a test itself requires 1 = {} or 1 # {},
+\* neither of which is a theorem of TLA+. Deciding these five therefore needs
+\* an emptiness test that may answer neither, and a comparison of the
+\* arguments where it does. Until then TLC refuses, which is sound.
+\*
+\* The tests came to the three constructors separately, which is why TLC
+\* answered the five until different times. Commit 075246eea of 2014-06-09
+\* added them to SetOfRcdsValue#equals and SetOfTuplesValue#equals, so TLC has
+\* refused RcdIntReflexive and TupIntReflexive since, and it refuses the three
+\* remaining ones since the commit that added them to SetOfFcnsValue#equals.
+ASSUME AssertError("Shouldn't call isEmpty() on value 1", FcnIntReflexive)
+ASSUME AssertError("Shouldn't call isEmpty() on value \"s\"", FcnStrLitReflexive)
+ASSUME AssertError("Shouldn't call isEmpty() on value <<1>>", FcnTupleReflexive)
+ASSUME AssertError("Shouldn't call isEmpty() on value 1", RcdIntReflexive)
+ASSUME AssertError("Shouldn't call isEmpty() on value 1", TupIntReflexive)
 =============================================================================
