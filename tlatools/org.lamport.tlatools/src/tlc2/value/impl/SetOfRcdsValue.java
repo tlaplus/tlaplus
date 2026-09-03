@@ -185,11 +185,21 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       long sz = 1;
       for (int i = 0; i < this.values.length; i++) {
-        sz *= this.values[i].size();
-        if (sz < -2147483648 || sz > 2147483647) {
-          Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
-                Values.ppr(this.toString()));
+        final int fsz = this.values[i].size();
+        // [h_1: S_1, ..., h_n: S_n] = {} if any S_i = {}, no matter how large the
+        // other fields are, which is why the loop must not report an overflow before
+        // it has seen every field. Freezing sz once it exceeds an int keeps the
+        // remaining products from overflowing the long.
+        if (fsz == 0) {
+          return 0;
         }
+        if (sz <= 2147483647) {
+          sz *= fsz;
+        }
+      }
+      if (sz > 2147483647) {
+        Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
+              Values.ppr(this.toString()));
       }
       return (int)sz;
     }
@@ -203,12 +213,19 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	protected boolean needBigInteger() {
 		long sz = 1;
 		for (int i = 0; i < values.length; i++) {
-			sz *= values[i].size();
-			if (sz < -2147483648 || sz > 2147483647) {
-				return true;
+			final int fsz = values[i].size();
+			// See size() above: an empty field makes the record set empty, and the
+			// cardinality of {} needs no BigInteger. Returning true here would send the
+			// empty record set to BigIntegerSubsetEnumerator, whose modulus is the
+			// product of the fields, i.e. zero.
+			if (fsz == 0) {
+				return false;
+			}
+			if (sz <= 2147483647) {
+				sz *= fsz;
 			}
 		}
-		return false;
+		return sz > 2147483647;
 	}
 
   @Override

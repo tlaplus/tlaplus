@@ -213,11 +213,21 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     try {
       long sz = 1;
       for (int i = 0; i < this.sets.length; i++) {
-        sz *= this.sets[i].size();
-        if (sz < -2147483648 || sz > 2147483647) {
-          Assert.fail("Overflow when computing the number of elements in " +
-                Values.ppr(this.toString()), getSource());
+        final int csz = this.sets[i].size();
+        // S_1 \X ... \X S_n = {} if any S_i = {}, no matter how large the other
+        // components are, which is why the loop must not report an overflow before it
+        // has seen every component. Freezing sz once it exceeds an int keeps the
+        // remaining products from overflowing the long.
+        if (csz == 0) {
+          return 0;
         }
+        if (sz <= 2147483647) {
+          sz *= csz;
+        }
+      }
+      if (sz > 2147483647) {
+        Assert.fail("Overflow when computing the number of elements in " +
+              Values.ppr(this.toString()), getSource());
       }
       return (int)sz;
     }

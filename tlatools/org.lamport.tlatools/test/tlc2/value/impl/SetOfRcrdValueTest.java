@@ -27,6 +27,7 @@ package tlc2.value.impl;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -192,5 +193,23 @@ public class SetOfRcrdValueTest {
 		}
 
 		assertEquals(k, randomsubsetValues.size());
+	}
+
+	// [N0: 1..4000, N1: 1..4000, N2: 1..4000, N3: {}] = {}, which the cardinality of
+	// the other fields must not hide: 4000^3 exceeds Integer.MAX_VALUE, so stopping at
+	// the first overflow reports an empty record set as too large to count and picks
+	// BigIntegerSubsetEnumerator for it, whose modulus is the product of the fields,
+	// i.e. zero.
+	@Test
+	public void testEmptyFieldBehindOverflowingFields() {
+		final UniqueString[] names = getNames(4);
+		final Value big = new IntervalValue(1, 4000);
+		final SetOfRcdsValue rcds = new SetOfRcdsValue(names,
+				new Value[] { big, big, big, new SetEnumValue() }, false);
+
+		assertEquals(0, rcds.size());
+		assertFalse(rcds.needBigInteger());
+		assertEquals(0, rcds.elements(3).all().size());
+		assertEquals(0, rcds.getRandomSubset(3).size());
 	}
 }

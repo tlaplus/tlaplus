@@ -47,4 +47,18 @@ public class SetOfTuplesValueTest {
 		assertTrue(outter.toString().contains("\\X"));
 		assertEquals("((1..2 \\X 1..2) \\X (1..2 \\X 1..2))", outter.toString());
 	}
+
+	// 1..4000 \X 1..4000 \X 1..4000 \X {} = {}, which the cardinality of the other
+	// components must not hide: 4000^3 exceeds Integer.MAX_VALUE, so stopping at the
+	// first overflow reports an empty product as too large to count.
+	@Test
+	public void testEmptyComponentBehindOverflowingComponents() {
+		final Value big = new IntervalValue(1, 4000);
+		final SetOfTuplesValue product = new SetOfTuplesValue(
+				new Value[] { big, big, big, new SetEnumValue() });
+
+		assertEquals(0, product.size());
+		assertEquals(0, product.elements(3).all().size());
+		assertEquals(0, product.getRandomSubset(3).size());
+	}
 }
