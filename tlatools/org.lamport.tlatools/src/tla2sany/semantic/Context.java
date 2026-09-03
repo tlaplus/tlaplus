@@ -408,19 +408,24 @@ public class Context implements ExploreNode {
 						// a LOCAL INSTANCE. Previously, it always added the warning.
 						if (symbol.getClass() == sn.getClass()) {
 							if (!symbol.sameOriginallyDefinedInModule(sn)) {
-								errors.addWarning(
+								errors.addMessage(
 										ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY,
 										sn.getTreeNode().getLocation(),
-										"Warning: the " + kindOfNode(symbol) + " of '" + sName.toString()
-												+ "' conflicts with \nits " + kindOfNode(symbol) + " at "
-												+ symbol.getTreeNode().getLocation() + ".");
+										"Warning: the %s of '%s' conflicts with \nits %s at %s.",
+										kindOfNode(symbol),
+										sName.toString(),
+										kindOfNode(symbol),
+										symbol.getTreeNode().getLocation());
 							}
 						} else {
-							errors.addError(
+							errors.addMessage(
 									ErrorCode.EXTENDED_MODULES_SYMBOL_UNIFICATION_CONFLICT,
 									sn.getTreeNode().getLocation(),
-									"The " + kindOfNode(symbol) + " of '" + sName.toString() + "' conflicts with \nits "
-											+ kindOfNode(symbol) + " at " + symbol.getTreeNode().getLocation() + ".");
+									"The %s of '%s' conflicts with \nits %s at %s.",
+									kindOfNode(sn),
+									sName.toString(),
+									kindOfNode(symbol),
+									symbol.getTreeNode().getLocation());
 
 //                               "Incompatible multiple definitions of symbol '" +
 //                               sName.toString() +

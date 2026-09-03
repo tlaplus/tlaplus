@@ -74,7 +74,7 @@ public class SubstInNode extends ExprNode {
     this.instantiatingModule = ingmn;
     this.instantiatedModule = edmn;
     if (this.body == null) {
-      errors.addError(ErrorCode.INTERNAL_ERROR,
+      errors.addMessage(ErrorCode.INTERNAL_ERROR,
 		      treeNode.getLocation(), "Substitution error, " +
 		      "probably due to error \nin module being instantiated.");
     }
@@ -227,10 +227,11 @@ public class SubstInNode extends ExprNode {
       if (!this.substs[index].isImplicit()) {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
-        errors.addError(
+        errors.addMessage(
           ErrorCode.INSTANCE_SUBSTITUTION_SYMBOL_REDEFINED_MULTIPLE_TIMES,
           stn.getLocation(),
-          "Multiple substitutions for symbol '" + lhs.toString() + "' in substitution."
+          "Multiple substitutions for symbol '%s' in substitution.",
+          lhs.toString()
         );
       }
       else {
@@ -293,11 +294,13 @@ public class SubstInNode extends ExprNode {
 
       // If not, then report an error
       if ( j >= this.substs.length ) {
-        errors.addError(ErrorCode.INSTANCE_SUBSTITUTION_MISSING_SYMBOL,
+        errors.addMessage(ErrorCode.INSTANCE_SUBSTITUTION_MISSING_SYMBOL,
 			stn.getLocation(),
-			"Substitution missing for symbol " + opName + " declared at " +
-			decls.elementAt(i).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getName() + "." );
+			"Substitution missing for symbol %s declared at %s \n"
+			    + "and instantiated in module %s.",
+			opName,
+			decls.elementAt(i).getTreeNode().getLocation(),
+			instantiatingModule.getName());
       }
     }
   }

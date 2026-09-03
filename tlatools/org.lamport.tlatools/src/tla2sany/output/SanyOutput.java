@@ -37,6 +37,9 @@ public interface SanyOutput {
    * is appended to the given log message to separate it from subsequent
    * messages, similar to {@link PrintStream#println()}. The variable args
    * are interpolated into the format string using {@link String#format}.
+   * Callers passing no args get their message logged verbatim, since text
+   * assembled from the spec being parsed can contain a percent sign that is
+   * not meant as a format specifier.
    *
    * @param level The level at which to log the message.
    * @param format A string into which args is interpolated.

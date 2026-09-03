@@ -107,7 +107,7 @@ public class NewSymbNode extends LevelNode {
         level = Math.max(set.getLevel(), level);
         if (level == TemporalLevel) {
           levelCorrect = false;
-          errors.addError(ErrorCode.ASSUME_PROVE_NEW_CONSTANT_HAS_TEMPORAL_LEVEL_BOUND,
+          errors.addMessage(ErrorCode.ASSUME_PROVE_NEW_CONSTANT_HAS_TEMPORAL_LEVEL_BOUND,
                           this.stn.getLocation(),
                           "Level error:\n" +
                           "Temporal formula used as set.");

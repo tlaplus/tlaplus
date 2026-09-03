@@ -53,10 +53,11 @@ public class NumeralNode extends ExprNode {
       } else if (num.charAt(1)=='h') {
         radix = 16;
       } else {
-        throw errors.addError(
+        throw errors.addMessage(
           ErrorCode.INTERNAL_ERROR,
           stn.getLocation(),
-          "Unknown numeral format: " + num
+          "Unknown numeral format: %s",
+          num
         );
      }
      num = num.substring(2);

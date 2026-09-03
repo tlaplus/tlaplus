@@ -71,7 +71,7 @@ public class APSubstInNode extends LevelNode {
     this.instantiatingModule = ingmn;
     this.instantiatedModule = edmn;
     if (this.body == null) {
-      errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+      errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 		      treeNode.getLocation(), "Substitution error, " +
 		      "probably due to error in module being instantiated.");
     }
@@ -215,9 +215,10 @@ public class APSubstInNode extends LevelNode {
       if (!this.substs[index].isImplicit()) {
 	// if it is not an implicit substitution, then replacing it is
 	// an error.
-        errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
-			stn.getLocation(), "Multiple substitutions for symbol '" +
-			lhs.toString() + "' in substitution.");
+        errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+			stn.getLocation(),
+			"Multiple substitutions for symbol '%s' in substitution.",
+			lhs.toString());
       }
       else {
 	// if it is an implicit subst, then replacing it with an
@@ -256,9 +257,10 @@ public class APSubstInNode extends LevelNode {
         this.substs = newSubsts;
       }
       else {
-        errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+        errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 			stn.getLocation(),
-			"Illegal identifier '" + lhs + "' in LHS of substitution." );
+			"Illegal identifier '%s' in LHS of substitution.",
+			lhs);
       }
     }
   }
@@ -284,11 +286,13 @@ public class APSubstInNode extends LevelNode {
 
       // If not, then report an error
       if ( j >= this.substs.length ) {
-        errors.addError(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
+        errors.addMessage(ErrorCode.SUSPECTED_UNREACHABLE_CHECK,
 			stn.getLocation(),
-			"Substitution missing for symbol " + opName + " declared at " +
-			decls.elementAt(i).getTreeNode().getLocation() +
-			" \nand instantiated in module " + instantiatingModule.getName() + "." );
+			"Substitution missing for symbol %s declared at %s \n"
+			    + "and instantiated in module %s.",
+			opName,
+			decls.elementAt(i).getTreeNode().getLocation(),
+			instantiatingModule.getName());
       }
     }
   }

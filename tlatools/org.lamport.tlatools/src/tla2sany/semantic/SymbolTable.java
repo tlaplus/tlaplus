@@ -142,10 +142,11 @@ public class SymbolTable implements ASTConstants {
     // Note check below this one encapsulates this case so this check should
     // come first so a more descriptive error can be provided.
     if (currentBinding.getTreeNode().getLocation().source().equals("--TLA+ BUILTINS--")) {
-      errors.addError(
+      errors.addMessage(
         ErrorCode.BUILT_IN_SYMBOL_REDEFINED,
         symbol.getTreeNode().getLocation(),
-        "Symbol " + name + " is a built-in operator, and cannot be redefined.");  
+        "Symbol %s is a built-in operator, and cannot be redefined.",
+        name);
       return false;
     } 
 
@@ -159,11 +160,12 @@ public class SymbolTable implements ASTConstants {
 	symbol.getKind() == BoundSymbolKind ||
 	currentBinding.getKind() != symbol.getKind() ||
         currentBinding.getArity() != symbol.getArity()) {
-      errors.addError(ErrorCode.SYMBOL_REDEFINED,
+      errors.addMessage(ErrorCode.SYMBOL_REDEFINED,
 		      symbol.getTreeNode().getLocation(),
-		      "Multiply-defined symbol '" + name +
-                      "': this definition or declaration conflicts \nwith the one at " +
-                      currentBinding.getTreeNode().getLocation().toString() + ".");
+		      "Multiply-defined symbol '%s': this definition or declaration conflicts \n"
+		          + "with the one at %s.",
+		      name,
+		      currentBinding.getTreeNode().getLocation().toString());
       return false;
     }
 // System.out.println("*** Was found in symbol table " + symbol.getKind());
@@ -210,16 +212,14 @@ public class SymbolTable implements ASTConstants {
     if (symbol.sameOriginallyDefinedInModule(currentBinding)) {
         return true ;
     }
-    errors.addWarning(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY,
-		      symbol.getTreeNode().getLocation(), 
-		      "Multiple declarations or definitions for symbol " + name +
-		      ".  \nThis duplicates the one at " +
-		      currentBinding.getTreeNode().getLocation().toString()
-		      + "."
-		      // This part of message commented out by LL on 24 Oct 2009
-//		      The original declaration or definition will be used, " +
-//		      "and this one will be ignored." 
-		      ); 
+    // This part of message commented out by LL on 24 Oct 2009
+    //   "The original declaration or definition will be used, "
+    //   + "and this one will be ignored."
+    errors.addMessage(ErrorCode.INSTANCED_MODULES_SYMBOL_UNIFICATION_AMBIGUITY,
+            symbol.getTreeNode().getLocation(),
+            "Multiple declarations or definitions for symbol %s.  \nThis duplicates the one at %s.",
+            name,
+            currentBinding.getTreeNode().getLocation().toString());
 
     return true; 
   } // end addSymbol() 
@@ -239,11 +239,12 @@ public class SymbolTable implements ASTConstants {
       return true;
     }
 
-    errors.addError(ErrorCode.MODULE_REDEFINED,
+    errors.addMessage(ErrorCode.MODULE_REDEFINED,
 		    symbol.getTreeNode().getLocation(),
-		    "Multiply-defined module '" + name +
-		    "': this definition or declaration conflicts \nwith the one at " +
-		    currentBinding.getTreeNode().getLocation().toString() + ".");
+		    "Multiply-defined module '%s': this definition or declaration conflicts \n"
+		        + "with the one at %s.",
+		    name,
+		    currentBinding.getTreeNode().getLocation().toString());
     return false;
   }
   
