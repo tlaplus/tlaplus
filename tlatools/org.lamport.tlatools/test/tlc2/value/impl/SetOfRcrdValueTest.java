@@ -39,7 +39,7 @@ import org.junit.Test;
 
 import tlc2.module.Naturals;
 import tlc2.util.FP64;
-import tlc2.value.impl.SetOfRcdsValue.SubsetEnumerator;
+import tlc2.value.impl.SetOfFcnsOrRcdsValue.SubsetEnumerator;
 import util.UniqueString;
 
 public class SetOfRcrdValueTest {
@@ -99,7 +99,7 @@ public class SetOfRcrdValueTest {
 			final SubsetEnumerator rcds) {
 		for (int i = 0; i < set.size(); i++) {
 			// Check names are stable.
-			final RecordValue rcd = rcds.elementAt(i);
+			final RecordValue rcd = (RecordValue) rcds.elementAt(i);
 			assertArrayEquals(names, rcd.names);
 			// Check values are from correct range.
 			final Value[] rcdValues = rcd.values;

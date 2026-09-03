@@ -17,4 +17,24 @@ ASSUME Cardinality(Nat \X {}) = 0
 ASSUME RandomSubset(1, [Nat -> {}]) = {}
 ASSUME RandomSubset(1, [n1 : Nat, n2 : {}]) = {}
 ASSUME RandomSubset(1, Nat \X {}) = {}
+
+\* The empty argument in the other position, or beside one whose emptiness TLC
+\* cannot decide at all. TLC asks the arguments in order and stops at the first
+\* empty one, which is why the empty set has to come before Nat \ {0};
+\* EmptySetEqCases.tla states that order as RcdEmptyThenDiffSym and the reverse
+\* one as an AssertError.
+ASSUME RandomSubset(1, [n1 : {}, n2 : Nat]) = {}
+ASSUME RandomSubset(1, [n1 : {}, n2 : (Nat \ {0})]) = {}
+
+\* The empty argument is itself one of the three sets, i.e. the emptiness that
+\* decides is one that TLC has to decide the same way one level down.
+ASSUME RandomSubset(1, [Nat -> [Nat -> {}]]) = {}
+ASSUME RandomSubset(1, [n1 : [Nat -> {}]]) = {}
+
+\* Arguments that TLC can enumerate but whose cardinalities multiply beyond
+\* 2147483647, the largest integer TLC represents: 1..50000 twice gives
+\* 2500000000. The empty argument decides before any of that is computed, so
+\* picking one element neither overflows nor reaches for a big integer.
+ASSUME RandomSubset(1, [((1..50000) \X (1..50000)) -> {}]) = {}
+ASSUME RandomSubset(1, [n1 : 1..50000, n2 : 1..50000, n3 : {}]) = {}
 ============================================================================

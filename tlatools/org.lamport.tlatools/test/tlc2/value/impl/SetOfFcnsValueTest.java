@@ -44,7 +44,7 @@ import org.junit.Test;
 
 import tlc2.module.Naturals;
 import tlc2.util.FP64;
-import tlc2.value.impl.SetOfFcnsValue.SubsetEnumerator;
+import tlc2.value.impl.SetOfFcnsOrRcdsValue.SubsetEnumerator;
 import util.Assert.TLCRuntimeException;
 
 public class SetOfFcnsValueTest {
@@ -66,7 +66,7 @@ public class SetOfFcnsValueTest {
 
 		assertEquals(512, setOfFcnsValue.size());
 
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(512);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(512);
 		final SetEnumValue emptyset = new SetEnumValue();
 		int i = 0;
 		assertEquals(new FcnRcdValue(values, new Value[] { emptyset, emptyset, emptyset }, true),
@@ -165,7 +165,7 @@ public class SetOfFcnsValueTest {
 		FP64.Init();
 		final Set<FcnRcdValue> enumeratorValues = new HashSet<>(27);
 		
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
 		for (int i = 0; i < setOfFcnsValue.size(); i++) {
 			FcnRcdValue rcd = (FcnRcdValue) enumerator.elementAt(i);
 			assertEquals(3, rcd.domain.length);
@@ -201,7 +201,7 @@ public class SetOfFcnsValueTest {
 		FP64.Init();
 		final Set<FcnRcdValue> enumeratorValues = new HashSet<>(27);
 
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
 		for (int i = 0; i < setOfFcnsValue.size(); i++) {
 			FcnRcdValue rcd = (FcnRcdValue) enumerator.elementAt(i);
 			assertEquals(3, rcd.domain.length);
@@ -250,7 +250,7 @@ public class SetOfFcnsValueTest {
 
 		assertEquals(9, setOfFcnsValue.size());
 
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(9);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(9);
 		for (int i = 0; i < setOfFcnsValue.size(); i++) {
 			FcnRcdValue rcd = (FcnRcdValue) enumerator.elementAt(i);
 			assertEquals(2, rcd.domain.length);
@@ -279,7 +279,7 @@ public class SetOfFcnsValueTest {
 
 		assertEquals(27, setOfFcnsValue.size());
 
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(27);
 		for (int i = 0; i < setOfFcnsValue.size(); i++) {
 			FcnRcdValue rcd = (FcnRcdValue) enumerator.elementAt(i);
 			assertEquals(3, rcd.domain.length);
@@ -326,7 +326,7 @@ public class SetOfFcnsValueTest {
 
 		assertEquals(256, setOfFcnsValue.size());
 
-		final SetOfFcnsValue.SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(256);
+		final SubsetEnumerator enumerator = (SubsetEnumerator) setOfFcnsValue.elements(256);
 		for (int i = 0; i < setOfFcnsValue.size(); i++) {
 			FcnRcdValue rcd = (FcnRcdValue) enumerator.elementAt(i);
 			assertEquals(4, rcd.domain.length);
