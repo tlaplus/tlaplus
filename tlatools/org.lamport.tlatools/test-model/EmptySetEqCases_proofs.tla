@@ -687,6 +687,26 @@ THEOREM TupStrReflexive
   BY DEF TupStrReflexive
 
 -----------------------------------------------------------------------------
+\* Sets built from a value whose emptiness TLA+ leaves open, where the
+\* congruence rules are all that is left. No witness w \in 1 exists to
+\* instantiate a rule about a non-empty domain, field, or component with.
+
+THEOREM FcnIntReflexive
+  BY ESE_FcnSetCongruence DEF FcnIntReflexive
+
+THEOREM FcnStrLitReflexive
+  BY ESE_FcnSetCongruence DEF FcnStrLitReflexive
+
+THEOREM FcnTupleReflexive
+  BY ESE_FcnSetCongruence DEF FcnTupleReflexive
+
+THEOREM RcdIntReflexive
+  BY ESE_RcdSetCongruence DEF RcdIntReflexive
+
+THEOREM TupIntReflexive
+  BY ESE_TupleSetCongruence DEF TupIntReflexive
+
+-----------------------------------------------------------------------------
 \* The operators that have to agree with the comparisons above.
 
 THEOREM InUnitSingletonRange
