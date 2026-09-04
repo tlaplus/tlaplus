@@ -8,7 +8,6 @@
 package tlc2.value.impl;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -185,11 +184,21 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     try {
       long sz = 1;
       for (int i = 0; i < this.values.length; i++) {
-        sz *= this.values[i].size();
-        if (sz < -2147483648 || sz > 2147483647) {
-          Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
-                Values.ppr(this.toString()));
+        final int fsz = this.values[i].size();
+        // [h_1: S_1, ..., h_n: S_n] = {} if any S_i = {}, no matter how large the
+        // other fields are, which is why the loop must not report an overflow before
+        // it has seen every field. Freezing sz once it exceeds an int keeps the
+        // remaining products from overflowing the long.
+        if (fsz == 0) {
+          return 0;
         }
+        if (sz <= 2147483647) {
+          sz *= fsz;
+        }
+      }
+      if (sz > 2147483647) {
+        Assert.fail(EC.TLC_MODULE_OVERFLOW, "the number of elements in:\n" +
+              Values.ppr(this.toString()));
       }
       return (int)sz;
     }
@@ -203,12 +212,19 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	protected boolean needBigInteger() {
 		long sz = 1;
 		for (int i = 0; i < values.length; i++) {
-			sz *= values[i].size();
-			if (sz < -2147483648 || sz > 2147483647) {
-				return true;
+			final int fsz = values[i].size();
+			// See size() above: an empty field makes the record set empty, and the
+			// cardinality of {} needs no BigInteger. Returning true here would send the
+			// empty record set to BigIntegerSubsetEnumerator, whose modulus is the
+			// product of the fields, i.e. zero.
+			if (fsz == 0) {
+				return false;
+			}
+			if (sz <= 2147483647) {
+				sz *= fsz;
 			}
 		}
-		return false;
+		return sz > 2147483647;
 	}
 
   @Override
@@ -499,88 +515,26 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
 	@Override
-	protected tlc2.value.impl.SetOfFcnsOrRcdsValue.SubsetEnumerator getSubsetEnumerator(int k, int n) {
-		return new SubsetEnumerator(k, n);
+	protected Product product() {
+		return new RcdProduct();
 	}
-	
-	class SubsetEnumerator extends SetOfFcnsOrRcdsValue.SubsetEnumerator {
-		
-		private final SetEnumValue[] convert;
-		private final int[] rescaleBy;
 
-		SubsetEnumerator(final int k, final int n) {
-			super(k, n);
-			
-			convert = new SetEnumValue[values.length];
-			rescaleBy = new int[values.length];
-			
-			int numElems = 1; // 1 to avoid div by zero in elementAt
-			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = (SetEnumValue) values[i].toSetEnum();
-				rescaleBy[i] = numElems;
-				numElems *= convert[i].elems.size();
+	final class RcdProduct extends Product {
+
+		// [h_1: S_1, ..., h_n: S_n] is the product of one set per field, i.e. the radix
+		// of a digit is the cardinality of the field set it belongs to.
+		@Override
+		SetEnumValue[] constituents() {
+			final SetEnumValue[] constituents = new SetEnumValue[values.length];
+			for (int i = 0; i < values.length; i++) {
+				constituents[i] = (SetEnumValue) values[i].toSetEnum();
 			}
+			return constituents;
 		}
 
 		@Override
-        protected RecordValue elementAt(final int idx) {
-			assert 0 <= idx && idx < size();
-			
-			final Value[] val = new Value[names.length];
-			for (int i = 0; i < val.length; i++) {
-				final SetEnumValue sev = convert[i];
-				final int mod = sev.elems.size();
-				
-				final int rescaledIdx = (int) Math.floor(idx / rescaleBy[i]);
-				final int elementAt = rescaledIdx % mod;
-				
-				val[i] = sev.elems.elementAt(elementAt);
-			}
-			return new RecordValue(names, val, false, cm);
-		}
-	}
-	
-	@Override
-	protected BigIntegerSubsetEnumerator getBigSubsetEnumerator(int k) {
-		return new BigIntegerSubsetEnumerator(k);
-	}
-	
-	class BigIntegerSubsetEnumerator extends SetOfFcnsOrRcdsValue.BigIntegerSubsetEnumerator {
-		
-		private final SetEnumValue[] convert;
-		private final BigInteger[] rescaleBy;
-		
-		public BigIntegerSubsetEnumerator(final int k) {
-			super(k);
-			
-			convert = new SetEnumValue[values.length];
-			rescaleBy = new BigInteger[values.length];
-			
-			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
-			for (int i = values.length - 1; i >= 0; i--) {
-				convert[i] = (SetEnumValue) values[i].toSetEnum();
-				rescaleBy[i] = numElems;
-				numElems = numElems.multiply(BigInteger.valueOf(convert[i].elems.size()));
-			}
-			
-			// The size of the (enumerated) SetOfFcnsOrRcdsValue needs BigInteger.
-			this.sz = numElems;
-		}
-
-		@Override
-		protected Value elementAt(final BigInteger idx) {
-			final Value[] val = new Value[names.length];
-			for (int i = 0; i < val.length; i++) {
-				final SetEnumValue sev = convert[i];
-				final int mod = sev.elems.size();
-
-				final BigInteger d = idx.divide(rescaleBy[i]);
-				final BigInteger m = d.mod(BigInteger.valueOf(mod));
-				final int elementAt = m.intValueExact();
-
-				val[i] = sev.elems.elementAt(elementAt);
-			}
-			return new RecordValue(names, val, false, cm);
+		Value elementOf(final Value[] fields) {
+			return new RecordValue(names, fields, false, cm);
 		}
 	}
 }

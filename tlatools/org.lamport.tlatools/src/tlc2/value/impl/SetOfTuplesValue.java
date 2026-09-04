@@ -22,7 +22,7 @@ import util.Assert;
  * The Cartesian product S_1 \X S_2 \X ... \X S_n, whose elements are the n-tuples
  * <<e_1, e_2, ..., e_n>> with e_i \in S_i.
  */
-public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
+public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   // One set per component instead of nesting two-component values, because an
   // n-ary Cartesian product is a set of n-tuples and not a set of nested pairs:
   //
@@ -213,11 +213,21 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     try {
       long sz = 1;
       for (int i = 0; i < this.sets.length; i++) {
-        sz *= this.sets[i].size();
-        if (sz < -2147483648 || sz > 2147483647) {
-          Assert.fail("Overflow when computing the number of elements in " +
-                Values.ppr(this.toString()), getSource());
+        final int csz = this.sets[i].size();
+        // S_1 \X ... \X S_n = {} if any S_i = {}, no matter how large the other
+        // components are, which is why the loop must not report an overflow before it
+        // has seen every component. Freezing sz once it exceeds an int keeps the
+        // remaining products from overflowing the long.
+        if (csz == 0) {
+          return 0;
         }
+        if (sz <= 2147483647) {
+          sz *= csz;
+        }
+      }
+      if (sz > 2147483647) {
+        Assert.fail("Overflow when computing the number of elements in " +
+              Values.ppr(this.toString()), getSource());
       }
       return (int)sz;
     }
@@ -226,6 +236,49 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
       else { throw e; }
     }
   }
+
+	@Override
+	protected boolean needBigInteger() {
+		long sz = 1;
+		for (int i = 0; i < sets.length; i++) {
+			final int csz = sets[i].size();
+			// See size() above: an empty component makes the product empty, and the
+			// cardinality of {} needs no BigInteger. Returning true here would send the
+			// empty product to BigIntegerSubsetEnumerator, whose modulus is the product
+			// of the components, i.e. zero.
+			if (csz == 0) {
+				return false;
+			}
+			if (sz <= 2147483647) {
+				sz *= csz;
+			}
+		}
+		return sz > 2147483647;
+	}
+
+	@Override
+	protected Product product() {
+		return new TupleProduct();
+	}
+
+	final class TupleProduct extends Product {
+
+		// S_1 \X ... \X S_n is the product of one set per component, i.e. the radix of a
+		// digit is the cardinality of the component it belongs to.
+		@Override
+		SetEnumValue[] constituents() {
+			final SetEnumValue[] constituents = new SetEnumValue[sets.length];
+			for (int i = 0; i < sets.length; i++) {
+				constituents[i] = (SetEnumValue) sets[i].toSetEnum();
+			}
+			return constituents;
+		}
+
+		@Override
+		Value elementOf(final Value[] components) {
+			return new TupleValue(components, cm);
+		}
+	}
 
   @Override
   public final boolean isNormalized() {
