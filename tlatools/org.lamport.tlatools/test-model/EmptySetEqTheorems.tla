@@ -17,7 +17,7 @@
 (*                                                                         *)
 (* See https://github.com/tlaplus/tlaplus/issues/1407                      *)
 (***************************************************************************)
-EXTENDS FiniteSets, Integers
+EXTENDS FiniteSets, Integers, Sequences
 
 (***************************************************************************)
 (* When each of the four set constructors that TLC represents without      *)
@@ -35,6 +35,10 @@ THEOREM ESE_RcdSetEmpty1 ==
 THEOREM ESE_RcdSetEmpty ==
   ASSUME NEW S, NEW T
   PROVE  [n1 : S, n2 : T] = {} <=> (S = {} \/ T = {})
+
+THEOREM ESE_RcdSetEmpty3 ==
+  ASSUME NEW S, NEW T, NEW U
+  PROVE  [n1 : S, n2 : T, n3 : U] = {} <=> (S = {} \/ T = {} \/ U = {})
 
 THEOREM ESE_TupleSetEmpty ==
   ASSUME NEW S, NEW T
@@ -188,6 +192,65 @@ THEOREM ESE_UnitCardinality ==
 THEOREM ESE_EmptyCardinality ==
   ASSUME NEW S, NEW T, NEW w, w \in S, T = {}
   PROVE  Cardinality([S -> T]) = 0
+
+(***************************************************************************)
+(* The same sets read through IsFiniteSet. Each is { <<>> } or {}, so one  *)
+(* empty argument decides, and ESE_EmptyRangeFinite needs no witness in S: *)
+(* [S -> {}] is {} where S is non-empty and { <<>> } where it is not.      *)
+(***************************************************************************)
+
+THEOREM ESE_UnitFinite ==
+  ASSUME NEW S, NEW T, S = {}
+  PROVE  IsFiniteSet([S -> T])
+
+THEOREM ESE_EmptyRangeFinite ==
+  ASSUME NEW S, NEW T, T = {}
+  PROVE  IsFiniteSet([S -> T])
+
+THEOREM ESE_RcdSetEmptyFinite1 ==
+  ASSUME NEW S, S = {}
+  PROVE  IsFiniteSet([n1 : S])
+
+THEOREM ESE_RcdSetEmptyFinite ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  IsFiniteSet([n1 : S, n2 : T])
+
+THEOREM ESE_RcdSetEmptyFinite3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  IsFiniteSet([n1 : S, n2 : T, n3 : U])
+
+THEOREM ESE_TupleSetEmptyFinite ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  IsFiniteSet(S \X T)
+
+THEOREM ESE_TupleSetEmptyFinite3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  IsFiniteSet(S \X T \X U)
+
+THEOREM ESE_SingletonRange ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  [S -> T] = { [x \in S |-> w] }
+
+THEOREM ESE_SingletonRangeFinite ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  IsFiniteSet([S -> T])
+
+THEOREM ESE_SingletonDomainFinite ==
+  ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
+  PROVE  IsFiniteSet([S -> T])
+
+THEOREM ESE_PairFinite ==
+  ASSUME NEW a, NEW b, a # b
+  PROVE  /\ IsFiniteSet({a, b})
+         /\ Cardinality({a, b}) = 2
+
+THEOREM ESE_SeqEmpty ==
+  ASSUME NEW S, S = {}
+  PROVE  Seq(S) = { <<>> }
+
+THEOREM ESE_SeqEmptyFinite ==
+  ASSUME NEW S, S = {}
+  PROVE  IsFiniteSet(Seq(S))
 
 (***************************************************************************)
 (* The operators that have to agree with the equalities above.             *)

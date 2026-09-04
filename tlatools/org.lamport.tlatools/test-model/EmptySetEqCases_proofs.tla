@@ -632,6 +632,268 @@ THEOREM CardEmptyInterval
   <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptyInterval
 
 -----------------------------------------------------------------------------
+\* The finiteness of the same sets. A finiteness rule needs one empty
+\* argument and no witness, so these proofs supply only an emptiness.
+
+\* Sets of functions that denote { <<>> }.
+
+THEOREM FinUnitEmptyRange
+  BY ESE_UnitFinite DEF FinUnitEmptyRange
+
+THEOREM FinUnitInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitFinite DEF FinUnitInterval
+
+THEOREM FinUnitRcdField
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_UnitFinite DEF FinUnitRcdField
+
+THEOREM FinUnitTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitFinite DEF FinUnitTuple
+
+THEOREM FinUnitFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_UnitFinite DEF FinUnitFcnSet
+
+THEOREM FinUnitFcnSetRange
+  BY ESE_UnitFinite DEF FinUnitFcnSetRange
+
+\* An infinite co-domain beside or inside the empty domain.
+
+THEOREM FinUnitNatRange
+  BY ESE_UnitFinite DEF FinUnitNatRange
+
+THEOREM FinUnitStrRange
+  BY ESE_UnitFinite DEF FinUnitStrRange
+
+THEOREM FinUnitFcnSetNat
+  BY NatToEmpty, ESE_UnitFinite DEF FinUnitFcnSetNat
+
+\* Sets of functions that are empty, where ESE_EmptyRangeFinite needs no
+\* witness in the domain.
+
+THEOREM FinEmptySingleton
+  BY ESE_EmptyRangeFinite DEF FinEmptySingleton
+
+THEOREM FinEmptyInterval
+  BY ESE_EmptyRangeFinite DEF FinEmptyInterval
+
+THEOREM FinEmptySubsetEmpty
+  BY ESE_EmptyRangeFinite DEF FinEmptySubsetEmpty
+
+THEOREM FinEmptyRcdRange
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_EmptyRangeFinite DEF FinEmptyRcdRange
+
+THEOREM FinEmptyTupleRange
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyRangeFinite DEF FinEmptyTupleRange
+
+THEOREM FinEmptyFcnSetRange
+  <1>1. "e1" \in {"e1"}
+    OBVIOUS
+  <1>2. [{"e1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyRangeFinite DEF FinEmptyFcnSetRange
+
+\* An infinite domain beside or inside the empty co-domain.
+
+THEOREM FinEmptyNatDomain
+  BY ESE_EmptyRangeFinite DEF FinEmptyNatDomain
+
+THEOREM FinEmptySeqDomain
+  BY ESE_EmptyRangeFinite DEF FinEmptySeqDomain
+
+THEOREM FinEmptyDiffDomain
+  BY ESE_EmptyRangeFinite DEF FinEmptyDiffDomain
+
+THEOREM FinEmptyFcnSetNat
+  BY NatToEmpty, ESE_EmptyRangeFinite DEF FinEmptyFcnSetNat
+
+\* Sets of records that are empty.
+
+THEOREM FinRcdEmptyField
+  BY ESE_RcdSetEmptyFinite1 DEF FinRcdEmptyField
+
+THEOREM FinRcdEmptyArity
+  BY ESE_RcdSetEmptyFinite DEF FinRcdEmptyArity
+
+THEOREM FinRcdEmptyPosition
+  BY ESE_RcdSetEmptyFinite DEF FinRcdEmptyPosition
+
+THEOREM FinRcdEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_RcdSetEmptyFinite1 DEF FinRcdEmptyFcnSet
+
+THEOREM FinRcdEmptyRcd
+  <1>1. [n2 : {}] = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetEmptyFinite1 DEF FinRcdEmptyRcd
+
+THEOREM FinRcdEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_RcdSetEmptyFinite1 DEF FinRcdEmptyTuple
+
+\* An infinite field beside or inside the empty one, in either position.
+
+THEOREM FinRcdEmptyFieldNat
+  BY ESE_RcdSetEmptyFinite DEF FinRcdEmptyFieldNat
+
+THEOREM FinRcdEmptyNatField
+  BY ESE_RcdSetEmptyFinite DEF FinRcdEmptyNatField
+
+THEOREM FinRcdEmptyThenDiff
+  BY ESE_RcdSetEmptyFinite DEF FinRcdEmptyThenDiff
+
+THEOREM FinRcdDiffThenEmpty
+  BY ESE_RcdSetEmptyFinite DEF FinRcdDiffThenEmpty
+
+THEOREM FinRcdEmptyFcnSetNat
+  BY NatToEmpty, ESE_RcdSetEmptyFinite1 DEF FinRcdEmptyFcnSetNat
+
+\* Cartesian products that are empty.
+
+THEOREM FinTupEmptyComponent
+  BY ESE_TupleSetEmptyFinite DEF FinTupEmptyComponent
+
+THEOREM FinTupEmptyPosition
+  BY ESE_TupleSetEmptyFinite DEF FinTupEmptyPosition
+
+THEOREM FinTupEmptyArity
+  BY ESE_TupleSetEmptyFinite3 DEF FinTupEmptyArity
+
+THEOREM FinTupEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_TupleSetEmptyFinite DEF FinTupEmptyFcnSet
+
+THEOREM FinTupEmptyRcd
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_TupleSetEmptyFinite DEF FinTupEmptyRcd
+
+THEOREM FinTupEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_TupleSetEmptyFinite DEF FinTupEmptyTuple
+
+\* An infinite component beside or inside the empty one, in either position.
+
+THEOREM FinTupEmptyNatSecond
+  BY ESE_TupleSetEmptyFinite DEF FinTupEmptyNatSecond
+
+THEOREM FinTupEmptyNatFirst
+  BY ESE_TupleSetEmptyFinite DEF FinTupEmptyNatFirst
+
+THEOREM FinTupDiffThenEmpty
+  BY ESE_TupleSetEmptyFinite DEF FinTupDiffThenEmpty
+
+THEOREM FinTupEmptyFcnSetNat
+  BY NatToEmpty, ESE_TupleSetEmptyFinite DEF FinTupEmptyFcnSetNat
+
+THEOREM FinSingletonNatDomain
+  BY ESE_SingletonRangeFinite DEF FinSingletonNatDomain
+
+THEOREM FinSingletonIntDomain
+  BY ESE_SingletonRangeFinite DEF FinSingletonIntDomain
+
+THEOREM FinSingletonStrDomain
+  BY ESE_SingletonRangeFinite DEF FinSingletonStrDomain
+
+THEOREM FinSingletonDiffDomain
+  BY ESE_SingletonRangeFinite DEF FinSingletonDiffDomain
+
+THEOREM FinSingletonSeqDomain
+  BY ESE_SingletonRangeFinite DEF FinSingletonSeqDomain
+
+THEOREM FinSingletonInterval
+  <1>1. 1..1 = {1}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonInterval
+
+THEOREM FinSingletonRcdRange
+  <1>1. [n1 : {"d1"}] = { [n1 |-> "d1"] }
+    <2>1. ASSUME NEW r \in [n1 : {"d1"}]
+          PROVE  r = [n1 |-> "d1"]
+      OBVIOUS
+    <2>2. [n1 |-> "d1"] \in [n1 : {"d1"}]
+      OBVIOUS
+    <2>3. QED BY <2>1, <2>2
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonRcdRange
+
+THEOREM FinSingletonTupleRange
+  <1>1. {"d1"} \X {"d2"} = { <<"d1", "d2">> }
+    <2>1. ASSUME NEW t \in ({"d1"} \X {"d2"})
+          PROVE  t = <<"d1", "d2">>
+      OBVIOUS
+    <2>2. <<"d1", "d2">> \in ({"d1"} \X {"d2"})
+      OBVIOUS
+    <2>3. QED BY <2>1, <2>2
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonTupleRange
+
+THEOREM FinSingletonSubset
+  <1>1. SUBSET {} = {{}}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonSubset
+
+THEOREM FinSingletonFcnSet
+  <1>1. [{"d1"} -> {"d2"}] = { [x \in {"d1"} |-> "d2"] }
+    BY ESE_SingletonRange
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonFcnSet
+
+THEOREM FinSingletonNestedNat
+  <1>1. [Nat -> {"d1"}] = { [x \in Nat |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. QED BY <1>1, ESE_SingletonRangeFinite DEF FinSingletonNestedNat
+
+THEOREM FinSingletonAsDomain
+  <1>1. [Nat -> {"d1"}] = { [x \in Nat |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. IsFiniteSet({"d2", "d3"})
+    BY ESE_PairFinite
+  <1>3. QED BY <1>1, <1>2, ESE_SingletonDomainFinite DEF FinSingletonAsDomain
+
+THEOREM FinSeqEmpty
+  BY ESE_SeqEmptyFinite DEF FinSeqEmpty
+
+THEOREM FinSeqEmptyInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_SeqEmptyFinite DEF FinSeqEmptyInterval
+
+THEOREM FinSeqEmptyRcd
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_SeqEmptyFinite DEF FinSeqEmptyRcd
+
+THEOREM FinSeqEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_SeqEmptyFinite DEF FinSeqEmptyTuple
+
+THEOREM FinSeqEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_SeqEmptyFinite DEF FinSeqEmptyFcnSet
+
+-----------------------------------------------------------------------------
 \* Sets of functions that are neither empty nor {<<>>}, i.e. comparing the
 \* domains and the co-domains is the only means left to decide these.
 

@@ -234,6 +234,86 @@ CardUnitTripleRange == 1 = Cardinality([{} -> {"a", "b", "c"}])
 CardEmptyInterval   == 0 = Cardinality([1..2 -> {}])
 
 -----------------------------------------------------------------------------
+\* The finiteness of the same sets. Every one of them is { <<>> } or {}, so
+\* one empty argument decides a finiteness whatever the other arguments are.
+\* The Fin prefix names a finiteness and the rest of a name its argument.
+
+\* Sets of functions that denote { <<>> }, i.e. the empty domain decides.
+FinUnitEmptyRange      == IsFiniteSet([{} -> {}])
+FinUnitInterval        == IsFiniteSet([1..0 -> {"d1"}])
+FinUnitRcdField        == IsFiniteSet([[n1 : {}] -> {"e1"}])
+FinUnitTuple           == IsFiniteSet([({"d1"} \X {}) -> {"e1"}])
+FinUnitFcnSet          == IsFiniteSet([[{"d1"} -> {}] -> {"e1"}])
+FinUnitFcnSetRange     == IsFiniteSet([{} -> [{"d1"} -> {}]])
+
+\* An infinite co-domain beside or inside the empty domain.
+FinUnitNatRange        == IsFiniteSet([{} -> Nat])
+FinUnitStrRange        == IsFiniteSet([{} -> STRING])
+FinUnitFcnSetNat       == IsFiniteSet([[Nat -> {}] -> {"d2"}])
+
+\* Sets of functions that are empty, i.e. the empty co-domain decides.
+FinEmptySingleton      == IsFiniteSet([{"r1"} -> {}])
+FinEmptyInterval       == IsFiniteSet([1..2 -> {}])
+FinEmptySubsetEmpty    == IsFiniteSet([(SUBSET {}) -> {}])
+FinEmptyRcdRange       == IsFiniteSet([{"d1"} -> [n1 : {}]])
+FinEmptyTupleRange     == IsFiniteSet([{"d1"} -> ({"d1"} \X {})])
+FinEmptyFcnSetRange    == IsFiniteSet([{"d1"} -> [{"e1"} -> {}]])
+
+\* An infinite domain beside or inside the empty co-domain.
+FinEmptyNatDomain      == IsFiniteSet([Nat -> {}])
+FinEmptySeqDomain      == IsFiniteSet([Seq({"d1"}) -> {}])
+FinEmptyDiffDomain     == IsFiniteSet([(Nat \ {0}) -> {}])
+FinEmptyFcnSetNat      == IsFiniteSet([{"d1"} -> [Nat -> {}]])
+
+\* Sets of records that are empty, i.e. a single empty field decides.
+FinRcdEmptyField       == IsFiniteSet([n1 : {}])
+FinRcdEmptyArity       == IsFiniteSet([n1 : {}, n2 : {"r1"}])
+FinRcdEmptyPosition    == IsFiniteSet([n1 : {"r1"}, n2 : {}])
+FinRcdEmptyFcnSet      == IsFiniteSet([n1 : [{"d1"} -> {}]])
+FinRcdEmptyRcd         == IsFiniteSet([n1 : [n2 : {}]])
+FinRcdEmptyTuple       == IsFiniteSet([n1 : ({"d1"} \X {})])
+
+\* An infinite field beside or inside the empty one, in either position.
+FinRcdEmptyFieldNat    == IsFiniteSet([n1 : {}, n2 : Nat])
+FinRcdEmptyNatField    == IsFiniteSet([n1 : Nat, n2 : {}])
+FinRcdEmptyThenDiff    == IsFiniteSet([n1 : {}, n2 : (Nat \ {0})])
+FinRcdDiffThenEmpty    == IsFiniteSet([n1 : (Nat \ {0}), n2 : {}])
+FinRcdEmptyFcnSetNat   == IsFiniteSet([n1 : [Nat -> {}]])
+
+\* Cartesian products that are empty, i.e. a single empty component decides.
+FinTupEmptyComponent   == IsFiniteSet({} \X {"r1"})
+FinTupEmptyPosition    == IsFiniteSet({"r1"} \X {})
+FinTupEmptyArity       == IsFiniteSet({} \X {"r1"} \X {"r2"})
+FinTupEmptyFcnSet      == IsFiniteSet([{"d1"} -> {}] \X {"d1"})
+FinTupEmptyRcd         == IsFiniteSet([n1 : {}] \X {"d1"})
+FinTupEmptyTuple       == IsFiniteSet(({"d1"} \X {}) \X {"d1"})
+
+\* An infinite component beside or inside the empty one, in either position.
+FinTupEmptyNatSecond   == IsFiniteSet({} \X Nat)
+FinTupEmptyNatFirst    == IsFiniteSet(Nat \X {})
+FinTupDiffThenEmpty    == IsFiniteSet((Nat \ {0}) \X {})
+FinTupEmptyFcnSetNat   == IsFiniteSet([Nat -> {}] \X {"d1"})
+FinSingletonNatDomain  == IsFiniteSet([Nat -> {"d1"}])
+FinSingletonIntDomain  == IsFiniteSet([Int -> {"d1"}])
+FinSingletonStrDomain  == IsFiniteSet([STRING -> {"d1"}])
+FinSingletonDiffDomain == IsFiniteSet([(Nat \ {0}) -> {"d1"}])
+FinSingletonSeqDomain  == IsFiniteSet([Seq({"d1"}) -> {"d1"}])
+
+FinSingletonInterval   == IsFiniteSet([Nat -> 1..1])
+FinSingletonRcdRange   == IsFiniteSet([Nat -> [n1 : {"d1"}]])
+FinSingletonTupleRange == IsFiniteSet([Nat -> ({"d1"} \X {"d2"})])
+FinSingletonSubset     == IsFiniteSet([Nat -> SUBSET {}])
+FinSingletonFcnSet     == IsFiniteSet([Nat -> [{"d1"} -> {"d2"}]])
+FinSingletonNestedNat  == IsFiniteSet([Nat -> [Nat -> {"d1"}]])
+FinSingletonAsDomain   == IsFiniteSet([[Nat -> {"d1"}] -> {"d2", "d3"}])
+
+FinSeqEmpty            == IsFiniteSet(Seq({}))
+FinSeqEmptyInterval    == IsFiniteSet(Seq(1..0))
+FinSeqEmptyRcd         == IsFiniteSet(Seq([n1 : {}]))
+FinSeqEmptyTuple       == IsFiniteSet(Seq({"d1"} \X {}))
+FinSeqEmptyFcnSet      == IsFiniteSet(Seq([{"d1"} -> {}]))
+
+-----------------------------------------------------------------------------
 \* Sets that are neither empty nor {<<>>}, i.e. comparing the domains and the
 \* co-domains, the field sets, or the components is the only means left to
 \* decide these. They have no reduced form that TLC could compare them with.
