@@ -6,6 +6,10 @@
 \* TLA+ fact; the last five are proved and say so, i.e. they record a
 \* limitation.
 \*
+\* TLC does not yet answer every assumption below. The commented out ones are
+\* the finiteness assumptions it decides the wrong way, marked "wrong", and
+\* the commit that fixes TLC uncomments them.
+\*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 
@@ -184,6 +188,77 @@ ASSUME CardUnitTripleRange
 ASSUME CardEmptyInterval
 
 -----------------------------------------------------------------------------
+\* The finiteness of the same sets.
+
+ASSUME FinUnitEmptyRange
+ASSUME FinUnitInterval
+ASSUME FinUnitRcdField
+ASSUME FinUnitTuple
+ASSUME FinUnitFcnSet
+ASSUME FinUnitFcnSetRange
+
+\* ASSUME FinUnitNatRange           \* wrong
+\* ASSUME FinUnitStrRange           \* wrong
+\* ASSUME FinUnitFcnSetNat          \* wrong
+
+ASSUME FinEmptySingleton
+ASSUME FinEmptyInterval
+ASSUME FinEmptySubsetEmpty
+ASSUME FinEmptyRcdRange
+ASSUME FinEmptyTupleRange
+ASSUME FinEmptyFcnSetRange
+
+\* ASSUME FinEmptyNatDomain         \* wrong
+\* ASSUME FinEmptySeqDomain         \* wrong
+\* ASSUME FinEmptyDiffDomain        \* wrong
+\* ASSUME FinEmptyFcnSetNat         \* wrong
+
+ASSUME FinRcdEmptyField
+ASSUME FinRcdEmptyArity
+ASSUME FinRcdEmptyPosition
+ASSUME FinRcdEmptyFcnSet
+ASSUME FinRcdEmptyRcd
+ASSUME FinRcdEmptyTuple
+
+\* ASSUME FinRcdEmptyFieldNat       \* wrong
+\* ASSUME FinRcdEmptyNatField       \* wrong
+\* ASSUME FinRcdEmptyThenDiff       \* wrong
+\* ASSUME FinRcdDiffThenEmpty       \* wrong
+\* ASSUME FinRcdEmptyFcnSetNat      \* wrong
+
+ASSUME FinTupEmptyComponent
+ASSUME FinTupEmptyPosition
+ASSUME FinTupEmptyArity
+ASSUME FinTupEmptyFcnSet
+ASSUME FinTupEmptyRcd
+ASSUME FinTupEmptyTuple
+
+\* ASSUME FinTupEmptyNatSecond      \* wrong
+\* ASSUME FinTupEmptyNatFirst       \* wrong
+\* ASSUME FinTupDiffThenEmpty       \* wrong
+\* ASSUME FinTupEmptyFcnSetNat      \* wrong
+
+\* ASSUME FinSingletonNatDomain     \* wrong
+\* ASSUME FinSingletonIntDomain     \* wrong
+\* ASSUME FinSingletonStrDomain     \* wrong
+\* ASSUME FinSingletonDiffDomain    \* wrong
+\* ASSUME FinSingletonSeqDomain     \* wrong
+
+\* ASSUME FinSingletonInterval      \* wrong
+\* ASSUME FinSingletonRcdRange      \* wrong
+\* ASSUME FinSingletonTupleRange    \* wrong
+\* ASSUME FinSingletonSubset        \* wrong
+\* ASSUME FinSingletonFcnSet        \* wrong
+\* ASSUME FinSingletonNestedNat     \* wrong
+\* ASSUME FinSingletonAsDomain      \* wrong
+
+\* ASSUME FinSeqEmpty               \* wrong
+\* ASSUME FinSeqEmptyInterval       \* wrong
+\* ASSUME FinSeqEmptyRcd            \* wrong
+\* ASSUME FinSeqEmptyTuple          \* wrong
+\* ASSUME FinSeqEmptyFcnSet         \* wrong
+
+-----------------------------------------------------------------------------
 \* Sets that are neither empty nor {<<>>}, i.e. comparing the domains and the
 \* co-domains, the field sets, or the components is the only means left to
 \* decide these.
@@ -355,8 +430,20 @@ ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the do
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
                    { <<>> } = [[Nat -> {}] -> {"d2"}])
 
-\* The five assumptions of this section that record a limitation instead of an
-\* acceptable refusal. EmptySetEqCases_proofs.tla derives each of them from
+\* The finiteness of a set built from a value whose emptiness TLA+ leaves
+\* open, which TLA+ leaves open in turn: [1 -> 2] is { <<>> } if 1 = {} and
+\* {} if 2 = {}, both finite, and need not be finite otherwise. These carry
+\* the message of IntValue#isFinite rather than the isEmpty message of the
+\* five below.
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.IBoolValue tlc2.module.FiniteSets.IsFiniteSet(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to check if the integer 1 is a finite set.",
+                   IsFiniteSet([1 -> 2]))
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.IBoolValue tlc2.module.FiniteSets.IsFiniteSet(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to check if the integer 1 is a finite set.",
+                   IsFiniteSet([n1 : 1, n2 : {"d1"}]))
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.IBoolValue tlc2.module.FiniteSets.IsFiniteSet(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to check if the integer 1 is a finite set.",
+                   IsFiniteSet(1 \X {"d1"}))
+
+\* Five assumptions that record a limitation instead of an acceptable
+\* refusal. EmptySetEqCases_proofs.tla derives each of them from
 \* ESE_FcnSetCongruence, ESE_RcdSetCongruence, or ESE_TupleSetCongruence, i.e.
 \* TLA+ determines all five to be TRUE. A set is a function of the arguments
 \* of its constructor, so a comparison of a set with itself holds whatever
