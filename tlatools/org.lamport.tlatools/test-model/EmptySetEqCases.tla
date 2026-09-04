@@ -299,32 +299,22 @@ CardUnitTupleLarge ==
 
 \* An empty field set or component before one whose cardinality TLC cannot
 \* compute, so TLC stops at the empty one. RcdEmptyFieldNatSym and
-\* TupEmptyNatSecondSym are the comparisons that this order decides, and the
-\* reverse order is refused in both, i.e. a cardinality turns on the position
-\* of the empty constituent as a comparison does.
+\* TupEmptyNatSecondSym are the comparisons that this order decides.
 CardRcdEmptyFieldNat   == 0 = Cardinality([n1 : {}, n2 : Nat])
 CardRcdEmptyThenDiff   == 0 = Cardinality([n1 : {}, n2 : (Nat \ {0})])
 CardTupEmptyNatSecond  == 0 = Cardinality({} \X Nat)
 
-\* The cardinalities that TLC refuses, i.e. the AssertError assumptions of
-\* EmptySetEqAssume.tla. TLC reads the constituents in order and stops at the
-\* first empty one, so a non-computable constituent costs TLC the cardinality
-\* only where it comes first. These are the reverses of the three
-\* above, and the second constituent being empty makes each a TLA+ fact all
-\* the same, hence the proofs.
 CardRcdEmptyNatField   == 0 = Cardinality([n1 : Nat, n2 : {}])
 CardRcdDiffThenEmpty   == 0 = Cardinality([n1 : (Nat \ {0}), n2 : {}])
 CardTupEmptyNatFirst   == 0 = Cardinality(Nat \X {})
 
-\* A field set or component that is an empty set of functions, whose own
-\* cardinality TLC cannot compute in any position, for the reason the next
-\* group states.
+\* A field set or component that is an empty set of functions, i.e. the next
+\* group counts the constituent and the empty constituent counts the whole.
 CardRcdEmptyFcnSetNat  == 0 = Cardinality([n1 : [Nat -> {}]])
 CardTupEmptyFcnSetNat  == 0 = Cardinality([Nat -> {}] \X {"d1"})
 
-\* Sets of functions, where TLC reads the cardinality of both the domain and
-\* the co-domain before either emptiness applies, so no order of the two
-\* decides.
+\* Sets of functions, where an empty domain or an empty co-domain decides the
+\* count whatever the other argument is, so no order of the two refuses one.
 CardUnitNatRange       == 1 = Cardinality([{} -> Nat])
 CardEmptyNatDomain     == 0 = Cardinality([Nat -> {}])
 CardUnitFcnSetNat      == 1 = Cardinality([[Nat -> {}] -> {"d2"}])
