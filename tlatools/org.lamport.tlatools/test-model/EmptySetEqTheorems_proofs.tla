@@ -13,8 +13,9 @@
 (*                                                                         *)
 (* See https://github.com/tlaplus/tlaplus/issues/1407                      *)
 (***************************************************************************)
-EXTENDS FiniteSets, Integers, TLAPS
+EXTENDS FiniteSets, Integers, Sequences, TLAPS
 LOCAL INSTANCE FiniteSetTheorems
+LOCAL INSTANCE SequenceTheorems
 
 (***************************************************************************)
 (* When each of the four set constructors that TLC represents without       *)
@@ -90,6 +91,30 @@ THEOREM ESE_RcdSetEmpty ==
       BY <2>1, <2>2
     <2>4. QED BY <2>3
   \* An empty field set is the only way the right-hand side can hold.
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_RcdSetEmpty3 ==
+  ASSUME NEW S, NEW T, NEW U
+  PROVE  [n1 : S, n2 : T, n3 : U] = {} <=> (S = {} \/ T = {} \/ U = {})
+  <1>1. ASSUME S = {} \/ T = {} \/ U = {}
+        PROVE  [n1 : S, n2 : T, n3 : U] = {}
+    <2>1. ASSUME NEW r \in [n1 : S, n2 : T, n3 : U]
+          PROVE  FALSE
+      <3>1. r.n1 \in S /\ r.n2 \in T /\ r.n3 \in U
+        OBVIOUS
+      <3>2. QED BY <1>1, <3>1
+    <2>2. QED BY <2>1
+  <1>2. ASSUME S # {}, T # {}, U # {}
+        PROVE  [n1 : S, n2 : T, n3 : U] # {}
+    <2>1. PICK s \in S : TRUE
+      BY <1>2
+    <2>2. PICK t \in T : TRUE
+      BY <1>2
+    <2>3. PICK u \in U : TRUE
+      BY <1>2
+    <2>4. [n1 |-> s, n2 |-> t, n3 |-> u] \in [n1 : S, n2 : T, n3 : U]
+      BY <2>1, <2>2, <2>3
+    <2>5. QED BY <2>4
   <1>3. QED BY <1>1, <1>2
 
 THEOREM ESE_TupleSetEmpty ==
@@ -503,6 +528,164 @@ THEOREM ESE_EmptyCardinality ==
   <1>2. Cardinality({}) = 0
     BY FS_EmptySet
   <1>3. QED BY <1>1, <1>2
+
+(***************************************************************************)
+(* The same sets read through IsFiniteSet. Each is { <<>> } or {}, so one  *)
+(* empty argument decides, and ESE_EmptyRangeFinite needs no witness in S: *)
+(* [S -> {}] is {} where S is non-empty and { <<>> } where it is not.      *)
+(***************************************************************************)
+
+THEOREM ESE_UnitFinite ==
+  ASSUME NEW S, NEW T, S = {}
+  PROVE  IsFiniteSet([S -> T])
+  <1>1. [S -> T] = { <<>> }
+    BY ESE_UnitDomain
+  <1>2. IsFiniteSet({ <<>> })
+    BY FS_Singleton
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_EmptyRangeFinite ==
+  ASSUME NEW S, NEW T, T = {}
+  PROVE  IsFiniteSet([S -> T])
+  \* The two cases of S, neither of which needs a witness supplied: an empty S
+  \* makes [S -> T] the singleton { <<>> } and a non-empty S supplies its own.
+  <1>1. CASE S = {}
+    <2>1. [S -> T] = { <<>> }
+      BY <1>1, ESE_UnitDomain
+    <2>2. QED BY <2>1, FS_Singleton
+  <1>2. CASE S # {}
+    <2>1. PICK w \in S : TRUE
+      BY <1>2
+    <2>2. [S -> T] = {}
+      BY <2>1, ESE_EmptyRange
+    <2>3. QED BY <2>2, FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_RcdSetEmptyFinite1 ==
+  ASSUME NEW S, S = {}
+  PROVE  IsFiniteSet([n1 : S])
+  <1>1. [n1 : S] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, FS_EmptySet
+
+THEOREM ESE_RcdSetEmptyFinite ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  IsFiniteSet([n1 : S, n2 : T])
+  <1>1. [n1 : S, n2 : T] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, FS_EmptySet
+
+THEOREM ESE_RcdSetEmptyFinite3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  IsFiniteSet([n1 : S, n2 : T, n3 : U])
+  <1>1. [n1 : S, n2 : T, n3 : U] = {}
+    BY ESE_RcdSetEmpty3
+  <1>2. QED BY <1>1, FS_EmptySet
+
+THEOREM ESE_TupleSetEmptyFinite ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  IsFiniteSet(S \X T)
+  <1>1. S \X T = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, FS_EmptySet
+
+THEOREM ESE_TupleSetEmptyFinite3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  IsFiniteSet(S \X T \X U)
+  <1>1. S \X T \X U = {}
+    BY ESE_TupleSetEmpty3
+  <1>2. QED BY <1>1, FS_EmptySet
+
+THEOREM ESE_SingletonRange ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  [S -> T] = { [x \in S |-> w] }
+  \* Extensionality is what makes the two inclusions a singleton: a function
+  \* on S whose every value is w is the function [x \in S |-> w] itself.
+  <1>1. ASSUME NEW f \in [S -> T]
+        PROVE  f = [x \in S |-> w]
+    <2>1. DOMAIN f = S
+      OBVIOUS
+    <2>2. \A x \in S : f[x] = w
+      OBVIOUS
+    <2>3. QED BY <2>1, <2>2
+  <1>2. [x \in S |-> w] \in [S -> T]
+    OBVIOUS
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_SingletonRangeFinite ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  IsFiniteSet([S -> T])
+  <1>1. [S -> T] = { [x \in S |-> w] }
+    BY ESE_SingletonRange
+  <1>2. QED BY <1>1, FS_Singleton
+
+LEMMA SingletonDomainBijection ==
+  ASSUME NEW S, NEW T, NEW w, S = {w}
+  PROVE  ExistsBijection(T, [S -> T])
+  <1> DEFINE g == [v \in T |-> [x \in S |-> v]]
+  <1>1. g \in Injection(T, [S -> T])
+    <2>1. g \in [T -> [S -> T]]
+      OBVIOUS
+    <2>2. \A v1, v2 \in DOMAIN g : g[v1] = g[v2] => v1 = v2
+      <3>1. ASSUME NEW v1 \in T, NEW v2 \in T, g[v1] = g[v2]
+            PROVE  v1 = v2
+        <4>1. g[v1][w] = v1 /\ g[v2][w] = v2
+          OBVIOUS
+        <4>2. QED BY <3>1, <4>1
+      <3>2. QED BY <3>1
+    <2>3. QED BY <2>1, <2>2 DEF Injection, IsInjective
+  <1>2. g \in Surjection(T, [S -> T])
+    <2>1. ASSUME NEW f \in [S -> T]
+          PROVE  f = g[f[w]]
+      <3>1. f[w] \in T
+        OBVIOUS
+      <3>2. g[f[w]] = [x \in S |-> f[w]]
+        BY <3>1
+      <3>3. DOMAIN f = S /\ \A x \in S : f[x] = f[w]
+        OBVIOUS
+      <3>4. QED BY <3>2, <3>3
+    <2>2. QED BY <2>1 DEF Surjection
+  <1>3. QED BY <1>1, <1>2, Zenon DEF ExistsBijection, Bijection
+
+THEOREM ESE_SingletonDomainFinite ==
+  ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
+  PROVE  IsFiniteSet([S -> T])
+  BY SingletonDomainBijection, FS_Bijection
+
+THEOREM ESE_PairFinite ==
+  ASSUME NEW a, NEW b, a # b
+  PROVE  /\ IsFiniteSet({a, b})
+         /\ Cardinality({a, b}) = 2
+  <1>1. {a, b} = {a} \cup {b}
+    OBVIOUS
+  <1>2. IsFiniteSet({a}) /\ Cardinality({a}) = 1
+    BY FS_Singleton
+  <1>3. b \notin {a}
+    OBVIOUS
+  <1>4. QED BY <1>1, <1>2, <1>3, FS_AddElement
+
+THEOREM ESE_SeqEmpty ==
+  ASSUME NEW S, S = {}
+  PROVE  Seq(S) = { <<>> }
+  <1>1. ASSUME NEW s \in Seq(S), s # <<>>
+        PROVE  FALSE
+    <2>1. Len(s) \in Nat \ {0}
+      BY <1>1, EmptySeq
+    <2>2. 1 \in 1..Len(s)
+      BY <2>1
+    <2>3. s[1] \in S
+      BY <1>1, <2>2, ElementOfSeq
+    <2>4. QED BY <2>3
+  <1>2. <<>> \in Seq(S)
+    BY EmptySeq
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_SeqEmptyFinite ==
+  ASSUME NEW S, S = {}
+  PROVE  IsFiniteSet(Seq(S))
+  <1>1. Seq(S) = { <<>> }
+    BY ESE_SeqEmpty
+  <1>2. QED BY <1>1, FS_Singleton
 
 (***************************************************************************)
 (* The operators that have to agree with the equalities above.              *)
