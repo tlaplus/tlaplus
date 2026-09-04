@@ -27,7 +27,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -499,6 +502,150 @@ public class TestXMLExporterModule {
 
 		// Assert that all expected comment styles were found
 		Assert.assertTrue("Missing expected comment styles: " + expectedComments.keySet(), expectedComments.isEmpty());
+	}
+
+	/**
+	 * Runs the XMLExporter on the given module, asserts that it succeeded
+	 * quietly, and returns the parsed, schema-validated output document.
+	 */
+	private Document export(final String moduleName) throws Exception {
+		int exitCode = XMLExporter.run("-I", BASE_PATH, BASE_PATH + moduleName + ".tla");
+		Assert.assertEquals("XMLExporter should exit with code 0", 0, exitCode);
+		Assert.assertTrue("No errors should be written to stderr", this.errStream.toString().trim().isEmpty());
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(this.outStream.toString())));
+
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+		Assert.assertNotNull("sany.xsd schema file should be found", schemaFile);
+		Schema schema = schemaFactory.newSchema(schemaFile);
+		Validator validator = schema.newValidator();
+		validator.validate(new DOMSource(doc));
+
+		return doc;
+	}
+
+	/**
+	 * Maps each module in the context table to the names of the modules nested
+	 * in its body, in the order in which they are exported.
+	 */
+	private Map<String, List<String>> nestedModules(final Document doc) {
+		Map<String, String> uidToName = new HashMap<>();
+		Map<String, List<String>> nestedUids = new LinkedHashMap<>();
+		NodeList entries = doc.getElementsByTagName("entry");
+		for (int i = 0; i < entries.getLength(); i++) {
+			Element entry = (Element) entries.item(i);
+			NodeList moduleNodes = entry.getElementsByTagName("ModuleNode");
+			if (moduleNodes.getLength() == 0) {
+				continue;
+			}
+			Element module = (Element) moduleNodes.item(0);
+			String name = module.getElementsByTagName("uniquename").item(0).getTextContent().trim();
+			uidToName.put(entry.getElementsByTagName("UID").item(0).getTextContent().trim(), name);
+
+			List<String> children = new ArrayList<>();
+			NodeList refs = module.getElementsByTagName("ModuleNodeRef");
+			for (int j = 0; j < refs.getLength(); j++) {
+				Element ref = (Element) refs.item(j);
+				children.add(ref.getElementsByTagName("UID").item(0).getTextContent().trim());
+			}
+			nestedUids.put(name, children);
+		}
+
+		Map<String, List<String>> result = new LinkedHashMap<>();
+		for (Map.Entry<String, List<String>> entry : nestedUids.entrySet()) {
+			List<String> names = new ArrayList<>();
+			for (String uid : entry.getValue()) {
+				names.add(uidToName.getOrDefault(uid, "<unresolvable UID " + uid + ">"));
+			}
+			result.put(entry.getKey(), names);
+		}
+		return result;
+	}
+
+	/** The names of the modules listed at the top level of the document. */
+	private List<String> topLevelModules(final Document doc) {
+		Map<String, String> uidToName = new HashMap<>();
+		NodeList entries = doc.getElementsByTagName("entry");
+		for (int i = 0; i < entries.getLength(); i++) {
+			Element entry = (Element) entries.item(i);
+			NodeList moduleNodes = entry.getElementsByTagName("ModuleNode");
+			if (moduleNodes.getLength() > 0) {
+				uidToName.put(entry.getElementsByTagName("UID").item(0).getTextContent().trim(),
+						((Element) moduleNodes.item(0)).getElementsByTagName("uniquename").item(0).getTextContent()
+								.trim());
+			}
+		}
+
+		List<String> result = new ArrayList<>();
+		NodeList refs = doc.getDocumentElement().getChildNodes();
+		for (int i = 0; i < refs.getLength(); i++) {
+			if (refs.item(i) instanceof Element && "ModuleNodeRef".equals(refs.item(i).getNodeName())) {
+				Element ref = (Element) refs.item(i);
+				result.add(uidToName.get(ref.getElementsByTagName("UID").item(0).getTextContent().trim()));
+			}
+		}
+		return result;
+	}
+
+	@Test
+	public void testNestedModuleIsChildOfEnclosingModule() throws Exception {
+		// NestedModuleXml.tla nests "Instantiated" and "Standalone" in its body, and
+		// "Standalone" in turn nests "Innermost".
+		Document doc = this.export("NestedModuleXml");
+		Map<String, List<String>> nested = this.nestedModules(doc);
+
+		Assert.assertEquals("Modules nested in NestedModuleXml, in source order",
+				List.of("Instantiated", "Standalone"), nested.get("NestedModuleXml"));
+		Assert.assertEquals("Nesting is preserved to arbitrary depth",
+				List.of("Innermost"), nested.get("Standalone"));
+
+		// "Standalone" is never instantiated or otherwise referenced, so nothing but
+		// the containment relationship makes it reachable.
+		Assert.assertTrue("Unreferenced nested module should still be exported", nested.containsKey("Standalone"));
+
+		// A nested module is a unit of its enclosing module, not a module of the
+		// specification.
+		Assert.assertEquals("Only outer modules are listed at the top level",
+				List.of("Naturals", "NestedModuleXml"), this.topLevelModules(doc));
+
+		this.assertEachModuleReachableOnce(doc);
+	}
+
+	@Test
+	public void testNestedModuleIsNotInheritedThroughExtends() throws Exception {
+		// "Sub" is nested in the body of NestedModuleXmlBase, which
+		// NestedModuleXmlExtender extends both directly and from "Borrower", a
+		// module nested in its body. Extending a module does not nest that module's
+		// modules in the extender, even though SANY's Context merge makes "Sub"
+		// visible in both places by name; see ModuleNode#getSymbolElement.
+		Document doc = this.export("NestedModuleXmlExtender");
+		Map<String, List<String>> nested = this.nestedModules(doc);
+
+		Assert.assertEquals("Sub is a unit of the module whose body contains it",
+				List.of("Sub"), nested.get("NestedModuleXmlBase"));
+		Assert.assertEquals("An extended module's modules are not units of the extender",
+				List.of("Borrower"), nested.get("NestedModuleXmlExtender"));
+		Assert.assertEquals("...nor of a module nested in the extender",
+				List.of(), nested.get("Borrower"));
+
+		this.assertEachModuleReachableOnce(doc);
+	}
+
+	/**
+	 * Asserts that every module in the context table is reachable exactly once,
+	 * either from the top level of the document or as a unit of exactly one
+	 * enclosing module.
+	 */
+	private void assertEachModuleReachableOnce(final Document doc) {
+		List<String> reachable = new ArrayList<>(this.topLevelModules(doc));
+		this.nestedModules(doc).values().forEach(reachable::addAll);
+		Assert.assertEquals("No module is reachable twice", Set.copyOf(reachable).size(), reachable.size());
+		Assert.assertEquals("Every exported module is reachable", this.nestedModules(doc).keySet(),
+				Set.copyOf(reachable));
 	}
 
 	@Test
