@@ -79,11 +79,6 @@ public class ExecutionStatisticsCollector {
 	public ExecutionStatisticsCollector() {
 		this(PATH, HOSTNAME);
 	}
-	ExecutionStatisticsCollector(String path) {
-		this.pathname = path;
-		this.hostname = HOSTNAME;
-	}
-	
 	ExecutionStatisticsCollector(String path, final String hostname) {
 		this.pathname = path;
 		this.hostname = hostname;
