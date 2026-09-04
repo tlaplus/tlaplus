@@ -226,6 +226,9 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
+      if (this.isEmpty()) {
+        return 0;
+      }
       long sz = 1;
       for (int i = 0; i < this.sets.length; i++) {
         sz *= this.sets[i].size();

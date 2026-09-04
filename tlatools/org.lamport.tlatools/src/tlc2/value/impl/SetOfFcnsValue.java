@@ -237,9 +237,21 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   //
   // The loop below is that induction, i.e. one multiplication per element of the
   // domain, and not the closed form Cardinality(T)^Cardinality(S).
+  //
+  // THEOREM ASSUME NEW S, NEW T, NEW w, T = {w}
+  //         PROVE  Cardinality([S -> T]) = 1
   @Override
   public final int size() {
     try {
+      if (this.domain.isEmpty()) {
+        return 1;
+      }
+      if (this.range.isEmpty()) {
+        return 0;
+      }
+      if (!this.domain.isFinite() && this.range.size() == 1) {
+        return 1;
+      }
       int dsz = this.domain.size();
       int rsz = this.range.size();
       long sz = 1;
@@ -260,6 +272,12 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 	@Override
 	protected boolean needBigInteger() {
+		if (this.domain.isEmpty() || this.range.isEmpty()) {
+			return false;
+		}
+		if (!this.domain.isFinite() && this.range.size() == 1) {
+			return false;
+		}
 		final int rsz = this.range.size();
 		final int dsz = this.domain.size();
 		long sz = 1;

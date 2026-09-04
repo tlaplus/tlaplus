@@ -6,10 +6,6 @@
 \* TLA+ fact; the ones that do have a proof say so, i.e. they record a
 \* limitation.
 \*
-\* TLC does not yet answer every assumption below. The commented out ones are
-\* the cardinalities it refuses, marked "refused", and the commit that fixes
-\* TLC uncomments them.
-\*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 
@@ -182,8 +178,7 @@ ASSUME TupleSetIsFcnSetRev
 
 -----------------------------------------------------------------------------
 \* The cardinality of each set above. The ones TLC refuses are AssertError
-\* assumptions of the last section, and the commented out ones are refused
-\* as well, for a reason the commit that fixes TLC removes.
+\* assumptions of the last section.
 
 ASSUME CardUnitEmptyRange
 ASSUME CardUnitTripleRange
@@ -221,30 +216,33 @@ ASSUME CardTupEmptyFcnSet
 ASSUME CardTupEmptyRcd
 ASSUME CardTupEmptyTuple
 
-\* ASSUME CardRcdLargeThenEmpty     \* refused
+ASSUME CardRcdLargeThenEmpty
 ASSUME CardRcdEmptyThenLarge
-\* ASSUME CardTupLargeThenEmpty     \* refused
+ASSUME CardTupLargeThenEmpty
 ASSUME CardTupEmptyThenLarge
-\* ASSUME CardUnitTupleLarge        \* refused
+ASSUME CardUnitTupleLarge
 
-\* ASSUME CardRcdEmptyFieldNat      \* refused
-\* ASSUME CardRcdEmptyThenDiff      \* refused
-\* ASSUME CardTupEmptyNatSecond     \* refused
+ASSUME CardRcdEmptyFieldNat
+ASSUME CardRcdEmptyThenDiff
+ASSUME CardTupEmptyNatSecond
 
-\* ASSUME CardRcdEmptyFcnSetNat     \* refused
-\* ASSUME CardTupEmptyFcnSetNat     \* refused
+ASSUME CardRcdEmptyNatField
+ASSUME CardTupEmptyNatFirst
 
-\* ASSUME CardUnitNatRange          \* refused
-\* ASSUME CardEmptyNatDomain        \* refused
-\* ASSUME CardUnitFcnSetNat         \* refused
-\* ASSUME CardEmptyFcnSetNat        \* refused
-\* ASSUME CardUnitSubsetRange       \* refused
-\* ASSUME CardEmptySubsetDomain     \* refused
-\* ASSUME CardSingletonNatDomain    \* refused
-\* ASSUME CardSingletonSubset       \* refused
-\* ASSUME CardSingletonAsDomain     \* refused
-\* ASSUME CardUnitLargeRange        \* refused
-\* ASSUME CardEmptyLargeDomain      \* refused
+ASSUME CardRcdEmptyFcnSetNat
+ASSUME CardTupEmptyFcnSetNat
+
+ASSUME CardUnitNatRange
+ASSUME CardEmptyNatDomain
+ASSUME CardUnitFcnSetNat
+ASSUME CardEmptyFcnSetNat
+ASSUME CardUnitSubsetRange
+ASSUME CardEmptySubsetDomain
+ASSUME CardSingletonNatDomain
+ASSUME CardSingletonSubset
+ASSUME CardSingletonAsDomain
+ASSUME CardUnitLargeRange
+ASSUME CardEmptyLargeDomain
 
 -----------------------------------------------------------------------------
 \* The finiteness of the same sets.
@@ -308,7 +306,7 @@ ASSUME FinSingletonRcdRange
 ASSUME FinSingletonTupleRange
 ASSUME FinSingletonSubset
 ASSUME FinSingletonFcnSet
-\* ASSUME FinSingletonNestedNat     \* refused
+ASSUME FinSingletonNestedNat
 ASSUME FinSingletonAsDomain
 
 ASSUME FinSeqEmpty
@@ -537,22 +535,12 @@ ASSUME AssertError("Shouldn't call isEmpty() on value <<1>>", FcnTupleReflexive)
 ASSUME AssertError("Shouldn't call isEmpty() on value 1", RcdIntReflexive)
 ASSUME AssertError("Shouldn't call isEmpty() on value 1", TupIntReflexive)
 
-\* The cardinalities that record a limitation as well, for the reason their
-\* groups in EmptySetEqCases.tla give: for a set of records or a Cartesian
-\* product TLC stops at the first empty constituent, so only a non-computable
-\* constituent ahead of the empty one is refused.
+\* The cardinality that records a limitation as well.
 \*
-\* EmptySetEqCases_proofs.tla derives each of these from
-\* ESE_RcdSetEmptyCardinality or ESE_TupleSetEmptyCardinality. The five above
-\* wait on an emptiness test that TLA+ may answer neither way, these on the
-\* test for an empty constituent that TLC already performs.
+\* EmptySetEqCases_proofs.tla derives it from ESE_RcdSetEmptyCardinality.
 \*
 \* Cardinality is a module override, so the error of each of these carries
 \* the wrapper that TLC puts around one.
-ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to compute the number of elements in the overridden value Nat.",
-                   CardRcdEmptyNatField)
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
                    CardRcdDiffThenEmpty)
-ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to compute the number of elements in the overridden value Nat.",
-                   CardTupEmptyNatFirst)
 =============================================================================

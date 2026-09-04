@@ -200,6 +200,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final int size() {
     try {
+      if (this.isEmpty()) {
+        return 0;
+      }
       long sz = 1;
       for (int i = 0; i < this.values.length; i++) {
         sz *= this.values[i].size();
@@ -218,6 +221,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 	@Override
 	protected boolean needBigInteger() {
+		if (this.isEmpty()) {
+			return false;
+		}
 		long sz = 1;
 		for (int i = 0; i < values.length; i++) {
 			sz *= values[i].size();

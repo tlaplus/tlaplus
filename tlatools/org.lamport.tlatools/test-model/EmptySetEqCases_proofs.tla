@@ -819,12 +819,6 @@ THEOREM CardRcdEmptyThenDiff
 THEOREM CardTupEmptyNatSecond
   BY ESE_TupleSetEmptyCardinality DEF CardTupEmptyNatSecond
 
-\* The cardinalities that TLC refuses. Each is a TLA+ fact, i.e. these proofs
-\* are what makes the AssertError assumptions of EmptySetEqAssume.tla record
-\* a limitation instead of an acceptable refusal. The first three are the
-\* three proofs above with the constituents swapped, i.e. TLC's order, and no
-\* rule of TLA+, separates the two groups.
-
 THEOREM CardRcdEmptyNatField
   BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyNatField
 
