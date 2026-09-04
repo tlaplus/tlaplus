@@ -50,10 +50,6 @@ public class ExecutionStatisticsCollectorTest {
 		public String hostname;
 		public boolean submitted;
 
-		TestExecutionStatisticsCollector(String path) {
-			super(path);
-		}
-
 		TestExecutionStatisticsCollector(String path, final String hostname) {
 			super(path, hostname);
 		}
@@ -220,10 +216,17 @@ public class ExecutionStatisticsCollectorTest {
 	}
 
 	// Opt-In
+	//
+	// RFC 6761 reserves the ".invalid" TLD, so this name is guaranteed to never
+	// resolve. The trailing dot makes it fully qualified, which stops resolvers from
+	// appending search domains. Without it, a corporate resolver may resolve the
+	// unqualified production hostname and the collector would take the company-level branch.
+	private static final String NO_COMPANY = "tlaplus-execution-stats-collection01.invalid.";
 
 	@Test
 	public void testNoFile() {
-		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector("/path/does/not/exist");
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector("/path/does/not/exist",
+				NO_COMPANY);
 		assertNull(esc.getIdentifier());
 
 		esc.collect0(new HashMap<>());
@@ -236,7 +239,8 @@ public class ExecutionStatisticsCollectorTest {
 		assumeTrue(tempFile.setReadable(false));
 		tempFile.deleteOnExit();
 
-		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath());
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
+				NO_COMPANY);
 		assertNull(esc.getIdentifier());
 
 		esc.collect0(new HashMap<>());
@@ -248,7 +252,8 @@ public class ExecutionStatisticsCollectorTest {
 		File tempFile = File.createTempFile("esc", "txt");
 		tempFile.deleteOnExit();
 
-		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath());
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
+				NO_COMPANY);
 		assertNull(esc.getIdentifier());
 
 		esc.collect0(new HashMap<>());
@@ -262,7 +267,8 @@ public class ExecutionStatisticsCollectorTest {
 				("   " + ExecutionStatisticsCollector.Selection.NO_ESC.toString() + "   ").getBytes());
 		tempFile.deleteOnExit();
 
-		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath());
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
+				NO_COMPANY);
 		assertNull(esc.getIdentifier());
 
 		esc.collect0(new HashMap<>());
@@ -276,7 +282,8 @@ public class ExecutionStatisticsCollectorTest {
 				("   " + ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER.toString() + "   ").getBytes());
 		tempFile.deleteOnExit();
 
-		TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath());
+		TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
+				NO_COMPANY);
 
 		final String identifierA = esc.getIdentifier();
 		assertNotNull(identifierA);
@@ -298,7 +305,8 @@ public class ExecutionStatisticsCollectorTest {
 		Files.write(tempFile.toPath(), "   123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ   ".getBytes());
 		tempFile.deleteOnExit();
 
-		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath());
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
+				NO_COMPANY);
 		assertEquals("123456789ABCDEFGHIJKLMNOPQRSTUVW", esc.getIdentifier());
 
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
