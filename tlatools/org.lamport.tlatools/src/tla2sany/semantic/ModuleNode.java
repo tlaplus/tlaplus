@@ -1332,6 +1332,17 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 		}
     }
 
+    // Modules syntactically nested inside this module's body, which are not
+    // part of getTopLevel(). Read them from getDefinitions() and not from
+    // getInnerModules(): the latter derives from this module's Context, into
+    // which Context#mergeExtendContext copies the inner modules of every
+    // extended module, so it would claim modules nested in a different file.
+    for (final SemanticNode def : getDefinitions()) {
+		if (def instanceof ModuleNode && filter.test(def, this)) {
+			ret.appendChild(((ModuleNode) def).export(doc, context, filter));
+		}
+    }
+
     return ret;
   }
 

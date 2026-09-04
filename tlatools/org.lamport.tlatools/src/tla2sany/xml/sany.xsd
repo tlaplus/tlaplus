@@ -2140,6 +2140,16 @@
             <xs:element ref="InstanceNode"/>
             <xs:element ref="UseOrHideNode"/>
             <xs:element ref="TheoremNodeRef"/>
+            <xs:element ref="ModuleNodeRef">
+              <xs:annotation>
+                <xs:documentation>
+                  A module written inside this module's body. Only modules
+                  syntactically nested in this module appear here; modules
+                  nested inside an extended module remain units of the module
+                  whose body contains them.
+                </xs:documentation>
+              </xs:annotation>
+            </xs:element>
           </xs:choice>
         </xs:sequence>
       </xs:sequence>
