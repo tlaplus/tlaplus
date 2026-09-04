@@ -380,24 +380,28 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      boolean unlazy = TLCGlobals.expand;
+      Value val = null;
       try {
-        if (unlazy) {
+        if (TLCGlobals.expand) {
           long sz = 1;
           for (int i = 0; i < this.sets.length; i++) {
-            sz *= this.sets[i].size();
-            if (sz < -2147483648 || sz > 2147483647) {
-              unlazy = false;
+            final int csz = this.sets[i].size();
+            if (csz == 0) {
+              sz = 0;
               break;
             }
+            if (sz <= 2147483647) {
+              sz *= csz;
+            }
           }
-          unlazy = sz < TLCGlobals.enumBound;
+          if (sz < TLCGlobals.enumBound) {
+            val = this.toSetEnum();
+          }
         }
       }
-      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
+      catch (Throwable e) { if (!swallow) throw e; }
 
-      if (unlazy) {
-        Value val = this.toSetEnum();
+      if (val != null) {
         return val.toString(sb, offset, swallow);
       }
       else {

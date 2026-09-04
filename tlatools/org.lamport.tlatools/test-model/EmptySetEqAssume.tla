@@ -349,6 +349,30 @@ ASSUME SubsetUnitRanges
 ASSUME SubsetEmptyDomain
 
 -----------------------------------------------------------------------------
+\* The rendering that TLC prints for the same sets, which has to agree with
+\* the cardinalities above: TLC prints a set whose cardinality is below
+\* TLCGlobals.enumBound by enumerating it and prints the constructor it was
+\* written with otherwise, so a set that an empty argument reduces to { } or
+\* { <<>> } prints as that. The last assumption has no empty argument and its
+\* cardinality exceeds the bound, i.e. it is the constructor case and the
+\* empty arguments are what separates the ones above it from it.
+\*
+\* TLC!ToString reads the rendering that keeps a nested error instead of
+\* discarding it (Value#toStringUnchecked), i.e. these state what TLC prints
+\* rather than a fact about TLA+, which is why they have no proof and are
+\* written out here instead of in EmptySetEqCases.tla.
+
+ASSUME ToString([n1 : {}, n2 : Nat])                     = "{}"
+ASSUME ToString([n1 : {}, n2 : (Nat \ {0})])             = "{}"
+ASSUME ToString({} \X Nat)                               = "{}"
+ASSUME ToString([n1 : 1..50000, n2 : 1..50000, n3 : {}]) = "{}"
+ASSUME ToString((1..50000) \X (1..50000) \X {})          = "{}"
+ASSUME ToString([{} -> (SUBSET (1..40))])                = "{<<>>}"
+ASSUME ToString([{} -> ((1..50000) \X (1..50000))])      = "{<<>>}"
+
+ASSUME ToString([n1 : 1..50000, n2 : 1..50000]) = "[n1: 1..50000, n2: 1..50000]"
+
+-----------------------------------------------------------------------------
 \* The comparisons that TLC refuses to answer. Giving up is acceptable for
 \* these sets, whereas a wrong answer is not, except for the last two
 \* assumptions of this section, which TLA+ does decide.
@@ -543,4 +567,11 @@ ASSUME AssertError("Shouldn't call isEmpty() on value 1", TupIntReflexive)
 \* the wrapper that TLC puts around one.
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
                    CardRcdDiffThenEmpty)
+
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to compute the number of elements in the overridden value Nat.",
+                   ToString([n1 : Nat, n2 : {}]) = "{}")
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
+                   ToString([{} -> Nat]) = "{<<>>}")
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nOverflow when computing the number of elements in (1..50000 \\X 1..50000)",
+                   ToString([((1..50000) \X (1..50000)) -> {}]) = "{}")
 =============================================================================
