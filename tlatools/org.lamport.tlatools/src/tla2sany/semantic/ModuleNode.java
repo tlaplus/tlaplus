@@ -1332,6 +1332,17 @@ final void addAssumption(TreeNode stn, ExprNode ass, SymbolTable st,
 		}
     }
 
+    // Inner modules, i.e. modules syntactically nested inside this module's
+    // body, are not part of getTopLevel() (they are tracked separately, see
+    // getInnerModules()). Export them as well so the "syntactically nested
+    // inside" containment relationship is preserved in the XML output.
+    final ModuleNode[] innerModules = getInnerModules();
+    for (int i = 0; i < innerModules.length; i++) {
+		if (filter.test(innerModules[i], this)) {
+			ret.appendChild(innerModules[i].export(doc, context, filter));
+		}
+    }
+
     return ret;
   }
 

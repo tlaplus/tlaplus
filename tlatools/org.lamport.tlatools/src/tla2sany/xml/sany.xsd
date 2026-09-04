@@ -2140,6 +2140,7 @@
             <xs:element ref="InstanceNode"/>
             <xs:element ref="UseOrHideNode"/>
             <xs:element ref="TheoremNodeRef"/>
+            <xs:element ref="ModuleNodeRef"/>
           </xs:choice>
         </xs:sequence>
       </xs:sequence>
