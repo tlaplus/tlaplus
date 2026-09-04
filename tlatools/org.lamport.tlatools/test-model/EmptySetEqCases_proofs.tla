@@ -618,7 +618,12 @@ THEOREM TupleSetIsFcnSetRev
   BY ESE_TupleSetIsFcnSet DEF TupleSetIsFcnSetRev
 
 -----------------------------------------------------------------------------
-\* How many functions there are.
+\* The cardinality of each set above. A cardinality of 1 instantiates the
+\* rule for an empty domain and a cardinality of 0 the rule for an empty
+\* co-domain, field set, or component, i.e. the rules and the witnesses of
+\* the comparisons above.
+
+\* Sets of functions that denote { <<>> }.
 
 THEOREM CardUnitEmptyRange
   BY ESE_UnitCardinality DEF CardUnitEmptyRange
@@ -626,10 +631,333 @@ THEOREM CardUnitEmptyRange
 THEOREM CardUnitTripleRange
   BY ESE_UnitCardinality DEF CardUnitTripleRange
 
+THEOREM CardUnitInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitInterval
+
+THEOREM CardUnitCap
+  <1>1. {"d1"} \cap {"d2"} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitCap
+
+THEOREM CardUnitFilter
+  <1>1. {d \in {"d1"} : FALSE} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitFilter
+
+\* The empty domain is a set of records, a Cartesian product, or a set of
+\* functions. In CardUnitFcnSetRange the co-domain is empty too, and the
+\* empty domain still decides.
+
+THEOREM CardUnitRcdField
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitRcdField
+
+THEOREM CardUnitTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitTuple
+
+THEOREM CardUnitFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_UnitCardinality DEF CardUnitFcnSet
+
+THEOREM CardUnitFcnSetRange
+  BY ESE_UnitCardinality DEF CardUnitFcnSetRange
+
+\* Sets of functions that are empty.
+
+THEOREM CardEmptySingleton
+  <1>1. "r1" \in {"r1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptySingleton
+
 THEOREM CardEmptyInterval
   <1>1. 1 \in 1..2
     OBVIOUS
   <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptyInterval
+
+THEOREM CardEmptySubsetEmpty
+  <1>1. {} \in SUBSET {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptySubsetEmpty
+
+THEOREM CardEmptyRcdDomain
+  <1>1. [n1 |-> "d1"] \in [n1 : {"d1"}]
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptyRcdDomain
+
+\* The empty co-domain is a set of records, a Cartesian product, or a set of
+\* functions.
+
+THEOREM CardEmptyRcdRange
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>3. QED BY <1>1, <1>2, ESE_EmptyCardinality DEF CardEmptyRcdRange
+
+THEOREM CardEmptyTupleRange
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>3. QED BY <1>1, <1>2, ESE_EmptyCardinality DEF CardEmptyTupleRange
+
+THEOREM CardEmptyFcnSetRange
+  <1>1. "e1" \in {"e1"}
+    OBVIOUS
+  <1>2. [{"e1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. "d1" \in {"d1"}
+    OBVIOUS
+  <1>4. QED BY <1>2, <1>3, ESE_EmptyCardinality DEF CardEmptyFcnSetRange
+
+\* Sets of records that are empty.
+
+THEOREM CardRcdEmptyField
+  BY ESE_RcdSetEmptyCardinality1 DEF CardRcdEmptyField
+
+THEOREM CardRcdEmptyArity
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyArity
+
+THEOREM CardRcdEmptyPosition
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyPosition
+
+THEOREM CardRcdEmptyInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetEmptyCardinality DEF CardRcdEmptyInterval
+
+THEOREM CardRcdEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_RcdSetEmptyCardinality1 DEF CardRcdEmptyFcnSet
+
+THEOREM CardRcdEmptyRcd
+  <1>1. [n2 : {}] = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetEmptyCardinality1 DEF CardRcdEmptyRcd
+
+THEOREM CardRcdEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_RcdSetEmptyCardinality1 DEF CardRcdEmptyTuple
+
+\* Cartesian products that are empty.
+
+THEOREM CardTupEmptyComponent
+  BY ESE_TupleSetEmptyCardinality DEF CardTupEmptyComponent
+
+THEOREM CardTupEmptyPosition
+  BY ESE_TupleSetEmptyCardinality DEF CardTupEmptyPosition
+
+THEOREM CardTupEmptyArity
+  BY ESE_TupleSetEmptyCardinality3 DEF CardTupEmptyArity
+
+THEOREM CardTupEmptyInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleSetEmptyCardinality DEF CardTupEmptyInterval
+
+THEOREM CardTupEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_TupleSetEmptyCardinality DEF CardTupEmptyFcnSet
+
+THEOREM CardTupEmptyRcd
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_TupleSetEmptyCardinality DEF CardTupEmptyRcd
+
+THEOREM CardTupEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_TupleSetEmptyCardinality DEF CardTupEmptyTuple
+
+\* An empty field set or component behind constituents whose cardinalities
+\* multiply beyond what TLC counts. No rule reads the cardinality of a
+\* constituent, i.e. these are the rules of the two groups above with
+\* 1..50000 in place of a singleton.
+
+THEOREM CardRcdLargeThenEmpty
+  BY ESE_RcdSetEmptyCardinality3 DEF CardRcdLargeThenEmpty
+
+THEOREM CardRcdEmptyThenLarge
+  BY ESE_RcdSetEmptyCardinality3 DEF CardRcdEmptyThenLarge
+
+THEOREM CardTupLargeThenEmpty
+  BY ESE_TupleSetEmptyCardinality3 DEF CardTupLargeThenEmpty
+
+THEOREM CardTupEmptyThenLarge
+  BY ESE_TupleSetEmptyCardinality3 DEF CardTupEmptyThenLarge
+
+THEOREM CardUnitTupleLarge
+  <1>1. (1..50000) \X (1..50000) \X {} = {}
+    BY ESE_TupleSetEmpty3
+  <1>2. QED BY <1>1, ESE_UnitCardinality DEF CardUnitTupleLarge
+
+\* An empty field set or component before one whose cardinality TLC cannot
+\* compute. The rules ask only for the emptiness of one constituent, i.e. the
+\* other never enters these proofs, in either position.
+
+THEOREM CardRcdEmptyFieldNat
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyFieldNat
+
+THEOREM CardRcdEmptyThenDiff
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyThenDiff
+
+THEOREM CardTupEmptyNatSecond
+  BY ESE_TupleSetEmptyCardinality DEF CardTupEmptyNatSecond
+
+\* The cardinalities that TLC refuses. Each is a TLA+ fact, i.e. these proofs
+\* are what makes the AssertError assumptions of EmptySetEqAssume.tla record
+\* a limitation instead of an acceptable refusal. The first three are the
+\* three proofs above with the constituents swapped, i.e. TLC's order, and no
+\* rule of TLA+, separates the two groups.
+
+THEOREM CardRcdEmptyNatField
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdEmptyNatField
+
+THEOREM CardRcdDiffThenEmpty
+  BY ESE_RcdSetEmptyCardinality DEF CardRcdDiffThenEmpty
+
+THEOREM CardTupEmptyNatFirst
+  BY ESE_TupleSetEmptyCardinality DEF CardTupEmptyNatFirst
+
+THEOREM CardRcdEmptyFcnSetNat
+  BY NatToEmpty, ESE_RcdSetEmptyCardinality1 DEF CardRcdEmptyFcnSetNat
+
+THEOREM CardTupEmptyFcnSetNat
+  BY NatToEmpty, ESE_TupleSetEmptyCardinality DEF CardTupEmptyFcnSetNat
+
+THEOREM CardUnitNatRange
+  BY ESE_UnitCardinality DEF CardUnitNatRange
+
+THEOREM CardEmptyNatDomain
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptyNatDomain
+
+THEOREM CardUnitFcnSetNat
+  BY NatToEmpty, ESE_UnitCardinality DEF CardUnitFcnSetNat
+
+THEOREM CardEmptyFcnSetNat
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, NatToEmpty, ESE_EmptyCardinality DEF CardEmptyFcnSetNat
+
+THEOREM CardUnitSubsetRange
+  BY ESE_UnitCardinality DEF CardUnitSubsetRange
+
+THEOREM CardEmptySubsetDomain
+  <1>1. {} \in SUBSET (1..40)
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptySubsetDomain
+
+THEOREM CardSingletonNatDomain
+  BY ESE_SingletonRangeCardinality DEF CardSingletonNatDomain
+
+THEOREM CardSingletonSubset
+  <1>1. SUBSET {} = {{}}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_SingletonRangeCardinality DEF CardSingletonSubset
+
+THEOREM CardSingletonAsDomain
+  <1>1. [Nat -> {"d1"}] = { [x \in Nat |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. IsFiniteSet({"d2", "d3"}) /\ Cardinality({"d2", "d3"}) = 2
+    BY ESE_PairFinite
+  <1>3. QED BY <1>1, <1>2, ESE_SingletonDomainCardinality
+        DEF CardSingletonAsDomain
+
+THEOREM CardUnitLargeRange
+  BY ESE_UnitCardinality DEF CardUnitLargeRange
+
+THEOREM CardEmptyLargeDomain
+  <1>1. <<1, 1>> \in (1..50000) \X (1..50000)
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyCardinality DEF CardEmptyLargeDomain
+
+THEOREM CardSingletonSubsetDomain
+  BY ESE_SingletonRangeCardinality DEF CardSingletonSubsetDomain
+
+THEOREM CardSingletonLargeDomain
+  <1>1. ASSUME NEW S
+        PROVE  Cardinality([S -> {"d1"}]) = 1
+    BY ESE_SingletonRangeCardinality
+  <1>2. QED BY <1>1 DEF CardSingletonLargeDomain
+
+THEOREM CardSingletonSeqEmptyDomain
+  <1>1. ASSUME NEW S
+        PROVE  Cardinality([S -> {"d1"}]) = 1
+    BY ESE_SingletonRangeCardinality
+  <1>2. QED BY <1>1 DEF CardSingletonSeqEmptyDomain
+
+THEOREM CardSingletonUnionDomain
+  <1>1. ASSUME NEW S
+        PROVE  Cardinality([S -> {"d1"}]) = 1
+    BY ESE_SingletonRangeCardinality
+  <1>2. QED BY <1>1 DEF CardSingletonUnionDomain
+
+THEOREM CardSubsetSingletonFcnSet
+  <1>1. [(SUBSET (1..40)) -> {"d1"}] = { [x \in SUBSET (1..40) |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. ASSUME NEW a
+        PROVE  SUBSET {a} = { {}, {a} }
+    <2>1. ASSUME NEW s \in SUBSET {a}, s # {}
+          PROVE  s = {a}
+      <3>1. PICK y \in s : TRUE
+        BY <2>1
+      <3>2. y = a
+        BY <3>1
+      <3>3. QED BY <3>1, <3>2
+    <2>2. QED BY <2>1
+  <1>3. {} # { [x \in SUBSET (1..40) |-> "d1"] }
+    OBVIOUS
+  <1>4. QED BY <1>1, <1>2, <1>3, ESE_PairFinite
+        DEF CardSubsetSingletonFcnSet
+
+THEOREM CardTupSingletonFcnSet
+  <1>1. [(SUBSET (1..40)) -> {"d1"}] \X [(SUBSET (1..40)) -> {"d1"}]
+          = [1..2 -> [(SUBSET (1..40)) -> {"d1"}]]
+    BY ESE_TupleSetIsFcnSet
+  <1>2. [(SUBSET (1..40)) -> {"d1"}] = { [x \in SUBSET (1..40) |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>3. QED BY <1>1, <1>2, ESE_SingletonRangeCardinality
+        DEF CardTupSingletonFcnSet
+
+THEOREM CardRcdSingletonFcnSet
+  <1>1. [n1 : [(SUBSET (1..40)) -> {"d1"}]]
+          = [{"n1"} -> [(SUBSET (1..40)) -> {"d1"}]]
+    BY ESE_RcdSetIsFcnSet
+  <1>2. [(SUBSET (1..40)) -> {"d1"}] = { [x \in SUBSET (1..40) |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>3. QED BY <1>1, <1>2, ESE_SingletonRangeCardinality
+        DEF CardRcdSingletonFcnSet
+
+THEOREM CardSingletonSubsetAsDomain
+  <1>1. [(SUBSET (1..40)) -> {"d1"}] = { [x \in SUBSET (1..40) |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. IsFiniteSet({"d2", "d3"}) /\ Cardinality({"d2", "d3"}) = 2
+    BY ESE_PairFinite
+  <1>3. QED BY <1>1, <1>2, ESE_SingletonDomainCardinality
+        DEF CardSingletonSubsetAsDomain
+
+THEOREM CardSingletonSubsetAsRange
+  <1>1. [(SUBSET (1..40)) -> {"d1"}] = { [x \in SUBSET (1..40) |-> "d1"] }
+    BY ESE_SingletonRange
+  <1>2. QED BY <1>1, ESE_SingletonRangeCardinality
+        DEF CardSingletonSubsetAsRange
 
 -----------------------------------------------------------------------------
 \* The finiteness of the same sets. A finiteness rule needs one empty

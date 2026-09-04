@@ -182,7 +182,9 @@ THEOREM ESE_RcdSetDiffTupleSet ==
   PROVE  [n1 : S] # S \X T
 
 (***************************************************************************)
-(* How many functions there are.                                           *)
+(* The cardinality of a set of functions that denotes {<<>>} and of an     *)
+(* empty set of each of the three constructors, i.e. the equalities above  *)
+(* read through Cardinality.                                               *)
 (***************************************************************************)
 
 THEOREM ESE_UnitCardinality ==
@@ -192,6 +194,26 @@ THEOREM ESE_UnitCardinality ==
 THEOREM ESE_EmptyCardinality ==
   ASSUME NEW S, NEW T, NEW w, w \in S, T = {}
   PROVE  Cardinality([S -> T]) = 0
+
+THEOREM ESE_RcdSetEmptyCardinality1 ==
+  ASSUME NEW S, S = {}
+  PROVE  Cardinality([n1 : S]) = 0
+
+THEOREM ESE_RcdSetEmptyCardinality ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  Cardinality([n1 : S, n2 : T]) = 0
+
+THEOREM ESE_RcdSetEmptyCardinality3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  Cardinality([n1 : S, n2 : T, n3 : U]) = 0
+
+THEOREM ESE_TupleSetEmptyCardinality ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  Cardinality(S \X T) = 0
+
+THEOREM ESE_TupleSetEmptyCardinality3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  Cardinality(S \X T \X U) = 0
 
 (***************************************************************************)
 (* The same sets read through IsFiniteSet. Each is { <<>> } or {}, so one  *)
@@ -235,9 +257,17 @@ THEOREM ESE_SingletonRangeFinite ==
   ASSUME NEW S, NEW T, NEW w, T = {w}
   PROVE  IsFiniteSet([S -> T])
 
+THEOREM ESE_SingletonRangeCardinality ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  Cardinality([S -> T]) = 1
+
 THEOREM ESE_SingletonDomainFinite ==
   ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
   PROVE  IsFiniteSet([S -> T])
+
+THEOREM ESE_SingletonDomainCardinality ==
+  ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
+  PROVE  Cardinality([S -> T]) = Cardinality(T)
 
 THEOREM ESE_PairFinite ==
   ASSUME NEW a, NEW b, a # b
