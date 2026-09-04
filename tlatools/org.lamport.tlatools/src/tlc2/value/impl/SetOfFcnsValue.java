@@ -151,10 +151,39 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
   //         PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_UnitFinite ==
+  //   ASSUME NEW S, NEW T, S = {}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_EmptyRangeFinite ==
+  //   ASSUME NEW S, NEW T, T = {}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_SingletonRangeFinite ==
+  //   ASSUME NEW S, NEW T, NEW w, T = {w}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // The first theorem misses { <<>> } and {}: an empty domain or co-domain
+  // makes [S -> T] finite whatever the other argument is, so neither argument
+  // has to be finite. isEmpty is only asked of an argument that isFinite has
+  // answered for, because an empty set is finite, and asking one that TLC
+  // cannot enumerate, such as Nat \ {0}, would fail instead of answering.
   @Override
   public final boolean isFinite() {
     try {
-      return this.domain.isFinite() && this.range.isFinite();
+      final boolean finiteDomain = this.domain.isFinite();
+      if (finiteDomain && this.domain.isEmpty()) {
+        return true;
+      }
+      final boolean finiteRange = this.range.isFinite();
+      if (finiteRange && this.range.isEmpty()) {
+        return true;
+      }
+      if (finiteDomain && finiteRange) {
+        return true;
+      }
+      return finiteRange && this.range.size() == 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
