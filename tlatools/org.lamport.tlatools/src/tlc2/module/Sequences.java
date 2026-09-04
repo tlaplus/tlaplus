@@ -411,10 +411,14 @@ public class Sequences extends UserObj implements ValueConstants
         return true;
     }
 
+    // THEOREM ESE_SeqEmptyFinite ==
+    //   ASSUME NEW S, S = {}
+    //   PROVE  IsFiniteSet(Seq(S))
     @Override
     public final boolean isFinite()
     {
-        return this.size != Integer.MAX_VALUE;
+        return this.size != Integer.MAX_VALUE
+                || (this.range.isFinite() && this.range.isEmpty());
     }
 
     // THEOREM ASSUME NEW S

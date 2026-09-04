@@ -129,13 +129,30 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
+  //         PROVE  IsFiniteSet([n1 : S, n2 : T])
+  //
+  // THEOREM ESE_RcdSetEmptyFinite ==
+  //   ASSUME NEW S, NEW T, S = {} \/ T = {}
+  //   PROVE  IsFiniteSet([n1 : S, n2 : T])
+  //
+  // An empty field makes the record set {} whatever the other fields are, so
+  // the loop reads every field to find the empty one rather than stopping at
+  // the first field that is not finite. isEmpty is only asked of a field that
+  // isFinite has answered for, because an empty set is finite, and asking one
+  // that TLC cannot enumerate, such as Nat \ {0}, would fail instead.
   @Override
   public final boolean isFinite() {
     try {
+      boolean allFinite = true;
       for (int i = 0; i < this.values.length; i++) {
-        if (!this.values[i].isFinite()) return false;
+        if (this.values[i].isFinite()) {
+          if (this.values[i].isEmpty()) { return true; }
+        } else {
+          allFinite = false;
+        }
       }
-      return true;
+      return allFinite;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
