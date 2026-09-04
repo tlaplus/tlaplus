@@ -414,26 +414,29 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      boolean unlazy = TLCGlobals.expand;
+      Value val = null;
       try {
-        if (unlazy) {
-          int dsz = this.domain.size();
-          int rsz = this.range.size();
-          long sz = 1;
-          for (int i = 0; i < dsz; i++) {
-            sz *= rsz;
-            if (sz < -2147483648 || sz > 2147483647) {
-              unlazy = false;
-              break;
+        if (TLCGlobals.expand) {
+          long sz;
+          if (this.domain.isEmpty()) {
+            sz = 1;
+          }
+          else {
+            final int dsz = this.domain.size();
+            final int rsz = this.range.size();
+            sz = 1;
+            for (int i = 0; i < dsz && sz <= 2147483647; i++) {
+              sz *= rsz;
             }
           }
-          unlazy = sz < TLCGlobals.enumBound;
+          if (sz < TLCGlobals.enumBound) {
+            val = this.toSetEnum();
+          }
         }
       }
-      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
+      catch (Throwable e) { if (!swallow) throw e; }
 
-      if (unlazy) {
-        Value val = this.toSetEnum();
+      if (val != null) {
         return val.toString(sb, offset, swallow);
       }
       else {
