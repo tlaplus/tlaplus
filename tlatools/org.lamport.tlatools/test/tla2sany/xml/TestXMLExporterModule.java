@@ -502,6 +502,85 @@ public class TestXMLExporterModule {
 	}
 
 	@Test
+	public void testNestedModuleIsChildOfEnclosingModule() throws Exception {
+		// Run XMLExporter on NestedModuleXml.tla, which declares a module ("Nested")
+		// nested inside the body of the outer module ("NestedModuleXml").
+		String modulePath = BASE_PATH + "NestedModuleXml.tla";
+		int exitCode = XMLExporter.run(modulePath);
+
+		// Verify successful execution
+		Assert.assertEquals("XMLExporter should exit with code 0", 0, exitCode);
+
+		// Get the XML output
+		String xmlOutput = this.outStream.toString();
+		String errOutput = this.errStream.toString();
+
+		// Verify no stderr output
+		Assert.assertTrue("No errors should be written to stderr", errOutput.trim().isEmpty());
+
+		// Parse the XML to verify it's well-formed
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(xmlOutput)));
+
+		// Validate against XSD schema
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		URL schemaFile = XMLExporter.class.getResource("sany.xsd");
+		Assert.assertNotNull("sany.xsd schema file should be found", schemaFile);
+		Schema schema = schemaFactory.newSchema(schemaFile);
+		Validator validator = schema.newValidator();
+		validator.validate(new DOMSource(doc));
+
+		// Find the "NestedModuleXml" and "Nested" ModuleNode entries in the context table.
+		NodeList entries = doc.getElementsByTagName("entry");
+		Element outerModule = null;
+		String outerUid = null;
+		Element nestedModule = null;
+		String nestedUid = null;
+		for (int i = 0; i < entries.getLength(); i++) {
+			Element entry = (Element) entries.item(i);
+			NodeList moduleNodes = entry.getElementsByTagName("ModuleNode");
+			if (moduleNodes.getLength() == 0)
+				continue;
+			Element module = (Element) moduleNodes.item(0);
+			String name = module.getElementsByTagName("uniquename").item(0).getTextContent().trim();
+			String uid = entry.getElementsByTagName("UID").item(0).getTextContent().trim();
+			if ("NestedModuleXml".equals(name)) {
+				outerModule = module;
+				outerUid = uid;
+			} else if ("Nested".equals(name)) {
+				nestedModule = module;
+				nestedUid = uid;
+			}
+		}
+		Assert.assertNotNull("NestedModuleXml module should be found in XML", outerModule);
+		Assert.assertNotNull("Nested module should be found in XML", nestedModule);
+
+		// The nested module should still contain its own definitions.
+		boolean fooFound = xmlOutput.contains(">Foo<");
+		Assert.assertTrue("XML should contain nested module's operator: Foo", fooFound);
+
+		// The outer module should reference the nested module as one of its own
+		// units, i.e. it must contain a ModuleNodeRef pointing at the nested
+		// module's UID.
+		NodeList outerRefs = outerModule.getElementsByTagName("ModuleNodeRef");
+		boolean foundRef = false;
+		for (int i = 0; i < outerRefs.getLength(); i++) {
+			Element ref = (Element) outerRefs.item(i);
+			String uid = ref.getElementsByTagName("UID").item(0).getTextContent().trim();
+			if (uid.equals(nestedUid)) {
+				foundRef = true;
+				break;
+			}
+		}
+		Assert.assertTrue(
+				"NestedModuleXml's ModuleNode should contain a ModuleNodeRef to the nested module 'Nested' (UID "
+						+ nestedUid + ", outer UID " + outerUid + ")",
+				foundRef);
+	}
+
+	@Test
 	public void testUncommentFlagWithTLACommentStyles() throws Exception {
 		// Run XMLExporter with -u flag on TLACommentStyles.tla module
 		String modulePath = BASE_PATH + "TLACommentStyles.tla";
