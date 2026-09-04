@@ -227,11 +227,116 @@ RcdSetIsFcnSetRev        == [n1 : {"a"}]   = [{"n1"} -> {"a"}]
 TupleSetIsFcnSetRev      == ({"a", "b"} \X {"a", "b"}) = [1..2 -> {"a", "b"}]
 
 -----------------------------------------------------------------------------
-\* How many functions there are.
+\* The cardinality of each set above. TLC computes Cardinality(S) from the
+\* cardinalities of the arguments of the constructor of S, without
+\* enumerating S, so it has to agree with the comparisons above: 1 where a
+\* set of functions denotes { <<>> } and 0 where a set is empty. The Card
+\* prefix names a cardinality and the rest of a name its argument, following
+\* the sections above.
 
-CardUnitEmptyRange  == 1 = Cardinality([{} -> {}])
-CardUnitTripleRange == 1 = Cardinality([{} -> {"a", "b", "c"}])
-CardEmptyInterval   == 0 = Cardinality([1..2 -> {}])
+\* Sets of functions that denote { <<>> }, i.e. the empty domain decides.
+CardUnitEmptyRange     == 1 = Cardinality([{} -> {}])
+CardUnitTripleRange    == 1 = Cardinality([{} -> {"a", "b", "c"}])
+CardUnitInterval       == 1 = Cardinality([1..0 -> {"d1"}])
+CardUnitCap            == 1 = Cardinality([({"d1"} \cap {"d2"}) -> {"e1"}])
+CardUnitFilter         == 1 = Cardinality([{d \in {"d1"} : FALSE} -> {"e1"}])
+
+\* The empty domain is a set of records, a Cartesian product, or a set of
+\* functions. In CardUnitFcnSetRange the co-domain is empty too, and the
+\* empty domain still decides.
+CardUnitRcdField       == 1 = Cardinality([[n1 : {}] -> {"e1"}])
+CardUnitTuple          == 1 = Cardinality([({"d1"} \X {}) -> {"e1"}])
+CardUnitFcnSet         == 1 = Cardinality([[{"d1"} -> {}] -> {"e1"}])
+CardUnitFcnSetRange    == 1 = Cardinality([{} -> [{"d1"} -> {}]])
+
+\* Sets of functions that are empty, i.e. the empty co-domain decides.
+CardEmptySingleton     == 0 = Cardinality([{"r1"} -> {}])
+CardEmptyInterval      == 0 = Cardinality([1..2 -> {}])
+CardEmptySubsetEmpty   == 0 = Cardinality([(SUBSET {}) -> {}])
+CardEmptyRcdDomain     == 0 = Cardinality([[n1 : {"d1"}] -> {}])
+
+\* The empty co-domain is a set of records, a Cartesian product, or a set of
+\* functions.
+CardEmptyRcdRange      == 0 = Cardinality([{"d1"} -> [n1 : {}]])
+CardEmptyTupleRange    == 0 = Cardinality([{"d1"} -> ({"d1"} \X {})])
+CardEmptyFcnSetRange   == 0 = Cardinality([{"d1"} -> [{"e1"} -> {}]])
+
+\* Sets of records that are empty, i.e. a single empty field decides.
+CardRcdEmptyField      == 0 = Cardinality([n1 : {}])
+CardRcdEmptyArity      == 0 = Cardinality([n1 : {}, n2 : {"r1"}])
+CardRcdEmptyPosition   == 0 = Cardinality([n1 : {"r1"}, n2 : {}])
+CardRcdEmptyInterval   == 0 = Cardinality([n1 : 1..0, n2 : {"r1"}])
+CardRcdEmptyFcnSet     == 0 = Cardinality([n1 : [{"d1"} -> {}]])
+CardRcdEmptyRcd        == 0 = Cardinality([n1 : [n2 : {}]])
+CardRcdEmptyTuple      == 0 = Cardinality([n1 : ({"d1"} \X {})])
+
+\* Cartesian products that are empty, i.e. a single empty component decides.
+CardTupEmptyComponent  == 0 = Cardinality({} \X {"r1"})
+CardTupEmptyPosition   == 0 = Cardinality({"r1"} \X {})
+CardTupEmptyArity      == 0 = Cardinality({} \X {"r1"} \X {"r2"})
+CardTupEmptyInterval   == 0 = Cardinality((1..0) \X {"r1"})
+CardTupEmptyFcnSet     == 0 = Cardinality([{"d1"} -> {}] \X {"d1"})
+CardTupEmptyRcd        == 0 = Cardinality([n1 : {}] \X {"d1"})
+CardTupEmptyTuple      == 0 = Cardinality(({"d1"} \X {}) \X {"d1"})
+
+\* An empty field set or component behind constituents whose cardinalities
+\* multiply beyond 2147483647, the largest integer TLC represents: 1..50000
+\* twice gives 2500000000. The set is empty either way, i.e. the position of
+\* the empty constituent does not decide the cardinality.
+CardRcdLargeThenEmpty ==
+    0 = Cardinality([n1 : 1..50000, n2 : 1..50000, n3 : {}])
+CardRcdEmptyThenLarge ==
+    0 = Cardinality([n1 : {}, n2 : 1..50000, n3 : 1..50000])
+CardTupLargeThenEmpty ==
+    0 = Cardinality((1..50000) \X (1..50000) \X {})
+CardTupEmptyThenLarge ==
+    0 = Cardinality({} \X (1..50000) \X (1..50000))
+
+\* The same product as the domain of a set of functions, which therefore
+\* denotes { <<>> }.
+CardUnitTupleLarge ==
+    1 = Cardinality([((1..50000) \X (1..50000) \X {}) -> {"e1"}])
+
+\* An empty field set or component before one whose cardinality TLC cannot
+\* compute, so TLC stops at the empty one. RcdEmptyFieldNatSym and
+\* TupEmptyNatSecondSym are the comparisons that this order decides, and the
+\* reverse order is refused in both, i.e. a cardinality turns on the position
+\* of the empty constituent as a comparison does.
+CardRcdEmptyFieldNat   == 0 = Cardinality([n1 : {}, n2 : Nat])
+CardRcdEmptyThenDiff   == 0 = Cardinality([n1 : {}, n2 : (Nat \ {0})])
+CardTupEmptyNatSecond  == 0 = Cardinality({} \X Nat)
+
+\* The cardinalities that TLC refuses, i.e. the AssertError assumptions of
+\* EmptySetEqAssume.tla. TLC reads the constituents in order and stops at the
+\* first empty one, so a non-computable constituent costs TLC the cardinality
+\* only where it comes first. These are the reverses of the three
+\* above, and the second constituent being empty makes each a TLA+ fact all
+\* the same, hence the proofs.
+CardRcdEmptyNatField   == 0 = Cardinality([n1 : Nat, n2 : {}])
+CardRcdDiffThenEmpty   == 0 = Cardinality([n1 : (Nat \ {0}), n2 : {}])
+CardTupEmptyNatFirst   == 0 = Cardinality(Nat \X {})
+
+\* A field set or component that is an empty set of functions, whose own
+\* cardinality TLC cannot compute in any position, for the reason the next
+\* group states.
+CardRcdEmptyFcnSetNat  == 0 = Cardinality([n1 : [Nat -> {}]])
+CardTupEmptyFcnSetNat  == 0 = Cardinality([Nat -> {}] \X {"d1"})
+
+\* Sets of functions, where TLC reads the cardinality of both the domain and
+\* the co-domain before either emptiness applies, so no order of the two
+\* decides.
+CardUnitNatRange       == 1 = Cardinality([{} -> Nat])
+CardEmptyNatDomain     == 0 = Cardinality([Nat -> {}])
+CardUnitFcnSetNat      == 1 = Cardinality([[Nat -> {}] -> {"d2"}])
+CardEmptyFcnSetNat     == 0 = Cardinality([{"d1"} -> [Nat -> {}]])
+CardUnitSubsetRange    == 1 = Cardinality([{} -> (SUBSET (1..40))])
+CardEmptySubsetDomain  == 0 = Cardinality([(SUBSET (1..40)) -> {}])
+CardUnitLargeRange     == 1 = Cardinality([{} -> ((1..50000) \X (1..50000))])
+CardEmptyLargeDomain   == 0 = Cardinality([((1..50000) \X (1..50000)) -> {}])
+
+CardSingletonNatDomain == 1 = Cardinality([Nat -> {"d1"}])
+CardSingletonSubset    == 1 = Cardinality([Nat -> SUBSET {}])
+CardSingletonAsDomain  == 2 = Cardinality([[Nat -> {"d1"}] -> {"d2", "d3"}])
 
 -----------------------------------------------------------------------------
 \* The finiteness of the same sets. Every one of them is { <<>> } or {}, so

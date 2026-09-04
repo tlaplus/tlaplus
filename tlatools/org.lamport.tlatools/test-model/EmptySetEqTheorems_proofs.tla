@@ -508,7 +508,9 @@ THEOREM ESE_RcdSetDiffTupleSet ==
   <1>3. QED BY <1>2
 
 (***************************************************************************)
-(* How many functions there are.                                            *)
+(* The cardinality of a set of functions that denotes {<<>>} and of an      *)
+(* empty set of each of the three constructors, i.e. the equalities above   *)
+(* read through Cardinality.                                                *)
 (***************************************************************************)
 
 THEOREM ESE_UnitCardinality ==
@@ -525,6 +527,51 @@ THEOREM ESE_EmptyCardinality ==
   PROVE  Cardinality([S -> T]) = 0
   <1>1. [S -> T] = {}
     BY ESE_EmptyRange
+  <1>2. Cardinality({}) = 0
+    BY FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_RcdSetEmptyCardinality1 ==
+  ASSUME NEW S, S = {}
+  PROVE  Cardinality([n1 : S]) = 0
+  <1>1. [n1 : S] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. Cardinality({}) = 0
+    BY FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_RcdSetEmptyCardinality ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  Cardinality([n1 : S, n2 : T]) = 0
+  <1>1. [n1 : S, n2 : T] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. Cardinality({}) = 0
+    BY FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_RcdSetEmptyCardinality3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  Cardinality([n1 : S, n2 : T, n3 : U]) = 0
+  <1>1. [n1 : S, n2 : T, n3 : U] = {}
+    BY ESE_RcdSetEmpty3
+  <1>2. Cardinality({}) = 0
+    BY FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_TupleSetEmptyCardinality ==
+  ASSUME NEW S, NEW T, S = {} \/ T = {}
+  PROVE  Cardinality(S \X T) = 0
+  <1>1. S \X T = {}
+    BY ESE_TupleSetEmpty
+  <1>2. Cardinality({}) = 0
+    BY FS_EmptySet
+  <1>3. QED BY <1>1, <1>2
+
+THEOREM ESE_TupleSetEmptyCardinality3 ==
+  ASSUME NEW S, NEW T, NEW U, S = {} \/ T = {} \/ U = {}
+  PROVE  Cardinality(S \X T \X U) = 0
+  <1>1. S \X T \X U = {}
+    BY ESE_TupleSetEmpty3
   <1>2. Cardinality({}) = 0
     BY FS_EmptySet
   <1>3. QED BY <1>1, <1>2
@@ -619,6 +666,13 @@ THEOREM ESE_SingletonRangeFinite ==
     BY ESE_SingletonRange
   <1>2. QED BY <1>1, FS_Singleton
 
+THEOREM ESE_SingletonRangeCardinality ==
+  ASSUME NEW S, NEW T, NEW w, T = {w}
+  PROVE  Cardinality([S -> T]) = 1
+  <1>1. [S -> T] = { [x \in S |-> w] }
+    BY ESE_SingletonRange
+  <1>2. QED BY <1>1, FS_Singleton
+
 LEMMA SingletonDomainBijection ==
   ASSUME NEW S, NEW T, NEW w, S = {w}
   PROVE  ExistsBijection(T, [S -> T])
@@ -650,6 +704,11 @@ LEMMA SingletonDomainBijection ==
 THEOREM ESE_SingletonDomainFinite ==
   ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
   PROVE  IsFiniteSet([S -> T])
+  BY SingletonDomainBijection, FS_Bijection
+
+THEOREM ESE_SingletonDomainCardinality ==
+  ASSUME NEW S, NEW T, NEW w, S = {w}, IsFiniteSet(T)
+  PROVE  Cardinality([S -> T]) = Cardinality(T)
   BY SingletonDomainBijection, FS_Bijection
 
 THEOREM ESE_PairFinite ==
