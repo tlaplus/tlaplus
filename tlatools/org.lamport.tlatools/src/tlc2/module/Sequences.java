@@ -411,10 +411,26 @@ public class Sequences extends UserObj implements ValueConstants
         return true;
     }
 
+    // THEOREM ESE_SeqEmptyFinite ==
+    //   ASSUME NEW S, S = {}
+    //   PROVE  IsFiniteSet(Seq(S))
     @Override
     public final boolean isFinite()
     {
-        return this.size != Integer.MAX_VALUE;
+        return this.size != Integer.MAX_VALUE
+                || (this.range.isFinite() && this.range.isEmpty());
+    }
+
+    // THEOREM ASSUME NEW S
+    //         PROVE  Seq(S) # {}
+    //
+    // The witness is <<>> \in Seq(S): the empty sequence is shorter than any
+    // bound this.size >= 0 and has no element that would have to be in
+    // this.range, i.e. member above returns true for it.
+    @Override
+    public final boolean isEmpty()
+    {
+        return this.size < 0;
     }
 
     @Override

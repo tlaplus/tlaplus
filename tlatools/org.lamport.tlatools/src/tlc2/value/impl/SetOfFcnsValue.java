@@ -56,10 +56,41 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ESE_UnitDomain ==
+  //   ASSUME NEW S, NEW T, S = {}
+  //   PROVE  [S -> T] = { <<>> }
+  //
+  // THEOREM ESE_EmptyRange ==
+  //   ASSUME NEW S, NEW T, NEW w, w \in S, T = {}
+  //   PROVE  [S -> T] = {}
+  //
+  // THEOREM ESE_DomainDecides ==
+  //   ASSUME NEW S, NEW T, NEW R, NEW w, w \in R
+  //   PROVE  [S -> R] = [T -> R] <=> S = T
+  //
+  // THEOREM ESE_RangeDecides ==
+  //   ASSUME NEW S, NEW R, NEW Q, NEW w, w \in S
+  //   PROVE  [S -> R] = [S -> Q] <=> R = Q
+  //
+  // The witness w that the last two theorems need is what the two guards below
+  // rule out first: an empty domain makes [S -> T] the singleton { <<>> }
+  // whatever T is, and an empty co-domain makes it {} whatever the non-empty S
+  // is. Either set being one of the two therefore settles the equality on its
+  // own, and only the sets that are neither are left for the domains and the
+  // co-domains to decide.
   public final boolean equals(Object obj) {
     try {
       if (obj instanceof SetOfFcnsValue) {
         SetOfFcnsValue fcns = (SetOfFcnsValue)obj;
+
+        boolean isUnit1 = this.domain.isEmpty();
+        boolean isUnit2 = fcns.domain.isEmpty();
+        if (isUnit1 || isUnit2) { return isUnit1 == isUnit2; }
+
+        boolean isEmpty1 = this.range.isEmpty();
+        boolean isEmpty2 = fcns.range.isEmpty();
+        if (isEmpty1 || isEmpty2) { return isEmpty1 == isEmpty2; }
+
         return (this.domain.equals(fcns.domain) &&
           this.range.equals(fcns.range));
       }
@@ -120,10 +151,39 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
   // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
   //         PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_UnitFinite ==
+  //   ASSUME NEW S, NEW T, S = {}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_EmptyRangeFinite ==
+  //   ASSUME NEW S, NEW T, T = {}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // THEOREM ESE_SingletonRangeFinite ==
+  //   ASSUME NEW S, NEW T, NEW w, T = {w}
+  //   PROVE  IsFiniteSet([S -> T])
+  //
+  // The first theorem misses { <<>> } and {}: an empty domain or co-domain
+  // makes [S -> T] finite whatever the other argument is, so neither argument
+  // has to be finite. isEmpty is only asked of an argument that isFinite has
+  // answered for, because an empty set is finite, and asking one that TLC
+  // cannot enumerate, such as Nat \ {0}, would fail instead of answering.
   @Override
   public final boolean isFinite() {
     try {
-      return this.domain.isFinite() && this.range.isFinite();
+      final boolean finiteDomain = this.domain.isFinite();
+      if (finiteDomain && this.domain.isEmpty()) {
+        return true;
+      }
+      final boolean finiteRange = this.range.isFinite();
+      if (finiteRange && this.range.isEmpty()) {
+        return true;
+      }
+      if (finiteDomain && finiteRange) {
+        return true;
+      }
+      return finiteRange && this.range.size() == 1;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -177,9 +237,21 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   //
   // The loop below is that induction, i.e. one multiplication per element of the
   // domain, and not the closed form Cardinality(T)^Cardinality(S).
+  //
+  // THEOREM ASSUME NEW S, NEW T, NEW w, T = {w}
+  //         PROVE  Cardinality([S -> T]) = 1
   @Override
   public final int size() {
     try {
+      if (this.domain.isEmpty()) {
+        return 1;
+      }
+      if (this.range.isEmpty()) {
+        return 0;
+      }
+      if (!this.domain.isFinite() && this.range.size() == 1) {
+        return 1;
+      }
       int dsz = this.domain.size();
       int rsz = this.range.size();
       long sz = 1;
@@ -200,6 +272,12 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 	@Override
 	protected boolean needBigInteger() {
+		if (this.domain.isEmpty() || this.range.isEmpty()) {
+			return false;
+		}
+		if (!this.domain.isFinite() && this.range.size() == 1) {
+			return false;
+		}
 		final int rsz = this.range.size();
 		final int dsz = this.domain.size();
 		long sz = 1;
@@ -336,26 +414,29 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      boolean unlazy = TLCGlobals.expand;
+      Value val = null;
       try {
-        if (unlazy) {
-          int dsz = this.domain.size();
-          int rsz = this.range.size();
-          long sz = 1;
-          for (int i = 0; i < dsz; i++) {
-            sz *= rsz;
-            if (sz < -2147483648 || sz > 2147483647) {
-              unlazy = false;
-              break;
+        if (TLCGlobals.expand) {
+          long sz;
+          if (this.domain.isEmpty()) {
+            sz = 1;
+          }
+          else {
+            final int dsz = this.domain.size();
+            final int rsz = this.range.size();
+            sz = 1;
+            for (int i = 0; i < dsz && sz <= 2147483647; i++) {
+              sz *= rsz;
             }
           }
-          unlazy = sz < TLCGlobals.enumBound;
+          if (sz < TLCGlobals.enumBound) {
+            val = this.toSetEnum();
+          }
         }
       }
-      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
+      catch (Throwable e) { if (!swallow) throw e; }
 
-      if (unlazy) {
-        Value val = this.toSetEnum();
+      if (val != null) {
         return val.toString(sb, offset, swallow);
       }
       else {

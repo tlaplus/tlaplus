@@ -129,13 +129,30 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  // THEOREM ASSUME NEW S, NEW T, IsFiniteSet(S), IsFiniteSet(T)
+  //         PROVE  IsFiniteSet([n1 : S, n2 : T])
+  //
+  // THEOREM ESE_RcdSetEmptyFinite ==
+  //   ASSUME NEW S, NEW T, S = {} \/ T = {}
+  //   PROVE  IsFiniteSet([n1 : S, n2 : T])
+  //
+  // An empty field makes the record set {} whatever the other fields are, so
+  // the loop reads every field to find the empty one rather than stopping at
+  // the first field that is not finite. isEmpty is only asked of a field that
+  // isFinite has answered for, because an empty set is finite, and asking one
+  // that TLC cannot enumerate, such as Nat \ {0}, would fail instead.
   @Override
   public final boolean isFinite() {
     try {
+      boolean allFinite = true;
       for (int i = 0; i < this.values.length; i++) {
-        if (!this.values[i].isFinite()) return false;
+        if (this.values[i].isFinite()) {
+          if (this.values[i].isEmpty()) { return true; }
+        } else {
+          allFinite = false;
+        }
       }
-      return true;
+      return allFinite;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -183,6 +200,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final int size() {
     try {
+      if (this.isEmpty()) {
+        return 0;
+      }
       long sz = 1;
       for (int i = 0; i < this.values.length; i++) {
         sz *= this.values[i].size();
@@ -201,6 +221,9 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 
 	@Override
 	protected boolean needBigInteger() {
+		if (this.isEmpty()) {
+			return false;
+		}
 		long sz = 1;
 		for (int i = 0; i < values.length; i++) {
 			sz *= values[i].size();
@@ -381,24 +404,28 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      boolean unlazy = TLCGlobals.expand;
+      Value val = null;
       try {
-        if (unlazy) {
+        if (TLCGlobals.expand) {
           long sz = 1;
           for (int i = 0; i < this.values.length; i++) {
-            sz *= this.values[i].size();
-            if (sz < -2147483648 || sz > 2147483647) {
-              unlazy = false;
+            final int fsz = this.values[i].size();
+            if (fsz == 0) {
+              sz = 0;
               break;
             }
+            if (sz <= 2147483647) {
+              sz *= fsz;
+            }
           }
-          unlazy = sz < TLCGlobals.enumBound;
+          if (sz < TLCGlobals.enumBound) {
+            val = this.toSetEnum();
+          }
         }
       }
-      catch (Throwable e) { if (swallow) unlazy = false; else throw e; }
+      catch (Throwable e) { if (!swallow) throw e; }
 
-      if (unlazy) {
-        Value val = this.toSetEnum();
+      if (val != null) {
         return val.toString(sb, offset, swallow);
       }
       else {
