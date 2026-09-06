@@ -91,17 +91,12 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  // THEOREM \A S, T : \A r : r \in [h: S, g: T] <=> /\ IsAFcn(r)
-  //                                                 /\ DOMAIN r = {"h", "g"}
-  //                                                 /\ r.h \in S
-  //                                                 /\ r.g \in T
-  //
-  // where IsAFcn(r) == r = [x \in DOMAIN r |-> r[x]].
-  //
-  // DOMAIN r = {"h", "g"} is why the comparison of the field names below is an
-  // equality and not a lookup: a record whose domain is a strict superset of
-  // {"h", "g"} is not an element of [h: S, g: T], even if r.h \in S and
-  // r.g \in T.
+  // THEOREM ESE_RcdSetMember ==
+  //   ASSUME NEW S, NEW T, NEW r
+  //   PROVE  r \in [n1 : S, n2 : T] <=> /\ r = [x \in DOMAIN r |-> r[x]]
+  //                                     /\ DOMAIN r = {"n1", "n2"}
+  //                                     /\ r.n1 \in S
+  //                                     /\ r.n2 \in T
   @Override
   public final boolean member(Value elem) {
     try {
