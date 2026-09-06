@@ -1291,18 +1291,545 @@ THEOREM TupIntReflexive
   BY ESE_TupleSetCongruence DEF TupIntReflexive
 
 -----------------------------------------------------------------------------
-\* The operators that have to agree with the comparisons above.
+\* Sets of functions that denote { <<>> }.
+
+THEOREM InUnitEmptyRange
+  BY ESE_UnitMember DEF InUnitEmptyRange
 
 THEOREM InUnitSingletonRange
   BY ESE_UnitMember DEF InUnitSingletonRange
 
+THEOREM InUnitTripleRange
+  BY ESE_UnitMember DEF InUnitTripleRange
+
 THEOREM InUnitNatRange
   BY ESE_UnitMember DEF InUnitNatRange
+
+THEOREM InUnitInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitInterval
+
+THEOREM InUnitIntervalNat
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitIntervalNat
+
+THEOREM InUnitCap
+  <1>1. {"d1"} \cap {"d2"} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitCap
+
+THEOREM InUnitCup
+  <1>1. {} \cup {} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitCup
+
+THEOREM InUnitDiff
+  <1>1. {"d1"} \ {"d1"} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitDiff
+
+THEOREM InUnitUnionEmpty
+  <1>1. UNION {} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitUnionEmpty
+
+THEOREM InUnitUnionOfEmpty
+  <1>1. UNION {{}} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitUnionOfEmpty
+
+THEOREM InUnitFilter
+  <1>1. {d \in {"d1"} : FALSE} = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitFilter
+
+\* The empty domain is a set of records, a Cartesian product, or a set of
+\* functions.
+
+THEOREM InUnitRcdField
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitRcdField
+
+THEOREM InUnitRcdFieldNat
+  <1>1. [n1 : {}, n2 : Nat] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitRcdFieldNat
+
+THEOREM InUnitRcdNatField
+  <1>1. [n1 : Nat, n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitRcdNatField
+
+THEOREM InUnitTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitTuple
+
+THEOREM InUnitTupleNatSecond
+  <1>1. {} \X Nat = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitTupleNatSecond
+
+THEOREM InUnitTupleNatFirst
+  <1>1. Nat \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitTupleNatFirst
+
+THEOREM InUnitTupleStrFirst
+  <1>1. STRING \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitTupleStrFirst
+
+THEOREM InUnitFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitFcnSet
+
+THEOREM InUnitFcnSetNat
+  BY NatToEmpty, ESE_UnitMember DEF InUnitFcnSetNat
+
+THEOREM InUnitFcnSetNested
+  <1>1. [n \in Nat |-> "d1"] \in [Nat -> {"d1"}]
+    OBVIOUS
+  <1>2. [[Nat -> {"d1"}] -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitFcnSetNested
+
+\* The empty domain is a set of records or of tuples whose field or component
+\* is itself an empty set.
+
+THEOREM InUnitRcdFcnSet
+  <1>1. [n1 : [Nat -> {}]] = {}
+    BY NatToEmpty, ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitRcdFcnSet
+
+THEOREM InUnitRcdRcd
+  <1>1. [n2 : {}] = {}
+    OBVIOUS
+  <1>2. [n1 : [n2 : {}]] = {}
+    BY <1>1, ESE_RcdSetEmpty1
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitRcdRcd
+
+THEOREM InUnitRcdTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. [n1 : ({"d1"} \X {})] = {}
+    BY <1>1, ESE_RcdSetEmpty1
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitRcdTuple
+
+THEOREM InUnitTupleFcnSet
+  <1>1. {"d1"} \X [Nat -> {}] = {}
+    BY NatToEmpty, ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_UnitMember DEF InUnitTupleFcnSet
+
+THEOREM InUnitTupleRcd
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. {"d1"} \X [n1 : {}] = {}
+    BY <1>1, ESE_TupleSetEmpty
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitTupleRcd
+
+THEOREM InUnitTupleTuple
+  <1>1. {"d2"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. {"d1"} \X ({"d2"} \X {}) = {}
+    BY <1>1, ESE_TupleSetEmpty
+  <1>3. QED BY <1>2, ESE_UnitMember DEF InUnitTupleTuple
+
+\* A value other than <<>>, i.e. a one-element tuple and a record.
+
+THEOREM NotInUnitTuple
+  <1>1. <<"d1">> # <<>>
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitNonMember DEF NotInUnitTuple
+
+THEOREM NotInUnitRcd
+  <1>1. [n1 |-> "d1"] # <<>>
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitNonMember DEF NotInUnitRcd
+
+-----------------------------------------------------------------------------
+\* Sets of functions that are empty.
 
 THEOREM NotInEmpty
   <1>1. "r1" \in {"r1"}
     OBVIOUS
   <1>2. QED BY <1>1, ESE_EmptyNonMember DEF NotInEmpty
+
+THEOREM NotInEmptyInterval
+  <1>1. 1 \in 1..2
+    OBVIOUS
+  <1>2. [1..2 -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyInterval
+
+THEOREM NotInEmptySubsetEmpty
+  <1>1. {} \in SUBSET {}
+    OBVIOUS
+  <1>2. [(SUBSET {}) -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptySubsetEmpty
+
+THEOREM NotInEmptySubsetNat
+  <1>1. {} \in SUBSET Nat
+    OBVIOUS
+  <1>2. [(SUBSET Nat) -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptySubsetNat
+
+THEOREM NotInEmptyNatDomain
+  BY NatToEmpty, ESE_EmptyNoMember DEF NotInEmptyNatDomain
+
+THEOREM NotInEmptyIntDomain
+  <1>1. 0 \in Int
+    OBVIOUS
+  <1>2. [Int -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyIntDomain
+
+THEOREM NotInEmptySeqDomain
+  <1>1. <<>> \in Seq({"d1"})
+    <2>1. <<>> \in [1..0 -> {"d1"}]
+      OBVIOUS
+    <2>2. QED BY <2>1
+  <1>2. [Seq({"d1"}) -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptySeqDomain
+
+THEOREM NotInEmptyStrDomain
+  <1>1. "" \in STRING
+    OBVIOUS
+  <1>2. [STRING -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyStrDomain
+
+THEOREM NotInEmptyDiffDomain
+  <1>1. 1 \in Nat \ {0}
+    OBVIOUS
+  <1>2. [(Nat \ {0}) -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyDiffDomain
+
+\* The domain is a set of records, a Cartesian product, or a set of
+\* functions.
+
+THEOREM NotInEmptyRcdNatDomain
+  <1>1. [n1 |-> 0] \in [n1 : Nat]
+    OBVIOUS
+  <1>2. [[n1 : Nat] -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyRcdNatDomain
+
+THEOREM NotInEmptyTupleNatDomain
+  <1>1. <<0, "d1">> \in Nat \X {"d1"}
+    OBVIOUS
+  <1>2. [(Nat \X {"d1"}) -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyTupleNatDomain
+
+THEOREM NotInEmptyFcnSetDomain
+  <1>1. [n \in Nat |-> "d1"] \in [Nat -> {"d1"}]
+    OBVIOUS
+  <1>2. [[Nat -> {"d1"}] -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyFcnSetDomain
+
+\* The value is a function on the domain of the set.
+
+THEOREM NotInEmptyFcn
+  <1>1. "r1" \in {"r1"}
+    OBVIOUS
+  <1>2. [{"r1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyFcn
+
+THEOREM NotInEmptyRcdDomain
+  <1>1. [n1 |-> "d1"] \in [n1 : {"d1"}]
+    OBVIOUS
+  <1>2. [[n1 : {"d1"}] -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInEmptyRcdDomain
+
+THEOREM NotInEmptyRcdRange
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>3. [{"d1"} -> [n1 : {}]] = {}
+    BY <1>1, <1>2, ESE_EmptyRange
+  <1>4. QED BY <1>3, ESE_EmptyNoMember DEF NotInEmptyRcdRange
+
+THEOREM NotInEmptyTupleRange
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>3. [{"d1"} -> ({"d1"} \X {})] = {}
+    BY <1>1, <1>2, ESE_EmptyRange
+  <1>4. QED BY <1>3, ESE_EmptyNoMember DEF NotInEmptyTupleRange
+
+THEOREM NotInEmptyFcnSetRange
+  <1>1. "e1" \in {"e1"}
+    OBVIOUS
+  <1>2. [{"e1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. "d1" \in {"d1"}
+    OBVIOUS
+  <1>4. [{"d1"} -> [{"e1"} -> {}]] = {}
+    BY <1>2, <1>3, ESE_EmptyRange
+  <1>5. QED BY <1>4, ESE_EmptyNoMember DEF NotInEmptyFcnSetRange
+
+-----------------------------------------------------------------------------
+\* Sets of records that are empty.
+
+THEOREM NotInRcdEmptyField
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyField
+
+THEOREM NotInRcdEmptyArity
+  <1>1. [n1 : {}, n2 : {"r1"}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyArity
+
+THEOREM NotInRcdEmptyPosition
+  <1>1. [n1 : {"r1"}, n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyPosition
+
+THEOREM NotInRcdEmptyInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. [n1 : 1..0, n2 : {"r1"}] = {}
+    BY <1>1, ESE_RcdSetEmpty
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInRcdEmptyInterval
+
+\* The field is a set of functions, of records, or of tuples that is itself
+\* empty.
+
+THEOREM NotInRcdEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. [n1 : [{"d1"} -> {}]] = {}
+    BY <1>2, ESE_RcdSetEmpty1
+  <1>4. QED BY <1>3, ESE_EmptyNoMember DEF NotInRcdEmptyFcnSet
+
+THEOREM NotInRcdEmptyRcd
+  <1>1. [n2 : {}] = {}
+    OBVIOUS
+  <1>2. [n1 : [n2 : {}]] = {}
+    BY <1>1, ESE_RcdSetEmpty1
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInRcdEmptyRcd
+
+THEOREM NotInRcdEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. [n1 : ({"d1"} \X {})] = {}
+    BY <1>1, ESE_RcdSetEmpty1
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInRcdEmptyTuple
+
+THEOREM NotInRcdEmptyFieldNat
+  <1>1. [n1 : {}, n2 : Nat] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyFieldNat
+
+THEOREM NotInRcdEmptyNatField
+  <1>1. [n1 : Nat, n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyNatField
+
+THEOREM NotInRcdEmptyStrField
+  <1>1. [n1 : STRING, n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyStrField
+
+THEOREM NotInRcdEmptyNatFieldStr
+  <1>1. [n1 : Nat, n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyNatFieldStr
+
+THEOREM NotInRcdEmptyThenDiff
+  <1>1. [n1 : {}, n2 : (Nat \ {0})] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdEmptyThenDiff
+
+THEOREM NotInRcdDiffThenEmpty
+  <1>1. [n1 : (Nat \ {0}), n2 : {}] = {}
+    BY ESE_RcdSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInRcdDiffThenEmpty
+
+-----------------------------------------------------------------------------
+\* Cartesian products that are empty.
+
+THEOREM NotInTupEmptyComponent
+  <1>1. {} \X {"r1"} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyComponent
+
+THEOREM NotInTupEmptyPosition
+  <1>1. {"r1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyPosition
+
+THEOREM NotInTupEmptyArity
+  <1>1. {} \X {"r1"} \X {"r2"} = {}
+    BY ESE_TupleSetEmpty3
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyArity
+
+THEOREM NotInTupEmptyInterval
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. (1..0) \X {"r1"} = {}
+    BY <1>1, ESE_TupleSetEmpty
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInTupEmptyInterval
+
+\* The component is a set of functions, of records, or of tuples that is
+\* itself empty.
+
+THEOREM NotInTupEmptyFcnSet
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [{"d1"} -> {}] = {}
+    BY <1>1, ESE_EmptyRange
+  <1>3. [{"d1"} -> {}] \X {"d1"} = {}
+    BY <1>2, ESE_TupleSetEmpty
+  <1>4. QED BY <1>3, ESE_EmptyNoMember DEF NotInTupEmptyFcnSet
+
+THEOREM NotInTupEmptyRcd
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. [n1 : {}] \X {"d1"} = {}
+    BY <1>1, ESE_TupleSetEmpty
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInTupEmptyRcd
+
+THEOREM NotInTupEmptyTuple
+  <1>1. {"d1"} \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. ({"d1"} \X {}) \X {"d1"} = {}
+    BY <1>1, ESE_TupleSetEmpty
+  <1>3. QED BY <1>2, ESE_EmptyNoMember DEF NotInTupEmptyTuple
+
+THEOREM NotInTupEmptyNatFirst
+  <1>1. Nat \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyNatFirst
+
+THEOREM NotInTupEmptyNatSecond
+  <1>1. {} \X Nat = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyNatSecond
+
+THEOREM NotInTupEmptySeqFirst
+  <1>1. Seq({"d1"}) \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptySeqFirst
+
+THEOREM NotInTupEmptyStrFirst
+  <1>1. STRING \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyStrFirst
+
+THEOREM NotInTupEmptyNatFirstStr
+  <1>1. Nat \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyNatFirstStr
+
+THEOREM NotInTupDiffThenEmpty
+  <1>1. (Nat \ {0}) \X {} = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupDiffThenEmpty
+
+THEOREM NotInTupEmptyThenDiff
+  <1>1. {} \X (Nat \ {0}) = {}
+    BY ESE_TupleSetEmpty
+  <1>2. QED BY <1>1, ESE_EmptyNoMember DEF NotInTupEmptyThenDiff
+
+-----------------------------------------------------------------------------
+
+THEOREM InRcdSetIsFcnSet
+  <1>1. [n1 : {"a"}] = [{"n1"} -> {"a"}]
+    BY ESE_RcdSetIsFcnSet
+  <1>2. [n1 |-> "a"] \in [n1 : {"a"}]
+    OBVIOUS
+  <1>3. QED BY <1>1, <1>2 DEF InRcdSetIsFcnSet
+
+THEOREM InFcnSetIsRcdSet
+  <1>1. [n1 : {"a"}] = [{"n1"} -> {"a"}]
+    BY ESE_RcdSetIsFcnSet
+  <1>2. [x \in {"n1"} |-> "a"] \in [{"n1"} -> {"a"}]
+    OBVIOUS
+  <1>3. QED BY <1>1, <1>2 DEF InFcnSetIsRcdSet
+
+THEOREM InTupleSetIsFcnSet
+  BY ESE_FcnSetMember DEF InTupleSetIsFcnSet
+
+THEOREM InFcnSetIsTupleSet
+  <1>1. {"a"} \X {"a"} = [1..2 -> {"a"}]
+    BY ESE_TupleSetIsFcnSet
+  <1>2. [x \in 1..2 |-> "a"] \in [1..2 -> {"a"}]
+    OBVIOUS
+  <1>3. QED BY <1>1, <1>2 DEF InFcnSetIsTupleSet
+
+THEOREM NotInFcnSetDomain
+  <1>1. DOMAIN [x \in {"n1", "n2"} |-> "a"] # {"n1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_FcnSetMember DEF NotInFcnSetDomain
+
+THEOREM NotInRcdSetName
+  <1>1. DOMAIN [n2 |-> "a"] # {"n1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetMember1 DEF NotInRcdSetName
+
+THEOREM NotInRcdSetArity
+  <1>1. DOMAIN [n1 |-> "a", n2 |-> "b"] # {"n1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetMember1 DEF NotInRcdSetArity
+
+THEOREM NotInTupleSetArity
+  <1>1. DOMAIN <<"a", "a", "a">> # 1..2
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleSetMember DEF NotInTupleSetArity
+
+THEOREM NotInTupleSetOffset
+  <1>1. DOMAIN [x \in 2..3 |-> "a"] # 1..2
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleSetMember DEF NotInTupleSetOffset
+
+THEOREM NotInRcdSetTuple
+  <1>1. DOMAIN <<"a", "a">> = 1..2
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleDomainDiffRcdDomain, ESE_RcdSetMember1
+        DEF NotInRcdSetTuple
+
+THEOREM NotInTupleSetRcd
+  <1>1. DOMAIN [n1 |-> "a"] = {"n1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleDomainDiffRcdDomain, ESE_TupleSetMember
+        DEF NotInTupleSetRcd
+
+THEOREM InRcdSetNat
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_RcdSetMember1 DEF InRcdSetNat
+
+THEOREM InTupleSetNat
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_TupleSetMember DEF InTupleSetNat
+
+THEOREM InFcnSetNatRange
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_FcnSetMember DEF InFcnSetNatRange
+
+-----------------------------------------------------------------------------
 
 THEOREM SubsetUnitRanges
   BY ESE_UnitSubset DEF SubsetUnitRanges

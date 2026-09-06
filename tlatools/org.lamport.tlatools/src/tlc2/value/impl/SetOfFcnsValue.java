@@ -103,11 +103,11 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  // THEOREM \A S, T : \A f : f \in [S -> T] <=> /\ IsAFcn(f)
-  //                                             /\ DOMAIN f = S
-  //                                             /\ \A x \in S : f[x] \in T
-  //
-  // where IsAFcn(f) == f = [x \in DOMAIN f |-> f[x]].
+  // THEOREM ESE_FcnSetMember ==
+  //   ASSUME NEW S, NEW T, NEW f
+  //   PROVE  f \in [S -> T] <=> /\ f = [x \in DOMAIN f |-> f[x]]
+  //                             /\ DOMAIN f = S
+  //                             /\ \A x \in S : f[x] \in T
   //
   // The three conjuncts are toFcnRcd, the comparison of the domains, and the
   // loop over the function's values below.

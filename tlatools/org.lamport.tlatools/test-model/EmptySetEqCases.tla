@@ -478,13 +478,163 @@ RcdIntReflexive    == [n1 : 1, n2 : {"d1"}] = [n1 : 1, n2 : {"d1"}]
 TupIntReflexive    == (1 \X {"d1"}) = (1 \X {"d1"})
 
 -----------------------------------------------------------------------------
-\* The operators that have to agree with the comparisons above. TLC answers
-\* these for the sets it can enumerate and gives up for the rest, i.e. it
-\* stays silent instead of contradicting the comparisons.
-
+\* Sets of functions that denote {<<>>}, i.e. the empty domain decides.
+InUnitEmptyRange     == <<>> \in [{} -> {}]
 InUnitSingletonRange == <<>> \in [{} -> {"d1"}]
+InUnitTripleRange    == <<>> \in [{} -> {"a", "b", "c"}]
 InUnitNatRange       == <<>> \in [{} -> Nat]
-NotInEmpty           == <<>> \notin [{"r1"} -> {}]
+InUnitInterval       == <<>> \in [1..0 -> {"d1"}]
+InUnitIntervalNat    == <<>> \in [1..0 -> Nat]
+InUnitCap            == <<>> \in [({"d1"} \cap {"d2"}) -> {"e1"}]
+InUnitCup            == <<>> \in [({} \cup {}) -> {"e1"}]
+InUnitDiff           == <<>> \in [({"d1"} \ {"d1"}) -> {"e1"}]
+InUnitUnionEmpty     == <<>> \in [(UNION {}) -> {"e1"}]
+InUnitUnionOfEmpty   == <<>> \in [(UNION {{}}) -> {"e1"}]
+InUnitFilter         == <<>> \in [{d \in {"d1"} : FALSE} -> {"e1"}]
+
+\* The empty domain is a set of records, a Cartesian product, or a set of
+\* functions.
+InUnitRcdField       == <<>> \in [[n1 : {}] -> {"e1"}]
+InUnitRcdFieldNat    == <<>> \in [[n1 : {}, n2 : Nat] -> {"d1"}]
+InUnitRcdNatField    == <<>> \in [[n1 : Nat, n2 : {}] -> {"d1"}]
+InUnitTuple          == <<>> \in [({"d1"} \X {}) -> {"e1"}]
+InUnitTupleNatSecond == <<>> \in [({} \X Nat) -> {"d1"}]
+InUnitTupleNatFirst  == <<>> \in [(Nat \X {}) -> {"d1"}]
+InUnitTupleStrFirst  == <<>> \in [(STRING \X {}) -> {"d1"}]
+InUnitFcnSet         == <<>> \in [[{"d1"} -> {}] -> {"e1"}]
+InUnitFcnSetNat      == <<>> \in [[Nat -> {}] -> {"d2"}]
+InUnitFcnSetNested   == <<>> \in [[[Nat -> {"d1"}] -> {}] -> {"d2"}]
+
+\* The empty domain is a set of records or of tuples whose field or component
+\* is itself an empty set.
+InUnitRcdFcnSet      == <<>> \in [[n1 : [Nat -> {}]] -> {"d1"}]
+InUnitRcdRcd         == <<>> \in [[n1 : [n2 : {}]] -> {"d1"}]
+InUnitRcdTuple       == <<>> \in [[n1 : ({"d1"} \X {})] -> {"d1"}]
+InUnitTupleFcnSet    == <<>> \in [({"d1"} \X [Nat -> {}]) -> {"e1"}]
+InUnitTupleRcd       == <<>> \in [({"d1"} \X [n1 : {}]) -> {"e1"}]
+InUnitTupleTuple     == <<>> \in [({"d1"} \X ({"d2"} \X {})) -> {"e1"}]
+
+\* A value other than <<>>, i.e. a one-element tuple and a record, both of
+\* which are functions whose domain is not {}.
+NotInUnitTuple       == <<"d1">> \notin [{} -> {"d1"}]
+NotInUnitRcd         == [n1 |-> "d1"] \notin [{} -> {"d1"}]
+
+-----------------------------------------------------------------------------
+\* Sets of functions that are empty, i.e. the empty co-domain decides.
+
+NotInEmpty               == <<>> \notin [{"r1"} -> {}]
+NotInEmptyInterval       == <<"v", "v">> \notin [1..2 -> {}]
+NotInEmptySubsetEmpty    == <<>> \notin [(SUBSET {}) -> {}]
+NotInEmptySubsetNat      == <<>> \notin [(SUBSET Nat) -> {}]
+NotInEmptyNatDomain      == <<>> \notin [Nat -> {}]
+NotInEmptyIntDomain      == <<>> \notin [Int -> {}]
+NotInEmptySeqDomain      == <<>> \notin [Seq({"d1"}) -> {}]
+NotInEmptyStrDomain      == <<>> \notin [STRING -> {}]
+NotInEmptyDiffDomain     == <<>> \notin [(Nat \ {0}) -> {}]
+
+\* The domain is a set of records, a Cartesian product, or a set of
+\* functions.
+NotInEmptyRcdNatDomain   == <<>> \notin [[n1 : Nat] -> {}]
+NotInEmptyTupleNatDomain == <<>> \notin [(Nat \X {"d1"}) -> {}]
+NotInEmptyFcnSetDomain   == <<>> \notin [[Nat -> {"d1"}] -> {}]
+
+\* The value is a function on the domain of the set, i.e. the empty
+\* co-domain is all that decides these.
+NotInEmptyFcn ==
+    [d \in {"r1"} |-> "v"] \notin [{"r1"} -> {}]
+NotInEmptyRcdDomain ==
+    [d \in [n1 : {"d1"}] |-> "v"] \notin [[n1 : {"d1"}] -> {}]
+NotInEmptyRcdRange ==
+    [d \in {"d1"} |-> [n1 |-> "v"]] \notin [{"d1"} -> [n1 : {}]]
+NotInEmptyTupleRange ==
+    [d \in {"d1"} |-> <<"v", "w">>] \notin [{"d1"} -> ({"d1"} \X {})]
+NotInEmptyFcnSetRange ==
+    [d \in {"d1"} |-> <<>>] \notin [{"d1"} -> [{"e1"} -> {}]]
+
+-----------------------------------------------------------------------------
+\* Sets of records that are empty, i.e. a single empty field decides.
+
+NotInRcdEmptyField    == [n1 |-> "d1"] \notin [n1 : {}]
+NotInRcdEmptyArity    == [n1 |-> "d1", n2 |-> "r1"] \notin [n1 : {}, n2 : {"r1"}]
+NotInRcdEmptyPosition == [n1 |-> "r1", n2 |-> "d1"] \notin [n1 : {"r1"}, n2 : {}]
+NotInRcdEmptyInterval == [n1 |-> 1, n2 |-> "r1"] \notin [n1 : 1..0, n2 : {"r1"}]
+
+\* The field is a set of functions, of records, or of tuples that is itself
+\* empty.
+NotInRcdEmptyFcnSet   == [n1 |-> <<>>] \notin [n1 : [{"d1"} -> {}]]
+NotInRcdEmptyRcd      == [n1 |-> [n2 |-> "d1"]] \notin [n1 : [n2 : {}]]
+NotInRcdEmptyTuple    == [n1 |-> <<"d1", "d2">>] \notin [n1 : ({"d1"} \X {})]
+
+\* An infinite field beside the empty one, in either position, with a value
+\* that is in that field.
+NotInRcdEmptyFieldNat == [n1 |-> "d1", n2 |-> 0] \notin [n1 : {}, n2 : Nat]
+NotInRcdEmptyNatField == [n1 |-> 0, n2 |-> "d1"] \notin [n1 : Nat, n2 : {}]
+NotInRcdEmptyStrField == [n1 |-> "s", n2 |-> "d1"] \notin [n1 : STRING, n2 : {}]
+
+\* The same field with a value that is not in it.
+NotInRcdEmptyNatFieldStr ==
+    [n1 |-> "s", n2 |-> "d1"] \notin [n1 : Nat, n2 : {}]
+
+\* A field that is a set difference, in either position.
+NotInRcdEmptyThenDiff ==
+    [n1 |-> "d1", n2 |-> 1] \notin [n1 : {}, n2 : (Nat \ {0})]
+NotInRcdDiffThenEmpty ==
+    [n1 |-> 1, n2 |-> "d1"] \notin [n1 : (Nat \ {0}), n2 : {}]
+
+-----------------------------------------------------------------------------
+\* Cartesian products that are empty, i.e. a single empty component decides.
+
+NotInTupEmptyComponent == <<"d1", "r1">> \notin ({} \X {"r1"})
+NotInTupEmptyPosition  == <<"r1", "d1">> \notin ({"r1"} \X {})
+NotInTupEmptyArity     == <<"d1", "r1", "r2">> \notin ({} \X {"r1"} \X {"r2"})
+NotInTupEmptyInterval  == <<1, "r1">> \notin ((1..0) \X {"r1"})
+
+\* The component is a set of functions, of records, or of tuples that is
+\* itself empty.
+NotInTupEmptyFcnSet    == <<<<>>, "d1">> \notin ([{"d1"} -> {}] \X {"d1"})
+NotInTupEmptyRcd       == <<[n1 |-> "d1"], "d1">> \notin ([n1 : {}] \X {"d1"})
+NotInTupEmptyTuple     == <<<<>>, "d1">> \notin (({"d1"} \X {}) \X {"d1"})
+
+\* An infinite component beside the empty one, in either position, with a
+\* value that is in that component.
+NotInTupEmptyNatFirst  == <<0, "d1">> \notin (Nat \X {})
+NotInTupEmptyNatSecond == <<"d1", 0>> \notin ({} \X Nat)
+NotInTupEmptySeqFirst  == <<<<>>, "d1">> \notin (Seq({"d1"}) \X {})
+NotInTupEmptyStrFirst  == <<"s", "d1">> \notin (STRING \X {})
+
+\* The same component with a value that is not in it.
+NotInTupEmptyNatFirstStr == <<"s", "d1">> \notin (Nat \X {})
+
+\* A component that is a set difference, in either position.
+NotInTupDiffThenEmpty  == <<1, "d1">> \notin ((Nat \ {0}) \X {})
+NotInTupEmptyThenDiff  == <<"d1", 1>> \notin ({} \X (Nat \ {0}))
+
+-----------------------------------------------------------------------------
+\* Sets that are neither empty nor {<<>>}, i.e. the domains and the
+\* co-domains, the fields, or the components are the only means left to
+\* decide these. A record is a function on a set of strings and a tuple one
+\* on 1..n, so a domain decides which of the three sets a value is in.
+
+InRcdSetIsFcnSet    == [n1 |-> "a"] \in [{"n1"} -> {"a"}]
+InFcnSetIsRcdSet    == [x \in {"n1"} |-> "a"] \in [n1 : {"a"}]
+InTupleSetIsFcnSet  == <<"a", "b">> \in [1..2 -> {"a", "b"}]
+InFcnSetIsTupleSet  == [x \in 1..2 |-> "a"] \in ({"a"} \X {"a"})
+
+NotInFcnSetDomain   == [x \in {"n1", "n2"} |-> "a"] \notin [{"n1"} -> {"a"}]
+NotInRcdSetName     == [n2 |-> "a"] \notin [n1 : {"a"}]
+NotInRcdSetArity    == [n1 |-> "a", n2 |-> "b"] \notin [n1 : {"a"}]
+NotInTupleSetArity  == <<"a", "a", "a">> \notin ({"a"} \X {"a"})
+NotInTupleSetOffset == [x \in 2..3 |-> "a"] \notin ({"a"} \X {"a"})
+NotInRcdSetTuple    == <<"a", "a">> \notin [n1 : {"a"}]
+NotInTupleSetRcd    == [n1 |-> "a"] \notin ({"a"} \X {"a"})
+
+\* An infinite field, component, or co-domain.
+InRcdSetNat      == [n1 |-> 0] \in [n1 : Nat]
+InTupleSetNat    == <<0, "d1">> \in (Nat \X {"d1"})
+InFcnSetNatRange == [d \in {"d1"} |-> 0] \in [{"d1"} -> Nat]
+
+-----------------------------------------------------------------------------
+\* The same sets read through \subseteq, which has to agree as well.
 
 SubsetUnitRanges     == [{} -> {"d1"}] \subseteq [{} -> Nat]
 SubsetEmptyDomain    == [{"r1"} -> {}] \subseteq [Nat -> {}]

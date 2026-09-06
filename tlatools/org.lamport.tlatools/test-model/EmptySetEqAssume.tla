@@ -349,11 +349,93 @@ ASSUME TupNatIntDiffer
 ASSUME TupStrReflexive
 
 -----------------------------------------------------------------------------
-\* The operators that have to agree with the comparisons above.
+\* The same sets read through \in.
 
+ASSUME InUnitEmptyRange
 ASSUME InUnitSingletonRange
+ASSUME InUnitTripleRange
 ASSUME InUnitNatRange
+ASSUME InUnitInterval
+ASSUME InUnitIntervalNat
+ASSUME InUnitCap
+ASSUME InUnitCup
+ASSUME InUnitDiff
+ASSUME InUnitUnionEmpty
+ASSUME InUnitUnionOfEmpty
+ASSUME InUnitFilter
+
+ASSUME InUnitRcdField
+ASSUME InUnitRcdFieldNat
+ASSUME InUnitTuple
+ASSUME InUnitTupleNatSecond
+ASSUME InUnitFcnSet
+
+ASSUME InUnitRcdRcd
+ASSUME InUnitRcdTuple
+ASSUME InUnitTupleRcd
+ASSUME InUnitTupleTuple
+
+ASSUME NotInUnitTuple
+ASSUME NotInUnitRcd
+
 ASSUME NotInEmpty
+ASSUME NotInEmptyInterval
+ASSUME NotInEmptySubsetEmpty
+
+ASSUME NotInEmptyFcn
+ASSUME NotInEmptyRcdDomain
+ASSUME NotInEmptyRcdRange
+ASSUME NotInEmptyTupleRange
+ASSUME NotInEmptyFcnSetRange
+
+ASSUME NotInRcdEmptyField
+ASSUME NotInRcdEmptyArity
+ASSUME NotInRcdEmptyPosition
+ASSUME NotInRcdEmptyInterval
+
+ASSUME NotInRcdEmptyFcnSet
+ASSUME NotInRcdEmptyRcd
+ASSUME NotInRcdEmptyTuple
+
+ASSUME NotInRcdEmptyFieldNat
+ASSUME NotInRcdEmptyNatField
+ASSUME NotInRcdEmptyStrField
+ASSUME NotInRcdEmptyThenDiff
+ASSUME NotInRcdDiffThenEmpty
+
+ASSUME NotInTupEmptyComponent
+ASSUME NotInTupEmptyPosition
+ASSUME NotInTupEmptyArity
+ASSUME NotInTupEmptyInterval
+
+ASSUME NotInTupEmptyFcnSet
+ASSUME NotInTupEmptyRcd
+ASSUME NotInTupEmptyTuple
+
+ASSUME NotInTupEmptyNatFirst
+ASSUME NotInTupEmptyNatSecond
+ASSUME NotInTupEmptySeqFirst
+ASSUME NotInTupEmptyStrFirst
+ASSUME NotInTupDiffThenEmpty
+ASSUME NotInTupEmptyThenDiff
+
+ASSUME InRcdSetIsFcnSet
+ASSUME InFcnSetIsRcdSet
+ASSUME InTupleSetIsFcnSet
+ASSUME InFcnSetIsTupleSet
+
+ASSUME NotInFcnSetDomain
+ASSUME NotInRcdSetName
+ASSUME NotInRcdSetArity
+ASSUME NotInTupleSetArity
+ASSUME NotInTupleSetOffset
+
+ASSUME InRcdSetNat
+ASSUME InTupleSetNat
+ASSUME InFcnSetNatRange
+
+-----------------------------------------------------------------------------
+\* The remaining operator that has to agree with the comparisons above.
 
 ASSUME SubsetUnitRanges
 ASSUME SubsetEmptyDomain
@@ -489,7 +571,7 @@ ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
 \* answer that TLC does not give. ESE_EmptyNonMember, ESE_EmptySubset, and
 \* ESE_UnitSubset of EmptySetEqTheorems.tla state the three answers.
 ASSUME AssertError("Attempted to check equality of the set {} with the value:\nNat",
-                   <<>> \notin [Nat -> {}])
+                   NotInEmptyNatDomain)
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
                    [Nat -> {}] \subseteq [{"r1"} -> {}])
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
@@ -584,4 +666,63 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
                    ToString([{} -> Nat]) = "{<<>>}")
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nOverflow when computing the number of elements in (1..50000 \\X 1..50000)",
                    ToString([((1..50000) \X (1..50000)) -> {}]) = "{}")
+
+-----------------------------------------------------------------------------
+\* The memberships that record a limitation as well, i.e. cases that
+\* EmptySetEqCases_proofs.tla proves. Unlike equals, isFinite, and size,
+\* member tests no emptiness: it compares the domain of the set with the
+\* domain of the value, 1..0 for <<>>, and reads the field sets and the
+\* components one by one. An argument that TLC can neither compare nor read
+\* therefore refuses a membership that an empty domain, co-domain, field
+\* set, or component decides.
+
+\* An empty domain, i.e. the set is { <<>> } and <<>> is its member.
+ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
+                   InUnitRcdNatField)
+ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nNat",
+                   InUnitTupleNatFirst)
+ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nSTRING",
+                   InUnitTupleStrFirst)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
+                   InUnitFcnSetNat)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
+                   InUnitFcnSetNested)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
+                   InUnitRcdFcnSet)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
+                   InUnitTupleFcnSet)
+
+\* An empty co-domain, i.e. the set is { } and nothing is its member, where
+\* the domain is the argument that TLC gives up on.
+ASSUME AssertError("Attempted to check equality of the set {} with the value:\nInt",
+                   NotInEmptyIntDomain)
+ASSUME AssertError("Attempted to check equality of the set {} with the value:\nSeq({\"d1\"})",
+                   NotInEmptySeqDomain)
+ASSUME AssertError("Attempted to check equality of the set {} with the value:\nSTRING",
+                   NotInEmptyStrDomain)
+ASSUME AssertError("Attempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
+                   NotInEmptyDiffDomain)
+ASSUME AssertError("Attempted to compute the number of elements in the overridden value Nat.",
+                   NotInEmptySubsetNat)
+ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
+                   NotInEmptyRcdNatDomain)
+ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nNat",
+                   NotInEmptyTupleNatDomain)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
+                   NotInEmptyFcnSetDomain)
+
+\* A field set or a component that TLC cannot check the value against,
+\* whereas the empty one beside it decides.
+ASSUME AssertError("Attempted to check if the value:\n\"s\"\nis an element of Nat.",
+                   NotInRcdEmptyNatFieldStr)
+ASSUME AssertError("Attempted to check if the value:\n\"s\"\nis an element of Nat.",
+                   NotInTupEmptyNatFirstStr)
+
+\* A tuple where a record set expects a record and a record where a
+\* Cartesian product expects a tuple, which the domains of the two values
+\* decide (ESE_TupleDomainDiffRcdDomain).
+ASSUME AssertError("Attempted to check if non-record\n<<\"a\", \"a\">>\nis in the set of records:\n{[n1 |-> \"a\"]}",
+                   NotInRcdSetTuple)
+ASSUME AssertError("Attempted to check if non-tuple\n[n1 |-> \"a\"]\nis in the set of tuples:\n{<<\"a\", \"a\">>}",
+                   NotInTupleSetRcd)
 =============================================================================

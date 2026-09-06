@@ -508,6 +508,19 @@ THEOREM ESE_RcdSetDiffTupleSet ==
   <1>3. QED BY <1>2
 
 (***************************************************************************)
+(* The domain of a one-field record beside the domain of a pair, i.e. the  *)
+(* two domains that a membership has to tell apart.                        *)
+(***************************************************************************)
+
+THEOREM ESE_TupleDomainDiffRcdDomain == 1..2 # {"n1"}
+  \* The cardinalities decide this, because TLA+ leaves 1 = "n1" open.
+  <1>1. Cardinality(1..2) = 2
+    BY FS_Interval
+  <1>2. Cardinality({"n1"}) = 1
+    BY FS_Singleton
+  <1>3. QED BY <1>1, <1>2
+
+(***************************************************************************)
 (* The cardinality of a set of functions that denotes {<<>>} and of an      *)
 (* empty set of each of the three constructors, i.e. the equalities above   *)
 (* read through Cardinality.                                                *)
@@ -750,9 +763,51 @@ THEOREM ESE_SeqEmptyFinite ==
 (* The operators that have to agree with the equalities above.              *)
 (***************************************************************************)
 
+THEOREM ESE_FcnSetMember ==
+  ASSUME NEW S, NEW T, NEW f
+  PROVE  f \in [S -> T] <=> /\ f = [x \in DOMAIN f |-> f[x]]
+                            /\ DOMAIN f = S
+                            /\ \A x \in S : f[x] \in T
+  OBVIOUS
+
+THEOREM ESE_RcdSetMember1 ==
+  ASSUME NEW S, NEW r
+  PROVE  r \in [n1 : S] <=> /\ r = [x \in DOMAIN r |-> r[x]]
+                            /\ DOMAIN r = {"n1"}
+                            /\ r.n1 \in S
+  OBVIOUS
+
+THEOREM ESE_RcdSetMember ==
+  ASSUME NEW S, NEW T, NEW r
+  PROVE  r \in [n1 : S, n2 : T] <=> /\ r = [x \in DOMAIN r |-> r[x]]
+                                    /\ DOMAIN r = {"n1", "n2"}
+                                    /\ r.n1 \in S
+                                    /\ r.n2 \in T
+  OBVIOUS
+
+THEOREM ESE_TupleSetMember ==
+  ASSUME NEW S, NEW T, NEW t
+  PROVE  t \in S \X T <=> /\ t = [x \in DOMAIN t |-> t[x]]
+                          /\ DOMAIN t = 1..2
+                          /\ t[1] \in S
+                          /\ t[2] \in T
+  OBVIOUS
+
+THEOREM ESE_EmptyNoMember ==
+  ASSUME NEW S, NEW e, S = {}
+  PROVE  e \notin S
+  OBVIOUS
+
 THEOREM ESE_UnitMember ==
   ASSUME NEW S, NEW T, S = {}
   PROVE  <<>> \in [S -> T]
+  <1>1. [S -> T] = { <<>> }
+    BY ESE_UnitDomain
+  <1>2. QED BY <1>1
+
+THEOREM ESE_UnitNonMember ==
+  ASSUME NEW S, NEW T, NEW e, S = {}, e # <<>>
+  PROVE  e \notin [S -> T]
   <1>1. [S -> T] = { <<>> }
     BY ESE_UnitDomain
   <1>2. QED BY <1>1

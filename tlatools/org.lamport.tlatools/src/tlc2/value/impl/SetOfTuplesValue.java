@@ -100,17 +100,19 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  // THEOREM \A S, T : \A t : t \in S \X T <=> /\ IsAFcn(t)
-  //                                           /\ DOMAIN t = 1..2
-  //                                           /\ t[1] \in S
-  //                                           /\ t[2] \in T
-  //
-  // where IsAFcn(t) == t = [x \in DOMAIN t |-> t[x]].
+  // THEOREM ESE_TupleSetMember ==
+  //   ASSUME NEW S, NEW T, NEW t
+  //   PROVE  t \in S \X T <=> /\ t = [x \in DOMAIN t |-> t[x]]
+  //                           /\ DOMAIN t = 1..2
+  //                           /\ t[1] \in S
+  //                           /\ t[2] \in T
   //
   // DOMAIN t = 1..2 is why toTuple accepts a function whose domain is 1..n, i.e.
   // a product is a set of functions:
   //
-  // THEOREM \A S : S \X S = [1..2 -> S]
+  // THEOREM ESE_TupleSetIsFcnSet ==
+  //   ASSUME NEW S
+  //   PROVE  S \X S = [1..2 -> S]
   //
   // A function whose domain is an interval other than 1..2 is not an element of
   // S \X T, whence the comparison of the lengths below, whereas a value whose
