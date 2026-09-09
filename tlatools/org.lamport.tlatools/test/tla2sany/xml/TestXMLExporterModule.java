@@ -818,4 +818,19 @@ public class TestXMLExporterModule {
 		Assert.assertTrue("Missing expected uncommented content for: " + expectedUncommentedContent.keySet(),
 				expectedUncommentedContent.isEmpty());
 	}
+
+	@Test
+	public void testLetInstanceExportsInstantiatedTheoremAndAssumption() throws Exception {
+		// Only a LET exports an instantiated theorem definition as a reference.
+		Document doc = this.export("LetInstanceThmXml");
+
+		NodeList letIns = doc.getElementsByTagName("LetInNode");
+		Assert.assertEquals("The LET should be exported", 1, letIns.getLength());
+
+		Element letIn = (Element) letIns.item(0);
+		Assert.assertEquals("The instantiated theorem is exported as a reference", 1,
+				letIn.getElementsByTagName("TheoremDefRef").getLength());
+		Assert.assertEquals("...and so is the instantiated assumption", 1,
+				letIn.getElementsByTagName("AssumeDefRef").getLength());
+	}
 }

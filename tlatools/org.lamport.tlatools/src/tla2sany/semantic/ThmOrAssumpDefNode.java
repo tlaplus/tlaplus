@@ -640,12 +640,13 @@ public class ThmOrAssumpDefNode extends SymbolNode
    *
    */
   protected String getNodeRef() {
+    // Instantiation yields definitions without a statement to point back to.
     if (theorem) {
-      assert(thmOrAssump instanceof TheoremNode);
+      assert(thmOrAssump == null || thmOrAssump instanceof TheoremNode);
       return "TheoremDefRef";
     }
     else {
-      assert(thmOrAssump instanceof  AssumeNode);
+      assert(thmOrAssump == null || thmOrAssump instanceof  AssumeNode);
       return "AssumeDefRef";
     }
   }
