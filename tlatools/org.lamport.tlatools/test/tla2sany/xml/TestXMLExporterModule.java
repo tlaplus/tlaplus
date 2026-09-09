@@ -649,6 +649,192 @@ public class TestXMLExporterModule {
 	}
 
 	@Test
+	public void testLetInstanceOfEmptyModuleExportsModuleInstanceRef() throws Exception {
+		Document doc = this.export("Github1417");
+
+		Assert.assertEquals("An instancee without definitions leaves only the instance to export",
+				List.of("ModuleInstanceKindRef"), this.letInOpDefKinds(doc, "op"));
+
+		// Schema validation does not check that a reference resolves.
+		Element instance = this.referent(doc, this.letInOpDefs(doc, "op").get(0));
+		Assert.assertEquals("The exported reference resolves to a module instance", "ModuleInstanceKind",
+				instance.getNodeName());
+		Assert.assertEquals("...under the name the LET binds it to", "M", uniqueName(instance));
+	}
+
+	@Test
+	public void testLetInstanceWithNothingToInlineExportsModuleInstanceRef() throws Exception {
+		// A module that defines nothing but LOCAL definitions instantiates none.
+		Document doc = this.export("Github1417Variants");
+
+		Assert.assertEquals("A LOCAL definition of the instancee is not inlined",
+				List.of("ModuleInstanceKindRef"), this.letInOpDefKinds(doc, "opLocal"));
+		Assert.assertEquals("...leaving the instance as the only export", "Local",
+				uniqueName(this.referent(doc, this.letInOpDefs(doc, "opLocal").get(0))));
+
+		Assert.assertEquals("A parameterized module definition exports its instance too",
+				List.of("ModuleInstanceKindRef"), this.letInOpDefKinds(doc, "opParam"));
+		Assert.assertEquals("...under the name the LET binds it to", "Param",
+				uniqueName(this.referent(doc, this.letInOpDefs(doc, "opParam").get(0))));
+	}
+
+	@Test
+	public void testLetInstanceInlinesDefinitionsOfInstancee() throws Exception {
+		Document doc = this.export("Github1417Inlined");
+
+		Assert.assertEquals("An operator of the instancee is inlined as Ops!foo", "Ops!foo", uniqueName(
+				this.referent(doc, this.letInOpDef(doc, "opOps", "UserDefinedOpKindRef"))));
+		Assert.assertEquals("A named theorem of the instancee is inlined as Thms!Thm", "Thms!Thm", uniqueName(
+				this.referent(doc, this.letInOpDef(doc, "opThm", "TheoremDefRef"))));
+		Assert.assertEquals("A named assumption of the instancee is inlined as Thms!Asm", "Thms!Asm", uniqueName(
+				this.referent(doc, this.letInOpDef(doc, "opThm", "AssumeDefRef"))));
+	}
+
+	@Test
+	public void testLetExportsEachModuleDefinitionIndependently() throws Exception {
+		Document doc = this.export("Github1417Variants");
+
+		Assert.assertEquals("Every module definition contributes what it instantiates, then itself",
+				List.of("Both!foo", "Both", "Nothing"), this.letInOpDefNames(doc, "opMixed"));
+	}
+
+	@Test
+	public void testLetAlwaysExportsModuleInstanceRef() throws Exception {
+		// opDefs is the only place an instance can appear: unlike ModuleNode,
+		// LetInNode does not export the InstanceNodes of its module definitions.
+		Document doc = this.export("Github1417Inlined");
+
+		Assert.assertEquals("An instance whose definitions were inlined is exported too",
+				List.of("Ops!foo", "Ops"), this.letInOpDefNames(doc, "opOps"));
+
+		// Inlined definitions come in the order of a Hashtable enumeration.
+		List<String> inlined = this.letInOpDefNames(doc, "opThm");
+		Assert.assertEquals("...as is one that contributed a theorem and an assumption",
+				Set.of("Thms!Thm", "Thms!Asm"), Set.copyOf(inlined.subList(0, inlined.size() - 1)));
+		Assert.assertEquals("...which the instance follows", "Thms", inlined.get(inlined.size() - 1));
+	}
+
+	@Test
+	public void testTopLevelInstanceOfEmptyModuleExportsInstanceNode() throws Exception {
+		// A module's list of units may legitimately be empty, so #1417 spared it.
+		Document doc = this.export("Github1417TopLevel");
+
+		NodeList instances = doc.getElementsByTagName("InstanceNode");
+		Assert.assertEquals("The module-level instance is exported", 1, instances.getLength());
+
+		Element instance = (Element) instances.item(0);
+		Assert.assertEquals("...under the name it is defined as", "M", uniqueName(instance));
+		Assert.assertEquals("...naming the module it instantiates", "Github1417Empty",
+				child(instance, "module").getTextContent().trim());
+	}
+
+	/**
+	 * The references exported in the opDefs list of the LET-IN that makes up the
+	 * body of the given operator, in export order.
+	 */
+	private List<Element> letInOpDefs(final Document doc, final String opName) {
+		Element definition = null;
+		NodeList definitions = doc.getElementsByTagName("UserDefinedOpKind");
+		for (int i = 0; i < definitions.getLength(); i++) {
+			Element candidate = (Element) definitions.item(i);
+			if (opName.equals(uniqueName(candidate))) {
+				definition = candidate;
+				break;
+			}
+		}
+		Assert.assertNotNull("Operator " + opName + " should be exported", definition);
+
+		NodeList letIns = definition.getElementsByTagName("LetInNode");
+		Assert.assertEquals("Operator " + opName + " should be defined by a single LET-IN", 1, letIns.getLength());
+		return childElements(child((Element) letIns.item(0), "opDefs"));
+	}
+
+	/** Those of {@link #letInOpDefs(Document, String)} with the given element name. */
+	private List<Element> letInOpDefs(final Document doc, final String opName, final String kind) {
+		List<Element> refs = new ArrayList<>();
+		for (Element opDef : this.letInOpDefs(doc, opName)) {
+			if (kind.equals(opDef.getNodeName())) {
+				refs.add(opDef);
+			}
+		}
+		return refs;
+	}
+
+	/** The only one of {@link #letInOpDefs(Document, String)} with the given element name. */
+	private Element letInOpDef(final Document doc, final String opName, final String kind) {
+		List<Element> refs = this.letInOpDefs(doc, opName, kind);
+		Assert.assertEquals("The LET-IN of " + opName + " should export exactly one " + kind, 1, refs.size());
+		return refs.get(0);
+	}
+
+	/** The element names of {@link #letInOpDefs(Document, String)}. */
+	private List<String> letInOpDefKinds(final Document doc, final String opName) {
+		List<String> kinds = new ArrayList<>();
+		for (Element opDef : this.letInOpDefs(doc, opName)) {
+			kinds.add(opDef.getNodeName());
+		}
+		return kinds;
+	}
+
+	/** The names of the nodes that {@link #letInOpDefs(Document, String)} resolve to. */
+	private List<String> letInOpDefNames(final Document doc, final String opName) {
+		List<String> names = new ArrayList<>();
+		for (Element opDef : this.letInOpDefs(doc, opName)) {
+			names.add(uniqueName(this.referent(doc, opDef)));
+		}
+		return names;
+	}
+
+	/** The node in the context table that the given reference points at. */
+	private Element referent(final Document doc, final Element ref) {
+		String uid = child(ref, "UID").getTextContent().trim();
+		NodeList entries = doc.getElementsByTagName("entry");
+		for (int i = 0; i < entries.getLength(); i++) {
+			// The schema defines an entry as a UID followed by the node it names.
+			List<Element> entry = childElements((Element) entries.item(i));
+			if (uid.equals(entry.get(0).getTextContent().trim())) {
+				return entry.get(1);
+			}
+		}
+		Assert.fail(ref.getNodeName() + " should resolve to a context table entry, but UID " + uid + " is unknown");
+		return null;
+	}
+
+	/** The uniquename of the given node, or null if it does not have one. */
+	private static String uniqueName(final Element node) {
+		for (Element child : childElements(node)) {
+			if ("uniquename".equals(child.getNodeName())) {
+				return child.getTextContent().trim();
+			}
+		}
+		return null;
+	}
+
+	/** The child elements of the given element, skipping the whitespace between them. */
+	private static List<Element> childElements(final Element parent) {
+		List<Element> elements = new ArrayList<>();
+		NodeList children = parent.getChildNodes();
+		for (int i = 0; i < children.getLength(); i++) {
+			if (children.item(i) instanceof Element) {
+				elements.add((Element) children.item(i));
+			}
+		}
+		return elements;
+	}
+
+	/** The only child element of the given element with the given name. */
+	private static Element child(final Element parent, final String name) {
+		List<Element> matches = new ArrayList<>();
+		for (Element child : childElements(parent)) {
+			if (name.equals(child.getNodeName())) {
+				matches.add(child);
+			}
+		}
+		Assert.assertEquals(parent.getNodeName() + " should have exactly one " + name + " child", 1, matches.size());
+		return matches.get(0);
+	}
+
+	@Test
 	public void testUncommentFlagWithTLACommentStyles() throws Exception {
 		// Run XMLExporter with -u flag on TLACommentStyles.tla module
 		String modulePath = BASE_PATH + "TLACommentStyles.tla";

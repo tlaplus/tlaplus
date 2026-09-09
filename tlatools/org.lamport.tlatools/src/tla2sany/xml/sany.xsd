@@ -1923,10 +1923,12 @@
             <xs:documentation>
               The list of local operator definitions. This should really only
               be UserDefinedOpKind or ModuleInstanceKind refs [TODO]. Note
-              that if the user defines a module INSTANCE import here, it will
-              not currently be exposed; instead, all operators in the module
-              will be inlined immediately. However, the import should still
-              be exposed here for user consumption [TODO].
+              that if the user defines a module INSTANCE import here, all
+              operators of the imported module are inlined immediately; the
+              import itself follows them as a ModuleInstanceKind ref, which
+              is the only place it is exposed. The list is never empty: an
+              import of a module without definitions to inline still
+              contributes its ModuleInstanceKind ref.
             </xs:documentation>
           </xs:annotation>
           <xs:complexType>
