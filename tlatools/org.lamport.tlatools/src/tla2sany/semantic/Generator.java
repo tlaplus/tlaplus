@@ -5043,7 +5043,24 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		// doing this is to get the name in the symbol table so the name
 		// cannot be re-used later in this module for a user-defined
 		// operator.
-		return new OpDefNode(name, args, localness, cm, symbolTable, treeNode, null);
+		final OpDefNode moduleDef = new OpDefNode(name, args, localness, cm, symbolTable, treeNode, null);
+
+		// A module definition M == INSTANCE N defines the name M in addition to
+		// the definitions of the instancee N, which the loops above instantiate
+		// under their qualified names M!Op. Recording M among the definitions of
+		// a LET expression keeps them complete, and leaves them non-empty for an
+		// instancee that has nothing to instantiate, as in
+		//
+		//     LET M == INSTANCE N IN e
+		//
+		// where N defines no operators, or only LOCAL ones, which instantiation
+		// does not import (Github issue #1417). LetInNode expects definitions of
+		// kind ModuleInstanceKind and excludes them from level checking.
+		if (defs != null) {
+			defs.addElement(moduleDef);
+		}
+
+		return moduleDef;
 		/*********************************************************************
 		 * Note: the module's OpDefNode does not have recursive parameters * set. If the
 		 * module definition statement occurs in a recursive * section, then it is the
