@@ -72,6 +72,13 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 
 	@Override
 	public ValueEnumeration elements(final int k) {
+		// An empty set has no element to pick, whereas indexing one asks the subclass
+		// for its constituent sets enumerated, which an empty set need not have:
+		// [Nat -> {}] and [n1: Nat, n2: {}] are {} whatever Nat contains, and Naturals
+		// answers the emptiness of Nat but not its enumeration.
+		if (isEmpty()) {
+			return EMPTY_ENUMERATION;
+		}
 		if (needBigInteger()) {
 			return getBigSubsetEnumerator(k);
 		} else {

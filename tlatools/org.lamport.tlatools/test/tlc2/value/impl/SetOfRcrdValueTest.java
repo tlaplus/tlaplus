@@ -27,6 +27,7 @@ package tlc2.value.impl;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -203,5 +204,17 @@ public class SetOfRcrdValueTest {
 				new Value[] { Naturals.Nat(), new SetEnumValue() }, false);
 
 		assertEquals(0, rcds.elements().all().size());
+	}
+
+	// The same set indexed instead of enumerated, i.e. what RandomSubset asks for.
+	@Test
+	public void testRandomSubsetEmptyNonEnumerableField() {
+		final SetOfRcdsValue rcds = new SetOfRcdsValue(getNames(2),
+				new Value[] { Naturals.Nat(), new SetEnumValue() }, false);
+
+		assertEquals(0, rcds.size());
+		assertFalse(rcds.needBigInteger());
+		assertEquals(0, rcds.elements(1).all().size());
+		assertEquals(0, rcds.getRandomSubset(1).size());
 	}
 }

@@ -26,6 +26,7 @@
 package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -451,5 +452,17 @@ public class SetOfFcnsValueTest {
 			return;
 		}
 		fail();
+	}
+
+	// [Nat -> {}] = {}, so there is nothing to pick, whereas enumerating the domain
+	// Nat to index the set of functions is what TLC cannot do.
+	@Test
+	public void testRandomSubsetEmptyNonEnumerableDomain() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(Naturals.Nat(), new SetEnumValue());
+
+		assertEquals(0, fcns.size());
+		assertFalse(fcns.needBigInteger());
+		assertEquals(0, fcns.elements(1).all().size());
+		assertEquals(0, fcns.getRandomSubset(1).size());
 	}
 }
