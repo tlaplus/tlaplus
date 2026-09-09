@@ -420,6 +420,17 @@ boolean isPrefixOp( Token t ) {
   return t.kind >= op_26 && t.kind <= op_116;
 }
 
+boolean isMinusDotPrefixApplicationStart() {
+  final int nextKind = getToken(2).kind;
+  return nextKind != EOF
+      && nextKind != COMMA
+      && nextKind != LBR
+      && nextKind != RBR
+      && nextKind != RBC
+      && nextKind != BANG
+      && nextKind != DEFBREAK;
+}
+
 // global variable follows !!! Make sure it is set everywhere as required
 Operator lastOp;
   /*************************************************************************
@@ -2190,7 +2201,9 @@ SyntaxTreeNode
 PrefixOp() : {
   Token t;
 }{
-  t = PrefixOpToken() {
+  ( t = PrefixOpToken()
+  | t = <op_76>  // "-."
+  ) {
     lastOp = Operators.getOperator( UniqueString.uniqueStringOf(t.image) ); // YYY to revise
     return new SyntaxTreeNode(mn, N_PrefixOp, t) ; }
 }
@@ -3912,8 +3925,10 @@ Expression() : {
   bpa("Expression");
   OperatorStack.newStack();
 } {
-( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */ | <op_76> /* "-." */,
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && (   getToken(1).kind != op_76
+                  || isMinusDotPrefixApplicationStart())})
   (  tn = PrefixOp() {kind = N_GenPrefixOp;}
    | tn = InfixOp()  {kind = N_GenInfixOp;}
        /********************************************************************
@@ -4026,8 +4041,10 @@ ExtendableExpr() : {
                                lastOp);
      if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
-  ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+  ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */ | <op_76> /* "-." */,
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && (   getToken(1).kind != op_76
+                  || isMinusDotPrefixApplicationStart())})
     (  tn = PrefixOp() {kind = N_GenPrefixOp;}
      | tn = InfixOp()  {kind = N_GenInfixOp;}
          /********************************************************************
