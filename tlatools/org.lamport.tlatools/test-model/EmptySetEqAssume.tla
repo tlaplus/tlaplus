@@ -6,6 +6,11 @@
 \* TLA+ fact; the ones that do have a proof say so, i.e. they record a
 \* limitation.
 \*
+\* TLC does not yet answer every assumption below. The commented out ones are
+\* the enumerations it refuses, marked "refused", and the commit that fixes
+\* TLC uncomments them and drops the AssertError assumptions that state the
+\* same refusals.
+\*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 
@@ -18,10 +23,12 @@ ASSUME UnitSingletonRangeEnum
 ASSUME UnitSingletonRangeSym
 ASSUME UnitTripleRangeEnum
 ASSUME UnitTripleRangeSym
+\* ASSUME UnitNatRangeEnum          \* refused
 ASSUME UnitNatRangeSym
 
 ASSUME UnitIntervalEnum
 ASSUME UnitIntervalSym
+\* ASSUME UnitIntervalNatEnum       \* refused
 ASSUME UnitIntervalNatSym
 
 ASSUME UnitCapEnum
@@ -39,17 +46,21 @@ ASSUME UnitFilterSym
 
 ASSUME UnitRcdFieldEnum
 ASSUME UnitRcdFieldSym
+\* ASSUME UnitRcdNatFieldEnum       \* refused
 ASSUME UnitRcdNatFieldSym
 ASSUME UnitRcdFieldNatSym
 
 ASSUME UnitTupleEnum
 ASSUME UnitTupleSym
+\* ASSUME UnitTupleNatFirstEnum     \* refused
 ASSUME UnitTupleNatFirstSym
 ASSUME UnitTupleNatSecondSym
 ASSUME UnitTupleStrFirstSym
 
+\* ASSUME UnitFcnSetEnum            \* refused
 ASSUME UnitFcnSetSym
 ASSUME UnitFcnSetNestedSym
+\* ASSUME UnitFcnSetNatRangeEnum    \* refused
 ASSUME UnitDiffNestedUnitEnum
 ASSUME UnitDiffNestedUnitSym
 
@@ -81,18 +92,24 @@ ASSUME EmptyFilterSym
 
 ASSUME EmptySubsetEmptyEnum
 ASSUME EmptySubsetEmptySym
+\* ASSUME EmptySubsetNatEnum        \* refused
 ASSUME EmptySubsetNatSym
 
 ASSUME EmptyRcdEnum
 ASSUME EmptyRcdSym
+\* ASSUME EmptyRcdNatEnum           \* refused
 ASSUME EmptyRcdNatSym
 
 ASSUME EmptyTupleEnum
 ASSUME EmptyTupleSym
+\* ASSUME EmptyTupleNatEnum         \* refused
 ASSUME EmptyTupleNatSym
 
+\* ASSUME EmptyNatEnum              \* refused
 ASSUME EmptyNatSym
+\* ASSUME EmptyIntEnum              \* refused
 ASSUME EmptyIntSym
+\* ASSUME EmptySeqEnum              \* refused
 ASSUME EmptySeqSym
 ASSUME EmptyStrSym
 
@@ -102,6 +119,7 @@ ASSUME EmptyRcdFcnSetRangeSym
 ASSUME EmptyTupleFcnSetRangeSym
 ASSUME EmptyFcnSetRangeSym
 
+\* ASSUME EmptyFcnSetEnum           \* refused
 ASSUME EmptyFcnSetSym
 
 -----------------------------------------------------------------------------
@@ -114,6 +132,7 @@ ASSUME RcdEmptyArityEnum
 ASSUME RcdEmptyAritySym
 ASSUME RcdEmptyIntervalEnum
 ASSUME RcdEmptyIntervalSym
+\* ASSUME RcdEmptyNatFieldEnum      \* refused
 ASSUME RcdEmptyNatFieldSym
 ASSUME RcdEmptyFieldNatSym
 ASSUME RcdEmptySeqFieldSym
@@ -134,6 +153,7 @@ ASSUME TupEmptyArityEnum
 ASSUME TupEmptyAritySym
 ASSUME TupEmptyIntervalEnum
 ASSUME TupEmptyIntervalSym
+\* ASSUME TupEmptyNatFirstEnum      \* refused
 ASSUME TupEmptyNatFirstSym
 ASSUME TupEmptyNatSecondSym
 ASSUME TupEmptySeqFirstSym
@@ -148,7 +168,9 @@ ASSUME TupEmptyThenDiffSym
 \* Two sets of different constructors.
 
 ASSUME FcnSetEqRcdSetEmpty
+\* ASSUME FcnSetEqRcdSetNat         \* refused
 ASSUME FcnSetEqTupleSetEmpty
+\* ASSUME FcnSetEqTupleSetNat       \* refused
 ASSUME RcdSetEqTupleSetEmpty
 ASSUME UnitDiffRcdSetEmpty
 ASSUME UnitDiffTupleSetEmpty
@@ -165,14 +187,17 @@ ASSUME TupleSetIsFcnSet3
 ASSUME UnitEmptyRangeRev
 ASSUME UnitSingletonRangeRev
 ASSUME EmptySingletonRev
+\* ASSUME EmptyNatRev               \* refused
 ASSUME RcdEmptyFieldRev
 ASSUME RcdEmptyArityRev
 ASSUME TupEmptyComponentRev
 ASSUME TupEmptyArityRev
 
 ASSUME RcdSetEqFcnSetEmptyRev
+\* ASSUME RcdSetEqFcnSetNatRev      \* refused
 ASSUME TupleSetEqFcnSetEmptyRev
 ASSUME TupleSetEqRcdSetEmptyRev
+\* ASSUME TupleSetEqRcdSetNatRev    \* refused
 ASSUME RcdSetIsFcnSetRev
 ASSUME TupleSetIsFcnSetRev
 
@@ -366,12 +391,19 @@ ASSUME InUnitFilter
 
 ASSUME InUnitRcdField
 ASSUME InUnitRcdFieldNat
+\* ASSUME InUnitRcdNatField         \* refused
 ASSUME InUnitTuple
 ASSUME InUnitTupleNatSecond
+\* ASSUME InUnitTupleNatFirst       \* refused
+\* ASSUME InUnitTupleStrFirst       \* refused
 ASSUME InUnitFcnSet
+\* ASSUME InUnitFcnSetNat           \* refused
+\* ASSUME InUnitFcnSetNested        \* refused
 
+\* ASSUME InUnitRcdFcnSet           \* refused
 ASSUME InUnitRcdRcd
 ASSUME InUnitRcdTuple
+\* ASSUME InUnitTupleFcnSet         \* refused
 ASSUME InUnitTupleRcd
 ASSUME InUnitTupleTuple
 
@@ -438,7 +470,9 @@ ASSUME InFcnSetNatRange
 \* The remaining operator that has to agree with the comparisons above.
 
 ASSUME SubsetUnitRanges
+\* ASSUME SubsetUnitNatRange        \* refused
 ASSUME SubsetEmptyDomain
+\* ASSUME SubsetEmptyNatDomain      \* refused
 
 -----------------------------------------------------------------------------
 \* The rendering that TLC prints for the same sets, which has to agree with
@@ -461,6 +495,7 @@ ASSUME ToString([n1 : 1..50000, n2 : 1..50000, n3 : {}]) = "{}"
 ASSUME ToString((1..50000) \X (1..50000) \X {})          = "{}"
 ASSUME ToString([{} -> (SUBSET (1..40))])                = "{<<>>}"
 ASSUME ToString([{} -> ((1..50000) \X (1..50000))])      = "{<<>>}"
+\* ASSUME ToString([{} -> Nat])                          = "{<<>>}"  \* refused
 
 ASSUME ToString([n1 : 1..50000, n2 : 1..50000]) = "[n1: 1..50000, n2: 1..50000]"
 
@@ -650,6 +685,20 @@ ASSUME AssertError("Shouldn't call isEmpty() on value \"s\"", FcnStrLitReflexive
 ASSUME AssertError("Shouldn't call isEmpty() on value <<1>>", FcnTupleReflexive)
 ASSUME AssertError("Shouldn't call isEmpty() on value 1", RcdIntReflexive)
 ASSUME AssertError("Shouldn't call isEmpty() on value 1", TupIntReflexive)
+
+\* Two comparisons of { } with a set of functions that is not empty, which
+\* record a limitation as well. EmptySetEqCases_proofs.tla derives both from
+\* ESE_FcnSetEmpty: a set of functions is empty only for an empty co-domain,
+\* and 0 \in Nat rules that out whatever the domain is.
+\*
+\* These two stay refused past the commit that fixes the ones above, because
+\* TLC answers by enumerating rather than by reading the co-domain, and a
+\* domain that has an element asks for one enumeration of the co-domain per
+\* element, which is what TLC cannot do for Nat.
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
+                   EmptyDiffNatRangeEnum)
+ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
+                   EmptyDiffIntervalNatEnum)
 
 \* The cardinality that records a limitation as well.
 \*
