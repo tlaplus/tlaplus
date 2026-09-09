@@ -66,7 +66,7 @@ public class NumeralNode extends ExprNode {
     try {
       this.value = Integer.parseInt( num, radix );
     } catch ( NumberFormatException e ) {
-      this.bigValue = new BigInteger( s, radix );
+      this.bigValue = new BigInteger( num, radix );
     }
   }
 

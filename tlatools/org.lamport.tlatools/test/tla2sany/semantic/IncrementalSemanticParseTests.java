@@ -25,6 +25,7 @@ package tla2sany.semantic;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -116,6 +117,33 @@ public class IncrementalSemanticParseTests {
     Assert.assertEquals(syntax, result.getTreeNode());
     Assert.assertEquals(LevelConstants.ConstantLevel, result.getLevel());
     Assert.assertEquals(NumeralNode.class, result.getClass());
+  }
+
+  /**
+   * Regression test for https://github.com/tlaplus/tlaplus/issues/1419 :
+   * radix-prefixed numerals (\b, \o, \h) that overflow a Java int must fall
+   * back to {@link java.math.BigInteger} correctly instead of throwing a
+   * {@link NumberFormatException}, which happened because the radix prefix
+   * was left attached to the string passed to the BigInteger constructor.
+   */
+  @Test
+  public void bigRadixNumeralTest() throws ParseException, AbortException {
+    bigRadixNumeralTest("\\b" + "1".repeat(32), 2);
+    bigRadixNumeralTest("\\o" + "7".repeat(12), 8);
+    bigRadixNumeralTest("\\h" + "f".repeat(9), 16);
+  }
+
+  private void bigRadixNumeralTest(String literal, int radix) throws ParseException, AbortException {
+    final SyntaxTreeNode syntax = IncrementalSyntaxParseTests.parser(literal).Expression();
+    final Errors log = new Errors();
+    final Generator semantic = new Generator(null, log);
+    final ExprNode result = semantic.generateExpression(syntax, new ModuleNode(null, null, null));
+    Assert.assertTrue(log.toString(), log.isSuccess());
+    Assert.assertEquals(NumeralNode.class, result.getClass());
+    final NumeralNode numeral = (NumeralNode)result;
+    Assert.assertFalse(numeral.useVal());
+    final BigInteger expected = new BigInteger(literal.substring(2), radix);
+    Assert.assertEquals(expected, numeral.bigVal());
   }
 
   @Test
