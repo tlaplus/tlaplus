@@ -66,6 +66,19 @@ public abstract class EnumerableValue extends Value implements Enumerable {
     	return ((SetEnumValue) this.toSetEnum()).getRandomSubset(kOutOfN);
 	}
 
+	protected static final ValueEnumeration EMPTY_ENUMERATION = new ValueEnumeration() {
+
+		@Override
+		public void reset() {
+			// Nothing to reset because nextElement never yields an element.
+		}
+
+		@Override
+		public Value nextElement() {
+			return null;
+		}
+	};
+
 	@Override
 	public ValueEnumeration elements(final Ordering ordering) {
 		if (ordering == Ordering.NORMALIZED) {

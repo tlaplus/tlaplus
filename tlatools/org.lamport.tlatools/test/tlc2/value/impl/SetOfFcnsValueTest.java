@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +41,7 @@ import java.util.stream.IntStream;
 
 import org.junit.Test;
 
+import tlc2.module.Naturals;
 import tlc2.util.FP64;
 import tlc2.value.impl.SetOfFcnsValue.SubsetEnumerator;
 import util.Assert.TLCRuntimeException;
@@ -388,5 +390,66 @@ public class SetOfFcnsValueTest {
 				fail();
 			}
 		});
+	}
+
+	// [Nat -> {}] = {}, so there is no element to enumerate, whereas enumerating
+	// the domain Nat is what TLC cannot do.
+	@Test
+	public void testEmptyNonEnumerableDomain() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(Naturals.Nat(), new SetEnumValue());
+
+		assertEquals(0, fcns.elements().all().size());
+	}
+
+	// [{} -> Nat] = {<<>>}, i.e. the empty domain says which functions there are
+	// without the co-domain Nat enumerated.
+	@Test
+	public void testUnitNonEnumerableRange() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(new SetEnumValue(), Naturals.Nat());
+
+		assertEquals(Collections.singletonList(FcnRcdValue.EmptyFcn), fcns.elements().all());
+	}
+
+	// The same set written with an interval as its domain, which elements()
+	// answers with DomIVEnumerator instead of Enumerator.
+	@Test
+	public void testUnitNonEnumerableRangeInterval() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(new IntervalValue(1, 0), Naturals.Nat());
+
+		assertEquals(Collections.singletonList(FcnRcdValue.EmptyFcn), fcns.elements().all());
+	}
+
+	// A domain with an element asks for one enumeration of the co-domain per
+	// element, so Nat is an obstacle here where the empty domains above ask for
+	// none. Both enumerators have to say so rather than fail on the cast of a
+	// co-domain that is not Enumerable.
+	@Test
+	public void testNonEnumerableRange() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(new SetEnumValue(getValue("d1"), true),
+				Naturals.Nat());
+
+		try {
+			fcns.elements();
+		} catch (TLCRuntimeException e) {
+			assertEquals("Attempted to enumerate a set of the form [D -> R],"
+					+ "but the range R:\nNat\ncannot be enumerated.", e.getMessage());
+			return;
+		}
+		fail();
+	}
+
+	// The same co-domain under DomIVEnumerator instead of Enumerator.
+	@Test
+	public void testNonEnumerableRangeInterval() {
+		final SetOfFcnsValue fcns = new SetOfFcnsValue(new IntervalValue(1, 2), Naturals.Nat());
+
+		try {
+			fcns.elements();
+		} catch (TLCRuntimeException e) {
+			assertEquals("Attempted to enumerate a set of the form [D -> R],"
+					+ "but the range R:\nNat\ncannot be enumerated.", e.getMessage());
+			return;
+		}
+		fail();
 	}
 }

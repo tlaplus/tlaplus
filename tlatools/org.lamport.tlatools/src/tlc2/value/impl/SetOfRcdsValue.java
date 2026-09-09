@@ -450,6 +450,11 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final ValueEnumeration elements() {
     try {
       if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
+        // [l1 : v1, ..., ln : vn] = {} <=> \E i : vi = {}, which decides emptiness
+        // without the enumeration of v1..vi that Enumerator below needs.
+        if (this.isEmpty()) {
+          return EMPTY_ENUMERATION;
+        }
         return new Enumerator();
       }
       return this.rcdSet.elements();

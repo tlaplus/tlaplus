@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import tlc2.TLCGlobals;
+import tlc2.module.Naturals;
 import tlc2.value.impl.IntervalValue;
 import tlc2.value.impl.SetOfTuplesValue;
 
@@ -46,5 +47,15 @@ public class SetOfTuplesValueTest {
 		final SetOfTuplesValue outter = new SetOfTuplesValue(inner, inner);
 		assertTrue(outter.toString().contains("\\X"));
 		assertEquals("((1..2 \\X 1..2) \\X (1..2 \\X 1..2))", outter.toString());
+	}
+
+	// Nat \X {} = {}, so there is no element to enumerate, whereas enumerating Nat
+	// is what TLC cannot do.
+	@Test
+	public void testEmptyNonEnumerableComponent() {
+		final SetOfTuplesValue product = new SetOfTuplesValue(
+				new Value[] { Naturals.Nat(), new SetEnumValue() });
+
+		assertEquals(0, product.elements().all().size());
 	}
 }

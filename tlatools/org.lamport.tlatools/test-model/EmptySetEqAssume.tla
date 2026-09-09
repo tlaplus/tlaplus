@@ -6,11 +6,6 @@
 \* TLA+ fact; the ones that do have a proof say so, i.e. they record a
 \* limitation.
 \*
-\* TLC does not yet answer every assumption below. The commented out ones are
-\* the enumerations it refuses, marked "refused", and the commit that fixes
-\* TLC uncomments them and drops the AssertError assumptions that state the
-\* same refusals.
-\*
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences, TLC, TLCExt, EmptySetEqCases
 
@@ -23,12 +18,12 @@ ASSUME UnitSingletonRangeEnum
 ASSUME UnitSingletonRangeSym
 ASSUME UnitTripleRangeEnum
 ASSUME UnitTripleRangeSym
-\* ASSUME UnitNatRangeEnum          \* refused
+ASSUME UnitNatRangeEnum
 ASSUME UnitNatRangeSym
 
 ASSUME UnitIntervalEnum
 ASSUME UnitIntervalSym
-\* ASSUME UnitIntervalNatEnum       \* refused
+ASSUME UnitIntervalNatEnum
 ASSUME UnitIntervalNatSym
 
 ASSUME UnitCapEnum
@@ -46,21 +41,21 @@ ASSUME UnitFilterSym
 
 ASSUME UnitRcdFieldEnum
 ASSUME UnitRcdFieldSym
-\* ASSUME UnitRcdNatFieldEnum       \* refused
+ASSUME UnitRcdNatFieldEnum
 ASSUME UnitRcdNatFieldSym
 ASSUME UnitRcdFieldNatSym
 
 ASSUME UnitTupleEnum
 ASSUME UnitTupleSym
-\* ASSUME UnitTupleNatFirstEnum     \* refused
+ASSUME UnitTupleNatFirstEnum
 ASSUME UnitTupleNatFirstSym
 ASSUME UnitTupleNatSecondSym
 ASSUME UnitTupleStrFirstSym
 
-\* ASSUME UnitFcnSetEnum            \* refused
+ASSUME UnitFcnSetEnum
 ASSUME UnitFcnSetSym
 ASSUME UnitFcnSetNestedSym
-\* ASSUME UnitFcnSetNatRangeEnum    \* refused
+ASSUME UnitFcnSetNatRangeEnum
 ASSUME UnitDiffNestedUnitEnum
 ASSUME UnitDiffNestedUnitSym
 
@@ -92,24 +87,24 @@ ASSUME EmptyFilterSym
 
 ASSUME EmptySubsetEmptyEnum
 ASSUME EmptySubsetEmptySym
-\* ASSUME EmptySubsetNatEnum        \* refused
+ASSUME EmptySubsetNatEnum
 ASSUME EmptySubsetNatSym
 
 ASSUME EmptyRcdEnum
 ASSUME EmptyRcdSym
-\* ASSUME EmptyRcdNatEnum           \* refused
+ASSUME EmptyRcdNatEnum
 ASSUME EmptyRcdNatSym
 
 ASSUME EmptyTupleEnum
 ASSUME EmptyTupleSym
-\* ASSUME EmptyTupleNatEnum         \* refused
+ASSUME EmptyTupleNatEnum
 ASSUME EmptyTupleNatSym
 
-\* ASSUME EmptyNatEnum              \* refused
+ASSUME EmptyNatEnum
 ASSUME EmptyNatSym
-\* ASSUME EmptyIntEnum              \* refused
+ASSUME EmptyIntEnum
 ASSUME EmptyIntSym
-\* ASSUME EmptySeqEnum              \* refused
+ASSUME EmptySeqEnum
 ASSUME EmptySeqSym
 ASSUME EmptyStrSym
 
@@ -119,7 +114,7 @@ ASSUME EmptyRcdFcnSetRangeSym
 ASSUME EmptyTupleFcnSetRangeSym
 ASSUME EmptyFcnSetRangeSym
 
-\* ASSUME EmptyFcnSetEnum           \* refused
+ASSUME EmptyFcnSetEnum
 ASSUME EmptyFcnSetSym
 
 -----------------------------------------------------------------------------
@@ -132,7 +127,7 @@ ASSUME RcdEmptyArityEnum
 ASSUME RcdEmptyAritySym
 ASSUME RcdEmptyIntervalEnum
 ASSUME RcdEmptyIntervalSym
-\* ASSUME RcdEmptyNatFieldEnum      \* refused
+ASSUME RcdEmptyNatFieldEnum
 ASSUME RcdEmptyNatFieldSym
 ASSUME RcdEmptyFieldNatSym
 ASSUME RcdEmptySeqFieldSym
@@ -153,7 +148,7 @@ ASSUME TupEmptyArityEnum
 ASSUME TupEmptyAritySym
 ASSUME TupEmptyIntervalEnum
 ASSUME TupEmptyIntervalSym
-\* ASSUME TupEmptyNatFirstEnum      \* refused
+ASSUME TupEmptyNatFirstEnum
 ASSUME TupEmptyNatFirstSym
 ASSUME TupEmptyNatSecondSym
 ASSUME TupEmptySeqFirstSym
@@ -168,9 +163,9 @@ ASSUME TupEmptyThenDiffSym
 \* Two sets of different constructors.
 
 ASSUME FcnSetEqRcdSetEmpty
-\* ASSUME FcnSetEqRcdSetNat         \* refused
+ASSUME FcnSetEqRcdSetNat
 ASSUME FcnSetEqTupleSetEmpty
-\* ASSUME FcnSetEqTupleSetNat       \* refused
+ASSUME FcnSetEqTupleSetNat
 ASSUME RcdSetEqTupleSetEmpty
 ASSUME UnitDiffRcdSetEmpty
 ASSUME UnitDiffTupleSetEmpty
@@ -187,17 +182,17 @@ ASSUME TupleSetIsFcnSet3
 ASSUME UnitEmptyRangeRev
 ASSUME UnitSingletonRangeRev
 ASSUME EmptySingletonRev
-\* ASSUME EmptyNatRev               \* refused
+ASSUME EmptyNatRev
 ASSUME RcdEmptyFieldRev
 ASSUME RcdEmptyArityRev
 ASSUME TupEmptyComponentRev
 ASSUME TupEmptyArityRev
 
 ASSUME RcdSetEqFcnSetEmptyRev
-\* ASSUME RcdSetEqFcnSetNatRev      \* refused
+ASSUME RcdSetEqFcnSetNatRev
 ASSUME TupleSetEqFcnSetEmptyRev
 ASSUME TupleSetEqRcdSetEmptyRev
-\* ASSUME TupleSetEqRcdSetNatRev    \* refused
+ASSUME TupleSetEqRcdSetNatRev
 ASSUME RcdSetIsFcnSetRev
 ASSUME TupleSetIsFcnSetRev
 
@@ -391,19 +386,19 @@ ASSUME InUnitFilter
 
 ASSUME InUnitRcdField
 ASSUME InUnitRcdFieldNat
-\* ASSUME InUnitRcdNatField         \* refused
+ASSUME InUnitRcdNatField
 ASSUME InUnitTuple
 ASSUME InUnitTupleNatSecond
-\* ASSUME InUnitTupleNatFirst       \* refused
-\* ASSUME InUnitTupleStrFirst       \* refused
+ASSUME InUnitTupleNatFirst
+ASSUME InUnitTupleStrFirst
 ASSUME InUnitFcnSet
-\* ASSUME InUnitFcnSetNat           \* refused
-\* ASSUME InUnitFcnSetNested        \* refused
+ASSUME InUnitFcnSetNat
+ASSUME InUnitFcnSetNested
 
-\* ASSUME InUnitRcdFcnSet           \* refused
+ASSUME InUnitRcdFcnSet
 ASSUME InUnitRcdRcd
 ASSUME InUnitRcdTuple
-\* ASSUME InUnitTupleFcnSet         \* refused
+ASSUME InUnitTupleFcnSet
 ASSUME InUnitTupleRcd
 ASSUME InUnitTupleTuple
 
@@ -470,9 +465,9 @@ ASSUME InFcnSetNatRange
 \* The remaining operator that has to agree with the comparisons above.
 
 ASSUME SubsetUnitRanges
-\* ASSUME SubsetUnitNatRange        \* refused
+ASSUME SubsetUnitNatRange
 ASSUME SubsetEmptyDomain
-\* ASSUME SubsetEmptyNatDomain      \* refused
+ASSUME SubsetEmptyNatDomain
 
 -----------------------------------------------------------------------------
 \* The rendering that TLC prints for the same sets, which has to agree with
@@ -495,14 +490,15 @@ ASSUME ToString([n1 : 1..50000, n2 : 1..50000, n3 : {}]) = "{}"
 ASSUME ToString((1..50000) \X (1..50000) \X {})          = "{}"
 ASSUME ToString([{} -> (SUBSET (1..40))])                = "{<<>>}"
 ASSUME ToString([{} -> ((1..50000) \X (1..50000))])      = "{<<>>}"
-\* ASSUME ToString([{} -> Nat])                          = "{<<>>}"  \* refused
+ASSUME ToString([{} -> Nat])                             = "{<<>>}"
 
 ASSUME ToString([n1 : 1..50000, n2 : 1..50000]) = "[n1: 1..50000, n2: 1..50000]"
 
 -----------------------------------------------------------------------------
 \* The comparisons that TLC refuses to answer. Giving up is acceptable for
-\* these sets, whereas a wrong answer is not, except for the last two
-\* assumptions of this section, which TLA+ does decide.
+\* these sets, whereas a wrong answer is not. The groups at the end of this
+\* section say where a refusal records a limitation instead, i.e. where TLA+
+\* does decide the comparison.
 
 \* A domain or a co-domain that TLC cannot enumerate.
 ASSUME AssertError("Attempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
@@ -543,18 +539,6 @@ ASSUME AssertError("Attempted to enumerate S \\ T when S:\nNat\nis not enumerabl
                    [ref : {}] # [n1 : (Nat \ Nat)])
 ASSUME AssertError("Attempted to enumerate S \\ T when S:\nNat\nis not enumerable.",
                    ({"ref"} \X {}) # ((Nat \ Nat) \X {"d1"}))
-
-\* Two sets of different constructors, where TLC enumerates both instead of
-\* taking the emptiness rules. FcnSetEqRcdSetEmpty and the cases next to it
-\* are the same comparisons on sets that TLC does enumerate.
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   [Nat -> {}] = [n1 : {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   [n1 : {}] = [Nat -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   [Nat -> {}] = ({} \X {"r1"}))
-ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
-                   ({} \X {"r1"}) = [n1 : Nat, n2 : {}])
 
 \* A record and a tuple, which differ because their domains differ
 \* (ESE_RcdSetDiffTupleSet of EmptySetEqTheorems.tla), and which TLC refuses
@@ -602,41 +586,11 @@ ASSUME AssertError("Shouldn't call isEmpty() on value ANY",
                    ({"ref"} \X {}) = (Any \X {}))
 
 \* An operator other than = that gives up where = decides: [Nat -> {}] is
-\* empty and [{} -> Nat] denotes {<<>>} above, so \notin and \subseteq have an
-\* answer that TLC does not give. ESE_EmptyNonMember, ESE_EmptySubset, and
-\* ESE_UnitSubset of EmptySetEqTheorems.tla state the three answers.
+\* empty, so \notin has an answer that TLC does not give. ESE_EmptyNonMember
+\* of EmptySetEqTheorems.tla states it, and SubsetEmptyNatDomain is the
+\* \subseteq that TLC does answer on the same set.
 ASSUME AssertError("Attempted to check equality of the set {} with the value:\nNat",
                    NotInEmptyNatDomain)
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   [Nat -> {}] \subseteq [{"r1"} -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
-                   [{} -> Nat] \subseteq [{} -> {"d1"}])
-
-\* The reduced form { } or { <<>> } for an input that TLC cannot enumerate.
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   { } = [Nat -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   [Nat -> {}] = { })
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nInt\ncannot be enumerated.",
-                   { } = [Int -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nSeq({\"d1\"})\ncannot be enumerated.",
-                   { } = [Seq({"d1"}) -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
-                   { <<>> } = [{} -> Nat])
-ASSUME AssertError("Attempted to compute the number of elements in the overridden value Nat.",
-                   { } = [(SUBSET Nat) -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
-                   { } = [[n1 : Nat] -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nNat",
-                   { } = [(Nat \X {"d1"}) -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
-                   { } = [n1 : Nat, n2 : {}])
-ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nNat",
-                   { } = (Nat \X {}))
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   { } = [[Nat -> {"d1"}] -> {}])
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   { <<>> } = [[Nat -> {}] -> {"d2"}])
 
 \* The finiteness of a set built from a value whose emptiness TLA+ leaves
 \* open, which TLA+ leaves open in turn: [1 -> 2] is { <<>> } if 1 = {} and
@@ -691,10 +645,10 @@ ASSUME AssertError("Shouldn't call isEmpty() on value 1", TupIntReflexive)
 \* ESE_FcnSetEmpty: a set of functions is empty only for an empty co-domain,
 \* and 0 \in Nat rules that out whatever the domain is.
 \*
-\* These two stay refused past the commit that fixes the ones above, because
-\* TLC answers by enumerating rather than by reading the co-domain, and a
-\* domain that has an element asks for one enumeration of the co-domain per
-\* element, which is what TLC cannot do for Nat.
+\* TLC reads the co-domain the other way round, by enumerating it once per
+\* element of the domain, which is what it cannot do for Nat. An empty domain
+\* asks for no enumeration at all, so UnitNatRangeEnum and
+\* UnitIntervalNatEnum are the same two enumerators answering.
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
                    EmptyDiffNatRangeEnum)
 ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
@@ -711,8 +665,6 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
 
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to compute the number of elements in the overridden value Nat.",
                    ToString([n1 : Nat, n2 : {}]) = "{}")
-ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to enumerate a set of the form [D -> R],but the range R:\nNat\ncannot be enumerated.",
-                   ToString([{} -> Nat]) = "{<<>>}")
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nOverflow when computing the number of elements in (1..50000 \\X 1..50000)",
                    ToString([((1..50000) \X (1..50000)) -> {}]) = "{}")
 
@@ -724,22 +676,6 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
 \* components one by one. An argument that TLC can neither compare nor read
 \* therefore refuses a membership that an empty domain, co-domain, field
 \* set, or component decides.
-
-\* An empty domain, i.e. the set is { <<>> } and <<>> is its member.
-ASSUME AssertError("Attempted to enumerate a set of the form [l1 : v1, ..., ln : vn],\nbut can't enumerate the value of the `n1' field:\nNat",
-                   InUnitRcdNatField)
-ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nNat",
-                   InUnitTupleNatFirst)
-ASSUME AssertError("Attempted to enumerate a set of the form s1 \\X s2 ... \\X sn,\nbut can't enumerate s0:\nSTRING",
-                   InUnitTupleStrFirst)
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   InUnitFcnSetNat)
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   InUnitFcnSetNested)
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   InUnitRcdFcnSet)
-ASSUME AssertError("Attempted to enumerate a set of the form [D -> R],but the domain D:\nNat\ncannot be enumerated.",
-                   InUnitTupleFcnSet)
 
 \* An empty co-domain, i.e. the set is { } and nothing is its member, where
 \* the domain is the argument that TLC gives up on.

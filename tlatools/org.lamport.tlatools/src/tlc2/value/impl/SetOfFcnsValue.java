@@ -458,6 +458,12 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final ValueEnumeration elements() {
     try {
       if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
+        // [S -> T] = {} <=> S # {} /\ T = {}, which decides emptiness without the
+        // enumeration of S that the enumerators below need. They answer the other
+        // rule, [{} -> T] = { <<>> }.
+        if (this.isEmpty()) {
+          return EMPTY_ENUMERATION;
+        }
     	  if (this.domain instanceof IntervalValue) {
     		  return new DomIVEnumerator();
     	  }
@@ -479,25 +485,23 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	public DomIVEnumerator() {
       this.isDone = false;
       int sz = domain.size();
-      if (range instanceof Enumerable) {
-        this.enums = new ValueEnumeration[sz];
-        this.currentElems = new Value[sz];
-        // SZ Feb 24, 2009: never read locally
-        // ValueEnumeration enumeration = ((Enumerable)domSet).elements();
-        for (int i = 0; i < sz; i++) {
-          this.enums[i] = ((Enumerable)range).elements();
-          this.currentElems[i] = this.enums[i].nextElement();
-          if (this.currentElems[i] == null) {
-            this.enums = null;
-            this.isDone = true;
-            break;
-          }
-        }
-      }
-      else {
+      // [S -> T] needs one enumeration of T per element of S, and
+      // [{} -> T] = { <<>> } whatever T is.
+      if (sz > 0 && !(range instanceof Enumerable)) {
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
               "but the range R:\n" + Values.ppr(range.toString()) +
               "\ncannot be enumerated.", getSource());
+      }
+      this.enums = new ValueEnumeration[sz];
+      this.currentElems = new Value[sz];
+      for (int i = 0; i < sz; i++) {
+        this.enums[i] = ((Enumerable)range).elements();
+        this.currentElems[i] = this.enums[i].nextElement();
+        if (this.currentElems[i] == null) {
+          this.enums = null;
+          this.isDone = true;
+          break;
+        }
       }
 	}
 
@@ -564,27 +568,25 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
       domSet.normalize();
       ValueVec elems = domSet.elems;
       int sz = elems.size();
-      if (range instanceof Enumerable) {
-        this.dom = new Value[sz];
-        this.enums = new ValueEnumeration[sz];
-        this.currentElems = new Value[sz];
-        // SZ Feb 24, 2009: never read locally
-        // ValueEnumeration enumeration = ((Enumerable)domSet).elements();
-        for (int i = 0; i < sz; i++) {
-          this.dom[i] = elems.elementAt(i);
-          this.enums[i] = ((Enumerable)range).elements();
-          this.currentElems[i] = this.enums[i].nextElement();
-          if (this.currentElems[i] == null) {
-            this.enums = null;
-            this.isDone = true;
-            break;
-          }
-        }
-      }
-      else {
+      // [S -> T] needs one enumeration of T per element of S, and
+      // [{} -> T] = { <<>> } whatever T is.
+      if (sz > 0 && !(range instanceof Enumerable)) {
         Assert.fail("Attempted to enumerate a set of the form [D -> R]," +
               "but the range R:\n" + Values.ppr(range.toString()) +
               "\ncannot be enumerated.", getSource());
+      }
+      this.dom = new Value[sz];
+      this.enums = new ValueEnumeration[sz];
+      this.currentElems = new Value[sz];
+      for (int i = 0; i < sz; i++) {
+        this.dom[i] = elems.elementAt(i);
+        this.enums[i] = ((Enumerable)range).elements();
+        this.currentElems[i] = this.enums[i].nextElement();
+        if (this.currentElems[i] == null) {
+          this.enums = null;
+          this.isDone = true;
+          break;
+        }
       }
     }
 
