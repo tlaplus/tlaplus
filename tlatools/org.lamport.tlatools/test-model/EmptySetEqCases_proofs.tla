@@ -58,6 +58,9 @@ THEOREM UnitTripleRangeEnum
 THEOREM UnitTripleRangeSym
   BY RefUnit, ESE_UnitDomain DEF UnitTripleRangeSym
 
+THEOREM UnitNatRangeEnum
+  BY ESE_UnitDomain DEF UnitNatRangeEnum
+
 THEOREM UnitNatRangeSym
   BY RefUnit, ESE_UnitDomain DEF UnitNatRangeSym
 
@@ -70,6 +73,11 @@ THEOREM UnitIntervalSym
   <1>1. 1..0 = {}
     OBVIOUS
   <1>2. QED BY <1>1, RefUnit, ESE_UnitDomain DEF UnitIntervalSym
+
+THEOREM UnitIntervalNatEnum
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitDomain DEF UnitIntervalNatEnum
 
 THEOREM UnitIntervalNatSym
   <1>1. 1..0 = {}
@@ -144,6 +152,9 @@ THEOREM UnitRcdFieldEnum
 THEOREM UnitRcdFieldSym
   BY RefUnit, ESE_UnitDomainRcd1 DEF UnitRcdFieldSym
 
+THEOREM UnitRcdNatFieldEnum
+  BY ESE_UnitDomainRcd DEF UnitRcdNatFieldEnum
+
 THEOREM UnitRcdNatFieldSym
   BY RefUnit, ESE_UnitDomainRcd DEF UnitRcdNatFieldSym
 
@@ -158,6 +169,9 @@ THEOREM UnitTupleEnum
 THEOREM UnitTupleSym
   BY RefUnit, ESE_UnitDomainTuple DEF UnitTupleSym
 
+THEOREM UnitTupleNatFirstEnum
+  BY ESE_UnitDomainTuple DEF UnitTupleNatFirstEnum
+
 THEOREM UnitTupleNatFirstSym
   BY RefUnit, ESE_UnitDomainTuple DEF UnitTupleNatFirstSym
 
@@ -169,6 +183,11 @@ THEOREM UnitTupleStrFirstSym
 
 \* The domain is a set of functions that is itself empty.
 
+THEOREM UnitFcnSetEnum
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitDomainFcnSet DEF UnitFcnSetEnum
+
 THEOREM UnitFcnSetSym
   <1>1. 0 \in Nat
     OBVIOUS
@@ -178,6 +197,11 @@ THEOREM UnitFcnSetNestedSym
   <1>1. [n \in Nat |-> "d1"] \in [Nat -> {"d1"}]
     OBVIOUS
   <1>2. QED BY <1>1, RefUnit, ESE_UnitDomainFcnSet DEF UnitFcnSetNestedSym
+
+THEOREM UnitFcnSetNatRangeEnum
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitDomainFcnSet DEF UnitFcnSetNatRangeEnum
 
 \* The domain is a set of functions that denotes { <<>> }, i.e. the domains of
 \* the two sets are { <<>> } and {}, which ESE_DomainDecides tells apart.
@@ -318,6 +342,11 @@ THEOREM EmptySubsetEmptySym
     OBVIOUS
   <1>2. QED BY <1>1, RefEmpty, ESE_EmptyRange DEF EmptySubsetEmptySym
 
+THEOREM EmptySubsetNatEnum
+  <1>1. {} \in SUBSET Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptySubsetNatEnum
+
 THEOREM EmptySubsetNatSym
   <1>1. {} \in SUBSET Nat
     OBVIOUS
@@ -332,6 +361,11 @@ THEOREM EmptyRcdSym
   <1>1. [n1 |-> "d1"] \in [n1 : {"d1"}]
     OBVIOUS
   <1>2. QED BY <1>1, RefEmpty, ESE_EmptyRange DEF EmptyRcdSym
+
+THEOREM EmptyRcdNatEnum
+  <1>1. [n1 |-> 0] \in [n1 : Nat]
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptyRcdNatEnum
 
 THEOREM EmptyRcdNatSym
   <1>1. [n1 |-> 0] \in [n1 : Nat]
@@ -348,18 +382,38 @@ THEOREM EmptyTupleSym
     OBVIOUS
   <1>2. QED BY <1>1, RefEmpty, ESE_EmptyRange DEF EmptyTupleSym
 
+THEOREM EmptyTupleNatEnum
+  <1>1. <<0, "d1">> \in Nat \X {"d1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptyTupleNatEnum
+
 THEOREM EmptyTupleNatSym
   <1>1. <<0, "d1">> \in Nat \X {"d1"}
     OBVIOUS
   <1>2. QED BY <1>1, RefEmpty, ESE_EmptyRange DEF EmptyTupleNatSym
 
+THEOREM EmptyNatEnum
+  BY NatToEmpty DEF EmptyNatEnum
+
 THEOREM EmptyNatSym
   BY NatToEmpty, RefEmpty DEF EmptyNatSym
+
+THEOREM EmptyIntEnum
+  <1>1. 0 \in Int
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptyIntEnum
 
 THEOREM EmptyIntSym
   <1>1. 0 \in Int
     OBVIOUS
   <1>2. QED BY <1>1, RefEmpty, ESE_EmptyRange DEF EmptyIntSym
+
+THEOREM EmptySeqEnum
+  <1>1. <<>> \in Seq({"d1"})
+    <2>1. <<>> \in [1..0 -> {"d1"}]
+      OBVIOUS
+    <2>2. QED BY <2>1
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptySeqEnum
 
 THEOREM EmptySeqSym
   <1>1. <<>> \in Seq({"d1"})
@@ -415,6 +469,11 @@ THEOREM EmptyFcnSetRangeSym
 
 \* The domain is a set of functions that is non-empty.
 
+THEOREM EmptyFcnSetEnum
+  <1>1. [n \in Nat |-> "d1"] \in [Nat -> {"d1"}]
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptyFcnSetEnum
+
 THEOREM EmptyFcnSetSym
   <1>1. [n \in Nat |-> "d1"] \in [Nat -> {"d1"}]
     OBVIOUS
@@ -449,6 +508,9 @@ THEOREM RcdEmptyIntervalSym
   <1>1. 1..0 = {}
     OBVIOUS
   <1>2. QED BY <1>1, RefRcdEmpty, ESE_RcdSetEmpty DEF RcdEmptyIntervalSym
+
+THEOREM RcdEmptyNatFieldEnum
+  BY ESE_RcdSetEmpty DEF RcdEmptyNatFieldEnum
 
 THEOREM RcdEmptyNatFieldSym
   BY RefRcdEmpty, ESE_RcdSetEmpty DEF RcdEmptyNatFieldSym
@@ -509,6 +571,9 @@ THEOREM TupEmptyIntervalSym
     OBVIOUS
   <1>2. QED BY <1>1, RefTupEmpty, ESE_TupleSetEmpty DEF TupEmptyIntervalSym
 
+THEOREM TupEmptyNatFirstEnum
+  BY ESE_TupleSetEmpty DEF TupEmptyNatFirstEnum
+
 THEOREM TupEmptyNatFirstSym
   BY RefTupEmpty, ESE_TupleSetEmpty DEF TupEmptyNatFirstSym
 
@@ -546,8 +611,14 @@ THEOREM TupEmptyThenDiffSym
 THEOREM FcnSetEqRcdSetEmpty
   BY RefEmpty, ESE_RcdSetEmpty1 DEF FcnSetEqRcdSetEmpty
 
+THEOREM FcnSetEqRcdSetNat
+  BY NatToEmpty, ESE_RcdSetEmpty1 DEF FcnSetEqRcdSetNat
+
 THEOREM FcnSetEqTupleSetEmpty
   BY RefEmpty, ESE_TupleSetEmpty DEF FcnSetEqTupleSetEmpty
+
+THEOREM FcnSetEqTupleSetNat
+  BY NatToEmpty, ESE_TupleSetEmpty DEF FcnSetEqTupleSetNat
 
 THEOREM RcdSetEqTupleSetEmpty
   BY RefRcdEmpty, ESE_TupleSetEmpty DEF RcdSetEqTupleSetEmpty
@@ -590,6 +661,9 @@ THEOREM EmptySingletonRev
     OBVIOUS
   <1>2. QED BY <1>1, ESE_EmptyRange DEF EmptySingletonRev
 
+THEOREM EmptyNatRev
+  BY NatToEmpty DEF EmptyNatRev
+
 THEOREM RcdEmptyFieldRev
   BY ESE_RcdSetEmpty1 DEF RcdEmptyFieldRev
 
@@ -605,11 +679,17 @@ THEOREM TupEmptyArityRev
 THEOREM RcdSetEqFcnSetEmptyRev
   BY RefEmpty, ESE_RcdSetEmpty1 DEF RcdSetEqFcnSetEmptyRev
 
+THEOREM RcdSetEqFcnSetNatRev
+  BY NatToEmpty, ESE_RcdSetEmpty1 DEF RcdSetEqFcnSetNatRev
+
 THEOREM TupleSetEqFcnSetEmptyRev
   BY RefEmpty, ESE_TupleSetEmpty DEF TupleSetEqFcnSetEmptyRev
 
 THEOREM TupleSetEqRcdSetEmptyRev
   BY RefRcdEmpty, ESE_TupleSetEmpty DEF TupleSetEqRcdSetEmptyRev
+
+THEOREM TupleSetEqRcdSetNatRev
+  BY ESE_RcdSetEmpty, ESE_TupleSetEmpty DEF TupleSetEqRcdSetNatRev
 
 THEOREM RcdSetIsFcnSetRev
   BY ESE_RcdSetIsFcnSet DEF RcdSetIsFcnSetRev
@@ -1270,6 +1350,19 @@ THEOREM TupNatIntDiffer
 THEOREM TupStrReflexive
   BY DEF TupStrReflexive
 
+\* ESE_FcnSetEmpty makes [S -> T] empty only for an empty T, so a witness in
+\* the co-domain settles both of these without a look at the domain.
+
+THEOREM EmptyDiffNatRangeEnum
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_FcnSetEmpty DEF EmptyDiffNatRangeEnum
+
+THEOREM EmptyDiffIntervalNatEnum
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_FcnSetEmpty DEF EmptyDiffIntervalNatEnum
+
 -----------------------------------------------------------------------------
 \* Sets built from a value whose emptiness TLA+ leaves open, where the
 \* congruence rules are all that is left. No witness w \in 1 exists to
@@ -1834,8 +1927,16 @@ THEOREM InFcnSetNatRange
 THEOREM SubsetUnitRanges
   BY ESE_UnitSubset DEF SubsetUnitRanges
 
+THEOREM SubsetUnitNatRange
+  BY ESE_UnitSubset DEF SubsetUnitNatRange
+
 THEOREM SubsetEmptyDomain
   <1>1. "r1" \in {"r1"}
     OBVIOUS
   <1>2. QED BY <1>1, ESE_EmptySubset DEF SubsetEmptyDomain
+
+THEOREM SubsetEmptyNatDomain
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptySubset DEF SubsetEmptyNatDomain
 =============================================================================

@@ -14,8 +14,10 @@
 \* the Sym suffix the form that compares it with the most reduced form of the
 \* input's own constructor: [{} -> {"ref"}] and [{"ref"} -> {}] for a set of
 \* functions, [ref : {}] for a set of records, and {"ref"} \X {} for a
-\* Cartesian product. An input that TLC cannot enumerate has the Sym form
-\* only. The Rev suffix names the form whose operands are swapped, i.e. the
+\* Cartesian product. An input whose constructor makes it { } or { <<>> } has
+\* both forms even where TLC cannot enumerate the arguments of that
+\* constructor, because the enumeration is then the reduced form itself.
+\* The Rev suffix names the form whose operands are swapped, i.e. the
 \* exception to the order above, for the reason given in the section carrying
 \* it.
 \*
@@ -32,10 +34,12 @@ UnitSingletonRangeEnum == { <<>> }        = [{} -> {"d1"}]
 UnitSingletonRangeSym  == [{} -> {"ref"}] = [{} -> {"d1"}]
 UnitTripleRangeEnum    == { <<>> }        = [{} -> {"a", "b", "c"}]
 UnitTripleRangeSym     == [{} -> {"ref"}] = [{} -> {"a", "b", "c"}]
+UnitNatRangeEnum       == { <<>> }        = [{} -> Nat]
 UnitNatRangeSym        == [{} -> {"ref"}] = [{} -> Nat]
 
 UnitIntervalEnum       == { <<>> }        = [1..0 -> {"d1"}]
 UnitIntervalSym        == [{} -> {"ref"}] = [1..0 -> {"d1"}]
+UnitIntervalNatEnum    == { <<>> }        = [1..0 -> Nat]
 UnitIntervalNatSym     == [{} -> {"ref"}] = [1..0 -> Nat]
 
 UnitCapEnum            == { <<>> }        = [({"d1"} \cap {"d2"}) -> {"e1"}]
@@ -54,19 +58,24 @@ UnitFilterSym          == [{} -> {"ref"}] = [{d \in {"d1"} : FALSE} -> {"e1"}]
 \* The domain is a set of records.
 UnitRcdFieldEnum       == { <<>> }        = [[n1 : {}] -> {"e1"}]
 UnitRcdFieldSym        == [{} -> {"ref"}] = [[n1 : {}] -> {"e1"}]
+UnitRcdNatFieldEnum    == { <<>> }        = [[n1 : Nat, n2 : {}] -> {"d1"}]
 UnitRcdNatFieldSym     == [{} -> {"ref"}] = [[n1 : Nat, n2 : {}] -> {"d1"}]
 UnitRcdFieldNatSym     == [{} -> {"ref"}] = [[n1 : {}, n2 : Nat] -> {"d1"}]
 
 \* The domain is a Cartesian product.
 UnitTupleEnum          == { <<>> }        = [({"d1"} \X {}) -> {"e1"}]
 UnitTupleSym           == [{} -> {"ref"}] = [({"d1"} \X {}) -> {"e1"}]
+UnitTupleNatFirstEnum  == { <<>> }        = [(Nat \X {}) -> {"d1"}]
 UnitTupleNatFirstSym   == [{} -> {"ref"}] = [(Nat \X {}) -> {"d1"}]
 UnitTupleNatSecondSym  == [{} -> {"ref"}] = [({} \X Nat) -> {"d1"}]
 UnitTupleStrFirstSym   == [{} -> {"ref"}] = [(STRING \X {}) -> {"d1"}]
 
 \* The domain is a set of functions that is itself empty.
+UnitFcnSetEnum         == { <<>> }        = [[Nat -> {}] -> {"d2"}]
 UnitFcnSetSym          == [{} -> {"ref"}] = [[Nat -> {}] -> {"d2"}]
 UnitFcnSetNestedSym    == [{} -> {"ref"}] = [[[Nat -> {"d1"}] -> {}] -> {"d2"}]
+
+UnitFcnSetNatRangeEnum == { <<>> }        = [[Nat -> {}] -> Nat]
 
 \* The domain is a set of functions that denotes { <<>> } instead of {}, i.e.
 \* it is a singleton, which is what makes these sets differ.
@@ -105,18 +114,24 @@ EmptyFilterSym           == [{"ref"} -> {}] = [{d \in {"d1"} : TRUE} -> {}]
 \* SUBSET S contains {} for every S, i.e. it is never empty.
 EmptySubsetEmptyEnum     == { }             = [(SUBSET {}) -> {}]
 EmptySubsetEmptySym      == [{"ref"} -> {}] = [(SUBSET {}) -> {}]
+EmptySubsetNatEnum       == { }             = [(SUBSET Nat) -> {}]
 EmptySubsetNatSym        == [{"ref"} -> {}] = [(SUBSET Nat) -> {}]
 
 EmptyRcdEnum             == { }             = [[n1 : {"d1"}] -> {}]
 EmptyRcdSym              == [{"ref"} -> {}] = [[n1 : {"d1"}] -> {}]
+EmptyRcdNatEnum          == { }             = [[n1 : Nat] -> {}]
 EmptyRcdNatSym           == [{"ref"} -> {}] = [[n1 : Nat] -> {}]
 
 EmptyTupleEnum           == { }             = [({"d1"} \X {"d1"}) -> {}]
 EmptyTupleSym            == [{"ref"} -> {}] = [({"d1"} \X {"d1"}) -> {}]
+EmptyTupleNatEnum        == { }             = [(Nat \X {"d1"}) -> {}]
 EmptyTupleNatSym         == [{"ref"} -> {}] = [(Nat \X {"d1"}) -> {}]
 
+EmptyNatEnum             == { }             = [Nat -> {}]
 EmptyNatSym              == [{"ref"} -> {}] = [Nat -> {}]
+EmptyIntEnum             == { }             = [Int -> {}]
 EmptyIntSym              == [{"ref"} -> {}] = [Int -> {}]
+EmptySeqEnum             == { }             = [Seq({"d1"}) -> {}]
 EmptySeqSym              == [{"ref"} -> {}] = [Seq({"d1"}) -> {}]
 EmptyStrSym              == [{"ref"} -> {}] = [STRING -> {}]
 
@@ -128,6 +143,7 @@ EmptyTupleFcnSetRangeSym == [{"ref"} -> {}] = [{"d1"} -> ({"d1"} \X [Nat -> {}])
 EmptyFcnSetRangeSym      == [{"ref"} -> {}] = [{"x1"} -> [{"y"} -> [Nat -> {}]]]
 
 \* The domain is a set of functions that is non-empty.
+EmptyFcnSetEnum          == { }             = [[Nat -> {"d1"}] -> {}]
 EmptyFcnSetSym           == [{"ref"} -> {}] = [[Nat -> {"d1"}] -> {}]
 
 -----------------------------------------------------------------------------
@@ -141,6 +157,7 @@ RcdEmptyArityEnum    == { }        = [n1 : {}, n2 : {"r1"}]
 RcdEmptyAritySym     == [ref : {}] = [n1 : {}, n2 : {"r1"}]
 RcdEmptyIntervalEnum == { }        = [n1 : 1..0, n2 : {"r1"}]
 RcdEmptyIntervalSym  == [ref : {}] = [n1 : 1..0, n2 : {"r1"}]
+RcdEmptyNatFieldEnum == { }        = [n1 : Nat, n2 : {}]
 RcdEmptyNatFieldSym  == [ref : {}] = [n1 : Nat, n2 : {}]
 RcdEmptyFieldNatSym  == [ref : {}] = [n1 : {}, n2 : Nat]
 RcdEmptySeqFieldSym  == [ref : {}] = [n1 : Seq({"d1"}), n2 : {}]
@@ -169,6 +186,7 @@ TupEmptyArityEnum     == { }             = ({} \X {"r1"} \X {"r2"})
 TupEmptyAritySym      == ({"ref"} \X {}) = ({} \X {"r1"} \X {"r2"})
 TupEmptyIntervalEnum  == { }             = ((1..0) \X {"r1"})
 TupEmptyIntervalSym   == ({"ref"} \X {}) = ((1..0) \X {"r1"})
+TupEmptyNatFirstEnum  == { }             = (Nat \X {})
 TupEmptyNatFirstSym   == ({"ref"} \X {}) = (Nat \X {})
 TupEmptyNatSecondSym  == ({"ref"} \X {}) = ({} \X Nat)
 TupEmptySeqFirstSym   == ({"ref"} \X {}) = (Seq({"d1"}) \X {})
@@ -185,12 +203,16 @@ TupEmptyTupleSym      == ({"ref"} \X {}) = (({"d1"} \X {}) \X {"d1"})
 TupEmptyThenDiffSym   == ({"ref"} \X {}) = ({} \X (Nat \ {0}))
 
 -----------------------------------------------------------------------------
-\* Two sets of different constructors. TLC enumerates both instead of taking
-\* the emptiness rules, so only the enumerable ones are here and the rest are
-\* AssertError assumptions of EmptySetEqAssume.tla.
+\* Two sets of different constructors, which TLC decides by enumerating both
+\* instead of taking the emptiness rules. An empty argument makes that
+\* enumeration empty, so the ones whose arguments TLC cannot enumerate are
+\* refused assumptions of EmptySetEqAssume.tla until the commit that has TLC
+\* read that rule.
 
 FcnSetEqRcdSetEmpty   == [{"ref"} -> {}] = [n1 : {}]
+FcnSetEqRcdSetNat     == [Nat -> {}]     = [n1 : {}]
 FcnSetEqTupleSetEmpty == [{"ref"} -> {}] = ({} \X {"r1"})
+FcnSetEqTupleSetNat   == [Nat -> {}]     = ({} \X {"r1"})
 RcdSetEqTupleSetEmpty == [ref : {}]      = ({} \X {"r1"})
 UnitDiffRcdSetEmpty   == [{} -> {"ref"}] # [n1 : {}]
 UnitDiffTupleSetEmpty == [{} -> {"ref"}] # ({} \X {"r1"})
@@ -213,6 +235,7 @@ TupleSetIsFcnSet3 == [1..3 -> {"a"}]      = ({"a"} \X {"a"} \X {"a"})
 UnitEmptyRangeRev     == [{} -> {}]               = { <<>> }
 UnitSingletonRangeRev == [{} -> {"d1"}]           = { <<>> }
 EmptySingletonRev     == [{"r1"} -> {}]           = { }
+EmptyNatRev           == [Nat -> {}]              = { }
 RcdEmptyFieldRev      == [n1 : {}]                = { }
 RcdEmptyArityRev      == [n1 : {}, n2 : {"r1"}]   = { }
 TupEmptyComponentRev  == ({} \X {"r1"})           = { }
@@ -221,8 +244,10 @@ TupEmptyArityRev      == ({} \X {"r1"} \X {"r2"}) = { }
 \* Two sets of different constructors, with the one that the section above
 \* keeps on the right on the left instead.
 RcdSetEqFcnSetEmptyRev   == [n1 : {}]      = [{"ref"} -> {}]
+RcdSetEqFcnSetNatRev     == [n1 : {}]      = [Nat -> {}]
 TupleSetEqFcnSetEmptyRev == ({} \X {"r1"}) = [{"ref"} -> {}]
 TupleSetEqRcdSetEmptyRev == ({} \X {"r1"}) = [ref : {}]
+TupleSetEqRcdSetNatRev   == ({} \X {"r1"}) = [n1 : Nat, n2 : {}]
 RcdSetIsFcnSetRev        == [n1 : {"a"}]   = [{"n1"} -> {"a"}]
 TupleSetIsFcnSetRev      == ({"a", "b"} \X {"a", "b"}) = [1..2 -> {"a", "b"}]
 
@@ -458,6 +483,12 @@ TupNatReflexive == (Nat \X {"d1"}) = (Nat \X {"d1"})
 TupNatIntDiffer == (Nat \X {"d1"}) # (Int \X {"d1"})
 TupStrReflexive == (STRING \X {"d1"}) = (STRING \X {"d1"})
 
+\* The same sets against { }, which the co-domain alone decides: a set of
+\* functions is empty only for an empty co-domain, and 0 \in Nat rules that
+\* out whatever the domain is.
+EmptyDiffNatRangeEnum    == { } # [{"d1"} -> Nat]
+EmptyDiffIntervalNatEnum == { } # [1..2 -> Nat]
+
 -----------------------------------------------------------------------------
 \* Sets built from a value whose emptiness TLA+ leaves open, i.e. congruence
 \* is the only means left to decide these. Every TLA+ value is a set, but
@@ -637,5 +668,7 @@ InFcnSetNatRange == [d \in {"d1"} |-> 0] \in [{"d1"} -> Nat]
 \* The same sets read through \subseteq, which has to agree as well.
 
 SubsetUnitRanges     == [{} -> {"d1"}] \subseteq [{} -> Nat]
+SubsetUnitNatRange   == [{} -> Nat]    \subseteq [{} -> {"d1"}]
 SubsetEmptyDomain    == [{"r1"} -> {}] \subseteq [Nat -> {}]
+SubsetEmptyNatDomain == [Nat -> {}]    \subseteq [{"r1"} -> {}]
 =============================================================================
