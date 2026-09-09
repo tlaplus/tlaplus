@@ -36,6 +36,7 @@ import java.util.stream.IntStream;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import tlc2.module.Naturals;
 import tlc2.util.FP64;
 import tlc2.value.impl.SetOfRcdsValue.SubsetEnumerator;
 import util.UniqueString;
@@ -192,5 +193,15 @@ public class SetOfRcrdValueTest {
 		}
 
 		assertEquals(k, randomsubsetValues.size());
+	}
+
+	// [N0 : Nat, N1 : {}] = {}, so there is no element to enumerate, whereas
+	// enumerating Nat is what TLC cannot do.
+	@Test
+	public void testEmptyNonEnumerableField() {
+		final SetOfRcdsValue rcds = new SetOfRcdsValue(getNames(2),
+				new Value[] { Naturals.Nat(), new SetEnumValue() }, false);
+
+		assertEquals(0, rcds.elements().all().size());
 	}
 }

@@ -205,9 +205,7 @@ TupEmptyThenDiffSym   == ({"ref"} \X {}) = ({} \X (Nat \ {0}))
 -----------------------------------------------------------------------------
 \* Two sets of different constructors, which TLC decides by enumerating both
 \* instead of taking the emptiness rules. An empty argument makes that
-\* enumeration empty, so the ones whose arguments TLC cannot enumerate are
-\* refused assumptions of EmptySetEqAssume.tla until the commit that has TLC
-\* read that rule.
+\* enumeration empty, so an argument that TLC cannot enumerate is no obstacle.
 
 FcnSetEqRcdSetEmpty   == [{"ref"} -> {}] = [n1 : {}]
 FcnSetEqRcdSetNat     == [Nat -> {}]     = [n1 : {}]

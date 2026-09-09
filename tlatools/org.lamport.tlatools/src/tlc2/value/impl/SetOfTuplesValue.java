@@ -434,6 +434,11 @@ public class SetOfTuplesValue extends EnumerableValue implements Enumerable {
   public final ValueEnumeration elements() {
     try {
       if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
+        // s1 \X s2 ... \X sn = {} <=> \E i : si = {}, which decides emptiness
+        // without the enumeration of s1..si that Enumerator below needs.
+        if (this.isEmpty()) {
+          return EMPTY_ENUMERATION;
+        }
         return new Enumerator();
       }
       return this.tupleSet.elements();
