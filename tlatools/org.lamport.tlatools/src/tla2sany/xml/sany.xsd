@@ -1771,6 +1771,7 @@
               <xs:element ref="ModuleInstanceKindRef"/>
               <xs:element ref="TheoremNodeRef"/>
               <xs:element ref="AssumeNodeRef"/>
+              <xs:element ref="ModuleNodeRef"/>
             </xs:choice>
           </xs:complexType>
         </xs:element>
