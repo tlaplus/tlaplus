@@ -1111,6 +1111,20 @@
             </xs:documentation>
           </xs:annotation>
         </xs:element>
+        <xs:element minOccurs="0" ref="recursiveSection">
+          <xs:annotation>
+            <xs:documentation>
+              Present whenever this operator was declared in, or appears
+              between a RECURSIVE statement and the definition of some
+              operator it declared, at the same LET/IN level -- what SANY
+              calls a "recursive section". Two UserDefinedOpKind nodes with
+              the same recursiveSection value were declared by the same
+              RECURSIVE statement (or share an enclosing one), so this is
+              how a joint declaration like RECURSIVE f(_), g(_) can be
+              reassembled from their otherwise-independent entries.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
         <xs:element minOccurs="0" ref="local">
           <xs:annotation>
             <xs:documentation>
@@ -1146,6 +1160,15 @@
     <xs:annotation>
       <xs:documentation>
         The arity of a definition, meaning number of parameters it accepts.
+      </xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <xs:element name="recursiveSection" type="xs:integer">
+    <xs:annotation>
+      <xs:documentation>
+        Groups UserDefinedOpKind nodes declared by the same RECURSIVE
+        statement; see UserDefinedOpKind for details.
       </xs:documentation>
     </xs:annotation>
   </xs:element>
