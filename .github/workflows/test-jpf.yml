@@ -5,16 +5,24 @@ name: TLC JPF Tests
 on:
   push:
     paths:
+      - '.github/workflows/test-jpf.yml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/fp/OffHeapDiskFPSet.java'
-      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/fp/OffHeapDiskFPSetJPFTest.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/StateQueue.java'
-      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/queue/StateQueueJPFTest.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/DiskStateQueue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolReader.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolWriter.java'
+      - 'tlatools/org.lamport.tlatools/test-verify/**'
+      - 'tlatools/org.lamport.tlatools/test-verify-model/**'
   pull_request:
     paths:
+      - '.github/workflows/test-jpf.yml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/fp/OffHeapDiskFPSet.java'
-      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/fp/OffHeapDiskFPSetJPFTest.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/StateQueue.java'
-      - 'tlatools/org.lamport.tlatools/test-verify/tlc2/tool/queue/StateQueueJPFTest.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/queue/DiskStateQueue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolReader.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/StatePoolWriter.java'
+      - 'tlatools/org.lamport.tlatools/test-verify/**'
+      - 'tlatools/org.lamport.tlatools/test-verify-model/**'
 
 jobs:
   run-tlc-test-verify:
