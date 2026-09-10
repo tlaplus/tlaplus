@@ -1061,5 +1061,28 @@ public class TestXMLExporterModule {
 			return null;
 		}
 		return sections.item(0).getTextContent().trim();
+
+	@Test
+	public void testUseHideDefsExportsModuleReference() throws Exception {
+		// Regression test: a USE/HIDE block's defs list is exported and validated
+		// identically to its facts list, but the schema's defs choice previously
+		// omitted ModuleNodeRef even though facts allowed it, so HIDE DEFS MODULE M
+		// failed schema validation despite being valid TLA+ and already exported
+		// correctly.
+		Document doc = this.export("UseHideModuleDefsXml");
+
+		NodeList useOrHideNodes = doc.getElementsByTagName("UseOrHideNode");
+		Assert.assertEquals("The HIDE statement should be exported", 1, useOrHideNodes.getLength());
+
+		List<Element> defs = childElements(child((Element) useOrHideNodes.item(0), "defs"));
+		Assert.assertEquals("MODULE UseHideModuleDefsXmlSub and x should both be exported as defs", 2, defs.size());
+
+		int moduleRefs = 0;
+		for (Element def : defs) {
+			if ("ModuleNodeRef".equals(def.getNodeName())) {
+				moduleRefs++;
+			}
+		}
+		Assert.assertEquals("The MODULE reference should be exported as ModuleNodeRef", 1, moduleRefs);
 	}
 }
