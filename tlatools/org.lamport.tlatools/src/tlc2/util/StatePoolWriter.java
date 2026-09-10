@@ -5,6 +5,8 @@
 
 package tlc2.util;
 
+import static tlc2.tool.queue.DiskStateQueue2TLA.trace;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,6 +15,7 @@ import java.io.ObjectOutputStream;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCState;
+import tlc2.tool.queue.DiskStateQueue2TLA.Action;
 import tlc2.value.ValueOutputStream;
 import util.Assert;
 
@@ -43,26 +46,33 @@ public class StatePoolWriter extends Thread {
    */
   public final synchronized TLCState[] doWork(TLCState[] enqBuf, File file)
   throws IOException {
+    trace(Action.WriterDoWorkBegin);
     if (this.poolFile != null) {
       ValueOutputStream vos = new ValueOutputStream(this.poolFile);
       for (int i = 0; i < this.buf.length; i++) {
 	this.buf[i].write(vos);
       }
       vos.close();
+      trace(Action.WriterDoWorkLate);
     }
     TLCState[] res = this.buf;
     this.buf = enqBuf;
     this.poolFile = file;
     this.notify();
+    trace(Action.WriterDoWorkEnd);
     return res;
   }
 
   /* Spin waiting for the write to complete.  */
   public final void ensureWritten() throws InterruptedException {
     synchronized(this) {
+      trace(Action.WriterAwaitBegin);
       while (this.poolFile != null) {
+	trace(Action.WriterAwaitWait);
 	this.wait();
+	trace(Action.WriterAwaitWoke);
       }
+      trace(Action.WriterAwaitEnd);
     }
   }
 
@@ -76,6 +86,7 @@ public class StatePoolWriter extends Thread {
 	oos.writeObject(this.buf[i]);
       }
     }
+    trace(Action.WriterBeginChkpt);
   }
 
   /* Note this method is not synchronized.  */
@@ -96,10 +107,12 @@ public class StatePoolWriter extends Thread {
     else {
       this.poolFile = null;
     }
+    trace(Action.WriterRecover);
   }
 
   public final synchronized void setFinished() {
     this.finished = true;
+    trace(Action.FinishWriter);
     this.notifyAll();
   }
 
@@ -110,13 +123,17 @@ public class StatePoolWriter extends Thread {
   public void run() {
     try {
       synchronized(this) {
+	trace(Action.WriterRunBegin);
 	while (true) {
 	  while (this.poolFile == null) {
 	    if (this.finished) {
+	      trace(Action.WriterExit);
 	      return;
 	    }
+	    trace(Action.WriterWait);
 	    this.wait();
-	  }
+	    trace(Action.WriterWoke);
+	    }
 	  ValueOutputStream vos = new ValueOutputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {
 	    this.buf[i].write(vos);
@@ -125,6 +142,7 @@ public class StatePoolWriter extends Thread {
 	  this.poolFile = null;
 	  this.notify();
 	  if (this.reader != null) this.reader.wakeup();
+	  trace(Action.WriterWrote);
 	}
       }
     }

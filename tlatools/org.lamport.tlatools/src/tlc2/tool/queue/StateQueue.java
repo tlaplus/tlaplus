@@ -5,6 +5,8 @@
 
 package tlc2.tool.queue;
 
+import static tlc2.tool.queue.DiskStateQueue2TLA.trace;
+
 import java.io.IOException;
 
 import tlc2.TLCGlobals;
@@ -13,6 +15,7 @@ import tlc2.output.MP;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
 import tlc2.tool.Worker;
+import tlc2.tool.queue.DiskStateQueue2TLA.Action;
 
 /**
  * 
@@ -45,6 +48,7 @@ public abstract class StateQueue implements IStateQueue {
 	public final void enqueue(final TLCState state) {
 		this.enqueueInner(state);
 		this.len++;
+		trace(Action.Enqueue);
 	}
 
 	/* (non-Javadoc)
@@ -52,10 +56,12 @@ public abstract class StateQueue implements IStateQueue {
 	 */
 	public final TLCState dequeue() {
 		if (isEmpty()) {
+			trace(Action.DequeueEmpty);
 			return null;
 		}
 		final TLCState state = this.dequeueInner();
 		this.len--;
+		trace(Action.Dequeue);
 		return state;
 	}
 
@@ -64,11 +70,14 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#sEnqueue(tlc2.tool.TLCState)
 	 */
 	public final synchronized void sEnqueue(final TLCState state) {
+		trace(Action.SEnqueueBegin);
 		this.enqueueInner(state);
 		this.len++;
 		if (this.numWaiting > 0 && !this.stop) {
 			this.notifyAll();
+			trace(Action.SEnqueueNotify);
 		}
+		trace(Action.SEnqueueEnd);
 	}
 
 	/* Enqueues a list of states. Wake up any waiting thread. */
@@ -76,16 +85,20 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#sEnqueue(tlc2.tool.TLCState[])
 	 */
 	public final synchronized void sEnqueue(final TLCState states[]) {
+		trace(Action.SEnqueueBegin);
 		for (int i = 0; i < states.length; i++) {
 			this.enqueueInner(states[i]);
 		}
 		this.len += states.length;
 		if (this.numWaiting > 0 && !this.stop) {
 			this.notifyAll();
+			trace(Action.SEnqueueNotify);
 		}
+		trace(Action.SEnqueueEnd);
 	}
 	
 	public final synchronized void sEnqueue(final StateVec stateVec) {
+		trace(Action.SEnqueueBegin);
 		int cnt = 0;
 		for (int j = 0; j < stateVec.size(); j++) {
 			TLCState state = stateVec.elementAt(j);
@@ -97,14 +110,20 @@ public abstract class StateQueue implements IStateQueue {
 		this.len += cnt;
 		if (this.numWaiting > 0 && !this.stop) {
 			this.notifyAll();
+			trace(Action.SEnqueueNotify);
 		}
+		trace(Action.SEnqueueEnd);
 	}
 
 
 	public final synchronized TLCState sPeek() {
+		trace(Action.SPeekBegin);
 		if (this.isAvail()) {
-			return this.peekInner();
+			final TLCState state = this.peekInner();
+			trace(Action.SPeekEnd);
+			return state;
 		}
+		trace(Action.SPeekEnd);
 		return null;
 	}
 
@@ -113,13 +132,16 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#sDequeue()
 	 */
 	public final synchronized TLCState sDequeue() {
+		trace(Action.SDequeueBegin);
 		if (this.isAvail()) {
 			final TLCState state = this.dequeueInner();
 			// LL modified error message on 7 April 2012
 			assert state != null : "Null state found on queue";
 			this.len--;
+			trace(Action.SDequeueEnd);
 			return state;
 		}
+		trace(Action.SDequeueEnd);
 		return null;
 	}
 
@@ -128,6 +150,7 @@ public abstract class StateQueue implements IStateQueue {
 	 */
 	public final synchronized TLCState[] sDequeue(int cnt) {
 		assert cnt > 0 : "Nonpositive number of states requested.";
+		trace(Action.SDequeueBegin);
 		if (this.isAvail()) {
 			if (cnt > len) {
 				// in this case, casting len to int is safe 
@@ -140,6 +163,7 @@ public abstract class StateQueue implements IStateQueue {
 				this.len--;
 			}
 			if (idx == cnt) {
+				trace(Action.SDequeueEnd);
 				return states;
 			}
 
@@ -149,8 +173,10 @@ public abstract class StateQueue implements IStateQueue {
 			for (int i = 0; i < idx; i++) {
 				res[i] = states[i];
 			}
+			trace(Action.SDequeueEnd);
 			return res;
 		}
+		trace(Action.SDequeueEnd);
 		return null;
 	}
 
@@ -169,6 +195,7 @@ public abstract class StateQueue implements IStateQueue {
 		 */
 		
 		if (this.finish) {
+			trace(Action.AvailFinished);
 			return false;
 		}
 		while (isEmpty() || this.stop) {
@@ -178,6 +205,7 @@ public abstract class StateQueue implements IStateQueue {
 			if (this.numWaiting >= TLCGlobals.getNumWorkers()) {
 				if (isEmpty()) {
 					this.numWaiting--;
+					trace(Action.AvailNoWork);
 					return false;
 				}
 				// TODO what happens if control flow exits without ever
@@ -186,16 +214,20 @@ public abstract class StateQueue implements IStateQueue {
 				// TLCServer.
 				synchronized (this.mu) {
 					this.mu.notify();
+					trace(Action.AvailAllWaiting);
 				}
 			}
 			try {
+				trace(Action.AvailWait);
 				this.wait();
 			} catch (Exception e) {
 				MP.printError(EC.GENERAL, "making a worker wait for a state from the queue", e);  // LL changed call 7 April 2012
 				System.exit(1);
 			}
 			this.numWaiting--;
+			trace(Action.AvailWoke);
 			if (this.finish) {
+				trace(Action.AvailWokeFinished);
 				return false;
 			}
 		}
@@ -206,6 +238,7 @@ public abstract class StateQueue implements IStateQueue {
 	 * @see tlc2.tool.queue.IStateQueue#finishAll()
 	 */
 	public synchronized void finishAll() {
+		trace(Action.FinishAllBegin);
 		this.finish = true;
 		// Notify all other worker threads.
 		this.notifyAll();
@@ -222,7 +255,9 @@ public abstract class StateQueue implements IStateQueue {
 		synchronized (this.mu) {
 			// Technically notify() would do.
 			this.mu.notify();
+			trace(Action.FinishAllNotifyMu);
 		}
+		trace(Action.FinishAllEnd);
 	}
 
 	/* (non-Javadoc)
@@ -231,15 +266,19 @@ public abstract class StateQueue implements IStateQueue {
 	public final boolean suspendAll() {
 		boolean needWait = false;
 		synchronized (this) {
+			trace(Action.SuspendBegin);
 			if (this.finish) {
+				trace(Action.SuspendFinished);
 				return false;
 			}
 			this.stop = true;
 			needWait = needsWaiting();
+			trace(Action.SuspendStop);
 		}
 		// Wait for all worker threads to stop.
 		while (needWait) {
 			synchronized (this.mu) {
+				trace(Action.SuspendAwaitBegin);
 				try {
 					// finishAll & suspendAll race:
 					//
@@ -265,6 +304,7 @@ public abstract class StateQueue implements IStateQueue {
 					// the VM might decide to let main read a cached value of
 					// false of this.finish.
 					if (this.finish) {
+						trace(Action.SuspendFinishedOnMu);
 						return false;
 					}
 					// A worker can reach the suspension barrier after
@@ -288,12 +328,15 @@ public abstract class StateQueue implements IStateQueue {
 					// and without volatile finish confirms this interleaving
 					// argument.
 					if (!needsWaiting()) {
+						trace(Action.SuspendEnd);
 						return true;
 					}
 					// waiting here assumes that subsequently a worker
 					// is going to wake us up by calling isAvail() or
 					// this.mu.notify*()
+					trace(Action.SuspendWait);
 					this.mu.wait();
+					trace(Action.SuspendWoke);
 				} catch (Exception e) {
 					MP.printError(EC.GENERAL, "waiting for a worker to wake up", e);  // LL changed call 7 April 2012
 					System.exit(1);
@@ -301,11 +344,14 @@ public abstract class StateQueue implements IStateQueue {
 			}
 			synchronized (this) {
 				if (this.finish) {
+					trace(Action.SuspendFinishedOnRecheck);
 					return false;
 				}
 				needWait = needsWaiting();
+				trace(Action.SuspendRecheck);
 			}
 		}
+		trace(Action.SuspendEnd);
 		return true;
 	}
 	
@@ -330,6 +376,7 @@ public abstract class StateQueue implements IStateQueue {
 	public final synchronized void resumeAll() {
 		this.stop = false;
 		this.notifyAll();
+		trace(Action.Resume);
 	}
 
 	/* (non-Javadoc)
@@ -342,12 +389,14 @@ public abstract class StateQueue implements IStateQueue {
 		if (stop) {
 			synchronized (mu) {
 				mu.notifyAll();
+				trace(Action.ResumeStuckMu);
 			}
 		}
 		// 
 		if (!stop && !isEmpty() && this.numWaiting > 0) {
 			synchronized (this) {
 				this.notifyAll();
+				trace(Action.ResumeStuckQueue);
 			}
 		}
 	}

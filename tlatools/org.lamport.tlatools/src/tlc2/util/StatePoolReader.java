@@ -5,6 +5,8 @@
 
 package tlc2.util;
 
+import static tlc2.tool.queue.DiskStateQueue2TLA.trace;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,6 +15,7 @@ import java.io.ObjectOutputStream;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCState;
+import tlc2.tool.queue.DiskStateQueue2TLA.Action;
 import tlc2.value.ValueInputStream;
 import util.Assert;
 
@@ -39,6 +42,7 @@ public class StatePoolReader extends Thread {
   public final synchronized void wakeup() {
     this.canRead = true;
     this.notify();
+    trace(Action.ReaderWakeup);
   }
 
   public final synchronized void restart(File file, boolean canRead) {
@@ -46,6 +50,7 @@ public class StatePoolReader extends Thread {
     this.isFull = false;
     this.canRead = canRead;
     this.notify();
+    trace(Action.ReaderRestart);
   }
   
   /*
@@ -55,6 +60,7 @@ public class StatePoolReader extends Thread {
    */
   public final synchronized TLCState[] doWork(TLCState[] deqBuf, File file)
   throws IOException, ClassNotFoundException {
+    trace(Action.ReaderDoWorkBegin);
     if (this.isFull) {
       assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
       TLCState[] res = this.buf;
@@ -63,6 +69,7 @@ public class StatePoolReader extends Thread {
       this.isFull = false;      // <file, false>
       this.canRead = true;
       this.notify();
+      trace(Action.ReaderDoWorkPrefetched);
       return res;
     }
     else if (this.poolFile != null) {
@@ -75,6 +82,7 @@ public class StatePoolReader extends Thread {
       this.poolFile = file;     // <file, false>
       this.canRead = true;
       this.notify();
+      trace(Action.ReaderDoWorkPending);
       return deqBuf;
     }
     else {
@@ -84,6 +92,7 @@ public class StatePoolReader extends Thread {
 	deqBuf[i].read(vis);
       }
       vis.close();              // <null, false>
+      trace(Action.ReaderDoWorkDirect);
       return deqBuf;
     }
   }
@@ -93,6 +102,7 @@ public class StatePoolReader extends Thread {
    */
   public final synchronized TLCState[] getCache(TLCState[] deqBuf, File file)
   throws IOException, ClassNotFoundException {
+    trace(Action.ReaderGetCacheBegin);
     if (this.isFull) {
       assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
       TLCState[] res = this.buf;
@@ -100,6 +110,7 @@ public class StatePoolReader extends Thread {
       this.poolFile = file;
       this.isFull = false;      // <file, false>
       this.canRead = false;
+      trace(Action.ReaderGetCachePrefetched);
       return res;
     }
     else if (this.poolFile != null && this.canRead) {
@@ -113,8 +124,10 @@ public class StatePoolReader extends Thread {
       // this.poolFile.delete();
       this.poolFile = file;    // <file, false>
       this.canRead = false;
+      trace(Action.ReaderGetCacheRead);
       return deqBuf;
     }
+    trace(Action.ReaderGetCacheEmpty);
     return null;
   }
 
@@ -132,6 +145,7 @@ public class StatePoolReader extends Thread {
 	oos.writeObject(this.buf[i]);
       }
     }
+    trace(Action.ReaderBeginChkpt);
   }
 
   /* Note that this method is not synchronized. */
@@ -153,6 +167,7 @@ public class StatePoolReader extends Thread {
     {
       Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e);
     }
+    trace(Action.ReaderRecover);
   }
   
   /**
@@ -162,10 +177,14 @@ public class StatePoolReader extends Thread {
   public void run() {
     try {
       synchronized(this) {
+	trace(Action.ReaderRunBegin);
 	while (true) {
 	  while (this.poolFile == null || this.isFull || !this.canRead) {
+	    trace(Action.ReaderWait);
 	    this.wait();
+	    trace(Action.ReaderWoke);
 	    if(this.finished ) {
+	    	trace(Action.ReaderExit);
 	    	return;
 	    }
 	  }
@@ -177,6 +196,7 @@ public class StatePoolReader extends Thread {
 	  vis.close();
 	  this.poolFile = null;
 	  this.isFull = true;       // <null, true>
+	  trace(Action.ReaderRead);
 	}
       }
     }
@@ -192,6 +212,7 @@ public class StatePoolReader extends Thread {
   
   public void setFinished() {
 	  finished = true;
+	  trace(Action.ReaderSetFinished);
   }
   
 }
