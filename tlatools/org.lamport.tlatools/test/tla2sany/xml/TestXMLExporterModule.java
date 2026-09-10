@@ -1061,6 +1061,7 @@ public class TestXMLExporterModule {
 			return null;
 		}
 		return sections.item(0).getTextContent().trim();
+	}
 
 	@Test
 	public void testUseHideDefsExportsModuleReference() throws Exception {
