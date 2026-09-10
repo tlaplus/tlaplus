@@ -1545,6 +1545,10 @@ public class OpDefNode extends OpDefOrDeclNode
           ret.appendChild(doc.createElement("recursive"));
         }
 
+        if (recursiveSection >= 0) {
+          ret.appendChild(appendText(doc, "recursiveSection", Integer.toString(recursiveSection)));
+        }
+
         if (this.isLocal()) {
           ret.appendChild(doc.createElement("local"));
         }
