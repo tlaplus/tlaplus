@@ -5,6 +5,8 @@
 
 package tlc2.tool.queue;
 
+import static tlc2.tool.queue.DiskStateQueue2TLA.trace;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,6 +14,7 @@ import java.nio.file.Files;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.TLCState;
+import tlc2.tool.queue.DiskStateQueue2TLA.Action;
 import tlc2.util.StatePoolReader;
 import tlc2.util.StatePoolWriter;
 import tlc2.value.ValueInputStream;
@@ -86,22 +89,27 @@ public class DiskStateQueue extends StateQueue {
 			try {
 				String pstr = Integer.toString(this.hiPool);
 				File file = new File(this.filePrefix + pstr);
+				trace(Action.SpillBegin);
 				this.enqBuf = this.writer.doWork(this.enqBuf, file);
 				this.hiPool++;
 				this.enqIndex = 0;
+				trace(Action.SpillEnd);
 			} catch (Exception e) {
 				Assert.fail(EC.SYSTEM_ERROR_WRITING_STATES,
 						new String[] { "queue", (e.getMessage() == null) ? e.toString() : e.getMessage() });
 			}
 		}
 		this.enqBuf[this.enqIndex++] = state;
+		trace(Action.Enq);
 	}
 
 	final TLCState dequeueInner() {
 		if (this.deqIndex == this.deqBuf.length) {
 			this.fillDeqBuffer();
 		}
-		return this.deqBuf[this.deqIndex++];
+		final TLCState state = this.deqBuf[this.deqIndex++];
+		trace(Action.Deq);
+		return state;
 	}
 	
 	/* (non-Javadoc)
@@ -111,6 +119,7 @@ public class DiskStateQueue extends StateQueue {
 		if (this.deqIndex == this.deqBuf.length) {
 			this.fillDeqBuffer();
 		}
+		trace(Action.Peek);
 		return this.deqBuf[this.deqIndex];
 	}
 
@@ -120,16 +129,23 @@ public class DiskStateQueue extends StateQueue {
 				// We are sure there are disk files.
 				if (this.loPool + 1 >= this.hiPool) {
 					// potential read-write conflict on a file
+					trace(Action.AwaitWriteBegin);
 					this.writer.ensureWritten();
+					trace(Action.AwaitWriteEnd);
 				}
+				trace(Action.LoadPoolBegin);
 				this.deqBuf = this.reader.doWork(this.deqBuf, this.loFile);
 				this.deqIndex = 0;
 				this.loPool++;
 				String pstr = Integer.toString(this.loPool);
 				this.loFile = new File(this.filePrefix + pstr);
+				trace(Action.LoadPoolEnd);
 			} else {
 				// We still need to check if a file is buffered.
+				trace(Action.AwaitWriteBegin);
 				this.writer.ensureWritten();
+				trace(Action.AwaitWriteEnd);
+				trace(Action.TakeCacheBegin);
 				TLCState[] buf = this.reader.getCache(this.deqBuf, this.loFile);
 				if (buf != null) {
 					this.deqBuf = buf;
@@ -137,11 +153,13 @@ public class DiskStateQueue extends StateQueue {
 					this.loPool++;
 					String pstr = Integer.toString(this.loPool);
 					this.loFile = new File(this.filePrefix + pstr);
+					trace(Action.TakeCacheHit);
 				} else {
 					// copy entries from enqBuf to deqBuf.
 					this.deqIndex = this.deqBuf.length - this.enqIndex;
 					System.arraycopy(this.enqBuf, 0, this.deqBuf, this.deqIndex, this.enqIndex);
 					this.enqIndex = 0;
+					trace(Action.TakeCacheMiss);
 				}
 			}
 			// Notify the cleaner to do its job unless its waits for more work
@@ -150,6 +168,7 @@ public class DiskStateQueue extends StateQueue {
 				synchronized (this.cleaner) {
 					this.cleaner.deleteUpTo = loPool - 1;
 					this.cleaner.notifyAll();
+					trace(Action.NotifyCleaner);
 				}
 			}
 		} catch (Exception e) {
@@ -183,6 +202,7 @@ public class DiskStateQueue extends StateQueue {
 		}
 		vos.close();
 		this.newLastLoPool = this.loPool - 1;
+		trace(Action.BeginChkpt);
 	}
 
 	public final void commitChkpt() throws IOException {
@@ -201,6 +221,7 @@ public class DiskStateQueue extends StateQueue {
 			String msg = "DiskStateQueue.commitChkpt: cannot delete " + oldChkpt;
 			throw new IOException(msg);
 		}
+		trace(Action.CommitChkpt);
 	}
 
 	public final void recover() throws IOException {
@@ -227,6 +248,7 @@ public class DiskStateQueue extends StateQueue {
 		this.reader.restart(file, canRead);
 		String pstr = Integer.toString(this.loPool);
 		this.loFile = new File(this.filePrefix + pstr);
+		trace(Action.Recover);
 	}
 
 	public void finishAll() {
@@ -235,10 +257,12 @@ public class DiskStateQueue extends StateQueue {
 		synchronized (this.reader) {
 			this.reader.setFinished();
 			this.reader.notifyAll();
+			trace(Action.FinishReader);
 		}
 		synchronized (this.cleaner) {
 			this.cleaner.finished = true;
 			this.cleaner.notifyAll();
+			trace(Action.FinishCleaner);
 		}
 	}
 
@@ -260,6 +284,7 @@ public class DiskStateQueue extends StateQueue {
 					while (!this.finished) {
 						this.wait();
 						if (this.finished) {
+							trace(Action.CleanerExit);
 							return;
 						}
 						
@@ -275,6 +300,7 @@ public class DiskStateQueue extends StateQueue {
 							}
 						}
 						lastLoPool = deleteUpTo;
+						trace(Action.Clean);
 					}
 				}
 			} catch (Exception e) {
@@ -292,5 +318,6 @@ public class DiskStateQueue extends StateQueue {
 	public void delete() {
 		finishAll();
 		new File(this.filePrefix).delete();
+		trace(Action.Delete);
 	}
 }
