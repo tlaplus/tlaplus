@@ -1019,4 +1019,47 @@ public class TestXMLExporterModule {
 		Assert.assertEquals("...and so is the instantiated assumption", 1,
 				letIn.getElementsByTagName("AssumeDefRef").getLength());
 	}
+	@Test
+	public void testRecursiveSectionGroupsJointDeclaration() throws Exception {
+		// f and g are declared together (RECURSIVE f(_), g(_)); h is declared by a
+		// separate RECURSIVE statement; nonRecursive isn't recursive at all.
+		Document doc = this.export("RecursiveSectionXml");
+
+		Element f = this.userDefinedOpKind(doc, "f");
+		Element g = this.userDefinedOpKind(doc, "g");
+		Element h = this.userDefinedOpKind(doc, "h");
+		Element nonRecursive = this.userDefinedOpKind(doc, "nonRecursive");
+
+		String fSection = this.recursiveSection(f);
+		String gSection = this.recursiveSection(g);
+		String hSection = this.recursiveSection(h);
+
+		Assert.assertNotNull("A jointly-declared operator reports a recursiveSection", fSection);
+		Assert.assertEquals("f and g were declared by the same RECURSIVE statement", fSection, gSection);
+		Assert.assertNotNull("A singly-declared recursive operator reports a recursiveSection too", hSection);
+		Assert.assertNotEquals("h was declared by a separate RECURSIVE statement", fSection, hSection);
+		Assert.assertNull("A non-recursive operator has no recursiveSection", this.recursiveSection(nonRecursive));
+	}
+
+	/** The UserDefinedOpKind element exported for the operator of the given name. */
+	private Element userDefinedOpKind(final Document doc, final String opName) {
+		NodeList definitions = doc.getElementsByTagName("UserDefinedOpKind");
+		for (int i = 0; i < definitions.getLength(); i++) {
+			Element candidate = (Element) definitions.item(i);
+			if (opName.equals(uniqueName(candidate))) {
+				return candidate;
+			}
+		}
+		Assert.fail("Operator " + opName + " should be exported");
+		return null;
+	}
+
+	/** The text of a UserDefinedOpKind's recursiveSection child, or null if it has none. */
+	private String recursiveSection(final Element userDefinedOpKind) {
+		NodeList sections = userDefinedOpKind.getElementsByTagName("recursiveSection");
+		if (sections.getLength() == 0) {
+			return null;
+		}
+		return sections.item(0).getTextContent().trim();
+	}
 }
