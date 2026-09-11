@@ -698,6 +698,81 @@ THEOREM TupleSetIsFcnSetRev
   BY ESE_TupleSetIsFcnSet DEF TupleSetIsFcnSetRev
 
 -----------------------------------------------------------------------------
+\* Fingerprint is an arbitrary function in EmptySetEqCases. Each result follows
+\* by congruence from the corresponding extensional equality above.
+
+THEOREM FPUnitNatRange
+  BY ESE_UnitDomain DEF FPUnitNatRange
+
+THEOREM FPUnitIntervalNatRange
+  <1>1. 1..0 = {}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitDomain DEF FPUnitIntervalNatRange
+
+THEOREM FPUnitFcnSetNatRange
+  <1>1. 0 \in Nat
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_UnitDomainFcnSet DEF FPUnitFcnSetNatRange
+
+THEOREM FPUnitRcdDomain
+  <1>1. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>2. QED BY <1>1, ESE_UnitDomain DEF FPUnitRcdDomain
+
+THEOREM FPEmptyNatDomain
+  BY NatToEmpty DEF FPEmptyNatDomain
+
+THEOREM FPEmptyFiniteDomain
+  <1>1. "r1" \in {"r1"}
+    OBVIOUS
+  <1>2. QED BY <1>1, ESE_EmptyRange DEF FPEmptyFiniteDomain
+
+THEOREM FPRcdEmptyNatField
+  BY RcdEmptyNatFieldEnum DEF FPRcdEmptyNatField
+
+THEOREM FPRcdEmptyFieldNat
+  BY ESE_RcdSetEmpty DEF FPRcdEmptyFieldNat
+
+THEOREM FPTupEmptyNatFirst
+  BY TupEmptyNatFirstEnum DEF FPTupEmptyNatFirst
+
+THEOREM FPTupEmptyNatSecond
+  BY ESE_TupleSetEmpty DEF FPTupEmptyNatSecond
+
+THEOREM FPRcdEmptyFcnSet
+  BY RcdEmptyFcnSetSym, RefRcdEmpty DEF FPRcdEmptyFcnSet
+
+THEOREM FPTupEmptyFcnSet
+  BY TupEmptyFcnSetSym, RefTupEmpty DEF FPTupEmptyFcnSet
+
+THEOREM FPEmptyRcdRange
+  <1>1. "d1" \in {"d1"}
+    OBVIOUS
+  <1>2. [n1 : {}] = {}
+    BY ESE_RcdSetEmpty1
+  <1>3. QED BY <1>1, <1>2, ESE_EmptyRange DEF FPEmptyRcdRange
+
+THEOREM FPEmptyRcdFcnSetRange
+  BY EmptyRcdFcnSetRangeSym, RefEmpty DEF FPEmptyRcdFcnSetRange
+
+THEOREM FPRcdSetIsFcnSet
+  BY RcdSetIsFcnSet DEF FPRcdSetIsFcnSet
+
+THEOREM FPTupleSetIsFcnSet
+  BY ESE_TupleSetIsFcnSet DEF FPTupleSetIsFcnSet
+
+THEOREM FPMixedEmptyConstructors
+  BY NatToEmpty, ESE_RcdSetEmpty1, ESE_TupleSetEmpty
+  DEF FPMixedEmptyConstructors
+
+THEOREM FPMixedUnitEmptyConstructors
+  BY NatToEmpty, ESE_UnitDomain DEF FPMixedUnitEmptyConstructors
+
+THEOREM FPMixedNonEmptyConstructors
+  BY ESE_RcdSetIsFcnSet, ESE_TupleSetIsFcnSet
+  DEF FPMixedNonEmptyConstructors
+
+-----------------------------------------------------------------------------
 \* The cardinality of each set above. A cardinality of 1 instantiates the
 \* rule for an empty domain and a cardinality of 0 the rule for an empty
 \* co-domain, field set, or component, i.e. the rules and the witnesses of

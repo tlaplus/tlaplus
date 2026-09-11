@@ -24,6 +24,10 @@
 \* See https://github.com/tlaplus/tlaplus/issues/1407
 EXTENDS FiniteSets, Integers, Sequences
 
+\* EmptySetEqAssume.cfg substitutes TLCExt!TLCFP; the proof module treats
+\* Fingerprint as an arbitrary function, so equal arguments have equal results.
+CONSTANT Fingerprint(_)
+
 -----------------------------------------------------------------------------
 \* Sets of functions that denote {<<>>}, the set whose only element is the
 \* empty function, i.e. the empty domain decides.
@@ -248,6 +252,31 @@ TupleSetEqRcdSetEmptyRev == ({} \X {"r1"}) = [ref : {}]
 TupleSetEqRcdSetNatRev   == ({} \X {"r1"}) = [n1 : Nat, n2 : {}]
 RcdSetIsFcnSetRev        == [n1 : {"a"}]   = [{"n1"} -> {"a"}]
 TupleSetIsFcnSetRev      == ({"a", "b"} \X {"a", "b"}) = [1..2 -> {"a", "b"}]
+
+-----------------------------------------------------------------------------
+\* Fingerprinting enumerates and normalizes these lazy set representations.
+\* Extensionally equal values must have equal fingerprints, including inside
+\* an enclosing set whose equal elements normalization has to coalesce.
+
+FPUnitNatRange               == Fingerprint([{} -> Nat]) = Fingerprint({<<>>})
+FPUnitIntervalNatRange       == Fingerprint([1..0 -> Nat]) = Fingerprint({<<>>})
+FPUnitFcnSetNatRange         == Fingerprint([[Nat -> {}] -> Nat]) = Fingerprint({<<>>})
+FPUnitRcdDomain              == Fingerprint([[n1 : {}] -> {"e1"}]) = Fingerprint({<<>>})
+FPEmptyNatDomain             == Fingerprint([Nat -> {}]) = Fingerprint({})
+FPEmptyFiniteDomain          == Fingerprint([{"r1"} -> {}]) = Fingerprint({})
+FPRcdEmptyNatField           == Fingerprint([n1 : Nat, n2 : {}]) = Fingerprint({})
+FPRcdEmptyFieldNat           == Fingerprint([n1 : {}, n2 : Nat]) = Fingerprint({})
+FPTupEmptyNatFirst           == Fingerprint(Nat \X {}) = Fingerprint({})
+FPTupEmptyNatSecond          == Fingerprint({} \X Nat) = Fingerprint({})
+FPRcdEmptyFcnSet             == Fingerprint([n1 : [Nat -> {}]]) = Fingerprint({})
+FPTupEmptyFcnSet             == Fingerprint([Nat -> {}] \X {"d1"}) = Fingerprint({})
+FPEmptyRcdRange              == Fingerprint([{"d1"} -> [n1 : {}]]) = Fingerprint({})
+FPEmptyRcdFcnSetRange        == Fingerprint([{"d1"} -> [n1 : [Nat -> {}]]]) = Fingerprint({})
+FPRcdSetIsFcnSet             == Fingerprint([n1 : {"a"}]) = Fingerprint([{"n1"} -> {"a"}])
+FPTupleSetIsFcnSet           == Fingerprint({"a", "b"} \X {"a", "b"}) = Fingerprint([1..2 -> {"a", "b"}])
+FPMixedEmptyConstructors     == Fingerprint({[Nat -> {}], [n1 : {}], Nat \X {}}) = Fingerprint({{}})
+FPMixedUnitEmptyConstructors == Fingerprint({[{} -> {}], {<<>>}, [Nat -> {}], {}}) = Fingerprint({{<<>>}, {}})
+FPMixedNonEmptyConstructors  == Fingerprint({[n1 : {"a"}], [{"n1"} -> {"a"}], {"a", "b"} \X {"a", "b"}, [1..2 -> {"a", "b"}]}) = Fingerprint({[n1 : {"a"}], {"a", "b"} \X {"a", "b"}})
 
 -----------------------------------------------------------------------------
 \* The cardinality of each set above. TLC computes Cardinality(S) from the

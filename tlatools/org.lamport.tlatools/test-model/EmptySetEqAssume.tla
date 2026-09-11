@@ -197,6 +197,30 @@ ASSUME RcdSetIsFcnSetRev
 ASSUME TupleSetIsFcnSetRev
 
 -----------------------------------------------------------------------------
+\* Fingerprinting deep-normalizes and enumerates each lazy set representation.
+\* The mixed case also checks that equal elements coalesce during normalization.
+
+ASSUME FPUnitNatRange
+ASSUME FPUnitIntervalNatRange
+ASSUME FPUnitFcnSetNatRange
+ASSUME FPUnitRcdDomain
+ASSUME FPEmptyNatDomain
+ASSUME FPEmptyFiniteDomain
+ASSUME FPRcdEmptyNatField
+ASSUME FPRcdEmptyFieldNat
+ASSUME FPTupEmptyNatFirst
+ASSUME FPTupEmptyNatSecond
+ASSUME FPRcdEmptyFcnSet
+ASSUME FPTupEmptyFcnSet
+ASSUME FPEmptyRcdRange
+ASSUME FPEmptyRcdFcnSetRange
+ASSUME FPRcdSetIsFcnSet
+ASSUME FPTupleSetIsFcnSet
+ASSUME FPMixedEmptyConstructors
+ASSUME FPMixedUnitEmptyConstructors
+ASSUME FPMixedNonEmptyConstructors
+
+-----------------------------------------------------------------------------
 \* The cardinality of each set above. The ones TLC refuses are AssertError
 \* assumptions of the last section.
 
