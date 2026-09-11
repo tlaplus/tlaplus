@@ -162,6 +162,36 @@ public class KSubsetValueTest {
 		// In-between ks take too long, cause OOM or overflow exceptions.
 		doTest(IntStream.of(1, 2, 3, 4, 60, 61, 62, 63), new IntervalValue(1, 63));
 	}
+
+	@org.junit.Ignore
+	@Test
+	public void testInvalidKDenotesEmptySet() {
+		final IntervalValue base = new IntervalValue(1, 3);
+		for (int k : new int[] { -1, 4 }) {
+			final KSubsetValue value = new KSubsetValue(k, base);
+			assertEquals(0, value.size());
+			assertEquals(true, value.isEmpty());
+			assertEquals(SetEnumValue.EmptySet, value);
+			assertEquals(value, SetEnumValue.EmptySet);
+			assertEquals(0, value.compareTo(SetEnumValue.EmptySet));
+			assertEquals(0, SetEnumValue.EmptySet.compareTo(value));
+			assertEquals(SetEnumValue.EmptySet.hashCode(), value.hashCode());
+			assertNull(value.elements().nextElement());
+			assertNull(value.elements(Enumerable.Ordering.RANDOMIZED).nextElement());
+			assertEquals(SetEnumValue.EmptySet, value.toSetEnum());
+			assertEquals("{}", value.toString());
+		}
+	}
+
+	@Test
+	public void testToStringLargeSwallowsCountError() {
+		// Value#toString is the checked Java rendering path, which no TLA+
+		// operator exposes. TLC!ToString uses toStringUnchecked instead, and its
+		// refusal for this value is covered by KSubsetAssume.tla.
+		final IntervalValue large = new IntervalValue(1, 64);
+		assertEquals("{s \\in SUBSET (1..64) : Cardinality(s) = 32}",
+				new KSubsetValue(32, large).toString());
+	}
 }
 /*
 
