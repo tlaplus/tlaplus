@@ -88,9 +88,6 @@ public class TlaPlusSyntaxCorpusTests {
 				// Ref https://github.com/tlaplus/tlapm/issues/162
 				"Cartesian Product as Parameter",
 
-				// https://github.com/tlaplus/tlaplus/issues/430
-				"Named Theorem After Submodule (GH tlaplus/tlaplus #430)",
-
 				// https://github.com/tlaplus/tlaplus/issues/487
 				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
 				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",

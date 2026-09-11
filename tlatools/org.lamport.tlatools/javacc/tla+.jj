@@ -266,7 +266,9 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
            * date described below.                                         *
            ****************************************************************/
            && nextT.kind != ASSUMPTION 
-           && nextT.kind != END_MODULE) {
+           && nextT.kind != END_MODULE
+           && currentT.kind != THEOREM
+           && currentT.kind != PROPOSITION) {
       /*********************************************************************
       * As long as we have not yet reached the end of the stream or a      *
       * THEOREM, ASSUME, or END_MODULE token, move forward through the     *
