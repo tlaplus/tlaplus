@@ -46,7 +46,7 @@ public class DiskStateQueueJPFTest extends TestJPF {
 
 	@Test
 	public void testDeadlockFreedom() throws InterruptedException {
-		if (verifyDeadlock("+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
+		if (verifyNoPropertyViolation("+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
 				"+test.report.console.finished=result,statistics,error")) {
 
 			// Set before DiskStateQueue initialization.
