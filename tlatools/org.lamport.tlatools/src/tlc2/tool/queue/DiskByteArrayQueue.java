@@ -249,9 +249,7 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 
 	public void finishAll() {
 		super.finishAll();
-		synchronized (this.writer) {
-			this.writer.notifyAll();
-		}
+		this.writer.setFinished();
 		synchronized (this.reader) {
 			this.reader.setFinished();
 			this.reader.notifyAll();
@@ -310,12 +308,14 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 	    private byte[][] buf;     
 	    private File poolFile;           // the file to be written
 	    private final ByteArrayPoolReader reader;  // the consumer if not null
+	    private boolean finished;
 	    
 	  public ByteArrayPoolWriter(int bufSize, ByteArrayPoolReader reader) {
 		  super("RawTLCStatePoolWriter");
 	    this.buf = new byte[bufSize][];
 	    this.poolFile = null;
 	    this.reader = reader;
+	    this.finished = false;
 	  }
 	  
 	  /*
@@ -381,6 +381,11 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 	    }
 	  }
 
+	  public final synchronized void setFinished() {
+	    this.finished = true;
+	    this.notifyAll();
+	  }
+
 	  /**
 	   * Write "buf" to "poolFile". The objects in the queue are written
 	   * using Java's object serialization facilities.
@@ -390,11 +395,10 @@ public class DiskByteArrayQueue extends ByteArrayQueue {
 	      synchronized(this) {
 		while (true) {
 		  while (this.poolFile == null) {
-		    this.wait();
-		    // we are done without ever receiving a pool file
-		    if(this.poolFile == null) {
-		    	return;
+		    if (this.finished) {
+		      return;
 		    }
+		    this.wait();
 		  }
 		  final BufferedDataOutputStream vos = new BufferedDataOutputStream(this.poolFile);
 		  for (int i = 0; i < this.buf.length; i++) {
