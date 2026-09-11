@@ -88,42 +88,6 @@ public class TlaPlusSyntaxCorpusTests {
 				// Ref https://github.com/tlaplus/tlapm/issues/162
 				"Cartesian Product as Parameter",
 
-				// https://github.com/tlaplus/tlaplus/issues/487
-				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
-				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
-				"CASE Separator Aligned with Conjunction Bullet\n"
-				    + "The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"Outer OTHER After CASE in Conjunction List\n"
-				    + "The OTHER -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"Outer CASE Arm After CASE in Conjunction List\n"
-				    + "The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"CASE Arms Across Nested Conjunction and Disjunction Lists\n"
-				    + "E -> F belongs to CASE C, G -> H to CASE B, and I -> K to CASE A.",
-				"CASE Separator Aligned with Disjunction Bullet\n"
-				    + "The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"Outer OTHER After CASE in Disjunction List\n"
-				    + "The OTHER -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"Outer CASE Arm After CASE in Disjunction List\n"
-				    + "The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.",
-				"CASE Arms Across Nested Disjunction and Conjunction Lists\n"
-				    + "E -> F belongs to CASE C, G -> H to CASE B, and I -> K to CASE A.",
-				"Unicode CASE Separator Aligned with Conjunction Bullet\n"
-				    + "The F → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode Outer OTHER After CASE in Conjunction List\n"
-				    + "The OTHER → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode Outer CASE Arm After CASE in Conjunction List\n"
-				    + "The F → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode CASE Arms Across Nested Conjunction and Disjunction Lists\n"
-				    + "E → F belongs to CASE C, G → H to CASE B, and I → K to CASE A.",
-				"Unicode CASE Separator Aligned with Disjunction Bullet\n"
-				    + "The F → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode Outer OTHER After CASE in Disjunction List\n"
-				    + "The OTHER → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode Outer CASE Arm After CASE in Disjunction List\n"
-				    + "The F → G arm belongs to the outer CASE A. D → E stays in CASE B.",
-				"Unicode CASE Arms Across Nested Disjunction and Conjunction Lists\n"
-				    + "E → F belongs to CASE C, G → H to CASE B, and I → K to CASE A.",
-
 				// https://github.com/tlaplus/tlaplus/issues/596
 				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
 
