@@ -315,7 +315,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   /* The string representation  */
   @Override
-  public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
+  public StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
       boolean unlazy = TLCGlobals.expand;
       try {

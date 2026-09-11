@@ -27,6 +27,7 @@ package tlc2.value.impl;
 
 import java.math.BigInteger;
 
+import tlc2.TLCGlobals;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
 import tlc2.util.Combinatorics;
@@ -232,4 +233,37 @@ public class KSubsetValue extends SubsetValue {
 		  }
 		  return false;
 	  }
+
+	@Override
+	public StringBuffer toString(StringBuffer sb, final int offset, final boolean swallow) {
+		try {
+			boolean expand = TLCGlobals.expand;
+			try {
+				if (expand) {
+					expand = this.size() < 64;
+				}
+			} catch (Throwable e) {
+				if (swallow) {
+					expand = false;
+				} else {
+					throw e;
+				}
+			}
+
+			if (expand) {
+				if (this.size() == 0) {
+					return sb.append("{}");
+				}
+				return this.toSetEnum().toString(sb, offset, swallow);
+			}
+			sb.append("{s \\in SUBSET (");
+			this.set.toString(sb, offset, swallow);
+			return sb.append(") : Cardinality(s) = ").append(k).append("}");
+		} catch (RuntimeException | OutOfMemoryError e) {
+			if (hasSource()) {
+				throw FingerprintException.getNewHead(this, e);
+			}
+			throw e;
+		}
+	}
 }
