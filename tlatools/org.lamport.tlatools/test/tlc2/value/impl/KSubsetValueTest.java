@@ -88,6 +88,16 @@ public class KSubsetValueTest {
 	public void testEnumerateN64() {
 		final IntervalValue iv = new IntervalValue(1, 64);
 		assertEquals(64, iv.size());
+
+		final KSubsetValue kSubset = new KSubsetValue(2, iv);
+		final SetEnumValue set = (SetEnumValue) kSubset.toSetEnum();
+		assertEquals(2016, set.size());
+		final Value[] array = set.elems.toArray();
+		for (int i = 0; i < array.length; i++) {
+			assertNotNull(array[i]);
+			assertEquals(2, array[i].size());
+		}
+
 		try {
 			new KSubsetValue(42, iv).toSetEnum();
 		} catch (IllegalArgumentException e) {
@@ -112,8 +122,8 @@ public class KSubsetValueTest {
 		final ValueEnumeration elements = kSubset.elements();
 		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(1), IntValue.gen(7) }, false), elements.nextElement());
 		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(1), IntValue.gen(23) }, false), elements.nextElement());
-		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(7), IntValue.gen(23) }, false), elements.nextElement());
 		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(1), IntValue.gen(42) }, false), elements.nextElement());
+		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(7), IntValue.gen(23) }, false), elements.nextElement());
 		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(7), IntValue.gen(42) }, false), elements.nextElement());
 		assertEquals(new SetEnumValue(new Value[] { IntValue.gen(23), IntValue.gen(42) }, false), elements.nextElement());
 		assertNull(elements.nextElement());

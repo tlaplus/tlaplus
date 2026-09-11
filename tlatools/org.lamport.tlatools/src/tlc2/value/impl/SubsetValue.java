@@ -307,9 +307,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       while ((elem = Enum.nextElement()) != null) {
         vals.addElement(elem);
       }
-      // For as long as pset.elements() (SubsetValue#elements)
-      // internally calls SubsetValue#elementsNormalized, the
-      // result SetEnumValue here is indeed normalized.
+      // Both enumerators that elements() returns enumerate in the order in
+      // which SetEnumValue#normalize sorts values.
       if (coverage) {cm.incSecondary(vals.size());}
       return new SetEnumValue(vals, true, cm);
   }
@@ -624,15 +623,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		if (k < 0 || size < k) {
 			return 0;
 		}
-		if (size > 63) {
-			// Size >63 because KElementEnumerator.nextElement() limited to 63 bits
-			// (assert vals.size() == k will be violated).
+		final BigInteger count = Combinatorics.bigChoose(size, Math.min(k, size - k));
+		if (count.bitLength() > Long.SIZE - 1) {
 			throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
 		}
-		if (k == 0 || k == size) {
-			return 1;
-		}
-		return Combinatorics.choose(size, k);
+		return count.longValue();
 	}
 	
 	/**
@@ -660,40 +655,51 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		private final ValueVec elems;
 		private final int numKSubsetElems;
 		private final int k;
-		
-		private long index;
+
+		// THEOREM KTwoFourEqDefinition ==
+		//   kSubset(2, 1..4) =
+		//     {s \in SUBSET (1..4) : Cardinality(s) = 2}
+		private final int[] indices;
 		private int cnt;
 
 		public KElementEnumerator(final int k) {
 			this.k = k;
-			
-			this.numKSubsetElems = (int) numberOfKElements(k); 
-			if (numKSubsetElems < 0) {
+
+			final long count = numberOfKElements(k);
+			if (count > Integer.MAX_VALUE) {
 				throw new IllegalArgumentException("Subset too large.");
 			}
+			this.numKSubsetElems = (int) count;
 			
 			final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
 			convert.normalize();
 			elems = convert.elems;
+			indices = new int[k];
 
 			reset();
 		}
 		
 		@Override
 		public void reset() {
-			index = (1L << k) - 1L;
+			for (int i = 0; i < k; i++) {
+				indices[i] = i;
+			}
 			cnt = 0;
 		}
 
-		// see "Compute the lexicographically next bit permutation" at
-		// http://graphics.stanford.edu/~seander/bithacks.html#NextBitPermutation
-		private long nextIndex() {
-			final long oldIdx = this.index;
-
-			final long t = (index | (index - 1L)) + 1L;
-			this.index = t | ((((t & -t) / (index & -index)) >> 1L) - 1L);
-
-			return oldIdx;
+		private void nextIndices() {
+			final int n = elems.size();
+			int i = k - 1;
+			while (i >= 0 && indices[i] == n - k + i) {
+				i--;
+			}
+			if (i < 0) {
+				return;
+			}
+			indices[i]++;
+			for (int j = i + 1; j < k; j++) {
+				indices[j] = indices[j - 1] + 1;
+			}
 		}
 
 		@Override
@@ -703,19 +709,14 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			}
 			cnt++;
 
-			long bits = nextIndex();
-			final ValueVec vals = new ValueVec(Long.bitCount(bits));
-			for (int i = 0; bits > 0 && i < elems.size(); i++) {
-				// Treat bits as a bitset and add the element of elem at current
-				// position i if the LSB of bits happens to be set.
-				if ((bits & 0x1) > 0) {
-					vals.addElement(elems.elementAt(i));
-				}
-				// ...right-shift zero-fill bits by one afterwards.
-				bits = bits >>> 1;
+			final ValueVec vals = new ValueVec(k);
+			for (int i = 0; i < k; i++) {
+				vals.addElement(elems.elementAt(indices[i]));
 			}
+			nextIndices();
+
 			assert vals.size() == k;
-			return new SetEnumValue(vals, false, cm);
+			return new SetEnumValue(vals, true, cm);
 		}
 		
 		public KElementEnumerator sort() {
@@ -730,7 +731,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 			while ((elem = nextElement()) != null) {
 				vv.addElement(elem);
 			}
-			return new SetEnumValue(vv, false);
+			return new SetEnumValue(vv, true);
 		}
 	}
 
