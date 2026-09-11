@@ -3035,15 +3035,31 @@ Number() : {
   Token t1, t2;
   int kind = N_Number;
 } {
-  t1 = <NUMBER_LITERAL> 
-  [ LOOKAHEAD(2) t2 = <DOT> {
-     kind = N_Real;
-     decimalFlag = true;
-     sn = new SyntaxTreeNode[3];
-     sn[0] = new SyntaxTreeNode(mn, t1);
-     sn[1] = new SyntaxTreeNode(mn, t2); }
+  ( t1 = <NUMBER_LITERAL> 
+    [ LOOKAHEAD(2) t2 = <DOT> {
+       kind = N_Real;
+       decimalFlag = true;
+       sn = new SyntaxTreeNode[3];
+       sn[0] = new SyntaxTreeNode(mn, t1);
+       sn[1] = new SyntaxTreeNode(mn, t2); }
+      t1 = <NUMBER_LITERAL> {
+       sn[2] = new SyntaxTreeNode(mn,t1); } ]
+  | t2 = <DOT> {
+       kind = N_Real;
+       decimalFlag = true;
+       sn = new SyntaxTreeNode[3];
+       Token zero = new Token();
+       zero.kind = NUMBER_LITERAL;
+       zero.image = "0";
+       zero.beginLine = t2.beginLine;
+       zero.beginColumn = t2.beginColumn;
+       zero.endLine = t2.endLine;
+       zero.endColumn = t2.endColumn;
+       sn[0] = new SyntaxTreeNode(mn, zero);
+       sn[1] = new SyntaxTreeNode(mn, t2); }
     t1 = <NUMBER_LITERAL> {
-     sn[2] = new SyntaxTreeNode(mn,t1); } ]
+      sn[2] = new SyntaxTreeNode(mn,t1); }
+  )
   { if (sn == null) {
       numberFlag = true;
       sn = new SyntaxTreeNode[1];
@@ -4097,8 +4113,8 @@ PrimitiveExp() : {
 } {
 (  LOOKAHEAD (String(), {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    tn = String() 
- | LOOKAHEAD (<NUMBER_LITERAL>, 
-               {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+ | LOOKAHEAD ( {(getToken(1).kind == NUMBER_LITERAL || getToken(1).kind == DOT) &&
+               junctionListCtx.isAboveCurrent( getToken(1).beginColumn)} )
    tn = Number() 
  | ( ( ( tn0 = Identifier() 
         | (t = <ProofStepLexeme> | t = <ProofImplicitStepLexeme>)
