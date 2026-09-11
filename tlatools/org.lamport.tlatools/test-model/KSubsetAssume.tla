@@ -290,20 +290,20 @@ ASSUME ToString(Cases!K34) =
     "{{1, 2, 3}, {1, 2, 4}, {1, 3, 4}, {2, 3, 4}}"
 ASSUME ToString(Cases!K35) =
     "{{1, 2, 3}, {1, 2, 4}, {1, 2, 5}, {1, 3, 4}, {1, 3, 5}, {1, 4, 5}, {2, 3, 4}, {2, 3, 5}, {2, 4, 5}, {3, 4, 5}}"
-\* ASSUME ToString(kSubset(2, 1..8)) = \* TLC answers in colex order ({2, 3} before {1, 4})
-\*     "{{1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}, {1, 7}, {1, 8}, {2, 3}, {2, 4}, {2, 5}, {2, 6}, {2, 7}, {2, 8}, {3, 4}, {3, 5}, {3, 6}, {3, 7}, {3, 8}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {5, 6}, {5, 7}, {5, 8}, {6, 7}, {6, 8}, {7, 8}}"
-\* ASSUME ToString(kSubset(63, 1..63)) = \* TLC answers with the defining set expression
-\*     "{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63}}"
+ASSUME ToString(kSubset(2, 1..8)) =
+    "{{1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}, {1, 7}, {1, 8}, {2, 3}, {2, 4}, {2, 5}, {2, 6}, {2, 7}, {2, 8}, {3, 4}, {3, 5}, {3, 6}, {3, 7}, {3, 8}, {4, 5}, {4, 6}, {4, 7}, {4, 8}, {5, 6}, {5, 7}, {5, 8}, {6, 7}, {6, 8}, {7, 8}}"
+ASSUME ToString(kSubset(63, 1..63)) =
+    "{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63}}"
 
 \* Above the expansion threshold, ToString emits the defining set expression.
-\* ASSUME ToString(kSubset(2, 1..12)) = \* TLC answers "SUBSET (1..12)"
-\*     "{s \\in SUBSET ({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) : Cardinality(s) = 2}"
+ASSUME ToString(kSubset(2, 1..12)) =
+    "{s \\in SUBSET (1..12) : Cardinality(s) = 2}"
 
 -----------------------------------------------------------------------------
 \* A cardinality greater than Integer.MAX_VALUE is unrepresentable.
 
-\* ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nk=32 and n=64", \* TLC answers "SUBSET (1..64)" instead of error
-\*                    ToString(kSubset(32, 1..64)) = "")
-\* ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nk=64 and n=64", \* TLC answers "SUBSET (1..64)" instead of error
-\*                    ToString(kSubset(64, 1..64)) = "")
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.ToString(tlc2.value.impl.Value),\nbut it produced the following error:\nk=32 and n=64",
+                   ToString(kSubset(32, 1..64)) = "")
+ASSUME ToString(kSubset(64, 1..64)) =
+    "{{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64}}"
 =============================================================================
