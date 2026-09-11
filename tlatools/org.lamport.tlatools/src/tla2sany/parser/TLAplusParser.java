@@ -449,7 +449,8 @@ Operator lastOp;
 
   boolean caseSep() {
     Token t = getToken(1);
-    return ( t.kind == CASESEP );
+    return ( t.kind == CASESEP )
+      && junctionListCtx.isAboveCurrent( t.beginColumn );
   }
 
   boolean matchFcnConst () {

@@ -88,10 +88,6 @@ public class TlaPlusSyntaxCorpusTests {
 				// Ref https://github.com/tlaplus/tlapm/issues/162
 				"Cartesian Product as Parameter",
 
-				// https://github.com/tlaplus/tlaplus/issues/487
-				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
-				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
-
 				// https://github.com/tlaplus/tlaplus/issues/596
 				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
 
