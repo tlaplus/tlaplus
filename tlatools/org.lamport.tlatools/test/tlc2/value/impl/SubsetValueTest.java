@@ -272,6 +272,18 @@ public class SubsetValueTest {
 	}
 	
 	@Test
+	public void testEmptyEnumerationsAreIndependent() {
+		final SubsetValue emptyPowerSet = new SubsetValue(SetEnumValue.EmptySet);
+		final ValueEnumeration first = emptyPowerSet.elements();
+		final ValueEnumeration second = emptyPowerSet.elements();
+
+		assertEquals(SetEnumValue.EmptySet, first.nextElement());
+		assertEquals(SetEnumValue.EmptySet, second.nextElement());
+		assertNull(first.nextElement());
+		assertNull(second.nextElement());
+	}
+
+	@Test
 	public void testKSubsetEnumerator() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
