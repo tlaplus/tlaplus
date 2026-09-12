@@ -54,10 +54,10 @@ ASSUME Cases!KZeroNatInPowerSet
 ASSUME Cases!KSubsetNegativeNatInPowerSet
 ASSUME Cases!RcdSetOfKZeroNatFinite
 ASSUME Cases!RcdSetOfKNegativeNatFinite
-\* Comparing different k-subsets of the same infinite base reaches count(),
-\* which attempts to evaluate Cardinality(Nat).
-\* ASSUME Cases!CardPairKZeroNatKOneNat \* TLC refuses
-\* ASSUME Cases!CardPairKOneNatKZeroNat \* TLC refuses
+\* Different k values order k-subsets of the same infinite base without
+\* asking for the base's cardinality.
+ASSUME Cases!CardPairKZeroNatKOneNat
+ASSUME Cases!CardPairKOneNatKZeroNat
 
 ASSUME Cases!PairInKTwo
 ASSUME Cases!SingletonNotInKTwo
@@ -70,11 +70,10 @@ ASSUME Cases!KOneInPowerSet
 ASSUME Cases!KTwoInPowerSet
 ASSUME Cases!KThreeInPowerSet
 ASSUME Cases!KZeroInPowerSet
-\* TLC rewrites kSubset(k, A) \subseteq SUBSET B to A \subseteq B.
-\* ASSUME Cases!KZeroInEmptyPowerSet             \* TLC answers FALSE
-\* ASSUME Cases!KZeroLargerInPowerSet            \* TLC answers FALSE
-\* ASSUME Cases!KSubsetTooLargeInSmallerPowerSet \* TLC answers FALSE
-\* ASSUME Cases!KSubsetNegativeInSmallerPowerSet \* TLC answers FALSE
+ASSUME Cases!KZeroInEmptyPowerSet
+ASSUME Cases!KZeroLargerInPowerSet
+ASSUME Cases!KSubsetTooLargeInSmallerPowerSet
+ASSUME Cases!KSubsetNegativeInSmallerPowerSet
 ASSUME Cases!PowerSetNotInKOne
 ASSUME Cases!PowerSetNotInKTwo
 ASSUME Cases!PowerSetNotInKThree
@@ -91,7 +90,7 @@ ASSUME Cases!EnumTwoInKTwo
 
 ASSUME Cases!KTwoOfFourDiffKTwoOfThree
 ASSUME Cases!KTwoOfThreeDiffKTwoOfFour
-\* ASSUME Cases!KZeroBaseIndependent \* TLC answers FALSE
+ASSUME Cases!KZeroBaseIndependent
 ASSUME Cases!KZeroEqEnum
 ASSUME Cases!EnumEqKZero
 ASSUME Cases!KOneEqEnum
@@ -167,21 +166,21 @@ ASSUME Cases!KSubsetMembershipAgreesWithDefinition
 \* Value#isEmpty with S represented by a KSubsetValue.
 ASSUME Cases!RcdSetOfKSubsetReflexive
 
-\* ASSUME Cases!KOneDiffKTwo \* TLC answers FALSE
-\* ASSUME Cases!KTwoDiffKOne \* TLC answers FALSE
-\* ASSUME Cases!KOneDiffKThree \* TLC answers FALSE
-\* ASSUME Cases!KThreeDiffKOne \* TLC answers FALSE
-\* ASSUME Cases!KTwoDiffKThree \* TLC answers FALSE
-\* ASSUME Cases!KThreeDiffKTwo \* TLC answers FALSE
-\* ASSUME Cases!KOneDiffPowerSet \* TLC answers FALSE
-\* ASSUME Cases!KTwoDiffPowerSet \* TLC answers FALSE
-\* ASSUME Cases!KThreeDiffPowerSet \* TLC answers FALSE
-\* ASSUME Cases!PowerSetDiffKOne \* TLC answers FALSE
-\* ASSUME Cases!PowerSetDiffKTwo \* TLC answers FALSE
-\* ASSUME Cases!PowerSetDiffKThree \* TLC answers FALSE
-\* ASSUME Cases!KOneSingletonDiff \* TLC answers FALSE
-\* ASSUME Cases!KOneSingletonDiffRev \* TLC answers FALSE
-\* ASSUME Cases!KTwoNotInPowerSetSingleton \* TLC answers FALSE
+ASSUME Cases!KOneDiffKTwo
+ASSUME Cases!KTwoDiffKOne
+ASSUME Cases!KOneDiffKThree
+ASSUME Cases!KThreeDiffKOne
+ASSUME Cases!KTwoDiffKThree
+ASSUME Cases!KThreeDiffKTwo
+ASSUME Cases!KOneDiffPowerSet
+ASSUME Cases!KTwoDiffPowerSet
+ASSUME Cases!KThreeDiffPowerSet
+ASSUME Cases!PowerSetDiffKOne
+ASSUME Cases!PowerSetDiffKTwo
+ASSUME Cases!PowerSetDiffKThree
+ASSUME Cases!KOneSingletonDiff
+ASSUME Cases!KOneSingletonDiffRev
+ASSUME Cases!KTwoNotInPowerSetSingleton
 
 \* Both source orders exercise the two receiver directions of Value#compareTo.
 ASSUME Cases!CardPairKOneKTwo
@@ -197,8 +196,8 @@ ASSUME Cases!CardPairKOneTwentyKThreeSix
 ASSUME Cases!CardTripleKs
 ASSUME Cases!CardTripleKsRev
 ASSUME Cases!CardPairPowerSetKTwo
-\* ASSUME Cases!CardPairKTwoPowerSet \* TLC answers 1
-\* ASSUME Cases!CardTripleKsPowerSet \* TLC answers 2
+ASSUME Cases!CardPairKTwoPowerSet
+ASSUME Cases!CardTripleKsPowerSet
 ASSUME Cases!CardTriplePowerSetKs
 
 \* Set normalization sorts by Value#compareTo and removes adjacent equal
@@ -223,12 +222,12 @@ ASSUME Cases!CardEmptyWithKSubsetTooLarge
 ASSUME Cases!CardKSubsetNegativeWithEmpty
 ASSUME Cases!CardEmptyWithKSubsetNegative
 ASSUME Cases!CardKsWithEnumOne
-\* ASSUME Cases!CardKsWithEnumOneRev \* TLC answers 3
+ASSUME Cases!CardKsWithEnumOneRev
 ASSUME Cases!CardKsWithEnumTwo
 ASSUME Cases!CardKsWithEnumTwoRev
 ASSUME Cases!CardEnumsWithKs
-\* ASSUME Cases!CardKsWithEnums \* TLC answers 4
-\* ASSUME Cases!CardTripleKsWithEnums \* TLC answers 5
+ASSUME Cases!CardKsWithEnums
+ASSUME Cases!CardTripleKsWithEnums
 ASSUME Cases!CardTripleKsWithEnumsRev
 
 \* TLCFP deep-normalizes its argument. Extensionally equal k-subsets and
@@ -249,14 +248,13 @@ ASSUME Cases!FPKThreeFourEqDefinition
 ASSUME Cases!FPKThreeFourSymEqDefinition
 \* ASSUME Cases!FPKThreeFiveEqDefinition \* TLC answers FALSE
 \* ASSUME Cases!FPKThreeFiveSymEqDefinition \* TLC answers FALSE
-\* ASSUME Cases!FPPairKTwoEightKOneFiveOrderIndependent \* TLC answers FALSE
+ASSUME Cases!FPPairKTwoEightKOneFiveOrderIndependent
 \* Equal binomial counts, different k values, and different bases fall
-\* through KSubsetValue#compareTo into the SubsetValue comparison in both
-\* directions, making the enclosing set's normalized order source-dependent.
-\* ASSUME Cases!FPPairKThreeSixKOneTwentyOrderIndependent \* TLC returns FALSE
-\* ASSUME Cases!FPMixedEqEnums \* TLC answers FALSE
+\* through the KSubsetValue comparison without being treated as power sets.
+ASSUME Cases!FPPairKThreeSixKOneTwentyOrderIndependent
+ASSUME Cases!FPMixedEqEnums
 ASSUME Cases!FPMixedEqEnumsRev
-\* ASSUME Cases!FPMixedOrderIndependent \* TLC answers FALSE
+ASSUME Cases!FPMixedOrderIndependent
 
 \* Cardinality(kSubset(k, S)) is "Cardinality(S) choose k" and requires no
 \* enumeration of kSubset(k, S).
@@ -282,14 +280,12 @@ ASSUME Cases!CardPairK2SmallK31Large
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nk=32 and n=64",
                    Cases!CardKSubsetMiddleLargeReflexive)
 
-\* Extensional comparison of SUBSET (1..64) with a k-subset would enumerate
-\* 2^64 elements. Before the comparison fix TLC returns FALSE for both
-\* disequalities; afterward it rejects both evaluations.
-\* ASSUME Cases!KSubsetLargeDiffPowerSet \* TLC answers FALSE or refuses
-\* ASSUME Cases!PowerSetLargeDiffKSubset \* TLC answers FALSE or refuses
-\* Normalization reaches Value#compareTo in both source orders.
-\* ASSUME Cases!CardPairKSubsetPowerSetLarge \* TLC refuses
-\* ASSUME Cases!CardPairPowerSetKSubsetLarge \* TLC refuses
+\* Extensional comparison must not enumerate either of these sets.
+ASSUME Cases!KSubsetLargeDiffPowerSet
+ASSUME Cases!PowerSetLargeDiffKSubset
+\* Both orders reach Value#compareTo while normalizing the enclosing set.
+ASSUME Cases!CardPairKSubsetPowerSetLarge
+ASSUME Cases!CardPairPowerSetKSubsetLarge
 
 ASSUME ToString(Cases!K2) = "{{1, 2}, {1, 3}, {2, 3}}"
 \* ASSUME ToString(Cases!K24) = \* TLC answers in colex order ({2, 3} before {1, 4})

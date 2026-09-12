@@ -112,24 +112,111 @@ public class KSubsetValue extends SubsetValue {
 		}
 	}
 
-	  @Override
-	  public final int compareTo(Object obj) {
-	    try {
-	      if (obj instanceof KSubsetValue) {
-	    	  final KSubsetValue other = (KSubsetValue) obj;
-	    	  if (this.k == other.k) {
-	    		  return this.set.compareTo(other.set);
-	    	  }
-	    	  return Integer.compare(other.k, this.k); // order of parameters matters!
-	      }
-	      super.convertAndCache();
-	      return this.pset.compareTo(obj);
-	    }
-	    catch (RuntimeException | OutOfMemoryError e) {
-	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-	      else { throw e; }
-	    }
-	  }
+	// THEOREM KSubsetLargeDiffPowerSet ==
+	//   kSubset(2, 1..64) # SUBSET (1..64)
+	private Integer compareCardinality(SubsetValue other) {
+		if (!this.set.isFinite() || !other.set.isFinite()) {
+			return null;
+		}
+		return count().compareTo(BigInteger.ONE.shiftLeft(other.set.size()));
+	}
+
+	@Override
+	public final boolean equals(Object obj) {
+		try {
+			if (obj instanceof KSubsetValue) {
+				final KSubsetValue other = (KSubsetValue) obj;
+				if (hasNoElements() || other.hasNoElements()) {
+					return hasNoElements() && other.hasNoElements();
+				}
+				// THEOREM KZeroBaseIndependent ==
+				//   kSubset(0, 1..3) = kSubset(0, 1..4)
+				if (this.k == 0 && other.k == 0) {
+					return true;
+				}
+				// THEOREM KOneDiffKTwo ==
+				//   kSubset(1, 1..3) # kSubset(2, 1..3)
+				return this.k == other.k && this.set.equals(other.set);
+			}
+			if (obj instanceof SubsetValue) {
+				if (hasNoElements()) {
+					return false;
+				}
+				final SubsetValue other = (SubsetValue) obj;
+				final Integer cmp = compareCardinality(other);
+				if (cmp != null && cmp != 0) {
+					return false;
+				}
+				if (this.k == 0 && other.set.isEmpty()) {
+					return true;
+				}
+			}
+			super.convertAndCache();
+			return this.pset.equals(obj);
+		} catch (RuntimeException | OutOfMemoryError e) {
+			if (hasSource()) {
+				throw FingerprintException.getNewHead(this, e);
+			}
+			throw e;
+		}
+	}
+
+	@Override
+	public final int compareTo(Object obj) {
+		try {
+			if (obj instanceof KSubsetValue) {
+				final KSubsetValue other = (KSubsetValue) obj;
+				if (hasNoElements() || other.hasNoElements()) {
+					if (hasNoElements() && other.hasNoElements()) {
+						return 0;
+					}
+					return hasNoElements() ? -1 : 1;
+				}
+				if (this.k == other.k) {
+					if (this.k == 0) {
+						return 0;
+					}
+					return this.set.compareTo(other.set);
+				}
+				// THEOREM FPPairKTwoEightKOneFiveOrderIndependent ==
+				//   TLCFP({kSubset(2, 1..8), kSubset(1, 1..5)}) =
+				//     TLCFP({kSubset(1, 1..5), kSubset(2, 1..8)})
+				if (this.set.isFinite() && other.set.isFinite()) {
+					final int cmp = count().compareTo(other.count());
+					if (cmp != 0) {
+						return cmp;
+					}
+				}
+				// THEOREM CardPairKZeroNatKOneNat ==
+				//   Cardinality({kSubset(0, Nat), kSubset(1, Nat)}) = 2
+				if (this.set.equals(other.set)) {
+					return Integer.compare(this.k, other.k);
+				}
+				// THEOREM FPPairKThreeSixKOneTwentyOrderIndependent ==
+				//   TLCFP({kSubset(3, 1..6), kSubset(1, 1..20)}) =
+				//     TLCFP({kSubset(1, 1..20), kSubset(3, 1..6)})
+			} else if (obj instanceof SubsetValue) {
+				if (hasNoElements()) {
+					return -1;
+				}
+				final SubsetValue other = (SubsetValue) obj;
+				final Integer cmp = compareCardinality(other);
+				if (cmp != null && cmp != 0) {
+					return cmp;
+				}
+				if (this.k == 0 && other.set.isEmpty()) {
+					return 0;
+				}
+			}
+			super.convertAndCache();
+			return this.pset.compareTo(obj);
+		} catch (RuntimeException | OutOfMemoryError e) {
+			if (hasSource()) {
+				throw FingerprintException.getNewHead(this, e);
+			}
+			throw e;
+		}
+	}
 
 	  @Override
 	  public boolean member(Value val) {

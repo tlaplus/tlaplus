@@ -50,6 +50,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public int compareTo(Object obj) {
     try {
+      // THEOREM CardPairPowerSetKSubsetLarge ==
+      //   Cardinality({SUBSET (1..64), kSubset(2, 1..64)}) = 2
+      if (obj instanceof KSubsetValue) {
+        // Delegate to obj.compareTo(this), then negate to preserve compareTo's
+        // antisymmetry; signum avoids overflow if the result is Integer.MIN_VALUE.
+        return -Integer.signum(((KSubsetValue) obj).compareTo(this));
+      }
       if (obj instanceof SubsetValue) {
         return this.set.compareTo(((SubsetValue)obj).set);
       }
@@ -64,6 +71,11 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
   public boolean equals(Object obj) {
     try {
+      // THEOREM PowerSetLargeDiffKSubset ==
+      //   SUBSET (1..64) # kSubset(2, 1..64)
+      if (obj instanceof KSubsetValue) {
+        return obj.equals(this);
+      }
       if (obj instanceof SubsetValue) {
         return this.set.equals(((SubsetValue)obj).set);
       }
@@ -107,7 +119,15 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       // exponential blowup inherent in generating the power set.
 	  // For KSubsetValue, delegate to the naive implementation that enumerates the
 	  // elements. In other words, don't rewrite if a KSubsetValue is involved.
-	  if (other instanceof SubsetValue && !(other instanceof KSubsetValue) && this.set instanceof Enumerable) {
+	  // THEOREM KZeroInAnyPowerSet ==
+	  //   ASSUME NEW S, NEW T, IsFiniteSet(S)
+	  //   PROVE kSubset(0, S) \subseteq SUBSET T
+	  // THEOREM KSubsetTooLargeInSmallerPowerSet ==
+	  //   kSubset(4, 1..3) \subseteq SUBSET (1..2)
+	  // THEOREM KSubsetNegativeInSmallerPowerSet ==
+	  //   kSubset(-1, 1..3) \subseteq SUBSET (1..2)
+	  if (!(this instanceof KSubsetValue) && other instanceof SubsetValue
+			  && !(other instanceof KSubsetValue) && this.set instanceof Enumerable) {
         final SubsetValue sv = (SubsetValue) other;
         return ((Enumerable) this.set).isSubsetEq(sv.set);
       }
