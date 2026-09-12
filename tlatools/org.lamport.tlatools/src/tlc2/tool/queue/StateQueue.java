@@ -37,6 +37,7 @@ public abstract class StateQueue implements IStateQueue {
 	 * done.
 	 */
 	private Object mu = new Object();
+	private boolean suspendNotified = false; // guarded by mu
 
 	/* Enqueues the state. It is not thread-safe. */
 	/* (non-Javadoc)
@@ -180,11 +181,8 @@ public abstract class StateQueue implements IStateQueue {
 					this.numWaiting--;
 					return false;
 				}
-				// TODO what happens if control flow exits without ever
-				// notifying the checkpoint (mu.wait()) thread? In case
-				// of distributed TLC, this is the main thread of
-				// TLCServer.
 				synchronized (this.mu) {
+					this.suspendNotified = true;
 					this.mu.notify();
 				}
 			}
@@ -209,18 +207,8 @@ public abstract class StateQueue implements IStateQueue {
 		this.finish = true;
 		// Notify all other worker threads.
 		this.notifyAll();
-		// Need to wake main thread that waits (mu.wait()) to suspend access to
-		// the squeue (see suspendAll). The main thread might attempt to do its
-		// periodic work (tlc2.tool.ModelChecker.doPeriodicWork()) the moment
-		// all worker threads finish. Since suspendAll assumes the main thread
-		// is woken up (potentially) multiple times from sleeping indefinitely
-		// in the while loop before it finally returns after locking the
-		// StateQueue, we have to live up to this assumption.
-		//
-		// synchronized(this.mu) does not block when the main thread waits on
-		// this.mu in suspend all. We merely have to follow proper thread access.
 		synchronized (this.mu) {
-			// Technically notify() would do.
+			this.suspendNotified = true;
 			this.mu.notify();
 		}
 	}
@@ -234,6 +222,9 @@ public abstract class StateQueue implements IStateQueue {
 			if (this.finish) {
 				return false;
 			}
+			synchronized (this.mu) {
+				this.suspendNotified = false;
+			}
 			this.stop = true;
 			needWait = needsWaiting();
 		}
@@ -241,36 +232,10 @@ public abstract class StateQueue implements IStateQueue {
 		while (needWait) {
 			synchronized (this.mu) {
 				try {
-					// finishAll & suspendAll race:
-					//
-					// suspendAll from main is on the heels of finishAll, but
-					// not quite as fast. SuspendAll's synchronized(this.mu)
-					// is executed one clock tick after finishAll's thus waiting
-					// for finishAll() to notify all waiters of this.mu.
-					// With main being the only potential waiter in the system
-					// nobody gets notified and the lock on this released
-					// subsequently.
-					// Now it's suspendAll's turn. It acquires the lock on
-					// this.mu and immediately after goes to wait on it
-					// (this.mu) to be waken by worker threads eventually.
-					// Unfortunately, there are none left in the system. All
-					// have long finishedAll.
-					//
-					// The fix is to check the this.finish variable one more
-					// time directly after suspendAll acquires the lock this.mu,
-					// it checks if it still has to wait for workers. To make
-					// sure it reads the most recent value, it's declared
-					// volatile to establish a happens-before relation (since
-					// Java5's memory model) between workers and main. Otherwise
-					// the VM might decide to let main read a cached value of
-					// false of this.finish.
-					if (this.finish) {
-						return false;
+					while (!this.suspendNotified && !this.finish) {
+						this.mu.wait();
 					}
-					// waiting here assumes that subsequently a worker
-					// is going to wake us up by calling isAvail() or
-					// this.mu.notify*()
-					this.mu.wait();
+					this.suspendNotified = false;
 				} catch (Exception e) {
 					MP.printError(EC.GENERAL, "waiting for a worker to wake up", e);  // LL changed call 7 April 2012
 					System.exit(1);
@@ -318,6 +283,7 @@ public abstract class StateQueue implements IStateQueue {
 		// run.
 		if (stop) {
 			synchronized (mu) {
+				suspendNotified = true;
 				mu.notifyAll();
 			}
 		}
