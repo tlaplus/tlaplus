@@ -320,24 +320,14 @@ public class SubsetValueTest {
 	public void testKSubsetEnumeratorNegative() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
-		try {
-			subset.kElements(-1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertNull(subset.kElements(-1).nextElement());
 	}
 	
 	@Test
 	public void testKSubsetEnumeratorGTCapacity() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
-		try {
-			subset.kElements(innerSet.size() + 1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertNull(subset.kElements(innerSet.size() + 1).nextElement());
 	}
 	
 	@Test
@@ -370,12 +360,7 @@ public class SubsetValueTest {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
 
-		try {
-			subset.numberOfKElements(-1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertEquals(0, subset.numberOfKElements(-1));
 	}
 	
 	@Test
@@ -383,12 +368,7 @@ public class SubsetValueTest {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
 
-		try {
-			subset.numberOfKElements(innerSet.size() + 1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertEquals(0, subset.numberOfKElements(innerSet.size() + 1));
 	}
 	
 	@Test
@@ -561,22 +541,14 @@ public class SubsetValueTest {
 	
 	@Test
 	public void testRandomSubsetGeneratorKNegative() {
-		try {
-			new KSubsetValue(-1, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail("Expected an IllegalArgumentException");
+		assertNull(new KSubsetValue(-1, new IntervalValue(1, 2))
+				.elements(Ordering.RANDOMIZED).nextElement());
 	}
 	
 	@Test
 	public void testRandomSubsetGeneratorKNplus1() {
-		try {
-			new KSubsetValue(3, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail("Expected an IllegalArgumentException");
+		assertNull(new KSubsetValue(3, new IntervalValue(1, 2))
+				.elements(Ordering.RANDOMIZED).nextElement());
 	}
 	
 	@Test
