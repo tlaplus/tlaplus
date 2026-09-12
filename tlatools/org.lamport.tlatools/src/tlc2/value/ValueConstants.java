@@ -1,5 +1,6 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
+// Copyright (c) 2025, Oracle and/or its affiliates.
 // Last modified on Mon 30 Apr 2007 at 13:21:10 PST by lamport
 //      modified on Tue Aug 15 16:45:14 PDT 2000 by yuanyu
 
@@ -33,7 +34,7 @@ public interface ValueConstants {
   byte USERVALUE        = MODELVALUE + 1;
   byte INTERVALVALUE    = USERVALUE + 1;
   byte UNDEFVALUE       = INTERVALVALUE + 1;
-  byte LAZYVALUE        = UNDEFVALUE + 1;
+  byte LAZYVALUE        = UNDEFVALUE + 1; // no longer used as of 2025/2/19
   byte DUMMYVALUE       = LAZYVALUE + 1;
 
 }
