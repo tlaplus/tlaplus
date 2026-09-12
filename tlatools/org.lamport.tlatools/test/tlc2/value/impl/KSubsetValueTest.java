@@ -163,7 +163,6 @@ public class KSubsetValueTest {
 		doTest(IntStream.of(1, 2, 3, 4, 60, 61, 62, 63), new IntervalValue(1, 63));
 	}
 
-	@org.junit.Ignore
 	@Test
 	public void testInvalidKDenotesEmptySet() {
 		final IntervalValue base = new IntervalValue(1, 3);

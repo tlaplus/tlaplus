@@ -25,8 +25,11 @@
  ******************************************************************************/
 package tlc2.value.impl;
 
+import java.math.BigInteger;
+
 import tlc2.tool.FingerprintException;
 import tlc2.tool.coverage.CostModel;
+import tlc2.util.Combinatorics;
 
 public class KSubsetValue extends SubsetValue {
 
@@ -44,27 +47,71 @@ public class KSubsetValue extends SubsetValue {
 
 	@Override
 	public ValueEnumeration elements() {
+		if (hasNoElements()) {
+			return SetEnumValue.EmptySet.elements();
+		}
 		// Remember k as a member and return SubsetValue's kElement enumerator here.
 		return kElements(k);
 	}
 
 	@Override
 	public ValueEnumeration elements(Ordering ordering) {
+		if (hasNoElements()) {
+			return SetEnumValue.EmptySet.elements(ordering);
+		}
 		if (ordering == Ordering.RANDOMIZED) {
 			return new RandomSubsetGenerator(k);
 		}
 		return super.elements(ordering);
 	}
-	
+
+	private BigInteger count() {
+		// THEOREM KSubsetNegativeEmpty == kSubset(-1, 1..3) = {}
+		if (k < 0) {
+			return BigInteger.ZERO;
+		}
+		// THEOREM KZeroBaseIndependent ==
+		//   kSubset(0, 1..3) = kSubset(0, 1..4)
+		if (k == 0) {
+			return BigInteger.ONE;
+		}
+		final int n = this.set.size();
+		if (k > n) {
+			return BigInteger.ZERO;
+		}
+		return Combinatorics.bigChoose(n, Math.min(k, n - k));
+	}
+
 	@Override
 	public final int size() {
-		final long size = this.numberOfKElements(k);
-        if ((int) size != size) {
-            throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
+		final BigInteger size = count();
+        if (size.bitLength() > Integer.SIZE - 1) {
+            throw new IllegalArgumentException(String.format("k=%s and n=%s", k, this.set.size()));
         }
-        return (int) size;
+        return size.intValue();
 	}
-	
+
+	// THEOREM KSubsetTooLargeEmpty == kSubset(4, 1..3) = {}
+	// THEOREM KSubsetNegativeEmpty == kSubset(-1, 1..3) = {}
+	final boolean hasNoElements() {
+		return this.k < 0 || (this.set.isFinite() && this.set.size() < this.k);
+	}
+
+	@Override
+	public final boolean isFinite() {
+		try {
+			// THEOREM KZeroBaseIndependent ==
+			//   kSubset(0, 1..3) = kSubset(0, 1..4)
+			// THEOREM KSubsetNegativeEmpty == kSubset(-1, 1..3) = {}
+			return this.k <= 0 || this.set.isFinite();
+		} catch (RuntimeException | OutOfMemoryError e) {
+			if (hasSource()) {
+				throw FingerprintException.getNewHead(this, e);
+			}
+			throw e;
+		}
+	}
+
 	  @Override
 	  public final int compareTo(Object obj) {
 	    try {
@@ -86,6 +133,13 @@ public class KSubsetValue extends SubsetValue {
 
 	  @Override
 	  public boolean member(Value val) {
+		  // THEOREM ScalarNotInKSubsetNegative ==
+		  //   1 \notin kSubset(-1, 1..3)
+		  // THEOREM ScalarNotInKSubsetTooLarge ==
+		  //   1 \notin kSubset(4, 1..3)
+		  if (hasNoElements()) {
+			  return false;
+		  }
 		  if (k == val.size()) {
 			  return super.member(val);
 		  }

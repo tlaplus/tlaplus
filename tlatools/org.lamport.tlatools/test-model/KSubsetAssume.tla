@@ -26,33 +26,34 @@ ASSUME Cases!EmptyEqKSubsetTooLarge
 ASSUME Cases!EmptyEqKSubsetNegative
 \* ASSUME Cases!KZeroNestedEnumeration \* TLC does not terminate
 
-\* FiniteSetsExt eagerly enumerates Nat before constructing a KSubsetValue.
-\* ASSUME Cases!CardKZeroNat                 \* TLC refuses
-\* ASSUME Cases!CardKSubsetNegativeNat       \* TLC refuses
-\* ASSUME Cases!KZeroNatFinite               \* TLC refuses
-\* ASSUME Cases!KSubsetNegativeNatFinite     \* TLC refuses
-\* ASSUME Cases!KOneNatInfinite              \* TLC refuses
+ASSUME Cases!CardKZeroNat
+ASSUME Cases!CardKSubsetNegativeNat
+ASSUME Cases!KZeroNatFinite
+ASSUME Cases!KSubsetNegativeNatFinite
+ASSUME Cases!KOneNatInfinite
 \* These memberships do not require enumerating the infinite base.
-\* ASSUME Cases!EmptyInKZeroNat                    \* FiniteSetsExt refuses
-\* ASSUME Cases!EmptyNotInKSubsetNegativeNat       \* FiniteSetsExt refuses
-\* ASSUME Cases!SingletonNotInKZeroNat             \* FiniteSetsExt refuses
-\* ASSUME Cases!SingletonInKOneNat                 \* FiniteSetsExt refuses
-\* ASSUME Cases!EmptyInKZeroString                 \* FiniteSetsExt refuses
-\* ASSUME Cases!EmptyNotInKSubsetNegativeString    \* FiniteSetsExt refuses
+ASSUME Cases!EmptyInKZeroNat
+ASSUME Cases!EmptyNotInKSubsetNegativeNat
+ASSUME Cases!SingletonNotInKZeroNat
+ASSUME Cases!SingletonInKOneNat
+ASSUME Cases!EmptyInKZeroString
+ASSUME Cases!EmptyNotInKSubsetNegativeString
 \* Pin TLC's representation-independent answers for non-finite bases.
 \* ASSUME Cases!KZeroNatEqEnum                     \* FiniteSetsExt refuses
-\* ASSUME Cases!KSubsetNegativeNatEmpty            \* FiniteSetsExt refuses
+ASSUME Cases!KSubsetNegativeNatEmpty
 \* ASSUME Cases!KNonPositiveNat                    \* FiniteSetsExt refuses
 \* ASSUME Cases!KZeroStringEqEnum                  \* FiniteSetsExt refuses
 \* ASSUME Cases!KZeroPositiveNatEqEnum             \* FiniteSetsExt refuses
-\* ASSUME Cases!KSubsetNegativeStringEmpty         \* FiniteSetsExt refuses
-\* ASSUME AssertError(
-\*   "The second argument of kSubset should be a set, but instead it is:\n42",
-\*   Cases!InvalidSecondArgument) \* FiniteSetsExt reports a different error
-\* ASSUME Cases!KZeroNatInPowerSet           \* TLC refuses
-\* ASSUME Cases!KSubsetNegativeNatInPowerSet \* TLC refuses
-\* ASSUME Cases!RcdSetOfKZeroNatFinite       \* TLC refuses
-\* ASSUME Cases!RcdSetOfKNegativeNatFinite   \* TLC refuses
+ASSUME Cases!KSubsetNegativeStringEmpty
+ASSUME AssertError(
+  "The second argument of kSubset should be a set, but instead it is:\n42",
+  Cases!InvalidSecondArgument)
+\* Nat is not enumerable, so the power-set rewrite does not apply and
+\* TLC enumerates the trivial k-subset.
+ASSUME Cases!KZeroNatInPowerSet
+ASSUME Cases!KSubsetNegativeNatInPowerSet
+ASSUME Cases!RcdSetOfKZeroNatFinite
+ASSUME Cases!RcdSetOfKNegativeNatFinite
 \* Comparing different k-subsets of the same infinite base reaches count(),
 \* which attempts to evaluate Cardinality(Nat).
 \* ASSUME Cases!CardPairKZeroNatKOneNat \* TLC refuses
@@ -62,10 +63,8 @@ ASSUME Cases!PairInKTwo
 ASSUME Cases!SingletonNotInKTwo
 ASSUME Cases!EmptyNotInKTwo
 ASSUME Cases!EmptyInKZero
-\* KSubsetValue#member asks for the candidate's size before noticing that
-\* these k-subset families have no elements.
-\* ASSUME Cases!ScalarNotInKSubsetNegative \* TLC refuses
-\* ASSUME Cases!ScalarNotInKSubsetTooLarge \* TLC refuses
+ASSUME Cases!ScalarNotInKSubsetNegative
+ASSUME Cases!ScalarNotInKSubsetTooLarge
 
 ASSUME Cases!KOneInPowerSet
 ASSUME Cases!KTwoInPowerSet
@@ -156,8 +155,8 @@ ASSUME Cases!CardDefinitionWithKThreeFourSym
 \* ASSUME Cases!CardKThreeFiveSymWithDefinition \* TLC answers 2
 \* ASSUME Cases!CardDefinitionWithKThreeFiveSym \* TLC answers 2
 
-\* ASSUME Cases!KSubsetNormalizedBaseEqDefinition \* TLC refuses for k < 0
-\* ASSUME Cases!KSubsetNormalizedBaseBoundsEmpty  \* TLC refuses for k < 0
+ASSUME Cases!KSubsetNormalizedBaseEqDefinition
+ASSUME Cases!KSubsetNormalizedBaseBoundsEmpty
 \* Enumerating the equivalent set-builder expression over 1..27 takes about
 \* 30 seconds, while the lazy k-subset finishes in under a second.
 ASSUME Cases!KSubsetFullLargeBase
@@ -263,14 +262,14 @@ ASSUME Cases!FPMixedEqEnumsRev
 \* enumeration of kSubset(k, S).
 ASSUME Cases!KSubsetLargeFinite
 ASSUME Cases!PairInKSubsetLarge
-\* ASSUME Cases!CardKSubsetLarge \* TLC refuses (k=2 and n=64)
-\* ASSUME Cases!CardKSubsetAllLarge \* TLC refuses (k=64 and n=64)
-\* ASSUME Cases!CardKSubsetAllButOneLarge \* TLC refuses (k=63 and n=64)
+ASSUME Cases!CardKSubsetLarge
+ASSUME Cases!CardKSubsetAllLarge
+ASSUME Cases!CardKSubsetAllButOneLarge
 ASSUME Cases!CardKSubsetAllMaxEnumerable
 \* These cases require "n choose k" = "n choose (n-k)"; computing through the
 \* middle of Pascal's triangle is infeasible.
-\* ASSUME Cases!CardKSubsetAllMillion \* TLC refuses (k=1000000 and n=1000000)
-\* ASSUME Cases!CardKSubsetAllButOneMillion \* TLC refuses (k=999999 and n=1000000)
+ASSUME Cases!CardKSubsetAllMillion
+ASSUME Cases!CardKSubsetAllButOneMillion
 \* Both source orders compare the two lazy values without enumerating either.
 ASSUME Cases!CardPairK31K32Large
 ASSUME Cases!CardPairK32K31Large

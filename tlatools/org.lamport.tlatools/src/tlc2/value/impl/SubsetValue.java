@@ -120,7 +120,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   @Override
-  public final boolean isFinite() {
+  public boolean isFinite() {
     try {
       return this.set.isFinite();
     }
@@ -600,7 +600,10 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	 */
 	public final long numberOfKElements(final int k) {
 		final int size = this.set.size();
-		if (k < 0 || size < k || size > 63) {
+		if (k < 0 || size < k) {
+			return 0;
+		}
+		if (size > 63) {
 			// Size >63 because KElementEnumerator.nextElement() limited to 63 bits
 			// (assert vals.size() == k will be violated).
 			throw new IllegalArgumentException(String.format("k=%s and n=%s", k, size));
@@ -617,12 +620,17 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	 * @return
 	 */
 	public final ValueEnumeration kElements(final int k) {
-		if (k < 0 || this.set.size() < k) {
-			throw new IllegalArgumentException();
+		if (k < 0) {
+			return SetEnumValue.EmptySet.elements();
 		}
+		// THEOREM KZeroBaseIndependent ==
+		//   kSubset(0, 1..3) = kSubset(0, 1..4)
 		if (k == 0) {
 			emptyEnumeration.reset();
 			return emptyEnumeration;
+		}
+		if (this.set.size() < k) {
+			return SetEnumValue.EmptySet.elements();
 		}
 
 		return new KElementEnumerator(k);
