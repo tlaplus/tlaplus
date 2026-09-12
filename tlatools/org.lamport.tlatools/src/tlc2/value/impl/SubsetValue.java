@@ -516,21 +516,23 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		return new SetEnumValue(new ValueVec(sets), false, cm);
 	}
 	
-	private final ValueEnumeration emptyEnumeration = new ValueEnumeration() {
-		private boolean done = false;
+	private ValueEnumeration emptyEnumeration() {
+		return new ValueEnumeration() {
+			private boolean done = false;
 
-		@Override
-		public void reset() {
-			done = false;
-		}
-		
-		@Override
-		public Value nextElement() {
-			if (done) { return null; }
-			done = true;
-			return new SetEnumValue(cm);
-		}
-	};
+			@Override
+			public void reset() {
+				done = false;
+			}
+
+			@Override
+			public Value nextElement() {
+				if (done) { return null; }
+				done = true;
+				return new SetEnumValue(cm);
+			}
+		};
+	}
 
 	/**
 	 * @see file SubsetValue.tla.
@@ -544,8 +546,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	final ValueEnumeration elementsNormalized() {
 		final int n = set.size();
 		if (n == 0) {
-			emptyEnumeration.reset();
-			return emptyEnumeration;
+			return emptyEnumeration();
 		}
 		// Only normalized inputs will yield a normalized output. Note that SEV#convert
 		// (unfortunately) enumerates the input. Thus "SUBSET SUBSET 1..10" will result
@@ -646,8 +647,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 		// THEOREM KZeroBaseIndependent ==
 		//   kSubset(0, 1..3) = kSubset(0, 1..4)
 		if (k == 0) {
-			emptyEnumeration.reset();
-			return emptyEnumeration;
+			return emptyEnumeration();
 		}
 		if (this.set.size() < k) {
 			return SetEnumValue.EmptySet.elements();
