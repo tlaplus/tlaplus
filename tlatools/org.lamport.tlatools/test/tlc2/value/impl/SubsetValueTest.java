@@ -272,6 +272,18 @@ public class SubsetValueTest {
 	}
 	
 	@Test
+	public void testEmptyEnumerationsAreIndependent() {
+		final SubsetValue emptyPowerSet = new SubsetValue(SetEnumValue.EmptySet);
+		final ValueEnumeration first = emptyPowerSet.elements();
+		final ValueEnumeration second = emptyPowerSet.elements();
+
+		assertEquals(SetEnumValue.EmptySet, first.nextElement());
+		assertEquals(SetEnumValue.EmptySet, second.nextElement());
+		assertNull(first.nextElement());
+		assertNull(second.nextElement());
+	}
+
+	@Test
 	public void testKSubsetEnumerator() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
@@ -298,8 +310,8 @@ public class SubsetValueTest {
 		enumerator = ((KElementEnumerator) subset.kElements(2)).sort();
 		assertEquals(new SetEnumValue(getValue("a", "b"), false), enumerator.nextElement());
 		assertEquals(new SetEnumValue(getValue("a", "c"), false), enumerator.nextElement());
-		assertEquals(new SetEnumValue(getValue("b", "c"), false), enumerator.nextElement());
 		assertEquals(new SetEnumValue(getValue("a", "d"), false), enumerator.nextElement());
+		assertEquals(new SetEnumValue(getValue("b", "c"), false), enumerator.nextElement());
 		assertEquals(new SetEnumValue(getValue("b", "d"), false), enumerator.nextElement());
 		assertEquals(new SetEnumValue(getValue("c", "d"), false), enumerator.nextElement());
 		assertNull(enumerator.nextElement());
@@ -320,24 +332,14 @@ public class SubsetValueTest {
 	public void testKSubsetEnumeratorNegative() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
-		try {
-			subset.kElements(-1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertNull(subset.kElements(-1).nextElement());
 	}
 	
 	@Test
 	public void testKSubsetEnumeratorGTCapacity() {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
-		try {
-			subset.kElements(innerSet.size() + 1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertNull(subset.kElements(innerSet.size() + 1).nextElement());
 	}
 	
 	@Test
@@ -370,12 +372,7 @@ public class SubsetValueTest {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
 
-		try {
-			subset.numberOfKElements(-1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertEquals(0, subset.numberOfKElements(-1));
 	}
 	
 	@Test
@@ -383,12 +380,7 @@ public class SubsetValueTest {
 		final SetEnumValue innerSet = new SetEnumValue(getValue("a", "b", "c", "d", "e"), true);
 		final SubsetValue subset = new SubsetValue(innerSet);
 
-		try {
-			subset.numberOfKElements(innerSet.size() + 1);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail();
+		assertEquals(0, subset.numberOfKElements(innerSet.size() + 1));
 	}
 	
 	@Test
@@ -407,13 +399,20 @@ public class SubsetValueTest {
 	public void testNumKSubsetPreventsOverflow() {
 		final IntervalValue innerSet = new IntervalValue(1, 64);
 		final SubsetValue subset = new SubsetValue(innerSet);
-		for (int i = 0; i <= innerSet.size(); i++) {
-			try {
-				subset.numberOfKElements(i);
-			} catch (IllegalArgumentException e) {
-				continue;
-			}
-			fail();
+
+		assertEquals(1, subset.numberOfKElements(0));
+		assertEquals(64, subset.numberOfKElements(1));
+		assertEquals(2016, subset.numberOfKElements(2));
+		assertEquals(2016, subset.numberOfKElements(62));
+		assertEquals(64, subset.numberOfKElements(63));
+		assertEquals(1, subset.numberOfKElements(64));
+		assertEquals(1832624140942590534L, subset.numberOfKElements(32));
+
+		try {
+			new SubsetValue(new IntervalValue(1, 67)).numberOfKElements(33);
+			fail("Expected an IllegalArgumentException for a count exceeding Long.MAX_VALUE");
+		} catch (IllegalArgumentException expected) {
+			// Expected.
 		}
 	}
 	
@@ -518,37 +517,36 @@ public class SubsetValueTest {
 		setOfSubsets.normalize();
 		assertEquals(k, setOfSubsets.size());
 	}
-	
-	@Test
-	public void testSubsetNeedsNormalization() {
-		final IntervalValue inner = new IntervalValue(1, 5);
-		final SubsetValue subset = new SubsetValue(inner);
 
-		final ValueVec vec = new ValueVec(subset.size());
-		for (int i = 0; i <= inner.size(); i++) {
-			List<Value> kElements = subset.kElements(i).all();
-			kElements.forEach(e -> vec.addElement(e));
+	private static List<Value> allKElements(final SubsetValue subset) {
+		final List<Value> values = new ArrayList<>(subset.size());
+		for (int k = 0; k <= subset.set.size(); k++) {
+			values.addAll(subset.kElements(k).all());
 		}
-        final Value unnormalized = new SetEnumValue(vec, false);
-        
-        final Value normalized = subset.toSetEnum().normalize();
-        
-        assertEquals(normalized, unnormalized);
+		return values;
 	}
-	
-	@Test
-	public void testSubsetNeedsNormalization2() {
-		final IntervalValue inner = new IntervalValue(1, 6);
-		final SubsetValue subset = new SubsetValue(inner);
 
-		final ValueVec vec = new ValueVec(subset.size());
-		final ValueEnumeration bElements = subset.elementsNormalized();
-		bElements.forEach(e -> vec.addElement(e));
-        final Value unnormalized = new SetEnumValue(vec, true);
-        
-        final Value normalized = subset.toSetEnum().normalize();
-        
-        assertEquals(normalized, unnormalized);
+	private static void assertNormalized(final SubsetValue subset, final List<Value> values) {
+		final SetEnumValue enumerated = new SetEnumValue(new ValueVec(values), true);
+		assertEquals(subset.toSetEnum().normalize(), enumerated);
+	}
+
+	@Test
+	public void testElementsNormalizedIsNormalized() {
+		final SubsetValue subset = new SubsetValue(new IntervalValue(1, 6));
+		assertNormalized(subset, subset.elementsNormalized().all());
+	}
+
+	@Test
+	public void testKElementsAreNormalized() {
+		final SubsetValue subset = new SubsetValue(new IntervalValue(1, 6));
+		assertNormalized(subset, allKElements(subset));
+	}
+
+	@Test
+	public void testKElementsMatchElementsNormalized() {
+		final SubsetValue subset = new SubsetValue(new IntervalValue(1, 6));
+		assertEquals(subset.elementsNormalized().all(), allKElements(subset));
 	}
 
 	@Test
@@ -565,22 +563,14 @@ public class SubsetValueTest {
 	
 	@Test
 	public void testRandomSubsetGeneratorKNegative() {
-		try {
-			new KSubsetValue(-1, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail("Expected an IllegalArgumentException");
+		assertNull(new KSubsetValue(-1, new IntervalValue(1, 2))
+				.elements(Ordering.RANDOMIZED).nextElement());
 	}
 	
 	@Test
 	public void testRandomSubsetGeneratorKNplus1() {
-		try {
-			new KSubsetValue(3, new IntervalValue(1, 2)).elements(Ordering.RANDOMIZED);
-		} catch (IllegalArgumentException e) {
-			return;
-		}
-		fail("Expected an IllegalArgumentException");
+		assertNull(new KSubsetValue(3, new IntervalValue(1, 2))
+				.elements(Ordering.RANDOMIZED).nextElement());
 	}
 	
 	@Test

@@ -217,9 +217,15 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
         //   ASSUME NEW S
         //   PROVE  SUBSET S # {}
         //
-        // SUBSET S always contains {}.
+        // SUBSET S always contains {}, whereas a k-subset can be empty.
+        //
+        // THEOREM KSubsetTooLargeEmpty == kSubset(4, 1..3) = {}
+        // THEOREM KSubsetNegativeEmpty == kSubset(-1, 1..3) = {}
         case SUBSETVALUE:
           {
+            if (this instanceof KSubsetValue) {
+              return ((KSubsetValue) this).hasNoElements();
+            }
             return false;
           }
         case UNIONVALUE:

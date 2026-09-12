@@ -1,1 +1,0 @@
-The file CommunityModules.jar is a copy of the file at https://github.com/tlaplus/CommunityModules/releases/download/202412190202/CommunityModules.jar
