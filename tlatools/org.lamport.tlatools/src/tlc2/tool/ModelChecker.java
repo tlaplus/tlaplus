@@ -736,12 +736,12 @@ public class ModelChecker extends AbstractChecker
 		this.theStateQueue.beginChkpt();
 		this.trace.beginChkpt();
 		this.theFPSet.beginChkpt();
-		this.theStateQueue.resumeAll();
 		UniqueString.internTbl.beginChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.beginChkpt();
 		}
+		this.theStateQueue.resumeAll();
 		// commit checkpoint:
 		this.theStateQueue.commitChkpt();
 		this.trace.commitChkpt();
@@ -1227,4 +1227,4 @@ public class ModelChecker extends AbstractChecker
 		return this.tool.getModuleFiles(resolver);
 	}
 }
-	
+
