@@ -736,12 +736,14 @@ public class ModelChecker extends AbstractChecker
 		this.theStateQueue.beginChkpt();
 		this.trace.beginChkpt();
 		this.theFPSet.beginChkpt();
-		this.theStateQueue.resumeAll();
 		UniqueString.internTbl.beginChkpt(this.metadir);
 		if (this.checkLiveness)
 		{
 			liveCheck.beginChkpt();
 		}
+		// Resume the workers' state-space exploration, which potentially mutates
+		// the intern table and liveness graph.
+		this.theStateQueue.resumeAll();
 		// commit checkpoint:
 		this.theStateQueue.commitChkpt();
 		this.trace.commitChkpt();
