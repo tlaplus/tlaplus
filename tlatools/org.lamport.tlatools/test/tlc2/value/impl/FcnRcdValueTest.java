@@ -26,14 +26,17 @@
 package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.module.TLCExt;
@@ -193,4 +196,37 @@ public class FcnRcdValueTest {
 			assertEquals(IntValue.gen(i), val);
 		}
 	}
+	@Test
+	@Ignore
+	public void testMalformedExplicitFcnEqualsIntervalDoesNotWrap() {
+		final Value zero = IntValue.gen(0);
+		final FcnRcdValue intervalFcn = new FcnRcdValue(
+				new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE), new Value[] { zero, zero });
+		final FcnRcdValue explicitFcn = new FcnRcdValue(
+				new Value[] { IntValue.gen(Integer.MAX_VALUE), IntValue.gen(Integer.MIN_VALUE) },
+				new Value[] { zero, zero }, true);
+
+		assertFalse(explicitFcn.equals(intervalFcn));
+	}
+
+	@Test
+	@Ignore
+	public void testMalformedIntervalFcnSelectDoesNotWrap() {
+		final FcnRcdValue fcn = new FcnRcdValue(
+				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });
+
+		assertNull(fcn.select(IntValue.gen(Integer.MAX_VALUE)));
+	}
+
+	@Test
+	@Ignore
+	public void testMalformedIntervalFcnExceptDoesNotWrap() {
+		final FcnRcdValue fcn = new FcnRcdValue(
+				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });
+		final ValueExcept except = new ValueExcept(
+				new Value[] { IntValue.gen(Integer.MAX_VALUE) }, IntValue.gen(1));
+
+		assertSame(fcn, fcn.takeExcept(except));
+	}
+
 }
