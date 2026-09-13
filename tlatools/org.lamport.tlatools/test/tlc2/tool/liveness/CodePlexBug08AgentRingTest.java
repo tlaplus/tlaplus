@@ -75,11 +75,11 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 		expectedActions.add("<CreateTasks line 82, col 3 to line 84, col 35 of module AgentRing>");
 		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
 				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0])");
+				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
 		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
 				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0])");
+				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])");
 		expectedActions.add("<CreateTasks line 82, col 3 to line 84, col 35 of module AgentRing>");
 		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
 				   + "/\\ CanCreate = TRUE\n"

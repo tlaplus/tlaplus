@@ -51,7 +51,7 @@ CONSTANT p1, p2, a1, a2, a3, v1, v2
 
 PostCondition ==
    CounterExample = 
-   [ action |->
+[ action |->
       { << << 1,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
                 memInt |-> <<p1, NoVal>>,
@@ -68,18 +68,15 @@ PostCondition ==
              parameters |-> <<"p">> ],
            << 2,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
-                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
                 buf |->
-                    ( p1 :> NoVal @@
-                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >> >>,
+                    (p1 :> NoVal @@ p2 :> [op |-> "Rd", adr |-> a3]) ] >> >>,
         << << 2,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
-                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-                buf |->
-                    ( p1 :> NoVal @@
-                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >>,
+                buf |-> (p1 :> NoVal @@ p2 :> [op |-> "Rd", adr |-> a3]) ] >>,
            [ name |-> "Do",
              location |->
                  [ beginLine |-> 23,
@@ -91,14 +88,14 @@ PostCondition ==
              parameters |-> <<"p">> ],
            << 3,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
-                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> >>,
+                buf |-> (p1 :> NoVal @@ p2 :> v1) ] >> >>,
         << << 3,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
-                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+                buf |-> (p1 :> NoVal @@ p2 :> v1) ] >>,
            [ name |-> "Rsp",
              location |->
                  [ beginLine |-> 33,
@@ -110,14 +107,14 @@ PostCondition ==
              parameters |-> <<"p">> ],
            << 4,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
-                memInt |-> <<p2, NoVal>>,
+                memInt |-> <<p2, v1>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> >>,
+                buf |-> (p1 :> NoVal @@ p2 :> v1) ] >> >>,
         << << 4,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
-                memInt |-> <<p2, NoVal>>,
+                memInt |-> <<p2, v1>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-                buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+                buf |-> (p1 :> NoVal @@ p2 :> v1) ] >>,
            [ name |-> "Req",
              location |->
                  [ beginLine |-> 15,
@@ -129,11 +126,10 @@ PostCondition ==
              parameters |-> <<"p">> ],
            << 2,
               [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
-                memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+                memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
                 mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
                 buf |->
-                    ( p1 :> NoVal @@
-                      p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >> >> },
+                    (p1 :> NoVal @@ p2 :> [op |-> "Rd", adr |-> a3]) ] >> >> },
   state |->
       { << 1,
            [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
@@ -142,20 +138,18 @@ PostCondition ==
              buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
         << 2,
            [ ctl |-> (p1 :> "rdy" @@ p2 :> "busy"),
-             memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+             memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
              mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-             buf |->
-                 ( p1 :> NoVal @@
-                   p2 :> [val |-> v1, op |-> "Wr", adr |-> a2] ) ] >>,
+             buf |-> (p1 :> NoVal @@ p2 :> [op |-> "Rd", adr |-> a3]) ] >>,
         << 3,
            [ ctl |-> (p1 :> "rdy" @@ p2 :> "done"),
-             memInt |-> <<p2, [val |-> v1, op |-> "Wr", adr |-> a2]>>,
+             memInt |-> <<p2, [op |-> "Rd", adr |-> a3]>>,
              mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-             buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >>,
+             buf |-> (p1 :> NoVal @@ p2 :> v1) ] >>,
         << 4,
            [ ctl |-> (p1 :> "rdy" @@ p2 :> "rdy"),
-             memInt |-> <<p2, NoVal>>,
+             memInt |-> <<p2, v1>>,
              mem |-> (a1 :> v1 @@ a2 :> v1 @@ a3 :> v1),
-             buf |-> (p1 :> NoVal @@ p2 :> NoVal) ] >> } ]
+             buf |-> (p1 :> NoVal @@ p2 :> v1) ] >> } ]
 =============================================================================
 
