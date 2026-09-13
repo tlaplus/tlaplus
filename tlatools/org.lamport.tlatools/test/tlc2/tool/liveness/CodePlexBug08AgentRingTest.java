@@ -69,57 +69,57 @@ public class CodePlexBug08AgentRingTest extends ModelCheckerTestCase {
 		final List<String> expectedTrace = new ArrayList<String>(13);
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add("<Init line 50, col 3 to line 53, col 12 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE");
 		expectedActions.add("<CreateTasks line 82, col 3 to line 84, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE");
 		expectedActions.add("<CreateTasks line 82, col 3 to line 84, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = TRUE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = TRUE");
 		expectedActions.add("<Stop line 78, col 3 to line 79, col 31 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<LookAndAct line 63, col 3 to line 75, col 24 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 1, ReadyToMove |-> FALSE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 1, ReadyToMove |-> FALSE, Task |-> 1]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<LookAndAct line 63, col 3 to line 75, col 24 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 1]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 1]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 1]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<LookAndAct line 63, col 3 to line 75, col 24 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<LookAndAct line 63, col 3 to line 75, col 24 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE");
 		expectedActions.add("<Move line 58, col 3 to line 60, col 35 of module AgentRing>");
-		expectedTrace.add("/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
-				   + "/\\ CanCreate = FALSE\n"
-				   + "/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])");
+		expectedTrace.add("/\\ Nodes = (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2])\n"
+				   + "/\\ Agent = [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0]\n"
+				   + "/\\ CanCreate = FALSE");
 
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		assertBackToState(10);

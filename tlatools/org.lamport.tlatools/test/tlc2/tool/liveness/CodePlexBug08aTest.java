@@ -69,21 +69,21 @@ public class CodePlexBug08aTest extends ModelCheckerTestCase {
 		final List<String> expectedTrace = new ArrayList<String>(4);
 		final List<String> expectedActions = new ArrayList<>();
 		expectedActions.add("<Init line 15, col 9 to line 15, col 35 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 1");
+		expectedTrace.add("/\\ x = 1\n/\\ b = FALSE");
 		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 2");
+		expectedTrace.add("/\\ x = 2\n/\\ b = TRUE");
 		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 2");
+		expectedTrace.add("/\\ x = 2\n/\\ b = FALSE");
 		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 3");
+		expectedTrace.add("/\\ x = 3\n/\\ b = TRUE");
 		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 3");
+		expectedTrace.add("/\\ x = 3\n/\\ b = FALSE");
 		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
+		expectedTrace.add("/\\ x = 4\n/\\ b = TRUE");
 		expectedActions.add("<A line 6, col 6 to line 9, col 19 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
+		expectedTrace.add("/\\ x = 4\n/\\ b = FALSE");
 		expectedActions.add("<B line 11, col 6 to line 13, col 18 of module CodeplexBug8>");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
+		expectedTrace.add("/\\ x = 5\n/\\ b = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace, expectedActions);
 		
 		// Assert the error trace contains a stuttering step at position 5
