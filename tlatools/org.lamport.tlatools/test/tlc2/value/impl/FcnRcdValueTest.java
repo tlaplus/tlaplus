@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.module.TLCExt;
@@ -197,7 +196,6 @@ public class FcnRcdValueTest {
 		}
 	}
 	@Test
-	@Ignore
 	public void testMalformedExplicitFcnEqualsIntervalDoesNotWrap() {
 		final Value zero = IntValue.gen(0);
 		final FcnRcdValue intervalFcn = new FcnRcdValue(
@@ -210,7 +208,6 @@ public class FcnRcdValueTest {
 	}
 
 	@Test
-	@Ignore
 	public void testMalformedIntervalFcnSelectDoesNotWrap() {
 		final FcnRcdValue fcn = new FcnRcdValue(
 				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });
@@ -219,7 +216,6 @@ public class FcnRcdValueTest {
 	}
 
 	@Test
-	@Ignore
 	public void testMalformedIntervalFcnExceptDoesNotWrap() {
 		final FcnRcdValue fcn = new FcnRcdValue(
 				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });

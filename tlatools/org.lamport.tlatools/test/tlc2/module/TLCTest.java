@@ -101,6 +101,32 @@ public class TLCTest {
 	}
 
 	@Test
+	public void testCombineMaxIntIntervalOnLeft() {
+		final Value f = new FcnRcdValue(new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE),
+				new Value[] { IntValue.gen(0) });
+		final Value g = new FcnRcdValue(new Value[] { IntValue.gen(Integer.MAX_VALUE) },
+				new Value[] { IntValue.gen(1) }, true);
+
+		assertMaxIntCombine(f, g);
+	}
+
+	@Test
+	public void testCombineMaxIntIntervalOnRight() {
+		final Value f = new FcnRcdValue(new Value[] { IntValue.gen(Integer.MAX_VALUE) },
+				new Value[] { IntValue.gen(0) }, true);
+		final Value g = new FcnRcdValue(new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE),
+				new Value[] { IntValue.gen(1) });
+
+		assertMaxIntCombine(f, g);
+	}
+
+	private static void assertMaxIntCombine(final Value f, final Value g) {
+		final FcnRcdValue combined = (FcnRcdValue) TLC.CombineFcn(f, g);
+		Assert.assertArrayEquals(new Value[] { IntValue.gen(Integer.MAX_VALUE) }, combined.domain);
+		Assert.assertArrayEquals(new Value[] { IntValue.gen(0) }, combined.values);
+	}
+
+	@Test
 	public void testPermutations() {
 		final SetEnumValue in = (SetEnumValue) new IntervalValue(1, 5).toSetEnum();
 		Assert.assertEquals(5, in.size());
