@@ -82,3 +82,20 @@ RECURSIVE f(_), g, h(_, _, _), _+_, -. _, _ ^+
   )
 (double_line)))
 
+=============|||
+Recursive Prefix Minus Self-Application (GH tlaplus/tlaplus #1418)
+=============|||
+
+---- MODULE Test ----
+RECURSIVE -. _
+-. x == -. x
+====
+
+-------------|||
+
+(source_file (module (header_line) (identifier) (header_line)
+  (recursive_declaration (operator_declaration (prefix_op_symbol (negative)) (placeholder)))
+  (operator_definition name: (prefix_op_symbol (negative)) parameter: (identifier) (def_eq) definition:
+    (bound_prefix_op symbol: (negative) rhs: (identifier_ref))
+  )
+(double_line)))
