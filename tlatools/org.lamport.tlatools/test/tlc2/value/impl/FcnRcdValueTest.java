@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -225,4 +226,29 @@ public class FcnRcdValueTest {
 		assertSame(fcn, fcn.takeExcept(except));
 	}
 
+	@Test
+	public void testEmptyIntervalFcnCompareToAgreesWithEquals() {
+		final FcnRcdValue a = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue b = new FcnRcdValue(new IntervalValue(3, 2), new Value[0]);
+		assertTrue(a.equals(b));
+		assertEquals(0, a.compareTo(b));
+		assertEquals(0, b.compareTo(a));
+	}
+
+	@Test
+	public void testEmptyIntervalFcnVsEmptyTupleCompareTo() {
+		final FcnRcdValue intervalFcn = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue emptyTuple = (FcnRcdValue) new TupleValue(new Value[0]).toFcnRcd();
+		assertTrue(intervalFcn.equals(emptyTuple));
+		assertEquals(0, intervalFcn.compareTo(emptyTuple));
+		assertEquals(0, emptyTuple.compareTo(intervalFcn));
+	}
+
+	@Test
+	public void testEmptyIntervalFcnsNormalize() {
+		final FcnRcdValue a = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue b = new FcnRcdValue(new IntervalValue(3, 2), new Value[0]);
+		final SetEnumValue set = new SetEnumValue(new Value[] { a, b }, false);
+		assertEquals(1, set.size());
+	}
 }

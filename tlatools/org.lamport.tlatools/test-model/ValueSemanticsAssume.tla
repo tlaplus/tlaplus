@@ -156,40 +156,40 @@ ASSUME EmptyIntervalFcnEqTuple
 ASSUME EmptyEnumFcnEqTuple
 ASSUME EmptyTupleEqIntervalFcn
 ASSUME EmptyIntervalFcnsEq
-\* ASSUME EmptyIntervalFcnsNested
-\* ASSUME EmptyIntervalFcnsSetEq
+ASSUME EmptyIntervalFcnsNested
+ASSUME EmptyIntervalFcnsSetEq
 ASSUME NegativeEmptyIntervalFcnEqTuple
-\* ASSUME EmptyTupleEqNegativeIntervalFcn(0)
-\* ASSUME EmptyIntervalFcnNested
+ASSUME EmptyTupleEqNegativeIntervalFcn(0)
+ASSUME EmptyIntervalFcnNested
 ASSUME EmptyEnumFcnNested
 ASSUME EmptyFcnDomainsNested
-\* ASSUME EmptyFcnNested
-\* ASSUME EmptyFcnSetEqSingleton
+ASSUME EmptyFcnNested
+ASSUME EmptyFcnSetEqSingleton
 ASSUME EmptyFcnSetPermutation
 ASSUME ChooseEmptyFcnSet
 ASSUME FPEmptyFcnTuple
-\* ASSUME FPMixedEmptyFcnSet
-\* ASSUME CardSubsetMixedEmptyFcn
-\* ASSUME SubsetMixedEmptyFcnEq
-\* ASSUME CardCupMixedEmptyFcn
-\* ASSUME CardUnionMixedEmptyFcn
-\* ASSUME CardFcnSetMixedEmptyFcn
-\* ASSUME CardRcdSetMixedEmptyFcn
-\* ASSUME CardTupleSetMixedEmptyFcn
+ASSUME FPMixedEmptyFcnSet
+ASSUME CardSubsetMixedEmptyFcn
+ASSUME SubsetMixedEmptyFcnEq
+ASSUME CardCupMixedEmptyFcn
+ASSUME CardUnionMixedEmptyFcn
+ASSUME CardFcnSetMixedEmptyFcn
+ASSUME CardRcdSetMixedEmptyFcn
+ASSUME CardTupleSetMixedEmptyFcn
 ASSUME EmptyIntervalBodiesEq
 ASSUME EmptyZeroIntervalFcnEqTuple
 ASSUME EmptyCanonicalVsOtherInterval
-\* ASSUME EmptyIntervalBodiesNested
-\* ASSUME EmptyCanonicalVsOtherNested
-\* ASSUME EmptyFcnSingletonEq
+ASSUME EmptyIntervalBodiesNested
+ASSUME EmptyCanonicalVsOtherNested
+ASSUME EmptyFcnSingletonEq
 ASSUME EmptyFcnDomainEq
 ASSUME EmptyFcnExceptNoop
 ASSUME NestedEmptyFcnEq
-\* ASSUME NestedEmptyFcnNested
+ASSUME NestedEmptyFcnNested
 ASSUME NestedEmptyRecordEq
-\* ASSUME NestedEmptyRecordNested
+ASSUME NestedEmptyRecordNested
 ASSUME NestedEmptyTupleEq
-\* ASSUME NestedEmptyTupleNested
+ASSUME NestedEmptyTupleNested
 ASSUME FPEmptyIntervalFcns
 ASSUME LenEmptyEnumFcn
 ASSUME LenCanonicalEmptyFcn
@@ -450,10 +450,10 @@ ASSUME BoundaryFcnBinarySelect
 ASSUME FPBoundaryFcns
 
 -----------------------------------------------------------------------------
-\* TLAPS proves every proposition below in ValueSemanticsTheorems.  Wrong
-\* Booleans and runaway evaluations stay commented so one case does not hide
-\* the others.  The refusals that follow are AssertError assumptions: giving
-\* up is acceptable, whereas a wrong answer is not.
+\* TLAPS proves every proposition below in ValueSemanticsTheorems.  Runaway
+\* evaluations stay commented so one case does not hide the others.  The
+\* refusals that follow are AssertError assumptions: giving up is acceptable,
+\* whereas a wrong answer is not.
 
 ASSUME MaxIntervalSubset(0)
 ASSUME MaxIntervalDiff(0)
@@ -480,12 +480,9 @@ ASSUME MaxUnionExists(0)
 ASSUME MaxTupleSetExists(0)
 ASSUME MaxRcdSetExists(0)
 ASSUME MaxFcnSetExists(0)
-
-\* Application of the mixed empty-domain function succeeds, but TLC keeps both
-\* equal keys in the constructed DOMAIN, so extensional equality fails.
-\* ASSUME MixedEmptyFcnEq(0)
-\* ASSUME MixedEmptyFcnDomainEq(0)
-\* ASSUME MixedEmptyFcnDomainCard(0)
+ASSUME MixedEmptyFcnEq(0)
+ASSUME MixedEmptyFcnDomainEq(0)
+ASSUME MixedEmptyFcnDomainCard(0)
 
 -----------------------------------------------------------------------------
 \* Mathematically finite empty results that TLC refuses to classify as finite.
