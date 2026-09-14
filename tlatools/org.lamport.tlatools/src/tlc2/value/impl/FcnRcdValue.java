@@ -216,6 +216,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
   private final int compareToInterval(final FcnRcdValue fcn) {
   	int result;
+  	if (this.values.length == 0) {
+  		return 0;
+  	}
   	if (fcn.intv != null) {
   		result = this.intv.low - fcn.intv.low;
   		if (result != 0) {
