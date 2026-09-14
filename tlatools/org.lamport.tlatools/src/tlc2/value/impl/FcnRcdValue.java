@@ -186,7 +186,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 				Assert.fail(
 						"Attempted to compare integer with non-integer\n" + Values.ppr(dElem.toString()) + ".", getSource());
 			}
-			result = ((IntValue) dElem).val - (fcn.intv.low + i);
+			final long intervalElement = (long) fcn.intv.low + i;
+			final long domainElement = ((IntValue) dElem).val;
+			result = domainElement < intervalElement ? -1 : domainElement == intervalElement ? 0 : 1;
 			if (result != 0) {
 				return result;
 			}
@@ -217,7 +219,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   private final int compareToInterval(final FcnRcdValue fcn) {
   	int result;
   	if (fcn.intv != null) {
-  		result = this.intv.low - fcn.intv.low;
+		  result = this.intv.low < fcn.intv.low ? -1 : this.intv.low == fcn.intv.low ? 0 : 1;
   		if (result != 0) {
   			return result;
   		}
@@ -234,7 +236,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   				Assert.fail(
   						"Attempted to compare integer with non-integer:\n" + Values.ppr(dElem.toString()) + ".", getSource());
   			}
-  			result = this.intv.low + i - ((IntValue) dElem).val;
+			  final long intervalElement = (long) this.intv.low + i;
+			  final long domainElement = ((IntValue) dElem).val;
+			  result = intervalElement < domainElement ? -1 : intervalElement == domainElement ? 0 : 1;
   			if (result != 0) {
   				return result;
   			}
@@ -278,7 +282,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
-            if (((IntValue)dElem).val != (this.intv.low + i)) {
+            if ((long) ((IntValue)dElem).val != (long) this.intv.low + i) {
               return false;
             }
           }
@@ -298,7 +302,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
               Assert.fail("Attempted to compare an integer with non-integer:\n" +
               Values.ppr(dElem.toString()) + ".", getSource());
             }
-            if (((IntValue)dElem).val != (fcn.intv.low + i)) {
+            if ((long) ((IntValue)dElem).val != (long) fcn.intv.low + i) {
               return false;
             }
           }
@@ -375,7 +379,11 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
           }
           int idx = ((IntValue)arg).val;
           if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
-            return this.values[idx - this.intv.low];
+            final long offset = (long) idx - this.intv.low;
+            // Evaluator-produced functions satisfy values.length == intv.size(),
+            // so an in-domain index always has an offset within values. The
+            // bounds check is retained out of an abundance of caution.
+            return offset < this.values.length ? this.values[(int) offset] : null;
           }
           return null;
       }
@@ -424,7 +432,12 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
         // domain is represented as an array of values:
     	// iff normalized, use binary search to speedup lookups.
     	int idx = Arrays.binarySearch(this.domain, arg, Value::compareTo);
-		if (idx >= 0 && this.domain[idx].equals(arg)) {
+		// Arrays.binarySearch returns either a negative value or an index into
+		// domain; the upper bound is retained out of an abundance of caution.
+		if (idx >= 0 && idx < this.domain.length) {
+			if (!this.domain[idx].equals(arg)) {
+				return null;
+			}
 			// Check equality and cmp here to not introduce subtle bugs should Value#compareTo
 			// behaving slightly differently for some types. Linear search and the old,
 			// hash-based lookup use/used Value#equals.
@@ -500,7 +513,14 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
         if (arg instanceof IntValue) {
           int idx = ((IntValue)arg).val;
           if ((idx >= this.intv.low) && (idx <= this.intv.high)) {
-            int vidx = idx - this.intv.low;
+            final long offset = (long) idx - this.intv.low;
+            // Evaluator-produced functions satisfy values.length == intv.size(),
+            // so an in-domain EXCEPT index always has an offset within newValues.
+            // The bounds check is retained out of an abundance of caution.
+            if (offset >= newValues.length) {
+              return this;
+            }
+            final int vidx = (int) offset;
             ex.idx++;
             newValues[vidx] = this.values[vidx].takeExcept(ex);
           }
@@ -680,8 +700,8 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
         	Value d = this.domain[i];
         	Value v = this.values[i];
           int j = i;
-          int cmp;
-          while ((cmp = d.compareTo(this.domain[j-1])) < 0) {
+          int cmp = -1;
+          while (j > 0 && (cmp = d.compareTo(this.domain[j-1])) < 0) {
             this.domain[j] = this.domain[j-1];
             this.values[j] = this.values[j-1];
             j--;
@@ -803,7 +823,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
       else {
         for (int i = 0; i < flen; i++) {
           fp = FP64.Extend(fp, INTVALUE);
-          fp = FP64.Extend(fp, i + this.intv.low);
+          fp = FP64.Extend(fp, Math.addExact(i, this.intv.low));
           fp = this.values[i].fingerPrint(fp);
         }
       }

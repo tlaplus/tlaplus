@@ -455,36 +455,31 @@ ASSUME FPBoundaryFcns
 \* the others.  The refusals that follow are AssertError assumptions: giving
 \* up is acceptable, whereas a wrong answer is not.
 
-\* Wrong Boolean: IntervalValue's enumerator wraps from MaxInt to MinInt.
-\* ASSUME MaxIntervalSubset(0)
-
-\* Runaway IntervalValue loops eventually exceed TLC's set bound.
-\* ASSUME MaxIntervalDiff(0)
-\* ASSUME MaxIntervalCap(0)
-\* ASSUME MaxIntervalCup(0)
-\* ASSUME MaxIntervalPred(0)
-\* ASSUME FPMaxInterval(0)
+ASSUME MaxIntervalSubset(0)
+ASSUME MaxIntervalDiff(0)
+ASSUME MaxIntervalCap(0)
+ASSUME MaxIntervalCup(0)
+ASSUME MaxIntervalPred(0)
+ASSUME FPMaxInterval(0)
 
 \* Infinite empty results that TLC attempts to enumerate indefinitely.
 \* ASSUME InfiniteCapEmpty(0)
 \* ASSUME InfiniteDiffEmpty(0)
 \* ASSUME InfinitePredEmpty(0)
 
-\* Function conversion of [x \in MaxInt..MaxInt |-> _] walks the wrapping
-\* enumerator and indexes off the singleton value array.
-\* ASSUME MaxIntervalFcnEq(0)
-\* ASSUME MaxIntervalFcnMember(0)
-
-\* Quantification over wrapped boundary intervals forces runaway normalization.
-\* ASSUME MaxPredExists(0)
-\* ASSUME MaxPredForall(0)
-\* ASSUME MaxCapExists(0)
-\* ASSUME MaxCupExists(0)
-\* ASSUME MaxDiffExists(0)
-\* ASSUME MaxUnionExists(0)
-\* ASSUME MaxTupleSetExists(0)
-\* ASSUME MaxRcdSetExists(0)
-\* ASSUME MaxFcnSetExists(0)
+ASSUME MaxIntervalFcnEq(0)
+ASSUME MaxIntervalFcnMember(0)
+ASSUME MaxIntervalFcnCombine(0)
+ASSUME MaxIntervalFcnCombineRev(0)
+ASSUME MaxPredExists(0)
+ASSUME MaxPredForall(0)
+ASSUME MaxCapExists(0)
+ASSUME MaxCupExists(0)
+ASSUME MaxDiffExists(0)
+ASSUME MaxUnionExists(0)
+ASSUME MaxTupleSetExists(0)
+ASSUME MaxRcdSetExists(0)
+ASSUME MaxFcnSetExists(0)
 
 \* Application of the mixed empty-domain function succeeds, but TLC keeps both
 \* equal keys in the constructed DOMAIN, so extensional equality fails.
@@ -493,14 +488,6 @@ ASSUME FPBoundaryFcns
 \* ASSUME MixedEmptyFcnDomainCard(0)
 
 -----------------------------------------------------------------------------
-\* Combining a function whose domain is the boundary interval walks that
-\* interval with an int counter that wraps to MinInt and then indexes past
-\* the end of the value array.
-ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.CombineFcn(tlc2.value.impl.Value,tlc2.value.impl.Value),\nbut it produced the following error:\nIndex 1 out of bounds for length 1",
-                   MaxIntervalFcnCombine(0))
-ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.Value tlc2.module.TLC.CombineFcn(tlc2.value.impl.Value,tlc2.value.impl.Value),\nbut it produced the following error:\nIndex 1 out of bounds for length 1",
-                   MaxIntervalFcnCombineRev(0))
-
 \* Mathematically finite empty results that TLC refuses to classify as finite.
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.IBoolValue tlc2.module.FiniteSets.IsFiniteSet(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to check if expression of form {x \\in S : p(x)} is a finite set, but cannot check if S:\nNat\nis finite.",
                    FiniteInfinitePredEmpty(0))
