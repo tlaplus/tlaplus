@@ -600,7 +600,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       if (dom instanceof IntervalValue) {
         IntervalValue intv = (IntervalValue)dom;
         if (intv.low != 1) return null;
-        Value [] elems = new Value [intv.high];
+        Value [] elems = new Value [intv.size()];
         for (int i = 1; i <= intv.high; i++) {
           elems[i-1] = select(IntValue.gen(i));
         }
