@@ -195,6 +195,10 @@ ASSUME LenEmptyEnumFcn
 ASSUME LenCanonicalEmptyFcn
 ASSUME AppendCanonicalEmptyFcn
 ASSUME EmptyEnumFcnInSeqEmpty
+ASSUME LenEmptyIntervalFcn(0)
+ASSUME AppendEmptyIntervalFcn(0)
+ASSUME ConcatEmptyIntervalFcn(0)
+ASSUME EmptyIntervalFcnInSeqEmpty(0)
 
 ASSUME FcnSetEqEnum
 ASSUME FcnSetEqEnumRev
@@ -492,17 +496,6 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
                    FiniteCupInfinitePredEmpty(0))
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.IBoolValue tlc2.module.FiniteSets.IsFiniteSet(tlc2.value.impl.Value),\nbut it produced the following error:\nAttempted to check if expression of form {x \\in S : p(x)} is a finite set, but cannot check if S:\nNat\nis finite.",
                    FiniteUnionInfinitePredEmpty(0))
-
-\* Only an interval domain whose lower bound is 1 is converted to a tuple, so
-\* the Sequences operators refuse the empty function that TLC prints as <<>>.
-ASSUME AssertError("The argument of Len should be a sequence, but instead it is:\n<<>>",
-                   LenEmptyIntervalFcn(0))
-ASSUME AssertError("Evaluating an expression of the form Append(s, v) when s is not a sequence:\n<<>>",
-                   AppendEmptyIntervalFcn(0))
-ASSUME AssertError("Evaluating an expression of the form s \\o t when s is not a sequence:\n<<>>",
-                   ConcatEmptyIntervalFcn(0))
-ASSUME AssertError("Attempted to check if the value:\n<<>>\nis an element of Seq({}).",
-                   EmptyIntervalFcnInSeqEmpty(0))
 
 \* Seq({}) is finite and equal to {<<>>}, but UserValue comparison and size
 \* refuse the explicit singleton.
