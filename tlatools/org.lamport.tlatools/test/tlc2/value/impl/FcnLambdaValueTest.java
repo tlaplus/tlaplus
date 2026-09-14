@@ -77,6 +77,13 @@ public class FcnLambdaValueTest {
 	}
 
 	@Test
+	public void testEmptyIntervalDomainToTuple() {
+		final FcnLambdaValue fcn = createFcnLambda(new IntervalValue(2, 1), IntValue.gen(42));
+		assertEquals(TupleValue.EmptyTuple, fcn.toTuple());
+		assertNull(createFcnLambda(new IntervalValue(2, 2), IntValue.gen(42)).toTuple());
+	}
+
+	@Test
 	public void testToString() {
 		// TLA+: f == [x \in 1..2 |-> 42]
 		FcnLambdaValue flv = createFcnLambda(new IntervalValue(1, 2), IntValue.gen(42));
