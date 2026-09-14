@@ -74,6 +74,13 @@ public class FcnRcdValueTest {
 	}
 
 	@Test
+	public void testEmptyIntervalDomainToTuple() {
+		final FcnRcdValue fcn = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		assertEquals(TupleValue.EmptyTuple, fcn.toTuple());
+		assertNull(new FcnRcdValue(new IntervalValue(2, 2), new Value[] { IntValue.gen(42) }).toTuple());
+	}
+
+	@Test
 	public void testSelect() {
 		testSelect(false);
 	}
