@@ -422,6 +422,32 @@ boolean isPrefixOp( Token t ) {
   return t.kind >= op_26 && t.kind <= op_116;
 }
 
+  boolean isNonfixOpStart() {
+    /***********************************************************************
+    * Returns true iff the current token (a prefix/infix operator such as  *
+    * the "-" of <op_77>) is immediately followed by "(" and the           *
+    * parenthesized argument list contains a comma at the top level, i.e.  *
+    * the operator is used nonfixly with at least two arguments (like      *
+    * "-(1, 2)") rather than prefixly applied to a single parenthesized    *
+    * expression (like "- (1)").  This disambiguates the lookahead in      *
+    * Expression() and ExtendableExpr(), which would otherwise commit to   *
+    * the prefix interpretation of "-" and then choke on the comma.        *
+    * (https://github.com/tlaplus/tlaplus/issues/884)                      *
+    ************************************************************************/
+    Token t;
+    if ( getToken(2).kind != LBR ) return false;
+    int depth = 0;
+    for (int i = 3; ; i++) {
+      t = getToken( i );
+      if ( t.kind == EOF ) return false;
+      if ( t.kind == LBR ) depth++;
+      else if ( t.kind == RBR ) {
+        if ( depth == 0 ) return false;
+        depth--;
+      } else if ( t.kind == COMMA && depth == 0 ) return true;
+    }
+  }
+
 // global variable follows !!! Make sure it is set everywhere as required
 Operator lastOp;
   /*************************************************************************
@@ -3915,7 +3941,8 @@ Expression() : {
   OperatorStack.newStack();
 } {
 ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isNonfixOpStart()})
   (  tn = PrefixOp() {kind = N_GenPrefixOp;}
    | tn = InfixOp()  {kind = N_GenInfixOp;}
        /********************************************************************
@@ -4029,7 +4056,8 @@ ExtendableExpr() : {
      if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
   ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isNonfixOpStart()})
     (  tn = PrefixOp() {kind = N_GenPrefixOp;}
      | tn = InfixOp()  {kind = N_GenInfixOp;}
          /********************************************************************
