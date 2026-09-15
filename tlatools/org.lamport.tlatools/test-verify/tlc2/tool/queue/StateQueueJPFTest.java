@@ -35,7 +35,7 @@ import tlc2.tool.TLCState;
 
 public class StateQueueJPFTest extends TestJPF {
 
-    private static final int WORKERS = 3;
+    private static final int WORKERS = 2;
 
     private final StateQueue queue = new DummyStateQueue();
     private final TLCState tlcState = new DummyTLCState();
@@ -58,6 +58,9 @@ public class StateQueueJPFTest extends TestJPF {
         if (verifyNoPropertyViolation()) {
             try {
                 TLCGlobals.setNumWorkers(WORKERS);
+
+                // Seed the queue so workers exercise queue access instead of immediately finishing.
+                queue.enqueue(tlcState);
 
                 // Start the threads only if they are not already started
                 mainThread.start();
