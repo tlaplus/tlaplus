@@ -99,7 +99,6 @@ public class TlaPlusSyntaxCorpusTests {
 				"String with comment start",
 
 				// https://github.com/tlaplus/tlaplus/issues/884
-				"Nonfix Minus (GH tlaplus/tlaplus #GH884)",
 				"Nonfix Submodule Excl (GH tlaplus/tlaplus #GH884)",
 				"Nonfix Double Exclamation Operator (GH TSTLA #GH97, GH tlaplus/tlaplus #884)",
 
