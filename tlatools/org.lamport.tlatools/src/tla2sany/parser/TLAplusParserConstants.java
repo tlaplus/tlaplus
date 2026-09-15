@@ -284,6 +284,7 @@ public interface TLAplusParserConstants {
   int ProofStepDotLexeme = 292;
   int BareLevelLexeme = 293;
   int UnnumberedStepLexeme = 294;
+  int BANGRUN = 295;
 
   int DEFAULT = 0;
   int PRAGMA = 1;
@@ -588,6 +589,7 @@ public interface TLAplusParserConstants {
     "<ProofStepDotLexeme>",
     "<BareLevelLexeme>",
     "<UnnumberedStepLexeme>",
+    "<BANGRUN>",
   };
 
 }
