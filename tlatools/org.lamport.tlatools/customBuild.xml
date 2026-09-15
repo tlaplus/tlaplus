@@ -22,6 +22,11 @@
     <!-- Destination path to the jacoco coverage exec -->
     <property name="code-coverage.exec" value="target/code-coverage.exec"/>
 
+	<!-- JPF model classes shadow classes in ${class.dir}. -->
+	<property name="verify.model.class.dir" value="target/verify-model-class"/>
+
+	<property name="verify.testcases" value="**/*Test*.java"/>
+
 	<!-- setup classpath -->
 	<path id="project.classpath" />
 
@@ -1262,6 +1267,38 @@
 
 	<!-- Verifies TLC parts with NASA's pathfinder model checker -->
 	<target name="test-verify">
+		<!-- JPF 8.0 cannot execute newer JDKs. -->
+		<fail message="test-verify needs JDK 11 or older (JAVA_HOME is currently a JDK ${ant.java.version}), because JPF 8.0 cannot execute a newer one. GitHub CI pins JDK 11 in .github/workflows/test-jpf.yml; locally, export JAVA_HOME=/opt/homebrew/opt/openjdk@11">
+			<condition>
+				<not>
+					<or>
+						<equals arg1="${ant.java.version}" arg2="1.8" />
+						<equals arg1="${ant.java.version}" arg2="9" />
+						<equals arg1="${ant.java.version}" arg2="10" />
+						<equals arg1="${ant.java.version}" arg2="11" />
+					</or>
+				</not>
+			</condition>
+		</fail>
+
+		<!-- Remove stale model classes before compiling. -->
+		<delete dir="${verify.model.class.dir}" />
+		<mkdir dir="${verify.model.class.dir}" />
+		<javac
+			includeantruntime="false"
+			srcdir="${test.dir}-verify-model"
+			destdir="${verify.model.class.dir}"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
 		<mkdir dir="${test.class.dir}"/>
 		<!-- Compile our boilerplate code needed to verify TLC. E.g. the StateQueueVerify creates -->
 		<!-- examplary produces & consumers and a dummy implementation of StateQueue. -->
@@ -1298,9 +1335,7 @@
 			<formatter type="xml" />
 
 			<batchtest fork="yes" todir="${test.reports}/verify">
-				<fileset dir="${test.dir}-verify">
-					<include name="**/*Test*.java" />
-				</fileset>
+				<fileset dir="${test.dir}-verify" includes="${verify.testcases}" />
 			</batchtest>
 		</junit>
 		<fail if="verify-test.failed" message="JPF verification failed." />
