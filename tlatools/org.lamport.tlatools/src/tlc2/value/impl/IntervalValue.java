@@ -150,8 +150,9 @@ implements Enumerable, Reducible {
   public final Value diff(Value val) {
     try {
       ValueVec diffElems = new ValueVec();
-      for (int i = this.low; i <= this.high; i++) {
-    	  Value elem = IntValue.gen(i);
+      final int sz = this.size();
+      for (int i = 0; i < sz; i++) {
+    	  Value elem = IntValue.gen(this.low + i);
         if (!val.member(elem)) diffElems.addElement(elem);
       }
       return new SetEnumValue(diffElems, true, cm);
@@ -167,8 +168,9 @@ implements Enumerable, Reducible {
   public final Value cap(Value val) {
     try {
       ValueVec capElems = new ValueVec();
-      for (int i = this.low; i <= this.high; i++) {
-    	  Value elem = IntValue.gen(i);
+      final int sz = this.size();
+      for (int i = 0; i < sz; i++) {
+    	  Value elem = IntValue.gen(this.low + i);
         if (val.member(elem)) capElems.addElement(elem);
       }
       return new SetEnumValue(capElems, true, cm);
@@ -187,8 +189,9 @@ implements Enumerable, Reducible {
 
       if (set instanceof Reducible) {
         ValueVec cupElems = new ValueVec();
-        for (int i = this.low; i <= this.high; i++) {
-          cupElems.addElement(IntValue.gen(i));
+        final int sz = this.size();
+        for (int i = 0; i < sz; i++) {
+          cupElems.addElement(IntValue.gen(this.low + i));
         }
         ValueEnumeration Enum = ((Enumerable)set).elements();
         Value elem;
@@ -260,9 +263,10 @@ implements Enumerable, Reducible {
     try {
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, this.size()) ;
-      for (int i = this.low; i <= this.high; i++) {
+      final int sz = this.size();
+      for (int i = 0; i < sz; i++) {
         fp = FP64.Extend(fp, INTVALUE);
-        fp = FP64.Extend(fp, i);
+        fp = FP64.Extend(fp, this.low + i);
       }
       return fp;
     }
@@ -342,17 +346,27 @@ implements Enumerable, Reducible {
 
   final class Enumerator implements ValueEnumeration {
     int index = low;
+    boolean done = high < low;
 
     @Override
-    public final void reset() { this.index = low; }
+    public final void reset() {
+      this.index = low;
+      this.done = high < low;
+    }
 
     @Override
     public final Value nextElement() {
-      if (this.index <= high) {
-    	  if (coverage) { cm.incSecondary(); }
-        return IntValue.gen(this.index++);
+      if (this.done) {
+        return null;
       }
-      return null;
+      if (coverage) { cm.incSecondary(); }
+      final int current = this.index;
+      if (current == high) {
+        this.done = true;
+      } else {
+        this.index++;
+      }
+      return IntValue.gen(current);
     }
 
   }

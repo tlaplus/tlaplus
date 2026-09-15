@@ -216,6 +216,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
   private final int compareToInterval(final FcnRcdValue fcn) {
   	int result;
+  	if (this.values.length == 0) {
+  		return 0;
+  	}
   	if (fcn.intv != null) {
   		result = this.intv.low - fcn.intv.low;
   		if (result != 0) {
@@ -600,7 +603,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   @Override
   public final Value toTuple() {
       if (this.intv != null) {
-        if (this.intv.low != 1) return null;
+        if (this.intv.low != 1 && this.intv.size() != 0) return null;
         return new TupleValue(this.values);
       }
       int len = this.values.length;
@@ -885,7 +888,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
   private final boolean isTuple() {
     if (this.intv != null) {
-      return (this.intv.low == 1);
+      return (this.intv.low == 1 || this.intv.size() == 0);
     }
     for (int i = 0; i < this.domain.length; i++) {
       if (!(this.domain[i] instanceof IntValue)) {

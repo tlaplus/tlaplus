@@ -599,10 +599,11 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       Value  dom = this.params.domains[0];
       if (dom instanceof IntervalValue) {
         IntervalValue intv = (IntervalValue)dom;
-        if (intv.low != 1) return null;
-        Value [] elems = new Value [intv.high];
-        for (int i = 1; i <= intv.high; i++) {
-          elems[i-1] = select(IntValue.gen(i));
+        final int sz = intv.size();
+        if (intv.low != 1 && sz != 0) return null;
+        Value [] elems = new Value [sz];
+        for (int i = 0; i < sz; i++) {
+          elems[i] = select(IntValue.gen(i + 1));
         }
         if (coverage) {cm.incSecondary(elems.length);}
         return new TupleValue(elems, cm);
