@@ -83,9 +83,10 @@ public class StateQueueJPFTest extends TestJPF {
 
         @Override
         public void run() {
-            queue.suspendAll();
-            // critical section (taking a checkpoint)
-            queue.resumeAll();
+            if (queue.suspendAll()) {
+                // critical section (taking a checkpoint)
+                queue.resumeAll();
+            }
         }
     }
 
