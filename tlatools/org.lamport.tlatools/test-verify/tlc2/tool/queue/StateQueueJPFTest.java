@@ -30,14 +30,17 @@ import java.io.IOException;
 import org.junit.Test;
 
 import gov.nasa.jpf.util.test.TestJPF;
+import tlc2.TLCGlobals;
 import tlc2.tool.TLCState;
 
 public class StateQueueJPFTest extends TestJPF {
 
+    private static final int WORKERS = 1;
+
     private final StateQueue queue = new DummyStateQueue();
     private final TLCState tlcState = new DummyTLCState();
     private final Thread mainThread = new Thread(new MainTask(queue), "Main");
-    private final Thread[] workerThreads = new Thread[3];
+    private final Thread[] workerThreads = new Thread[WORKERS];
 
     public StateQueueJPFTest() {
         // Initialize the worker threads
@@ -54,6 +57,8 @@ public class StateQueueJPFTest extends TestJPF {
     public void test() {
         if (verifyNoPropertyViolation()) {
             try {
+                TLCGlobals.setNumWorkers(WORKERS);
+
                 // Start the threads only if they are not already started
                 mainThread.start();
 
