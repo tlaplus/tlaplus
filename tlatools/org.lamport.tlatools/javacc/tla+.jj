@@ -422,6 +422,47 @@ boolean isPrefixOp( Token t ) {
   return t.kind >= op_26 && t.kind <= op_116;
 }
 
+  boolean isMinusOpStart() {
+    /***********************************************************************
+    * Semantic lookahead for the ambiguous token sequence "-(".            *
+    *                                                                      *
+    * Returns true if the token following "-" is "(" and the contents of   *
+    * those parentheses contain a comma at delimiter nesting depth zero.   *
+    * Delimiters nested within the outer parentheses increase the nesting  *
+    * depth, so commas within (...), [...], {...}, or <<...>> are ignored. *
+    * Such a comma is evidence for the nonfix form of the binary "-"       *
+    * operator, as in "-(1, 2)", rather than the prefix form applied to a  *
+    * parenthesized expression, as in "-(1)".                              *
+    *                                                                      *
+    * Without this lookahead, Expression() and ExtendableExpr() select the *
+    * prefix form and subsequently fail when they encounter the comma.     *
+    *                                                                      *
+    * This special case applies only to ASCII "-" (op_77), which denotes   *
+    * both a prefix unary operator and an infix binary operator. The       *
+    * latter may also be applied in nonfix notation.                       *
+    *                                                                      *
+    * (https://github.com/tlaplus/tlaplus/issues/884)                      *
+    ***********************************************************************/
+    Token t;
+    if ( getToken(1).kind != op_77 ) return false;   /* only ASCII "-" */
+    if ( getToken(2).kind != LBR ) return false;      /* the ambiguous "-(" */
+    int depth = 0;
+    for (int i = 3; ; i++) {         /* scan the parenthesized argument list */
+      t = getToken( i );
+      if ( t.kind == EOF ) return false;   /* unterminated, as in "-(1" */
+      switch ( t.kind ) {
+        case LBR: case LSB: case LBC: case LAB:
+          depth++; break;   /* as in "-(1, {2, 3})": the nested comma is ignored */
+        case RBR: case RSB: case RBC: case RAB:
+          if ( depth == 0 ) return false;   /* as in "-(1)": a single argument */
+          depth--; break;
+        case COMMA:
+          if ( depth == 0 ) return true; break;   /* as in "-(1, 2)": nonfix "-" */
+        default:
+      }
+    }
+  }
+
 // global variable follows !!! Make sure it is set everywhere as required
 Operator lastOp;
   /*************************************************************************
@@ -3916,7 +3957,8 @@ Expression() : {
   OperatorStack.newStack();
 } {
 ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isMinusOpStart()})
   (  tn = PrefixOp() {kind = N_GenPrefixOp;}
    | tn = InfixOp()  {kind = N_GenInfixOp;}
        /********************************************************************
@@ -4030,7 +4072,8 @@ ExtendableExpr() : {
      if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
   ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isMinusOpStart()})
     (  tn = PrefixOp() {kind = N_GenPrefixOp;}
      | tn = InfixOp()  {kind = N_GenInfixOp;}
          /********************************************************************
