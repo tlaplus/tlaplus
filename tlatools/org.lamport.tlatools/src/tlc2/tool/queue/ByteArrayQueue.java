@@ -366,6 +366,13 @@ public abstract class ByteArrayQueue implements IStateQueue {
 					if (this.finish) {
 						return false;
 					}
+					// A worker can reach the suspension barrier after
+					// needsWaiting() was checked but before this thread starts
+					// waiting. Recheck while holding mu so its notification
+					// cannot be lost between this check and wait().
+					if (!needsWaiting()) {
+						return true;
+					}
 					// waiting here assumes that subsequently a worker
 					// is going to wake us up by calling isAvail() or
 					// this.mu.notify*()
