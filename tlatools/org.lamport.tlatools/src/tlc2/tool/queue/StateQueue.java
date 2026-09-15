@@ -267,6 +267,29 @@ public abstract class StateQueue implements IStateQueue {
 					if (this.finish) {
 						return false;
 					}
+					// A worker can reach the suspension barrier after
+					// needsWaiting() was checked but before this thread starts
+					// waiting. Recheck while holding mu so its notification
+					// cannot be lost between this check and wait().
+					//
+					// Although numWaiting is normally guarded by 'this', this
+					// read is safe: either the final worker released mu and
+					// published its update, or this thread holds mu and prevents
+					// the worker's notification from being lost before wait().
+					// Acquiring 'this' while holding mu would instead introduce a
+					// textbook lock-order inversion because isAvail() acquires
+					// the same monitors in the order 'this', then mu.
+					//
+					// Commit 0818132bb added the finish recheck above and made
+					// it volatile. Volatile is not required for deadlock freedom
+					// here: releasing mu first publishes finish and numWaiting;
+					// acquiring mu first prevents the subsequent notification
+					// from being lost. Checking that commit with JPF both with
+					// and without volatile finish confirms this interleaving
+					// argument.
+					if (!needsWaiting()) {
+						return true;
+					}
 					// waiting here assumes that subsequently a worker
 					// is going to wake us up by calling isAvail() or
 					// this.mu.notify*()

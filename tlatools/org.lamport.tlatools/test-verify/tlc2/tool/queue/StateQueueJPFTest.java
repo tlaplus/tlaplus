@@ -55,7 +55,7 @@ public class StateQueueJPFTest extends TestJPF {
 
     @Test
     public void test() {
-        if (verifyDeadlock()) {
+        if (verifyNoPropertyViolation()) {
             try {
                 TLCGlobals.setNumWorkers(WORKERS);
 
