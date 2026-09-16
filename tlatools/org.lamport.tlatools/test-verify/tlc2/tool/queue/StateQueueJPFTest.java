@@ -82,45 +82,6 @@ public class StateQueueJPFTest extends TestJPF {
         }
     }
 
-    private static class MainTask implements Runnable {
-        private final StateQueue queue;
-
-        public MainTask(StateQueue queue) {
-            this.queue = queue;
-        }
-
-        @Override
-        public void run() {
-            if (queue.suspendAll()) {
-                // critical section (taking a checkpoint)
-                queue.resumeAll();
-            }
-        }
-    }
-
-    private static class WorkerTask implements Runnable {
-        private final StateQueue queue;
-        private final TLCState tlcState;
-
-        public WorkerTask(StateQueue queue, TLCState tlcState) {
-            this.queue = queue;
-            this.tlcState = tlcState;
-        }
-
-        @Override
-        public void run() {
-            for (int i = 0; i < 3; i++) {
-                TLCState state = queue.sDequeue();
-                if (state == null) {
-                    queue.finishAll();
-                    return;
-                }
-                queue.sEnqueue(tlcState);
-            }
-            queue.finishAll();
-        }
-    }
-
     private static class DummyStateQueue extends StateQueue {
 
         private TLCState state;
