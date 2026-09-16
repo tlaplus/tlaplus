@@ -449,7 +449,8 @@ Operator lastOp;
 
   boolean caseSep() {
     Token t = getToken(1);
-    return ( t.kind == CASESEP );
+    return ( t.kind == CASESEP )
+      && junctionListCtx.isAboveCurrent( t.beginColumn );
   }
 
   boolean matchFcnConst () {
@@ -9109,14 +9110,14 @@ SyntaxTreeNode tn;
     return false;
   }
 
-  final private boolean jj_3R_116() {
-    if (jj_3R_65()) return true;
-    return false;
-  }
-
   final private boolean jj_3_46() {
     if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(MAPTO)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_116() {
+    if (jj_3R_65()) return true;
     return false;
   }
 
