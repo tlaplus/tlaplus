@@ -57,6 +57,8 @@ public class PcalFixIDs {
             FixIf((AST.If) ast, context);
         else if (ast.getClass().equals(AST.WithObj.getClass()))
             FixWith((AST.With) ast, context);
+        else if (ast.getClass().equals(AST.ActionObj.getClass()))
+            FixAction((AST.Action) ast, context);
         else if (ast.getClass().equals(AST.WhenObj.getClass()))
             FixWhen((AST.When) ast, context);
         else if (ast.getClass().equals(AST.PrintSObj.getClass()))
@@ -351,6 +353,10 @@ public class PcalFixIDs {
         for (int i = 0; i < ast.Do.size(); i++)
             FixSym((AST) ast.Do.elementAt(i), context);
     }
+
+    private static void FixAction(AST.Action ast, String context) throws PcalFixIDException {
+        FixExpr(ast.exp, context);
+   }
 
     private static void FixWhen(AST.When ast, String context) throws PcalFixIDException {
         FixExpr(ast.exp, context);
