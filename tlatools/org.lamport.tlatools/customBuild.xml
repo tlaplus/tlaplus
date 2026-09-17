@@ -1274,6 +1274,23 @@
 			</condition>
 		</fail>
 
+		<mkdir dir="target/verify-model-class"/>
+		<javac
+			includeantruntime="false"
+			srcdir="${test.dir}-verify-model"
+			destdir="target/verify-model-class"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath refid="project.classpath" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<pathelement location="lib/jpf.jar" />
+			</classpath>
+		</javac>
+
 		<mkdir dir="${test.class.dir}"/>
 		<!-- Compile our boilerplate code needed to verify TLC. E.g. the StateQueueVerify creates -->
 		<!-- examplary produces & consumers and a dummy implementation of StateQueue. -->
