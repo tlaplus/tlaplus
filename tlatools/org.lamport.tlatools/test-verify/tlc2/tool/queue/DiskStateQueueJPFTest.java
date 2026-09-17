@@ -69,7 +69,8 @@ public class DiskStateQueueJPFTest extends TestJPF {
 
 	@Test
 	public void testDeadlockFreedom() throws InterruptedException {
-		if (verifyNoPropertyViolation("+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
+		if (verifyNoPropertyViolation(
+				// "+vm.scheduler.sync.class=tlc2.tool.queue.SpuriousWakeupSyncPolicy",
 				// Avoid choices when references are first published; monitor synchronization remains explored.
 				"+vm.shared.break_on_exposure=false",
 				"+test.report.console.finished=result,statistics,error")) {
