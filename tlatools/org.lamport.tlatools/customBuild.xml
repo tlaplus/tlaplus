@@ -1335,6 +1335,15 @@
 		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
+
+	<!-- Checks that the JBMC bounded model checker is available. -->
+	<target name="test-jbmc"
+		description="Check the JBMC installation (requires jbmc on PATH)">
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="--version" />
+		</exec>
+	</target>
+
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
 	<target name="benchmark" description="Generate the self-contained JMH benchmark JAR (run with java -jar target/benchmarks.jar)">
 		<!-- Compile benchmark class files in test-benchmark against jmh. -->
