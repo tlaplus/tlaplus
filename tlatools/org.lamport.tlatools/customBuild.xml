@@ -102,8 +102,12 @@
 	</path>
 
 	<target name="collect-queue-jfr-traces" depends="compile,compile-test"
-		description="Record DiskStateQueue executions from selected TLC tests as JFR files">
+		description="Record DiskStateQueue executions from selected TLC tests and replay them with TLC">
 		<mkdir dir="target/queue-jfr-traces" />
+		<javac includeantruntime="false" srcdir="spec/queue" includes="QueueTraceData.java"
+			destdir="${test.class.dir}" debug="true" release="${java.release}" encoding="UTF-8">
+			<classpath refid="queue.trace.classpath" />
+		</javac>
 		<!-- One test method per JVM: recordings must not mix independent queues. -->
 		<macrodef name="record-queue-test">
 			<attribute name="id" />
@@ -125,6 +129,18 @@
 					<sysproperty key="tlc2.tool.queue.DiskStateQueue.BufSize" value="@{buffer}" />
 					<test name="@{class}" methods="@{method}" />
 				</junit>
+				<echo message="Replaying @{id}; log: target/queue-jfr-traces/@{id}.replay.log" />
+				<java classname="tlc2.TLC" fork="true" maxmemory="2048m" failonerror="true"
+					dir="spec/queue" output="target/queue-jfr-traces/@{id}.replay.log">
+					<classpath refid="queue.trace.classpath" />
+					<sysproperty key="queue.trace" value="${basedir}/target/queue-jfr-traces/@{id}.jfr" />
+					<sysproperty key="queue.capacity" value="@{buffer}" />
+					<arg value="-workers" /><arg value="1" />
+					<arg value="-noGenerateSpecTE" />
+					<arg value="-metadir" /><arg file="target/queue-jfr-traces/@{id}-states" />
+					<arg value="-config" /><arg file="spec/queue/DiskStateQueueTrace.cfg" />
+					<arg file="spec/queue/DiskStateQueueTrace.tla" />
+				</java>
 			</sequential>
 		</macrodef>
 
@@ -137,7 +153,7 @@
 		<!-- Do not also record the DiskByteArrayQueue test method in this class. -->
 		<record-queue-test id="writer-empty-wakeup" class="tlc2.tool.queue.DiskPoolWriterTest"
 			method="testStatePoolWriterIgnoresEmptyWakeAndStopsOnFinish" />
-		<echo message="Queue recordings: target/queue-jfr-traces/" />
+		<echo message="All queue recordings replayed successfully; see target/queue-jfr-traces/" />
 	</target>
 
 	<!-- Compiles and runs *only* the long-running tests. Not the ones. -->
