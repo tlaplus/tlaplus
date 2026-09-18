@@ -163,6 +163,15 @@ public class ModelChecker extends AbstractChecker
             {
                 report("exception in init");
                 report(e);
+                // Call-stack replay below is diagnostic only.  It can complete without
+                // reproducing the exception when the first pass has already recorded the
+                // initial state (for example, before liveness evaluation fails).  Retain
+                // the original error code as the fallback when replay succeeds.
+                if (e instanceof Assert.TLCRuntimeException) {
+                    result = ((Assert.TLCRuntimeException) e).errorCode;
+                } else {
+                    result = EC.GENERAL;
+                }
                 // Initial state computation fails with an exception:
                 String msg = e.getMessage();
                 /**
