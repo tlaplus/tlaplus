@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="2.0" label="DiskStateQueue trace validation"
+	description="Queue actions for trace validation" provider="TLC">
+	<event name="tlc2.DiskStateQueue">
+		<setting name="enabled">true</setting>
+	</event>
+</configuration>
