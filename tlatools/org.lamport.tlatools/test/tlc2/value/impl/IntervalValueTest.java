@@ -1,14 +1,22 @@
 package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import tlc2.util.FP64;
 import util.Assert.TLCRuntimeException;
 
 public class IntervalValueTest {
+
+	@BeforeClass
+	public static void setup() {
+		FP64.Init();
+	}
 
 	@Test
 	public void testElementAt() {
@@ -109,6 +117,42 @@ public class IntervalValueTest {
 		assertEquals(11, iv3.size());
 		final IntervalValue iv4 = new IntervalValue(Integer.MIN_VALUE, Integer.MIN_VALUE+10);
 		assertEquals(11, iv4.size());
+	}
+
+	@Test
+	public void testMaxIntSingletonEnumerator() {
+		final IntervalValue iv = new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		final ValueEnumeration e = iv.elements();
+		assertEquals(IntValue.gen(Integer.MAX_VALUE), e.nextElement());
+		assertNull(e.nextElement());
+		e.reset();
+		assertEquals(IntValue.gen(Integer.MAX_VALUE), e.nextElement());
+		assertNull(e.nextElement());
+	}
+
+	@Test
+	public void testMaxIntSingletonSubsetEq() {
+		final IntervalValue iv = new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		final SetEnumValue singleton = new SetEnumValue(new Value[] { IntValue.gen(Integer.MAX_VALUE) }, true);
+		assertEquals(BoolValue.ValTrue, iv.isSubsetEq(singleton));
+	}
+
+	@Test
+	public void testMaxIntSingletonFingerprint() {
+		final IntervalValue iv = new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		final SetEnumValue singleton = new SetEnumValue(new Value[] { IntValue.gen(Integer.MAX_VALUE) }, true);
+		assertEquals(singleton.fingerPrint(FP64.New()), iv.fingerPrint(FP64.New()));
+	}
+
+	@Test
+	public void testMaxIntSingletonDiffCapCup() {
+		final IntervalValue iv = new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		final SetEnumValue singleton = new SetEnumValue(new Value[] { IntValue.gen(Integer.MAX_VALUE) }, true);
+		final SetEnumValue empty = new SetEnumValue(new Value[0], true);
+		assertEquals(0, iv.diff(singleton).size());
+		assertEquals(1, iv.diff(empty).size());
+		assertEquals(1, iv.cap(singleton).size());
+		assertEquals(1, iv.cup(empty).size());
 	}
 
 }

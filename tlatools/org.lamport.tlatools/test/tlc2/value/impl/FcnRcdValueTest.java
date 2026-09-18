@@ -26,8 +26,11 @@
 package tlc2.value.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -70,6 +73,13 @@ public class FcnRcdValueTest {
 	public void testSelecNormalizedEmpty() {
 		FcnRcdValue rcdValue = (FcnRcdValue) new FcnRcdValue(new IntValue[0], new IntValue[0], false).normalize();
 		rcdValue.select(IntValue.ValNegOne);
+	}
+
+	@Test
+	public void testEmptyIntervalDomainToTuple() {
+		final FcnRcdValue fcn = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		assertEquals(TupleValue.EmptyTuple, fcn.toTuple());
+		assertNull(new FcnRcdValue(new IntervalValue(2, 2), new Value[] { IntValue.gen(42) }).toTuple());
 	}
 
 	@Test
@@ -192,5 +202,60 @@ public class FcnRcdValueTest {
 			assertNotNull(val);
 			assertEquals(IntValue.gen(i), val);
 		}
+	}
+	@Test
+	public void testMalformedExplicitFcnEqualsIntervalDoesNotWrap() {
+		final Value zero = IntValue.gen(0);
+		final FcnRcdValue intervalFcn = new FcnRcdValue(
+				new IntervalValue(Integer.MAX_VALUE, Integer.MAX_VALUE), new Value[] { zero, zero });
+		final FcnRcdValue explicitFcn = new FcnRcdValue(
+				new Value[] { IntValue.gen(Integer.MAX_VALUE), IntValue.gen(Integer.MIN_VALUE) },
+				new Value[] { zero, zero }, true);
+
+		assertFalse(explicitFcn.equals(intervalFcn));
+	}
+
+	@Test
+	public void testMalformedIntervalFcnSelectDoesNotWrap() {
+		final FcnRcdValue fcn = new FcnRcdValue(
+				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });
+
+		assertNull(fcn.select(IntValue.gen(Integer.MAX_VALUE)));
+	}
+
+	@Test
+	public void testMalformedIntervalFcnExceptDoesNotWrap() {
+		final FcnRcdValue fcn = new FcnRcdValue(
+				new IntervalValue(Integer.MIN_VALUE, Integer.MAX_VALUE), new Value[] { IntValue.gen(0) });
+		final ValueExcept except = new ValueExcept(
+				new Value[] { IntValue.gen(Integer.MAX_VALUE) }, IntValue.gen(1));
+
+		assertSame(fcn, fcn.takeExcept(except));
+	}
+
+	@Test
+	public void testEmptyIntervalFcnCompareToAgreesWithEquals() {
+		final FcnRcdValue a = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue b = new FcnRcdValue(new IntervalValue(3, 2), new Value[0]);
+		assertTrue(a.equals(b));
+		assertEquals(0, a.compareTo(b));
+		assertEquals(0, b.compareTo(a));
+	}
+
+	@Test
+	public void testEmptyIntervalFcnVsEmptyTupleCompareTo() {
+		final FcnRcdValue intervalFcn = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue emptyTuple = (FcnRcdValue) new TupleValue(new Value[0]).toFcnRcd();
+		assertTrue(intervalFcn.equals(emptyTuple));
+		assertEquals(0, intervalFcn.compareTo(emptyTuple));
+		assertEquals(0, emptyTuple.compareTo(intervalFcn));
+	}
+
+	@Test
+	public void testEmptyIntervalFcnsNormalize() {
+		final FcnRcdValue a = new FcnRcdValue(new IntervalValue(2, 1), new Value[0]);
+		final FcnRcdValue b = new FcnRcdValue(new IntervalValue(3, 2), new Value[0]);
+		final SetEnumValue set = new SetEnumValue(new Value[] { a, b }, false);
+		assertEquals(1, set.size());
 	}
 }

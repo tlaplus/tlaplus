@@ -176,10 +176,11 @@ public class TLC implements ValueConstants
         if (dom1 == null)
         {
             IntervalValue intv1 = fcn1.intv;
-            for (int i = intv1.low; i <= intv1.high; i++)
+            final int sz = intv1.size();
+            for (int i = 0; i < sz; i++)
             {
-                dom.addElement(IntValue.gen(i));
-                vals.addElement(vals1[i-intv1.low]);
+                dom.addElement(IntValue.gen(intv1.low + i));
+                vals.addElement(vals1[i]);
             }
         } else
         {
@@ -195,9 +196,10 @@ public class TLC implements ValueConstants
         if (dom2 == null)
         {
             IntervalValue intv2 = fcn2.intv;
-            for (int i = intv2.low; i <= intv2.high; i++)
+            final int sz = intv2.size();
+            for (int i = 0; i < sz; i++)
             {
-            	Value val = IntValue.gen(i);
+                Value val = IntValue.gen(intv2.low + i);
                 boolean found = false;
                 for (int j = 0; j < len1; j++)
                 {
@@ -210,7 +212,7 @@ public class TLC implements ValueConstants
                 if (!found)
                 {
                     dom.addElement(val);
-                    vals.addElement(vals2[i - intv2.low]);
+                    vals.addElement(vals2[i]);
                 }
             }
         } else
