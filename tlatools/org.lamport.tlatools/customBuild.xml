@@ -1413,6 +1413,20 @@
 			<arg value="12" />
 		</exec>
 
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="tlc2.value.impl.SubsetValueHarness.verifySize:(I)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${class.dir}${path.separator}target/jbmc-models" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.SubsetValueHarness.verifySize:(I)V.assertion.1" />
+			<arg value="--slice-formula" />
+			<!-- Keep recursive expansion shallow while fully unwinding the two
+			     loops on the verification path. -->
+			<arg value="--unwind" />
+			<arg value="1" />
+			<arg value="--unwindset" />
+			<arg value="java::tlc2.value.impl.IntValue.&lt;clinit&gt;:()V.0:10,java::tlc2.value.impl.SubsetValueHarness.base:(I)Ltlc2/value/impl/SetEnumValue;.0:3" />
+		</exec>
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
