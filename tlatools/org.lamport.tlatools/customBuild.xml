@@ -1343,12 +1343,14 @@
 		<!-- Override this property to analyze FcnRcdValue classes built from
 		     another revision while retaining the current harness. -->
 		<property name="jbmc.production.classpath" location="${class.dir}" />
+		<property name="jbmc.interval.production.classpath" location="${class.dir}" />
 		<delete dir="target/jbmc" />
 		<delete dir="target/jbmc-models" />
 		<mkdir dir="target/jbmc" />
 		<mkdir dir="target/jbmc-models" />
 
-		<!-- Compile JBMC dependency overlays separately. -->
+		<!-- JBMC 6.11 lacks operational models for Math.addExact and
+		     Math.subtractExact, so compile the exact singleton-size overlay. -->
 		<javac
 			includeantruntime="false"
 			srcdir="test-jbmc-models"
@@ -1399,6 +1401,17 @@
 			<arg value="12" />
 		</exec>
 
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="tlc2.value.impl.IntervalValueHarness.verify:(IIJ)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${jbmc.interval.production.classpath}${path.separator}target/jbmc-models" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.IntervalValueHarness.verify:(IIJ)V.assertion.1" />
+			<!-- Ten unwindings initialize IntValue's cache; two more expose
+			     singleton loops that wrap at MaxInt instead of terminating. -->
+			<arg value="--unwind" />
+			<arg value="12" />
+		</exec>
 
 	</target>
 
