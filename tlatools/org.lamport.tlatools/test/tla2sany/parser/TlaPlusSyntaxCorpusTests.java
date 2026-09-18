@@ -107,8 +107,6 @@ public class TlaPlusSyntaxCorpusTests {
 
 				// https://github.com/tlaplus/tlaplus/issues/884
 				"Nonfix Minus (GH tlaplus/tlaplus #GH884)",
-				"Nonfix Submodule Excl (GH tlaplus/tlaplus #GH884)",
-				"Nonfix Double Exclamation Operator (GH TSTLA #GH97, GH tlaplus/tlaplus #884)",
 
 				// https://github.com/tlaplus/tlaplus/issues/885
 				"Label with Subexpression Prefix (GH tlaplus/tlaplus #885)",
