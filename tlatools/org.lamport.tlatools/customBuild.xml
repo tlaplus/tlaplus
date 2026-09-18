@@ -94,6 +94,52 @@
 		<antcall target="test-verify" inheritall="true" inheritrefs="true" />
 	</target>
 
+	<!-- Opt-in trace collection, separate from verification and replay checks. -->
+	<path id="queue.trace.classpath">
+		<pathelement location="${test.class.dir}" />
+		<pathelement location="${class.dir}" />
+		<fileset dir="lib" includes="*.jar,javax.mail/*.jar,gson/*.jar" />
+	</path>
+
+	<target name="collect-queue-jfr-traces" depends="compile,compile-test"
+		description="Record DiskStateQueue executions from selected TLC tests as JFR files">
+		<mkdir dir="target/queue-jfr-traces" />
+		<!-- One test method per JVM: recordings must not mix independent queues. -->
+		<macrodef name="record-queue-test">
+			<attribute name="id" />
+			<attribute name="class" />
+			<attribute name="method" default="testSpec" />
+			<attribute name="buffer" default="8192" />
+			<sequential>
+				<junit fork="yes" forkmode="perTest" printsummary="yes" showoutput="no"
+					haltonfailure="true" haltonerror="true" timeout="180000" maxmemory="1024m" dir="${basedir}">
+					<jvmarg value="-ea" />
+					<jvmarg value="-XX:+UseParallelGC" />
+					<!-- No size limit: JFR must retain the beginning of each execution. -->
+					<jvmarg value="-XX:StartFlightRecording=settings=${basedir}/spec/queue/DiskStateQueue.jfc,disk=true,dumponexit=true,maxsize=0,filename=${basedir}/target/queue-jfr-traces/@{id}.jfr" />
+					<classpath>
+						<path refid="queue.trace.classpath" />
+						<pathelement location="test-model" />
+						<fileset dir="lib" includes="jline/*.jar,lsp/*.jar" />
+					</classpath>
+					<sysproperty key="tlc2.tool.queue.DiskStateQueue.BufSize" value="@{buffer}" />
+					<test name="@{class}" methods="@{method}" />
+				</junit>
+			</sequential>
+		</macrodef>
+
+		<!-- Normal completion, concurrent workers, spilling, and checkpoint creation. -->
+		<record-queue-test id="minimum-diameter" class="tlc2.tool.MinimumDiameterTest" />
+		<record-queue-test id="diameter-buf2" class="tlc2.tool.DiameterTest" buffer="2" />
+		<record-queue-test id="checkpoint-violation-buf2" class="tlc2.tool.checkpoint.CheckpointOnViolationTest" buffer="2" />
+		<record-queue-test id="checkpoint-timebound-buf64" class="tlc2.tool.checkpoint.CheckpointWhenTimeBoundTest" buffer="64" />
+		<record-queue-test id="ewd840-buf8" class="tlc2.tool.liveness.CodePlexBug08EWD840FL2Test" buffer="8" />
+		<!-- Do not also record the DiskByteArrayQueue test method in this class. -->
+		<record-queue-test id="writer-empty-wakeup" class="tlc2.tool.queue.DiskPoolWriterTest"
+			method="testStatePoolWriterIgnoresEmptyWakeAndStopsOnFinish" />
+		<echo message="Queue recordings: target/queue-jfr-traces/" />
+	</target>
+
 	<!-- Compiles and runs *only* the long-running tests. Not the ones. -->
 	<target name="longtests" depends="info" description="Run long-running tests">
 		<antcall target="compile" inheritall="true" inheritrefs="true" />
