@@ -1335,13 +1335,71 @@
 		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
+	<!-- Verifies TLC value semantics with the JBMC bounded model checker.
+	     A suitable CBMC release (which includes JBMC) must be installed manually:
+	     https://github.com/diffblue/cbmc -->
+	<target name="test-jbmc" depends="compile"
+		description="Run JBMC verification harnesses (requires jbmc on PATH)">
+		<!-- Override this property to analyze FcnRcdValue classes built from
+		     another revision while retaining the current harness. -->
+		<property name="jbmc.production.classpath" location="${class.dir}" />
+		<delete dir="target/jbmc" />
+		<delete dir="target/jbmc-models" />
+		<mkdir dir="target/jbmc" />
+		<mkdir dir="target/jbmc-models" />
 
-	<!-- Checks that the JBMC bounded model checker is available. -->
-	<target name="test-jbmc"
-		description="Check the JBMC installation (requires jbmc on PATH)">
+		<!-- Compile JBMC dependency overlays separately. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc-models"
+			destdir="target/jbmc-models"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
+		<!-- Harnesses compile against the production TLC classes. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc"
+			destdir="target/jbmc"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
 		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
-			<arg value="--version" />
+			<arg value="tlc2.value.impl.FcnRcdValueHarness.verify:(IIII)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${jbmc.production.classpath}" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyIntervalComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyExplicitToIntervalComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyIntervalToExplicitComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyEquality:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifySelection:(III)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyExcept:(III)V.assertion.1" />
+			<!-- Ten unwindings cover IntValue's cache initialization. -->
+			<arg value="--unwind" />
+			<arg value="12" />
 		</exec>
+
+
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
