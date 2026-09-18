@@ -92,9 +92,6 @@ public class TlaPlusSyntaxCorpusTests {
 				"Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
 				"Unicode Conjunct Inside Ambiguous Case (GH tlaplus/tlaplus #487)",
 
-				// https://github.com/tlaplus/tlaplus/issues/596
-				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
-
 				// https://github.com/tlaplus/tlaplus/issues/616
 				"Invalid Use of LOCAL in LET/IN",
 				"Invalid Use of LOCAL in Proof",
