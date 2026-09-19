@@ -1337,7 +1337,8 @@ SuspendFinished(p, at) ==
      )
 
 Resume(p) ==
-  /\ p \in Clients /\ pc[p] = "idle" /\ Free("q")
+  \* ModelChecker resumes workers after beginChkpt, before commitChkpt.
+  /\ p \in Clients /\ pc[p] \in { "idle", "commit" } /\ Free("q")
   /\ ( stop' = FALSE /\ waiters' = [waiters EXCEPT !["q"] = {}] /\
          UNCHANGED << queue,
             balance,
