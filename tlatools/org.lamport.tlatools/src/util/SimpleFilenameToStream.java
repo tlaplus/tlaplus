@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -81,6 +83,37 @@ public class SimpleFilenameToStream implements FilenameToStream {
     standardLibraryResourceLocator = getInstallationBasePath();
   }
 
+  private SimpleFilenameToStream(final ResourceLocator locator) {
+    this.userFileResourceLocator = locator;
+    this.standardLibraryResourceLocator = getInstallationBasePath();
+  }
+
+  /**
+   * Search for specs in the following order:
+   *  1. The parent dir of the given spec file.
+   *  2. Paths in the TLA-Library Java system property.
+   *  3. The dir from which Java was run, or the current working dir.
+   */
+  public static SimpleFilenameToStream specDirAndTlaLibrary(final String specPath) {
+    final List<ResourceLocator> locators = new ArrayList<>();
+
+    // Make best-effort attempt at getting the spec path's parent directory
+    // and adding it to the list of include paths.
+    try {
+      final Path specParentDir = Path.of(specPath).getParent();
+      if (specParentDir != null) {
+        locators.add(searchFilesystemPaths(specParentDir));
+      }
+    } catch (InvalidPathException e) {
+      // Ignore this; if the path is really invalid, SANY will fail when it
+      // tries to load the spec, and will provide nice error reporting.
+    }
+
+    locators.add(searchTlaLibraryProperty());
+    locators.add(searchUserDirOrCWD());
+    return new SimpleFilenameToStream(new SequentialResourceLocator(locators));
+  }
+
   /**
    * Find the TLA+ standard modules.
    *
@@ -133,6 +166,29 @@ public class SimpleFilenameToStream implements FilenameToStream {
             .map(Path::of)
             .map(FilesystemResourceLocator::new)
             .collect(Collectors.toList()));
+  }
+
+  /**
+   * Create a locator that searches the given filesystem paths.
+   *
+   * @param paths an array of paths
+   * @return a locator that searches the given paths
+   */
+  private static ResourceLocator searchFilesystemPaths(Path... paths) {
+    return new SequentialResourceLocator(
+            Arrays.stream(paths)
+            .map(FilesystemResourceLocator::new)
+            .collect(Collectors.toList()));
+  }
+
+  /**
+   * Builds a {@link ResourceLocator} to look for paths specified in the
+   * -DTLA-Library Java system property.
+   */
+  private static ResourceLocator searchTlaLibraryProperty() {
+    final String property = System.getProperty(TLA_LIBRARY);
+    final String[] paths = parsePaths(property);
+    return searchFilesystemPaths(paths);
   }
 
   /**

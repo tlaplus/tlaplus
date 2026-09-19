@@ -1,0 +1,3 @@
+---- MODULE IncludeDirPrecedenceTestTarget ----
+op == TRUE
+====
