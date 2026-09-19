@@ -14,6 +14,7 @@ Observe(p, a) ==
       [] a = "Peek" -> Remove(p, TRUE)
       [] a \in {"AvailFinished", "AvailWokeFinished"} -> EmptyReturn(p, TRUE)
       [] a = "AvailNoWork" -> EmptyReturn(p, FALSE)
+      [] a = "AvailCountLast" -> CountLast(p)
       [] a = "AvailAllWaiting" -> AnnounceLast(p)
       [] a = "AvailWait" -> WaitWorker(p)
       [] a = "AvailWoke" -> WakeWorker(p)
@@ -54,6 +55,7 @@ Observe(p, a) ==
       [] a = "Clean" -> p = Cleaner /\ Clean
       [] a = "CleanerExit" -> p = Cleaner /\ CleanerExit
       [] a = "FinishAllBegin" -> FinishBegin(p)
+      [] a = "FinishAllNotify" -> FinishSignal(p)
       [] a = "FinishAllNotifyMu" -> FinishNotify(p)
       [] a = "FinishAllEnd" -> FinishQueue(p)
       [] a = "FinishWriter" -> FinishWriter(p)
@@ -71,6 +73,7 @@ Observe(p, a) ==
       [] a = "SuspendFinishedOnMu" -> SuspendFinished(p, "mu")
       [] a = "SuspendFinishedOnRecheck" -> SuspendFinished(p, "recheck")
       [] a = "Resume" -> Resume(p)
+      [] a = "StartChkpt" -> StartCheckpoint(p)
       [] a = "BeginChkpt" -> Snapshot(p)
       [] a = "CommitChkpt" -> Commit(p)
       [] a = "ReaderRestart" -> Restore(p)

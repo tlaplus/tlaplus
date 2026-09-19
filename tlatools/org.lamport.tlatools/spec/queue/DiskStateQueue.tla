@@ -315,7 +315,7 @@ EmptyReturn(p, finished) ==
          >>
      )
 
-\* Counting the last worker precedes its acquisition of mu. This unlogged
+\* Counting the last worker precedes its acquisition of mu. This
 \* boundary matters when the checkpointer holds mu and rechecks the barrier.
 CountLast(p) ==
   /\ CanUse(p) /\ p \in Workers /\ op[p] \in { "get", "peek" }
