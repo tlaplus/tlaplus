@@ -315,12 +315,15 @@ EmptyReturn(p, finished) ==
          >>
      )
 
-\* Counting the last worker precedes its acquisition of mu. This
-\* boundary matters when the checkpointer holds mu and rechecks the barrier.
-CountLast(p) ==
+CanCountLast(p) ==
   /\ CanUse(p) /\ p \in Workers /\ op[p] \in { "get", "peek" }
   /\ ~finish /\ stop /\ Size(queue) > 0 /\ p \notin counted
   /\ Cardinality(counted) + 1 = Cardinality(Workers)
+
+\* Counting the last worker precedes its acquisition of mu. This
+\* boundary matters when the checkpointer holds mu and rechecks the barrier.
+CountLast(p) ==
+  /\ CanCountLast(p)
   /\ ( counted' = counted \cup { p } /\ pc' = [pc EXCEPT ![p] = "announce"] /\
          UNCHANGED << queue,
             balance,
@@ -1189,8 +1192,18 @@ StopWorkers(p) ==
 
 EnterBarrier(p) ==
   /\ pc[p] = "barrier" /\ Free("mu")
+  \* Reads under mu can precede updates under q whose events are recorded before
+  \* SuspendWait or SuspendEnd. Retain the values available on entry; the later
+  \* actions can also observe subsequent updates. Acquiring mu and checking these
+  \* fields are not one atomic operation with the eventual wait or return.
   /\ ( owner' = [owner EXCEPT !["mu"] = p] /\
-           pc' = [pc EXCEPT ![p] = "barrierMu"] /\
+             pc' = [pc EXCEPT ![p] = "barrierMu"] /\
+           kind' =
+             [kind EXCEPT
+             ![p] =
+             IF finish
+             THEN "finished"
+             ELSE IF NeedWorkers THEN "wait" ELSE "done"] /\
          UNCHANGED << queue,
             balance,
             disk,
@@ -1203,7 +1216,6 @@ EnterBarrier(p) ==
             counted,
             waiters,
             op,
-            kind,
             result,
             snapshot,
             checkpointTo
@@ -1211,8 +1223,8 @@ EnterBarrier(p) ==
      )
 
 WaitBarrier(p) ==
-  /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ ~finish
-  /\ NeedWorkers
+  /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ kind[p] # "finished"
+  /\ kind[p] = "wait" \/ NeedWorkers
   /\ ( owner' = [owner EXCEPT !["mu"] = None] /\
              waiters' = [waiters EXCEPT !["mu"] = @ \cup { p }] /\
            pc' = [pc EXCEPT ![p] = "waitMu"] /\
@@ -1283,7 +1295,12 @@ Recheck(p) ==
 
 Suspended(p) ==
   /\ pc[p] = "barrierDone" \/
-       ( pc[p] = "barrierMu" /\ Own(p, "mu") /\ ~finish /\ ~NeedWorkers )
+       /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ kind[p] # "finished"
+       /\ kind[p] = "done" \/ ~NeedWorkers \/
+            \* numWaiting is incremented before AvailCountLast is recorded.
+            \* The read under mu can see that increment while the worker holds q.
+            ( \E w \in Workers: CanCountLast(w)
+            )
   /\ ( owner' = [owner EXCEPT !["mu"] = IF @ = p THEN None ELSE @] /\
            pc' = [pc EXCEPT ![p] = "idle"] /\
          UNCHANGED << queue,
