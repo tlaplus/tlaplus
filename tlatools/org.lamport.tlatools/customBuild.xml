@@ -1335,6 +1335,100 @@
 		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
+	<!-- Verifies TLC value semantics with the JBMC bounded model checker.
+	     A suitable CBMC release (which includes JBMC) must be installed manually:
+	     https://github.com/diffblue/cbmc -->
+	<target name="test-jbmc" depends="compile"
+		description="Run JBMC verification harnesses (requires jbmc on PATH)">
+		<!-- Override this property to analyze FcnRcdValue classes built from
+		     another revision while retaining the current harness. -->
+		<property name="jbmc.production.classpath" location="${class.dir}" />
+		<property name="jbmc.interval.production.classpath" location="${class.dir}" />
+		<delete dir="target/jbmc" />
+		<delete dir="target/jbmc-models" />
+		<mkdir dir="target/jbmc" />
+		<mkdir dir="target/jbmc-models" />
+
+		<!-- JBMC 6.11 lacks operational models for Math.addExact and
+		     Math.subtractExact, so compile the exact singleton-size overlay. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc-models"
+			destdir="target/jbmc-models"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
+		<!-- Harnesses compile against the production TLC classes. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc"
+			destdir="target/jbmc"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="tlc2.value.impl.FcnRcdValueHarness.verify:(IIII)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${jbmc.production.classpath}" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyIntervalComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyExplicitToIntervalComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyIntervalToExplicitComparison:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyEquality:(II)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifySelection:(III)V.assertion.1" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.FcnRcdValueHarness.verifyExcept:(III)V.assertion.1" />
+			<!-- Ten unwindings cover IntValue's cache initialization. -->
+			<arg value="--unwind" />
+			<arg value="12" />
+		</exec>
+
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="tlc2.value.impl.IntervalValueHarness.verify:(IIJ)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${jbmc.interval.production.classpath}${path.separator}target/jbmc-models" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.IntervalValueHarness.verify:(IIJ)V.assertion.1" />
+			<!-- Ten unwindings initialize IntValue's cache; two more expose
+			     singleton loops that wrap at MaxInt instead of terminating. -->
+			<arg value="--unwind" />
+			<arg value="12" />
+		</exec>
+
+		<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+			<arg value="tlc2.value.impl.SubsetValueHarness.verifySize:(I)V" />
+			<arg value="--classpath" />
+			<arg value="target/jbmc${path.separator}${class.dir}${path.separator}target/jbmc-models" />
+			<arg value="--property" />
+			<arg value="java::tlc2.value.impl.SubsetValueHarness.verifySize:(I)V.assertion.1" />
+			<arg value="--slice-formula" />
+			<!-- Keep recursive expansion shallow while fully unwinding the two
+			     loops on the verification path. -->
+			<arg value="--unwind" />
+			<arg value="1" />
+			<arg value="--unwindset" />
+			<arg value="java::tlc2.value.impl.IntValue.&lt;clinit&gt;:()V.0:10,java::tlc2.value.impl.SubsetValueHarness.base:(I)Ltlc2/value/impl/SetEnumValue;.0:3" />
+		</exec>
+	</target>
+
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
 	<target name="benchmark" description="Generate the self-contained JMH benchmark JAR (run with java -jar target/benchmarks.jar)">
 		<!-- Compile benchmark class files in test-benchmark against jmh. -->
