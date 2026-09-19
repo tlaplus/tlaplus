@@ -443,18 +443,20 @@ public class SimulationWorkerTest extends CommonTestCase {
 		// Have the worker generate a specified number of traces of a fixed length.
 		LongAdder numOfGenStates = new LongAdder();
 		AtomicLong numOfGenTraces = new AtomicLong();
-		AtomicLong m2AndMean = new AtomicLong();
 		int traceDepth = 5;
 		long traceNum = 5;
 		SimulationWorker worker = new SimulationWorker(0, tool, resultQueue, 0, traceDepth, traceNum, null, false,
-				null, liveCheck, numOfGenStates, numOfGenTraces, m2AndMean);
+				null, liveCheck, numOfGenStates, numOfGenTraces);
 
 		worker.start(initStates);
 		worker.join();
 		assertFalse(worker.isAlive());
 		assertEquals(70, numOfGenStates.longValue());
 		assertEquals(5, numOfGenTraces.longValue());
-		// With traces all length 5, mean is 5 and m2 is 0, hence m2AndMean = 5
-		assertEquals(5, m2AndMean.get());
+		// With traces all length 5, mean is 5 and M2 is 0 (no variance).
+		// Original test checked: assertEquals(5, m2AndMean.get()) which encoded mean=5, M2=0.
+		assertEquals(5.0, worker.getLocalMean(), 0.001);
+		assertEquals(0.0, worker.getLocalM2(), 0.001);
+		assertEquals(5, worker.getLocalN());
 	}
 }
