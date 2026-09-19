@@ -1,20 +1,90 @@
 -------------------------- MODULE DiskStateQueue ---------------------------
-EXTENDS Integers, FiniteSets, TLC
+EXTENDS Integers, FiniteSets
 
-CONSTANTS Threads,
-          Workers,
-          Capacity,
-          Writer,
-          Reader,
-          Cleaner,
-          SpuriousWakeups,
-          RestoreQueue
+\* Model switch, not a Java runtime configuration option.
+CONSTANT SpuriousWakeups    \* Allow spurious Object.wait() returns.
+
+CONSTANTS Threads,         \* Java thread identities (names in traces).
+          Workers,         \* Cardinality models TLCGlobals.getNumWorkers().
+          Capacity,        \* DiskStateQueue.BufSize: entries per buffer/pool.
+          Writer,          \* Identity of the StatePoolWriter thread.
+          Reader,          \* Identity of the StatePoolReader thread.
+          Cleaner,         \* Identity of the StatePoolCleaner thread.
+          RestoreQueue     \* Checkpoint occupancies/pool indices for recover().
 
 None == "-"
 Clients == Threads \ { Writer, Reader, Cleaner }
 Monitors == { "q", "w", "r", "mu" }
 EmptyQueue == [ enq |-> 0, deq |-> 0, lo |-> 1, hi |-> 0 ]
 Size(q) == q.enq + q.deq + Capacity * ( q.hi - q.lo + 1 )
+
+QueueType == [enq:0 .. Capacity, deq:0 .. Capacity, lo:Nat \ { 0 }, hi:Nat ]
+
+\* A recording may omit background threads and may contain no workers.
+ASSUME ThreadAssumption == /\ IsFiniteSet(Threads)
+                           /\ Workers \subseteq Clients
+                           /\ Cardinality({ Writer, Reader, Cleaner }) = 3
+                           /\ None \notin
+                                Threads \cup { Writer, Reader, Cleaner }
+ASSUME CapacityAssumption == Capacity \in Nat \ { 0 }
+ASSUME SwitchAssumption == SpuriousWakeups \in BOOLEAN
+ASSUME RestoreAssumption == /\ RestoreQueue \in QueueType
+                            /\ RestoreQueue.lo <= RestoreQueue.hi + 1
+
+ControlLocations ==
+  { "idle",
+    "new",
+    "call",
+    "unsafeEnd",
+    "announce",
+    "announced",
+    "waitQ",
+    "offerEnter",
+    "offer",
+    "offerFlushed",
+    "offered",
+    "awaitEnter",
+    "await",
+    "waitW",
+    "fillReady",
+    "takeEnter",
+    "take",
+    "filled",
+    "filledReturn",
+    "run",
+    "wait",
+    "exit",
+    "exited",
+    "published",
+    "finish",
+    "finishMu",
+    "finishEnd",
+    "finishWriter",
+    "finishReader",
+    "finishReaderEnd",
+    "finishCleaner",
+    "suspend",
+    "barrier",
+    "barrierDone",
+    "barrierMu",
+    "waitMu",
+    "recheck",
+    "checkpoint",
+    "commit",
+    "recovered"
+  }
+Operations == { "none", "put", "get", "peek", "unsafePut" }
+Kinds ==
+  { "none",
+    "load",
+    "cache",
+    "loadDone",
+    "cacheHit",
+    "cacheMiss",
+    "finished",
+    "wait",
+    "done"
+  }
 
 \* Values and physical arrays are abstracted to occupancies. File numbers are
 \* retained: [deleted, disk) is the interval of successfully written pool files.
@@ -58,6 +128,30 @@ vars ==
      snapshot,
      checkpointTo
   >>
+
+\* Type and range predicate for every variable, including thread-local state.
+TypeOK ==
+  /\ queue \in QueueType /\ queue.lo <= queue.hi + 1
+  /\ balance \in Nat
+  /\ disk \in 0 .. queue.hi /\ deleted \in 0 .. ( queue.lo - 1 )
+  /\ writer \in [file:{ -1 } \cup ( 0 .. queue.hi ), done:BOOLEAN ]
+  /\ reader \in
+       [file:{ -1 } \cup ( 0 .. queue.lo ),
+         cache:{ -1 } \cup ( 0 .. queue.lo ),
+         canRead:BOOLEAN,
+         done:BOOLEAN
+       ]
+  /\ cleaner \in [done:BOOLEAN, limit:Nat, ready:BOOLEAN ]
+  /\ finish \in BOOLEAN /\ stop \in BOOLEAN
+  /\ counted \subseteq Workers
+  /\ owner \in [Monitors -> Threads \cup { None }]
+  /\ waiters \in [Monitors -> SUBSET Threads]
+  /\ pc \in [Threads -> ControlLocations]
+  /\ op \in [Threads -> Operations]
+  /\ kind \in [Threads -> Kinds]
+  /\ result \in [Threads -> BOOLEAN]
+  /\ snapshot \in QueueType /\ snapshot.lo <= snapshot.hi + 1
+  /\ checkpointTo \in Nat
 
 Init ==
   /\ queue = EmptyQueue /\ balance = 0 /\ disk = 0 /\ deleted = 0
@@ -1386,19 +1480,42 @@ Advance(p, from, to) ==
          >>
      )
 
-TypeOK ==
-  /\ queue.enq \in 0 .. Capacity /\ queue.deq \in 0 .. Capacity
-  /\ queue.lo \in Nat /\ queue.hi \in Nat /\ queue.lo <= queue.hi + 1
-  /\ disk \in 0 .. queue.hi /\ deleted \in 0 .. ( queue.lo - 1 )
-  /\ owner \in [Monitors -> Threads \cup { None }]
-  /\ waiters \in [Monitors -> SUBSET Threads] /\ counted \subseteq Workers
-  /\ writer.file \in { -1 } \cup ( 0 .. queue.hi )
-  /\ reader.file \in { -1 } \cup ( 0 .. queue.lo ) /\
-       reader.cache \in { -1 } \cup ( 0 .. queue.lo )
+\* Conservation invariant: the enqueue/dequeue balance equals the
+\* nonnegative abstract queue size.
 Conservation == balance = Size(queue) /\ balance >= 0
+
 DiskSafety ==
+  \* At most one allocated pool remains unwritten.
   /\ queue.hi - disk \in 0 .. 1
+  \* A cached pool is written and not deleted.
   /\ reader.cache # -1 => reader.cache \in deleted .. ( disk - 1 )
+  \* A monitor's owner is not a member of its wait set.
   /\ \A m \in Monitors: owner[m] \notin waiters[m]
+
+\* Conjunction of state predicates; []Safety is the safety property.
 Safety == TypeOK /\ Conservation /\ DiskSafety
+
+ThreadLocal(p) == << pc[p], op[p], kind[p], result[p] >>
+
+\* A step changes the local state of at most one thread. Monitor owners and
+\* wait sets are shared state and are not subject to this locality property.
+Locality ==
+  [][\A p, q \in Threads:
+    ( p # q /\ ThreadLocal(p)' # ThreadLocal(p) ) => UNCHANGED ThreadLocal(q)]_vars
+
+\* The following liveness properties require client and fairness assumptions.
+\* Every invoked suspension eventually returns, possibly because of shutdown.
+SuspensionProgress ==
+  \A p \in Clients: ( pc[p] = "suspend" ) ~> ( pc[p] = "idle" )
+
+\* Every invoked shutdown eventually returns.
+ShutdownProgress == \A p \in Clients: ( pc[p] = "finish" ) ~> ( pc[p] = "idle" )
+
+\* A pending pool is eventually written, by the writer or an enqueue caller.
+WriteProgress(f) == ( writer.file = f ) ~> ( disk > f )
+
+\* A pending refill eventually returns to the dequeue caller.
+ReadProgress ==
+  \A p \in Clients:
+    ( pc[p] \in { "awaitEnter", "takeEnter" } ) ~> ( pc[p] = "filledReturn" )
 =============================================================================
