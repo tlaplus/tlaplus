@@ -1,0 +1,18 @@
+# Fixed workload, launched from target/queue-traces by collect-queue-traces.
+# Load the bundled JPF defaults independently of the run's working directory.
+@include = ${config_path}/../../../jpf.properties
+
+target = tlc2.tool.queue.DiskStateQueueJPFTest
+target.entry = runTestMethod([Ljava/lang/String;)V
+target.test_method = testDeadlockFreedom
+classpath = ../verify-model-class;../../test-class;../../class
+
+# Search to exhaustion: no time or state budget.
+listener = tlc2.tool.queue.QueueTraceListener
+
+search.class = gov.nasa.jpf.search.DFSearch
+vm.storage.class = gov.nasa.jpf.vm.JenkinsStateSet
+vm.scheduler.sync.class = gov.nasa.jpf.vm.AllRunnablesSyncPolicy
+vm.shared.break_on_exposure = false
+
+report.console.finished = result,statistics
