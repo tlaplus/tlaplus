@@ -113,6 +113,7 @@ public final class DiskStateQueue2TLA {
 		TakeCacheMiss, // it had none, so enqBuf was drained into deqBuf instead
 		NotifyCleaner, // asking the cleaner to delete the pool files below loPool
 		Clean, // it did, and advanced lastLoPool
+		StartChkpt, // stopped and woke the cleaner before writing the checkpoint
 		BeginChkpt,
 		CommitChkpt,
 		Recover,
@@ -136,11 +137,13 @@ public final class DiskStateQueue2TLA {
 		SPeekEnd,
 		AvailFinished, // asked for states, but the queue was already shut down
 		AvailNoWork, // queue empty and all other workers waiting: the search is over
+		AvailCountLast, // counted the last worker before acquiring the checkpointer's monitor
 		AvailAllWaiting, // last to wait but queue not empty, so woke the checkpointer
 		AvailWait, // gave up the queue to wait for a state
 		AvailWoke,
 		AvailWokeFinished, // and found the queue shut down
 		FinishAllBegin,
+		FinishAllNotify, // set finish and notified queue waiters before acquiring mu
 		FinishAllNotifyMu, // the checkpointer must not wait for workers that are gone
 		FinishAllEnd,
 		SuspendBegin, // the checkpointer holds the queue and wants the workers to stop

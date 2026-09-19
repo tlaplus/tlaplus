@@ -208,6 +208,7 @@ public abstract class StateQueue implements IStateQueue {
 					trace(Action.AvailNoWork);
 					return false;
 				}
+				trace(Action.AvailCountLast);
 				// TODO what happens if control flow exits without ever
 				// notifying the checkpoint (mu.wait()) thread? In case
 				// of distributed TLC, this is the main thread of
@@ -242,6 +243,7 @@ public abstract class StateQueue implements IStateQueue {
 		this.finish = true;
 		// Notify all other worker threads.
 		this.notifyAll();
+		trace(Action.FinishAllNotify);
 		// Need to wake main thread that waits (mu.wait()) to suspend access to
 		// the squeue (see suspendAll). The main thread might attempt to do its
 		// periodic work (tlc2.tool.ModelChecker.doPeriodicWork()) the moment

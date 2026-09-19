@@ -5,7 +5,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.TreeSet;
 
 import jdk.jfr.consumer.RecordedEvent;
 import jdk.jfr.consumer.RecordingFile;
@@ -24,7 +25,7 @@ import util.UniqueString;
  * <p>
  * This class reads the recording and groups events with the same timestamp so
  * the replay can try their possible orders while preserving each thread's own
- * order. See the comment above {@code RecordedStep} in
+ * order. See the comment above {@code TraceNext} in
  * {@code DiskStateQueueTrace.tla} for how TLA+ nondeterminism handles these ties.
  * The queue's buffer size is supplied separately.
  *
@@ -39,7 +40,6 @@ import util.UniqueString;
  */
 public final class QueueTraceData {
 
-	private static final StringValue EMPTY = new StringValue("");
 	private static final Data DATA = read();
 
 	private static final class Event {
@@ -59,9 +59,7 @@ public final class QueueTraceData {
 	private static final class Data {
 
 		RecordValue[] events;
-		StringValue[] actions;
 		int[] ends, previous;
-		Map<String, int[]> byThread = new TreeMap<>();
 		SetEnumValue threads, workers;
 		int capacity;
 	}
@@ -83,8 +81,7 @@ public final class QueueTraceData {
 	 * Reads queue events from JFR, sorts them by raw timestamp, thread, and sequence
 	 * number, and stores them as TLC records in 1-based arrays.
 	 * Records timestamp-group boundaries and each event's same-thread predecessor
-	 * within its group so replay can explore tied events in valid orders. Builds
-	 * per-thread event indexes for looking ahead to a thread's next action.
+	 * within its group so replay can explore tied events in valid orders.
 	 */
 	private static Data read() {
 		try {
@@ -97,6 +94,7 @@ public final class QueueTraceData {
 
 			// Extract queue actions, thread names, timestamps, and sequence numbers from JFR.
 			List<Event> events = new ArrayList<>();
+			Set<String> threads = new TreeSet<>();
 			try (RecordingFile input = new RecordingFile(Path.of(required("queue.trace")))) {
 				while (input.hasMoreEvents()) {
 					RecordedEvent raw = input.readEvent();
@@ -114,6 +112,7 @@ public final class QueueTraceData {
 					long time = raw.getLong("startTime");
 					String action = raw.getString("action");
 					events.add(new Event(name, action, time, seq));
+					threads.add(name);
 				}
 			}
 			if (events.isEmpty()) {
@@ -128,11 +127,9 @@ public final class QueueTraceData {
 			// Allocate 1-based replay arrays; index zero is unused.
 			int n = events.size();
 			data.events = new RecordValue[n + 1];
-			data.actions = new StringValue[n + 1];
 			data.ends = new int[n + 1];
 			data.previous = new int[n + 1];
 			Map<String, Integer> last = new HashMap<>();
-			Map<String, List<Integer>> byThread = new TreeMap<>();
 
 			// Build TLC records and ordering information one timestamp group at a time.
 			for (int start = 1; start <= n;) {
@@ -146,9 +143,7 @@ public final class QueueTraceData {
 				last.clear();
 				for (int i = start; i <= end; i++) {
 					Event e = events.get(i - 1);
-					byThread.computeIfAbsent(e.thread, k -> new ArrayList<>()).add(i);
-					data.actions[i] = new StringValue(e.action);
-					data.events[i] = record(new String[] { "action", "thread" }, data.actions[i],
+					data.events[i] = record(new String[] { "action", "thread" }, new StringValue(e.action),
 							new StringValue(e.thread));
 					data.ends[i] = end;
 					data.previous[i] = last.getOrDefault(e.thread, 0);
@@ -157,12 +152,10 @@ public final class QueueTraceData {
 				start = end + 1;
 			}
 
-			// Finalize per-thread lookahead indexes and the thread/worker sets used by TLC.
-			byThread.forEach((thread, indices) -> data.byThread.put(thread,
-					indices.stream().mapToInt(Integer::intValue).toArray()));
+			// Build the thread and worker sets used by TLC.
 			data.threads = new SetEnumValue(
-					data.byThread.keySet().stream().map(StringValue::new).toArray(Value[]::new), false);
-			data.workers = new SetEnumValue(data.byThread.keySet().stream().filter(s -> s.startsWith("TLCWorkerThread-"))
+					threads.stream().map(StringValue::new).toArray(Value[]::new), false);
+			data.workers = new SetEnumValue(threads.stream().filter(s -> s.startsWith("TLCWorkerThread-"))
 					.map(StringValue::new).toArray(Value[]::new), false);
 
 			return data;
@@ -197,20 +190,5 @@ public final class QueueTraceData {
 
 	public static Value PreviousInGroup(Value index) {
 		return IntValue.gen(DATA.previous[((IntValue) index).val]);
-	}
-
-	public static Value NextAction(Value thread, Value index, Value used) {
-		int[] indices = DATA.byThread.get(((StringValue) thread).val.toString());
-		if (indices == null) {
-			return EMPTY;
-		}
-		int offset = Arrays.binarySearch(indices, ((IntValue) index).val);
-		if (offset < 0) {
-			offset = -offset - 1;
-		}
-		while (offset < indices.length && used.member(IntValue.gen(indices[offset]))) {
-			offset++;
-		}
-		return offset < indices.length ? DATA.actions[indices[offset]] : EMPTY;
 	}
 }

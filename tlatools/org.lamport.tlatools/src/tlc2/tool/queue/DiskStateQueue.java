@@ -185,6 +185,7 @@ public class DiskStateQueue extends StateQueue {
 			// nothing of checkpoints).
 			this.cleaner.finished = true;
 			this.cleaner.notifyAll();
+			trace(Action.StartChkpt);
 		}
 		
 		String filename = this.filePrefix + "queue.tmp";
