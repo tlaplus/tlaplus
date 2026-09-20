@@ -1517,6 +1517,67 @@ SpuriousWakeup(p) ==
   /\ UNCHANGED << queue, balance, disk, deleted, writer, reader, finish, stop,
                   counted, owner, pc, op, kind, result, snapshot, checkpointTo >>
 
+\* Queue-action groups; workloads determine when clients invoke each operation.
+EnqueueStep(p) ==
+  \/ AppendEntry(p)
+  \/ StartOffer(p)
+  \/ EnterWriter(p, TRUE)
+  \/ FlushOld(p)
+  \/ Offer(p)
+  \/ Advance(p, "offered", "call")
+
+DequeueStep(p) ==
+  \/ Remove(p, FALSE)
+  \/ EmptyReturn(p, FALSE)
+  \/ EmptyReturn(p, TRUE)
+  \/ CountLast(p)
+  \/ AnnounceLast(p)
+  \/ WaitWorker(p)
+  \/ WakeWorker(p)
+  \/ StartAwait(p)
+  \/ EnterWriter(p, FALSE)
+  \/ WaitWriter(p)
+  \/ WakeWriterCaller(p)
+  \/ AwaitDone(p)
+  \/ \E k \in { "load", "cache" }: StartTake(p, k)
+  \/ EnterReader(p)
+  \/ \E source \in { "cache", "file", "direct", "empty" }: Take(p, source)
+  \/ Advance(p, "filled", "filledReturn")
+
+SuspendStep(p) ==
+  \/ StopWorkers(p)
+  \/ EnterBarrier(p)
+  \/ WaitBarrier(p)
+  \/ WakeBarrier(p)
+  \/ Recheck(p)
+  \/ Suspended(p)
+  \/ \E at \in { "queue", "mu", "recheck" }: SuspendFinished(p, at)
+
+FinishStep(p) ==
+  \/ FinishBegin(p)
+  \/ FinishSignal(p)
+  \/ FinishNotify(p)
+  \/ FinishQueue(p)
+  \/ FinishWriter(p)
+  \/ FinishReaderBegin(p)
+  \/ FinishReader(p)
+  \/ FinishCleaner(p)
+
+WriterStep ==
+  \/ Boot(Writer, "w")
+  \/ BackgroundWait(Writer, "w")
+  \/ BackgroundWake(Writer, "w")
+  \/ Publish
+  \/ Advance(Writer, "published", "run")
+  \/ BackgroundExit(Writer, "w")
+
+ReaderStep ==
+  \/ Boot(Reader, "r")
+  \/ BackgroundWait(Reader, "r")
+  \/ BackgroundWake(Reader, "r")
+  \/ Prefetch
+  \/ BackgroundExit(Reader, "r")
+
 \* Conservation invariant: the enqueue/dequeue balance equals the
 \* nonnegative abstract queue size.
 Conservation == balance = Size(queue) /\ balance >= 0
