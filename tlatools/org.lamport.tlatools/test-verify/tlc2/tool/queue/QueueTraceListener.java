@@ -25,19 +25,8 @@
  ******************************************************************************/
 package tlc2.tool.queue;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
 import gov.nasa.jpf.jvm.bytecode.INVOKESTATIC;
-import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
@@ -53,7 +42,8 @@ import gov.nasa.jpf.vm.VM;
  * listener records the thread and action, then skips the marker bytecode so JFR
  * and its counters do not become part of JPF's program state. These markers could
  * potentially be retired by recognizing equivalent events through JPF's
- * instruction, method, and monitor callbacks.
+ * instruction, method, and monitor callbacks. {@link QueueMethodTraceListener}
+ * provides a coarser, method-based alternative that does not use markers.
  *
  * <p>
  * Histories with the same beginning share nodes in a prefix tree. Each node adds
@@ -68,14 +58,9 @@ import gov.nasa.jpf.vm.VM;
  * against the queue specification. The Ant target removes the previous file
  * before collection, so an incomplete search cannot leave a replayable export.
  */
-public final class QueueTraceListener extends ListenerAdapter {
+public final class QueueTraceListener extends QueueTraceRecorder {
 
 	private static final String MARKER = "tlc2.tool.queue.DiskStateQueue2TLA";
-	private final Map<String, Integer> edges = new HashMap<>();
-	private final List<String> nodes = new ArrayList<>(List.of("parent\tthread\taction"));
-	private final List<Integer> prefixesByDepth = new ArrayList<>(List.of(0));
-	private int current;
-	private boolean limited;
 
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction instruction) {
@@ -91,14 +76,7 @@ public final class QueueTraceListener extends ListenerAdapter {
 		if (!(MARKER + "$Action").equals(actionField.getClassName())) {
 			throw new IllegalArgumentException("Unexpected trace argument: " + actionField);
 		}
-		String edge = current + "\t" + ti.getName() + "\t" + actionField.getFieldName();
-		Integer child = edges.get(edge);
-		if (child == null) {
-			child = nodes.size();
-			nodes.add(edge);
-			edges.put(edge, child);
-		}
-		current = child;
+		record(ti, actionField.getFieldName());
 		ti.skipInstruction(instruction.getNext().getNext());
 	}
 
@@ -109,40 +87,5 @@ public final class QueueTraceListener extends ListenerAdapter {
 		INVOKESTATIC call = (INVOKESTATIC) instruction;
 		return MARKER.equals(call.getInvokedMethodClassName())
 				&& "trace(Ltlc2/tool/queue/DiskStateQueue2TLA$Action;)V".equals(call.getInvokedMethodName());
-	}
-
-	@Override
-	public void stateAdvanced(Search search) {
-		prefixesByDepth.add(current);
-	}
-
-	@Override
-	public void stateBacktracked(Search search) {
-		int depth = search.getDepth();
-		prefixesByDepth.subList(depth + 1, prefixesByDepth.size()).clear();
-		current = prefixesByDepth.get(depth);
-	}
-
-	@Override
-	public void stateRestored(Search search) {
-		throw new IllegalStateException("Use depth-first search for queue trace collection");
-	}
-
-	@Override
-	public void searchConstraintHit(Search search) {
-		limited = true;
-	}
-
-	@Override
-	public void searchFinished(Search search) {
-		if (limited || search.isDone() || search.getDepth() != 0 || !search.getErrors().isEmpty()) {
-			throw new IllegalStateException("JPF search did not finish successfully");
-		}
-		try {
-			Files.write(Path.of("nodes.tsv"), nodes);
-			System.out.println("Recorded " + (nodes.size() - 1) + " queue execution prefixes.");
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
 	}
 }

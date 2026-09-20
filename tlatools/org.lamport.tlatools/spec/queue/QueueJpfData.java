@@ -39,7 +39,8 @@ import tlc2.value.impl.Value;
 import util.UniqueString;
 
 /**
- * Makes QueueTraceListener's prefix tree available to TLC for trace validation.
+ * Makes the JPF queue listeners' prefix trees available to TLC for trace
+ * validation.
  * Each row in {@code nodes.tsv} adds one event (a thread and an action) to its
  * parent's history. Node zero is the empty history; subsequent node numbers are
  * the data rows' positions. Shared prefixes need not be expanded into separate

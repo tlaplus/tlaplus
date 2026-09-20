@@ -157,9 +157,8 @@
 		<echo message="All queue recordings replayed successfully; see target/queue-jfr-traces/" />
 	</target>
 
-	<target name="collect-queue-traces" depends="compile"
-		description="Collect single-worker DiskStateQueue execution prefixes with JPF (Java 11)">
-		<fail message="collect-queue-traces requires Ant running on Java 11 (running ${ant.java.version}).">
+	<target name="compile-queue-jpf" depends="compile">
+		<fail message="JPF queue collection requires Ant running on Java 11 (running ${ant.java.version}).">
 			<condition><not><equals arg1="${ant.java.version}" arg2="11" /></not></condition>
 		</fail>
 		<mkdir dir="${test.class.dir}" />
@@ -174,12 +173,18 @@
 			<include name="tlc2/tool/queue/WorkerTask.java" />
 			<include name="tlc2/tool/queue/MainTask.java" />
 			<include name="tlc2/tool/queue/QueueTraceListener.java" />
+			<include name="tlc2/tool/queue/QueueTraceRecorder.java" />
+			<include name="tlc2/tool/queue/QueueMethodTraceListener.java" />
 			<classpath refid="queue.trace.classpath" />
 		</javac>
 		<javac includeantruntime="false" srcdir="${test.dir}-verify-model"
 			destdir="target/verify-model-class" debug="true" release="${java.release}" encoding="UTF-8">
 			<classpath refid="queue.trace.classpath" />
 		</javac>
+	</target>
+
+	<target name="collect-queue-traces" depends="compile-queue-jpf"
+		description="Collect single-worker DiskStateQueue execution prefixes with JPF (Java 11)">
 		<mkdir dir="target/queue-traces" />
 		<!-- The listener publishes this file only after a successful, exhaustive search. -->
 		<delete file="target/queue-traces/nodes.tsv" />
@@ -211,6 +216,56 @@
 			<arg file="spec/queue/DiskStateQueueJpfTrace.tla" />
 		</java>
 		<echo message="All recorded queue prefixes accepted; see target/queue-traces/replay.log." />
+	</target>
+
+	<target name="collect-queue-jpf-method-traces" depends="compile-queue-jpf"
+		description="Collect queue observations through JPF listener callbacks (Java 11)">
+		<!-- Compile the classes used by JPF without modifying the production sources. -->
+		<copy todir="target/queue-method-src" overwrite="true">
+			<fileset dir="src" includes="tlc2/tool/queue/StateQueue.java,tlc2/tool/queue/DiskStateQueue.java,tlc2/util/StatePoolWriter.java,tlc2/util/StatePoolReader.java" />
+			<filterchain>
+				<linecontainsregexp negate="true">
+					<regexp pattern="^\s*(trace\(Action\.|import .*DiskStateQueue2TLA)" />
+				</linecontainsregexp>
+			</filterchain>
+		</copy>
+		<mkdir dir="target/queue-method-class" />
+		<javac includeantruntime="false" srcdir="target/queue-method-src"
+			destdir="target/queue-method-class" debug="true" release="${java.release}" encoding="UTF-8">
+			<classpath refid="queue.trace.classpath" />
+		</javac>
+		<mkdir dir="target/queue-method-traces" />
+		<delete file="target/queue-method-traces/nodes.tsv" />
+		<echo message="Collecting queue observations; log: target/queue-method-traces/search.log" />
+		<java classname="gov.nasa.jpf.JPF" fork="true" maxmemory="2048m" failonerror="true"
+			dir="target/queue-method-traces" output="target/queue-method-traces/search.log">
+			<classpath refid="queue.trace.classpath" />
+			<arg file="test-verify/tlc2/tool/queue/DiskStateQueueTrace.jpf" />
+			<arg value="+listener=tlc2.tool.queue.QueueMethodTraceListener" />
+			<arg value="+classpath=../queue-method-class;../verify-model-class;../../test-class;../../class" />
+		</java>
+		<fail message="JPF search did not finish successfully; see target/queue-method-traces/search.log.">
+			<condition><not><available file="target/queue-method-traces/nodes.tsv" /></not></condition>
+		</fail>
+	</target>
+
+	<target name="validate-queue-jpf-method-traces" description="Replay JPF queue observations against DiskStateQueue">
+		<mkdir dir="${test.class.dir}" />
+		<javac includeantruntime="false" srcdir="spec/queue" includes="QueueJpfData.java"
+			destdir="${test.class.dir}" debug="true" release="${java.release}" encoding="UTF-8">
+			<classpath refid="queue.trace.classpath" />
+		</javac>
+		<java classname="tlc2.TLC" fork="true" maxmemory="2048m" failonerror="true"
+			dir="target/queue-method-traces" output="target/queue-method-traces/replay.log">
+			<classpath refid="queue.trace.classpath" />
+			<sysproperty key="tlc2.tool.impl.Tool.cdot" value="true" />
+			<arg value="-workers" /><arg value="1" />
+			<arg value="-noGenerateSpecTE" />
+			<arg value="-metadir" /><arg file="target/queue-method-traces/replay-states" />
+			<arg value="-config" /><arg file="spec/queue/DiskStateQueueMethodTrace.cfg" />
+			<arg file="spec/queue/DiskStateQueueMethodTrace.tla" />
+		</java>
+		<echo message="All recorded queue observation prefixes accepted; see target/queue-method-traces/replay.log." />
 	</target>
 
 	<!-- Compiles and runs *only* the long-running tests. Not the ones. -->
