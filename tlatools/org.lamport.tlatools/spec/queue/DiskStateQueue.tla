@@ -1224,7 +1224,11 @@ EnterBarrier(p) ==
 
 WaitBarrier(p) ==
   /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ kind[p] # "finished"
-  /\ kind[p] = "wait" \/ NeedWorkers
+  \* A worker can decrement and increment numWaiting while p holds mu. The
+  \* condition read can precede that increment although the wait follows it.
+  \* Abstract this interval while the worker's notification is still pending.
+  /\ kind[p] = "wait" \/ NeedWorkers \/
+       ( \E w \in Workers: pc[w] = "announce" )
   /\ ( owner' = [owner EXCEPT !["mu"] = None] /\
              waiters' = [waiters EXCEPT !["mu"] = @ \cup { p }] /\
            pc' = [pc EXCEPT ![p] = "waitMu"] /\
