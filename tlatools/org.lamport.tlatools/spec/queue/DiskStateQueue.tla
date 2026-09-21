@@ -766,7 +766,7 @@ Boot(p, m) ==
 BackgroundWait(p, m) ==
   /\ Own(p, m) /\ pc[p] = "run"
   /\ IF p = Writer
-     THEN writer.file = -1 /\ ~writer.done
+     THEN writer.file = -1
      ELSE reader.file = -1 \/ reader.cache # -1 \/ ~reader.canRead
   /\ ( owner' = [owner EXCEPT ![m] = None] /\
              waiters' = [waiters EXCEPT ![m] = @ \cup { p }] /\
@@ -796,7 +796,8 @@ BackgroundWake(p, m) ==
            pc' =
              [pc EXCEPT
              ![p] =
-             IF p = Reader /\ reader.done THEN "exit" ELSE "run"] /\
+             IF (p = Reader /\ reader.done) \/ (p = Writer /\ writer.file = -1)
+             THEN "exit" ELSE "run"] /\
          UNCHANGED << queue,
             balance,
             disk,
@@ -869,7 +870,7 @@ Prefetch ==
 BackgroundExit(p, m) ==
   /\ Own(p, m)
   /\ IF p = Writer
-     THEN pc[p] = "run" /\ writer.done /\ writer.file = -1
+     THEN pc[p] = "exit" /\ writer.file = -1
      ELSE pc[p] = "exit" /\ reader.done
   /\ ( owner' = [owner EXCEPT ![m] = None] /\ pc' = [pc EXCEPT ![p] = "exited"] /\
          UNCHANGED << queue,
