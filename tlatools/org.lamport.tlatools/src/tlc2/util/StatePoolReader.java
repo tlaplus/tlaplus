@@ -42,7 +42,7 @@ public class StatePoolReader extends Thread {
   public final synchronized void wakeup() {
     this.canRead = true;
     this.notify();
-    trace(Action.ReaderWakeup);
+    // trace(Action.ReaderWakeup);
   }
 
   public final synchronized void restart(File file, boolean canRead) {
@@ -50,7 +50,7 @@ public class StatePoolReader extends Thread {
     this.isFull = false;
     this.canRead = canRead;
     this.notify();
-    trace(Action.ReaderRestart);
+    // trace(Action.ReaderRestart);
   }
   
   /*
@@ -60,7 +60,7 @@ public class StatePoolReader extends Thread {
    */
   public final synchronized TLCState[] doWork(TLCState[] deqBuf, File file)
   throws IOException, ClassNotFoundException {
-    trace(Action.ReaderDoWorkBegin);
+    // trace(Action.ReaderDoWorkBegin);
     if (this.isFull) {
       assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
       TLCState[] res = this.buf;
@@ -69,7 +69,7 @@ public class StatePoolReader extends Thread {
       this.isFull = false;      // <file, false>
       this.canRead = true;
       this.notify();
-      trace(Action.ReaderDoWorkPrefetched);
+      // trace(Action.ReaderDoWorkPrefetched);
       return res;
     }
     else if (this.poolFile != null) {
@@ -82,7 +82,7 @@ public class StatePoolReader extends Thread {
       this.poolFile = file;     // <file, false>
       this.canRead = true;
       this.notify();
-      trace(Action.ReaderDoWorkPending);
+      // trace(Action.ReaderDoWorkPending);
       return deqBuf;
     }
     else {
@@ -92,7 +92,7 @@ public class StatePoolReader extends Thread {
 	deqBuf[i].read(vis);
       }
       vis.close();              // <null, false>
-      trace(Action.ReaderDoWorkDirect);
+      // trace(Action.ReaderDoWorkDirect);
       return deqBuf;
     }
   }
@@ -102,7 +102,7 @@ public class StatePoolReader extends Thread {
    */
   public final synchronized TLCState[] getCache(TLCState[] deqBuf, File file)
   throws IOException, ClassNotFoundException {
-    trace(Action.ReaderGetCacheBegin);
+    // trace(Action.ReaderGetCacheBegin);
     if (this.isFull) {
       assert this.poolFile == null : EC.SYSTEM_FILE_NULL;
       TLCState[] res = this.buf;
@@ -110,7 +110,7 @@ public class StatePoolReader extends Thread {
       this.poolFile = file;
       this.isFull = false;      // <file, false>
       this.canRead = false;
-      trace(Action.ReaderGetCachePrefetched);
+      // trace(Action.ReaderGetCachePrefetched);
       return res;
     }
     else if (this.poolFile != null && this.canRead) {
@@ -124,10 +124,10 @@ public class StatePoolReader extends Thread {
       // this.poolFile.delete();
       this.poolFile = file;    // <file, false>
       this.canRead = false;
-      trace(Action.ReaderGetCacheRead);
+      // trace(Action.ReaderGetCacheRead);
       return deqBuf;
     }
-    trace(Action.ReaderGetCacheEmpty);
+    // trace(Action.ReaderGetCacheEmpty);
     return null;
   }
 
@@ -145,7 +145,7 @@ public class StatePoolReader extends Thread {
 	oos.writeObject(this.buf[i]);
       }
     }
-    trace(Action.ReaderBeginChkpt);
+    // trace(Action.ReaderBeginChkpt);
   }
 
   /* Note that this method is not synchronized. */
@@ -167,7 +167,7 @@ public class StatePoolReader extends Thread {
     {
       Assert.fail(EC.SYSTEM_CHECKPOINT_RECOVERY_CORRUPT, e);
     }
-    trace(Action.ReaderRecover);
+    // trace(Action.ReaderRecover);
   }
   
   /**
@@ -177,14 +177,14 @@ public class StatePoolReader extends Thread {
   public void run() {
     try {
       synchronized(this) {
-	trace(Action.ReaderRunBegin);
+	// trace(Action.ReaderRunBegin);
 	while (true) {
 	  while (this.poolFile == null || this.isFull || !this.canRead) {
-	    trace(Action.ReaderWait);
+	    // trace(Action.ReaderWait);
 	    this.wait();
-	    trace(Action.ReaderWoke);
+	    // trace(Action.ReaderWoke);
 	    if(this.finished ) {
-	    	trace(Action.ReaderExit);
+		// trace(Action.ReaderExit);
 	    	return;
 	    }
 	  }
@@ -196,7 +196,7 @@ public class StatePoolReader extends Thread {
 	  vis.close();
 	  this.poolFile = null;
 	  this.isFull = true;       // <null, true>
-	  trace(Action.ReaderRead);
+	  // trace(Action.ReaderRead);
 	}
       }
     }
@@ -212,7 +212,7 @@ public class StatePoolReader extends Thread {
   
   public void setFinished() {
 	  finished = true;
-	  trace(Action.ReaderSetFinished);
+	  // trace(Action.ReaderSetFinished);
   }
   
 }
