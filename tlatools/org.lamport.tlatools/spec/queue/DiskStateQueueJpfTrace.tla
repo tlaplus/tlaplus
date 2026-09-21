@@ -9,11 +9,17 @@ JpfInit ==
     /\ Init /\ node = 0
     /\ TLCSet(0, {0})
 
+JpfStep(child) ==
+    /\ LET event == JpfEvent(child)
+       IN Observe(event.thread, event.action)
+    /\ node' = child
+
+\* Compose an unobserved spurious wakeup with the recorded step, consuming it once.
 JpfNext ==
     \E child \in JpfChildren(node):
-        /\ LET event == JpfEvent(child)
-           IN Observe(event.thread, event.action)
-        /\ node' = child
+        \/ JpfStep(child)
+        \/ (SpuriousWakeup(JpfEvent(child).thread) /\ UNCHANGED node)
+           \cdot JpfStep(child)
 
 \* Each node identifies one recorded execution prefix. All must be reachable,
 \* each through at least one specification behavior prefix. Reaching just one

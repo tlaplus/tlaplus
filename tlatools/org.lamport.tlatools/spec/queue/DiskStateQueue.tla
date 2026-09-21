@@ -169,7 +169,7 @@ Init ==
 Free(m) == owner[m] = None
 Own(p, m) == owner[m] = p
 CanAcquire(p, m) == owner[m] \in { None, p }
-CanWake(p, m) == Free(m) /\ ( p \notin waiters[m] \/ SpuriousWakeups )
+CanWake(p, m) == Free(m) /\ p \notin waiters[m]
 Signals(m) ==
   IF waiters[m] = {} THEN { {} } ELSE {waiters[m] \ { p }: p \in waiters[m]}
 NeedWorkers == Cardinality(counted) < Cardinality(Workers)
@@ -917,7 +917,7 @@ RequestClean(p) ==
      )
 
 Clean ==
-  /\ ~cleaner.done /\ ( cleaner.ready \/ SpuriousWakeups )
+  /\ ~cleaner.done /\ cleaner.ready
   /\ cleaner.limit <= queue.lo - 1
   /\ ( deleted' = cleaner.limit /\ cleaner' = [cleaner EXCEPT !.ready = FALSE] /\
          UNCHANGED << queue,
@@ -1497,6 +1497,21 @@ Advance(p, from, to) ==
             checkpointTo
          >>
      )
+
+\* Remove a thread from its wait set without notification. Monitor reacquisition
+\* and return from wait are subsequent ordinary actions, not part of this step.
+SpuriousWakeup(p) ==
+  /\ SpuriousWakeups
+  /\ \/ /\ \E m \in Monitors:
+             /\ p \in waiters[m]
+             /\ waiters' = [waiters EXCEPT ![m] = @ \ { p }]
+        /\ UNCHANGED cleaner
+     \* Cleaner waiting is abstracted by ready rather than a monitor wait set.
+     \/ /\ p = Cleaner /\ ~cleaner.done /\ ~cleaner.ready
+        /\ cleaner' = [cleaner EXCEPT !.ready = TRUE]
+        /\ UNCHANGED waiters
+  /\ UNCHANGED << queue, balance, disk, deleted, writer, reader, finish, stop,
+                  counted, owner, pc, op, kind, result, snapshot, checkpointTo >>
 
 \* Conservation invariant: the enqueue/dequeue balance equals the
 \* nonnegative abstract queue size.

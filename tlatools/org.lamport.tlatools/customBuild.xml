@@ -134,6 +134,7 @@
 					dir="spec/queue" output="target/queue-jfr-traces/@{id}.replay.log">
 					<classpath refid="queue.trace.classpath" />
 					<sysproperty key="queue.trace" value="${basedir}/target/queue-jfr-traces/@{id}.jfr" />
+					<sysproperty key="tlc2.tool.impl.Tool.cdot" value="true" />
 					<sysproperty key="queue.capacity" value="@{buffer}" />
 					<arg value="-workers" /><arg value="1" />
 					<arg value="-noGenerateSpecTE" />
@@ -202,6 +203,7 @@
 		<java classname="tlc2.TLC" fork="true" maxmemory="2048m" failonerror="true"
 			dir="target/queue-traces" output="target/queue-traces/replay.log">
 			<classpath refid="queue.trace.classpath" />
+			<sysproperty key="tlc2.tool.impl.Tool.cdot" value="true" />
 			<arg value="-workers" /><arg value="1" />
 			<arg value="-noGenerateSpecTE" />
 			<arg value="-metadir" /><arg file="target/queue-traces/replay-states" />
