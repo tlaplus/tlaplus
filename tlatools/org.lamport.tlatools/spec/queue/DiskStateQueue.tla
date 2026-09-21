@@ -1224,11 +1224,6 @@ EnterBarrier(p) ==
 
 WaitBarrier(p) ==
   /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ kind[p] # "finished"
-  \* A worker can decrement and increment numWaiting while p holds mu. The
-  \* condition read can precede that increment although the wait follows it.
-  \* Abstract this interval while the worker's notification is still pending.
-  /\ kind[p] = "wait" \/ NeedWorkers \/
-       ( \E w \in Workers: pc[w] = "announce" )
   /\ ( owner' = [owner EXCEPT !["mu"] = None] /\
              waiters' = [waiters EXCEPT !["mu"] = @ \cup { p }] /\
            pc' = [pc EXCEPT ![p] = "waitMu"] /\
@@ -1298,13 +1293,7 @@ Recheck(p) ==
      )
 
 Suspended(p) ==
-  /\ pc[p] = "barrierDone" \/
-       /\ pc[p] = "barrierMu" /\ Own(p, "mu") /\ kind[p] # "finished"
-       /\ kind[p] = "done" \/ ~NeedWorkers \/
-            \* numWaiting is incremented before AvailCountLast is recorded.
-            \* The read under mu can see that increment while the worker holds q.
-            ( \E w \in Workers: CanCountLast(w)
-            )
+  /\ pc[p] = "barrierDone"
   /\ ( owner' = [owner EXCEPT !["mu"] = IF @ = p THEN None ELSE @] /\
            pc' = [pc EXCEPT ![p] = "idle"] /\
          UNCHANGED << queue,
