@@ -126,13 +126,13 @@ public class StatePoolWriter extends Thread {
 	trace(Action.WriterRunBegin);
 	while (true) {
 	  while (this.poolFile == null) {
-	    trace(Action.WriterWait);
-	    this.wait();
-	    trace(Action.WriterWoke);
-	    if (this.poolFile == null) {
+	    if (this.finished) {
 	      trace(Action.WriterExit);
 	      return;
 	    }
+	    trace(Action.WriterWait);
+	    this.wait();
+	    trace(Action.WriterWoke);
 	    }
 	  ValueOutputStream vos = new ValueOutputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {
