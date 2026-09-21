@@ -46,33 +46,33 @@ public class StatePoolWriter extends Thread {
    */
   public final synchronized TLCState[] doWork(TLCState[] enqBuf, File file)
   throws IOException {
-    trace(Action.WriterDoWorkBegin);
+    // trace(Action.WriterDoWorkBegin);
     if (this.poolFile != null) {
       ValueOutputStream vos = new ValueOutputStream(this.poolFile);
       for (int i = 0; i < this.buf.length; i++) {
 	this.buf[i].write(vos);
       }
       vos.close();
-      trace(Action.WriterDoWorkLate);
+      // trace(Action.WriterDoWorkLate);
     }
     TLCState[] res = this.buf;
     this.buf = enqBuf;
     this.poolFile = file;
     this.notify();
-    trace(Action.WriterDoWorkEnd);
+    // trace(Action.WriterDoWorkEnd);
     return res;
   }
 
   /* Spin waiting for the write to complete.  */
   public final void ensureWritten() throws InterruptedException {
     synchronized(this) {
-      trace(Action.WriterAwaitBegin);
+      // trace(Action.WriterAwaitBegin);
       while (this.poolFile != null) {
-	trace(Action.WriterAwaitWait);
+	// trace(Action.WriterAwaitWait);
 	this.wait();
-	trace(Action.WriterAwaitWoke);
+	// trace(Action.WriterAwaitWoke);
       }
-      trace(Action.WriterAwaitEnd);
+      // trace(Action.WriterAwaitEnd);
     }
   }
 
@@ -86,7 +86,7 @@ public class StatePoolWriter extends Thread {
 	oos.writeObject(this.buf[i]);
       }
     }
-    trace(Action.WriterBeginChkpt);
+    // trace(Action.WriterBeginChkpt);
   }
 
   /* Note this method is not synchronized.  */
@@ -107,12 +107,12 @@ public class StatePoolWriter extends Thread {
     else {
       this.poolFile = null;
     }
-    trace(Action.WriterRecover);
+    // trace(Action.WriterRecover);
   }
 
   public final synchronized void setFinished() {
     this.finished = true;
-    trace(Action.FinishWriter);
+    // trace(Action.FinishWriter);
     this.notifyAll();
   }
 
@@ -123,16 +123,16 @@ public class StatePoolWriter extends Thread {
   public void run() {
     try {
       synchronized(this) {
-	trace(Action.WriterRunBegin);
+	// trace(Action.WriterRunBegin);
 	while (true) {
 	  while (this.poolFile == null) {
 	    if (this.finished) {
-	      trace(Action.WriterExit);
+	      // trace(Action.WriterExit);
 	      return;
 	    }
-	    trace(Action.WriterWait);
+	    // trace(Action.WriterWait);
 	    this.wait();
-	    trace(Action.WriterWoke);
+	    // trace(Action.WriterWoke);
 	    }
 	  ValueOutputStream vos = new ValueOutputStream(this.poolFile);
 	  for (int i = 0; i < this.buf.length; i++) {
@@ -142,7 +142,7 @@ public class StatePoolWriter extends Thread {
 	  this.poolFile = null;
 	  this.notify();
 	  if (this.reader != null) this.reader.wakeup();
-	  trace(Action.WriterWrote);
+	  // trace(Action.WriterWrote);
 	}
       }
     }
