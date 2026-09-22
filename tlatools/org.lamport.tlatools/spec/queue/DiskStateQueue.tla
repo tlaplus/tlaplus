@@ -1593,6 +1593,44 @@ DiskSafety ==
 \* Conjunction of state predicates; []Safety is the safety property.
 Safety == TypeOK /\ Conservation /\ DiskSafety
 
+\* Thread p requires monitor m for its next control step. A notified
+\* thread must reacquire its monitor; StatePoolWriter retains w while acquiring r.
+RequiredMonitor(p, m) ==
+  \* Enter a queue operation, return from wait, or recheck suspension.
+  \/ /\ m = "q"
+     /\ p \in Clients
+     /\ pc[p] \in { "idle", "waitQ", "recheck" }
+  \* Offer a pool, await writing, or request StatePoolWriter shutdown.
+  \/ /\ m = "w"
+     /\ pc[p] \in { "offerEnter", "awaitEnter", "waitW", "finishWriter" }
+  \* Refill a buffer or request StatePoolReader shutdown.
+  \/ /\ m = "r"
+     /\ pc[p] \in { "takeEnter", "finishReader" }
+  \* Signal or wait at the suspension barrier.
+  \/ /\ m = "mu"
+     /\ pc[p] \in { "announce", "finishMu", "barrier", "waitMu" }
+  \* StatePoolWriter starts or reacquires its monitor after waiting.
+  \/ /\ m = "w"
+     /\ p = Writer
+     /\ pc[p] \in { "new", "wait" }
+  \* StatePoolReader starts or reacquires its monitor after waiting.
+  \/ /\ m = "r"
+     /\ p = Reader
+     /\ pc[p] \in { "new", "wait" }
+  \* Publish a pool and notify StatePoolReader while retaining w.
+  \/ /\ m = "r"
+     /\ p = Writer
+     /\ pc[p] = "run"
+     /\ writer.file # -1
+
+\* Blocking on notification or monitor acquisition. Spurious wakeups are not
+\* a source of progress. The cleaner's condition wait is represented by ready.
+Blocked ==
+  UNION { waiters[m]: m \in Monitors } \cup
+    { p \in Threads:
+      \/ \E m \in Monitors: RequiredMonitor(p, m) /\ ~CanAcquire(p, m)
+      \/ p = Cleaner /\ ~cleaner.done /\ ~cleaner.ready }
+
 ThreadLocal(p) == << pc[p], op[p], kind[p], result[p] >>
 
 \* A step changes the local state of at most one thread. Monitor owners and

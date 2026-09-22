@@ -116,4 +116,22 @@ Next ==
      /\ UNCHANGED stage
 
 Spec == WorkloadInit /\ [][Next]_workloadVars
+
+\* Clients must return and the writer must complete shutdown. The reader and
+\* cleaner need not terminate for the workload to finish.
+Terminated == /\ \A p \in Clients: stage[p] = "done"
+              /\ pc[Writer] = "exited"
+
+\* Exclude terminated threads and workers not yet started by the main thread.
+ActiveThreads ==
+  { p \in Threads:
+    /\ pc[p] # "exited"
+    /\ p \in Clients => stage[p] # "done"
+    \* Main's initial batch, including pending append/return steps, must finish
+    \* before workers start. This restricts Main's stage, not the workers' stages.
+    /\ p \in Workers => stage[Main] \notin { "initialStates", "append", "putReturn" } }
+
+\* Unless terminated, at least one active thread is not blocked. This state
+\* predicate excludes spurious wakeups and does not assert eventual progress.
+DeadlockFree == Terminated \/ ActiveThreads \ Blocked # {}
 =============================================================================
