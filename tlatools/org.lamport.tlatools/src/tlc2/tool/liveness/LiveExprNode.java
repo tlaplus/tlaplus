@@ -124,8 +124,14 @@ public abstract class LiveExprNode {
 	}
 
 	/**
-	 * This method pushes a negation all the way down to the atoms. It is
-	 * currently not used.
+	 * Normalizes a TLA+ temporal expression by pushing negations down to state/action
+	 * predicates and evaluating negated Boolean constants. This cancels double negations,
+	 * applies De Morgan's laws, and uses {@code ~[]P = <>~P} and {@code ~<>P = []~P}.
+	 *
+	 * @param hasNeg if {@code true}, negate this expression first, then normalize it;
+	 *               if {@code false}, normalize this expression as is.
+	 *               For example, for {@code ~[]P},
+	 *               {@code false} produces {@code <>~P}, whereas {@code true} produces {@code []P}.
 	 */
 	public LiveExprNode pushNeg(boolean hasNeg) {
 		if (hasNeg) {

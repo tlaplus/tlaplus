@@ -689,7 +689,12 @@ public class Liveness implements ToolGlobals, ASTConstants {
 		// Converting the formula to DNF pushes negation inside (see
 		// LiveExprNode#pushNeg). This is important later when the promises are
 		// extracted (see LiveExprNode#extractPromises).
-		lexpr = lexpr.simplify().toDNF();
+		// pushNeg(false) normalizes nested negations first: toDNF does not recurse
+		// under temporal operators and can otherwise leave terms such as ~[]P in the tableau,
+		// which requires positive form. See Manna & Pnueli, Temporal Verification of
+		// Reactive Systems: Safety, Sec. 5.5 "Particle Tableaux", p. 452, for the
+		// rewriting rules that produce a congruent positive-form formula.
+		lexpr = lexpr.pushNeg(false).simplify().toDNF();
 		if ((lexpr instanceof LNBool) && !((LNBool) lexpr).b) {
 			// This branch is only reachable for a handful of properties, such as
 			// `<>[]TRUE => TRUE` -- simplify/toDNF move the LNBool to the top.
