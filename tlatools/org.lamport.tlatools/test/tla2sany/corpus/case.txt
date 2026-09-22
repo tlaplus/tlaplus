@@ -322,3 +322,558 @@ op3 ==
     )
   )
 (double_line)))
+
+===================|||
+CASE Separator Aligned with Conjunction Bullet
+The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ CASE B -> C
+       [] D -> E
+    [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (conj_list
+            (conj_item
+              (bullet_conj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Separator One Column Right of Conjunction Bullet
+The D -> E and F -> G arms both belong to the inner CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ CASE B -> C
+       [] D -> E
+     [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (conj_list
+            (conj_item
+              (bullet_conj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+Outer OTHER After CASE in Conjunction List
+The OTHER -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ CASE B -> C
+       [] D -> E
+  [] OTHER -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (conj_list
+            (conj_item
+              (bullet_conj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (other_arm (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+Outer CASE Arm After CASE in Conjunction List
+The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ CASE B -> C
+       [] D -> E
+  [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (conj_list
+            (conj_item
+              (bullet_conj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Arms Across Nested Conjunction and Disjunction Lists
+E -> F belongs to CASE C, G -> H to CASE B, and I -> K to CASE A.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ CASE B ->
+        \/ CASE C -> D
+           [] E -> F
+      [] G -> H
+  [] I -> K
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (conj_list
+            (conj_item
+              (bullet_conj)
+              (case
+                (case_arm
+                  (identifier_ref)
+                  (case_arrow)
+                  (disj_list
+                    (disj_item
+                      (bullet_disj)
+                      (case
+                        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                        (case_box)
+                        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                      )
+                    )
+                  )
+                )
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Separator Without Outer CASE in Conjunction List
+Reject C -> D: the aligned separator cannot continue CASE A,
+and there is no outer CASE to receive the arm.
+:error
+===================|||
+
+---- MODULE Test ----
+op ==
+  /\ CASE A -> B
+  [] C -> D
+====
+
+-------------------|||
+
+
+===================|||
+CASE Separator Across Open Parenthesis in Conjunction List
+Reject D -> E: it cannot belong to CASE B at that indentation
+or cross the open parenthesis to belong to CASE A.
+:error
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    /\ (CASE B -> C
+  [] D -> E)
+====
+
+-------------------|||
+
+
+===================|||
+CASE Separator Aligned with Disjunction Bullet
+The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ CASE B -> C
+       [] D -> E
+    [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (disj_list
+            (disj_item
+              (bullet_disj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Separator One Column Right of Disjunction Bullet
+The D -> E and F -> G arms both belong to the inner CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ CASE B -> C
+       [] D -> E
+     [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (disj_list
+            (disj_item
+              (bullet_disj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+Outer OTHER After CASE in Disjunction List
+The OTHER -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ CASE B -> C
+       [] D -> E
+  [] OTHER -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (disj_list
+            (disj_item
+              (bullet_disj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (other_arm (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+Outer CASE Arm After CASE in Disjunction List
+The F -> G arm belongs to the outer CASE A. D -> E stays in CASE B.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ CASE B -> C
+       [] D -> E
+  [] F -> G
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (disj_list
+            (disj_item
+              (bullet_disj)
+              (case
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Arms Across Nested Disjunction and Conjunction Lists
+E -> F belongs to CASE C, G -> H to CASE B, and I -> K to CASE A.
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ CASE B ->
+        /\ CASE C -> D
+           [] E -> F
+      [] G -> H
+  [] I -> K
+====
+
+-------------------|||
+
+(source_file
+  (module
+    (header_line)
+    (identifier)
+    (header_line)
+    (operator_definition
+      (identifier)
+      (def_eq)
+      (case
+        (case_arm
+          (identifier_ref)
+          (case_arrow)
+          (disj_list
+            (disj_item
+              (bullet_disj)
+              (case
+                (case_arm
+                  (identifier_ref)
+                  (case_arrow)
+                  (conj_list
+                    (conj_item
+                      (bullet_conj)
+                      (case
+                        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                        (case_box)
+                        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+                      )
+                    )
+                  )
+                )
+                (case_box)
+                (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+              )
+            )
+          )
+        )
+        (case_box)
+        (case_arm (identifier_ref) (case_arrow) (identifier_ref))
+      )
+    )
+    (double_line)
+  )
+)
+
+===================|||
+CASE Separator Without Outer CASE in Disjunction List
+Reject C -> D: the aligned separator cannot continue CASE A,
+and there is no outer CASE to receive the arm.
+:error
+===================|||
+
+---- MODULE Test ----
+op ==
+  \/ CASE A -> B
+  [] C -> D
+====
+
+-------------------|||
+
+
+===================|||
+CASE Separator Across Open Parenthesis in Disjunction List
+Reject D -> E: it cannot belong to CASE B at that indentation
+or cross the open parenthesis to belong to CASE A.
+:error
+===================|||
+
+---- MODULE Test ----
+op ==
+  CASE A ->
+    \/ (CASE B -> C
+  [] D -> E)
+====
+
+-------------------|||
