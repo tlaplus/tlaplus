@@ -8,3 +8,17 @@ x == {| S EXCEPT !.name = e |}
 ====
 
 ----------------------|||
+
+======================|||
+Decimal No Leading Zero (GH tlaplus/tlaplus #596)
+
+A decimal literal must have at least one digit before the decimal point.
+See https://github.com/tlaplus/rfcs/issues/19.
+:error
+======================|||
+
+---- MODULE Test ----
+op == .5
+====
+
+----------------------|||

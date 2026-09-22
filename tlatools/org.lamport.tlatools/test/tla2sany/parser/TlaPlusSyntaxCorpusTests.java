@@ -88,9 +88,6 @@ public class TlaPlusSyntaxCorpusTests {
 				// Ref https://github.com/tlaplus/tlapm/issues/162
 				"Cartesian Product as Parameter",
 
-				// https://github.com/tlaplus/tlaplus/issues/596
-				"Decimal No Leading Zero (GH tlaplus/tlaplus #596)",
-
 				// https://github.com/tlaplus/tlaplus/issues/616
 				"Invalid Use of LOCAL in LET/IN",
 				"Invalid Use of LOCAL in Proof",
