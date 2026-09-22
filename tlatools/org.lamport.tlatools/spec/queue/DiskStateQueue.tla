@@ -126,7 +126,7 @@ Return(p) ==
          >>
      )
 
-Append(p) ==
+AppendEntry(p) ==
   /\ queue.enq < Capacity
   /\ \/ /\ CanUse(p) /\ op[p] = "put"
         /\ ( queue' = [queue EXCEPT !.enq = @ + 1] /\ balance' = balance + 1 /\
