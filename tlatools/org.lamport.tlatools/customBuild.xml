@@ -1578,6 +1578,14 @@
 				<arg value="6"/>
 			</exec>
 		</presetdef>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.IntervalValueHarness.verify:(IIIJ)V" />
+			<!-- Three elements need four unwindings, including the loop exit check. -->
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
