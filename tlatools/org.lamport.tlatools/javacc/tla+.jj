@@ -422,6 +422,44 @@ boolean isPrefixOp( Token t ) {
   return t.kind >= op_26 && t.kind <= op_116;
 }
 
+  void splitBangRun( Token t ) throws ParseException {
+    /***********************************************************************
+    * JavaCC's maximal-munch lexer cannot split a run of "!" characters   *
+    * into the alternating separator "!" and infix operator "!!" tokens   *
+    * that the parser needs, so a run of three or more bangs is lexed as   *
+    * a single BANGRUN token and split here into a "!" separator appended  *
+    * to the heir stack followed by a "!!" operator (used as the op slot   *
+    * of the BangExt element, as InfixOp() would).  This supports inputs   *
+    * like "A!!!(1,2)" (a subexpression separator followed by the nonfix   *
+    * "!!" operator, cf. https://github.com/tlaplus/tlaplus/issues/884).   *
+    * Longer runs have no unambiguously intended parse (tree-sitter alike  *
+    * gives up and recommends inserting a space) and are rejected.         *
+    ************************************************************************/
+    if ( t.image.length() != 3 ) {
+      throw new ParseException(
+          "Run of " + t.image.length() + " exclamation marks starting at line " +
+          t.beginLine + ", column " + t.beginColumn +
+          " is not allowed; insert a space to break it up" );
+    }
+    Token bang = new Token();
+    bang.kind = BANG;
+    bang.image = "!";
+    bang.beginLine = t.beginLine;
+    bang.beginColumn = t.beginColumn;
+    bang.endLine = t.beginLine;
+    bang.endColumn = t.beginColumn;
+    addHeir( new SyntaxTreeNode( mn, bang ) );
+    Token excl = new Token();
+    excl.kind = op_103;
+    excl.image = "!!";
+    excl.beginLine = t.beginLine;
+    excl.beginColumn = t.beginColumn + 1;
+    excl.endLine = t.endLine;
+    excl.endColumn = t.endColumn;
+    lastOp = Operators.getOperator( UniqueString.uniqueStringOf( excl.image ) );
+    addHeir( new SyntaxTreeNode( mn, N_InfixOp, excl ) );
+  }
+
 // global variable follows !!! Make sure it is set everywhere as required
 Operator lastOp;
   /*************************************************************************
@@ -1402,6 +1440,7 @@ TOKEN: {
 | <BareLevelLexeme         : "<" ((<DIGIT>)+ | "+" | "*") ">"  >
 | <UnnumberedStepLexeme   : "<" ((<DIGIT>)+ | "+" | "*") ">" ( "*" (".")*
 | "-" (".")* | (".")+)>
+| <BANGRUN: "!" "!" "!" ( "!" )*>
 }
 
 
@@ -4241,24 +4280,29 @@ BangExt() : {
   SyntaxTreeNode tn ;
   Token t;
   bpa("Bang Extension") ;
-}{ t = <BANG> { addHeir(new SyntaxTreeNode(mn, t)) ; }
-   ( (   LOOKAHEAD(Identifier() , {!getToken(1).image.equals("@")})
-         tn = Identifier()
-       | tn = NonExpPrefixOp()
-       | tn = InfixOp() 
-          /*****************************************************************
-          * Note: if \X is used as an operator, semantic analysis will     *
-          * complain because it's a built-in operator that can't follow a  *
-          * "!".                                                           *
-          *****************************************************************/
-       | tn = PostfixOp()
-      )
-     {addHeir(tn);}
-     ( LOOKAHEAD(2)
-       tn = OpArgs() {addHeir(tn) ;}
-     )?
-   | tn = OpArgs()   {addHeir(tn) ;}
-   | tn = StructOp() {addHeir(tn) ;}
+}{ ( t = <BANG>   { addHeir(new SyntaxTreeNode(mn, t)) ; }
+    ( (   LOOKAHEAD(Identifier() , {!getToken(1).image.equals("@")})
+          tn = Identifier()
+        | tn = NonExpPrefixOp()
+        | tn = InfixOp() 
+           /*****************************************************************
+           * Note: if \X is used as an operator, semantic analysis will     *
+           * complain because it's a built-in operator that can't follow a  *
+           * "!".                                                           *
+           *****************************************************************/
+        | tn = PostfixOp()
+       )
+      {addHeir(tn);}
+      ( LOOKAHEAD(2)
+        tn = OpArgs() {addHeir(tn) ;}
+      )?
+    | tn = OpArgs()   {addHeir(tn) ;}
+    | tn = StructOp() {addHeir(tn) ;}
+   )
+  | t = <BANGRUN> { splitBangRun(t) ; }
+    ( LOOKAHEAD(2)
+      tn = OpArgs() {addHeir(tn) ;}
+    )?
   )
   { tn = new SyntaxTreeNode(mn, N_IdPrefixElement, getLastHeirs());
     epa();
