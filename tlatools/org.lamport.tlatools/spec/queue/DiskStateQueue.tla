@@ -1626,7 +1626,7 @@ RequiredMonitor(p, m) ==
 \* Blocking on notification or monitor acquisition. Spurious wakeups are not
 \* a source of progress. The cleaner's condition wait is represented by ready.
 Blocked ==
-  UNION { waiters[m]: m \in Monitors } \cup
+  (UNION { waiters[m]: m \in Monitors }) \cup
     { p \in Threads:
       \/ \E m \in Monitors: RequiredMonitor(p, m) /\ ~CanAcquire(p, m)
       \/ p = Cleaner /\ ~cleaner.done /\ ~cleaner.ready }
