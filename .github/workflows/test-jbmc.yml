@@ -6,6 +6,7 @@ on:
       - '.github/workflows/test-jbmc.yml'
       - 'tlatools/org.lamport.tlatools/customBuild.xml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/FcnRcdValue.java'
       - 'tlatools/org.lamport.tlatools/test-jbmc/**'
       - 'tlatools/org.lamport.tlatools/test-jbmc-models/**'
   pull_request:
@@ -13,6 +14,7 @@ on:
       - '.github/workflows/test-jbmc.yml'
       - 'tlatools/org.lamport.tlatools/customBuild.xml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/FcnRcdValue.java'
       - 'tlatools/org.lamport.tlatools/test-jbmc/**'
       - 'tlatools/org.lamport.tlatools/test-jbmc-models/**'
 
