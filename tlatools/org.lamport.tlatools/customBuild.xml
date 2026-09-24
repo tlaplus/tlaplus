@@ -1527,8 +1527,18 @@
 		</fail>
 		<delete dir="target/jbmc" />
 		<delete dir="target/jbmc-models" />
+		<delete dir="target/jbmc-jdk" />
 		<mkdir dir="target/jbmc" />
 		<mkdir dir="target/jbmc-models" />
+		<mkdir dir="target/jbmc-jdk" />
+
+		<!-- Use the JDK's binary search implementation; JBMC's library jar omits it. -->
+		<exec executable="${java.home}/bin/jar" dir="target/jbmc-jdk" failonerror="true">
+			<arg value="xf" />
+			<arg file="${java.home}/jmods/java.base.jmod" />
+			<arg value="classes/java/util/Arrays.class" />
+			<arg value="classes/java/util/Comparator.class" />
+		</exec>
 
 		<!-- Compile JBMC dependency overlays separately. -->
 		<javac
@@ -1563,7 +1573,7 @@
 		<presetdef name="jbmc">
 			<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
 				<arg value="--classpath" />
-				<arg value="target/jbmc${path.separator}${jbmc.production.classpath}${path.separator}target/jbmc-models${path.separator}${jbmc.library.jar}" />
+				<arg value="target/jbmc${path.separator}${jbmc.production.classpath}${path.separator}target/jbmc-models${path.separator}target/jbmc-jdk/classes${path.separator}${jbmc.library.jar}" />
 				<!-- JBMC 6.11's boxed getInteger model calls itself recursively.
 				     Leave system-property lookup outside these value checks.
 				     https://github.com/diffblue/cbmc/issues/9168 -->
@@ -1582,6 +1592,17 @@
 		<jbmc>
 			<arg value="tlc2.value.impl.IntervalValueHarness.verify:(IIIJ)V" />
 			<!-- Three elements need four unwindings, including the loop exit check. -->
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.FcnRcdValueHarness.verify:(IZIIII[I[I[I[II)V" />
+			<!-- Bound the input arrays, not the comparison code. The loop bound
+			     must exceed the maximum array length; unwinding assertions check it.
+			     Three entries reach normalize's insertion loop, which starts at index 2. -->
+			<arg value="--max-nondet-array-length" />
+			<arg value="3" />
 			<arg value="--unwind" />
 			<arg value="4" />
 		</jbmc>
