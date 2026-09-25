@@ -422,6 +422,42 @@ boolean isPrefixOp( Token t ) {
   return t.kind >= op_26 && t.kind <= op_116;
 }
 
+  boolean isMinusOpStart() {
+    /***********************************************************************
+    * Returns true iff the current token is the ASCII "-" (token op_77)    *
+    * followed by "(" whose parenthesized argument list contains a comma   *
+    * at the top level, i.e. "-" is used nonfixly with at least two         *
+    * arguments (like "-(1, 2)") rather than prefixly applied to a single   *
+    * parenthesized expression (like "- (1)").  This disambiguates the      *
+    * lookahead in Expression() and ExtendableExpr(), which would otherwise *
+    * commit to the prefix interpretation of "-" and then choke on the      *
+    * comma.  The check is deliberately restricted to "-": other prefix     *
+    * operators (e.g. "~", "<>", "UNION") are legitimately applied to       *
+    * parenthesized expressions containing top-level commas, such as        *
+    * "~(\E x, y \in S: P)" or "<>(\A x, y \in S: P)".  Brackets of all     *
+    * four kinds are tracked, so commas inside a set literal, record        *
+    * range, or tuple nested in the argument list do not count.             *
+    * (https://github.com/tlaplus/tlaplus/issues/884)                      *
+    ************************************************************************/
+    Token t;
+    if ( getToken(1).kind != op_77 ) return false;   /* only ASCII "-" */
+    if ( getToken(2).kind != LBR ) return false;
+    int depth = 0;
+    for (int i = 3; ; i++) {
+      t = getToken( i );
+      if ( t.kind == EOF ) return false;
+      switch ( t.kind ) {
+        case LBR: case LSB: case LBC: case LAB: depth++; break;
+        case RBR: case RSB: case RBC: case RAB:
+          if ( depth == 0 ) return false;
+          depth--; break;
+        case COMMA:
+          if ( depth == 0 ) return true; break;
+        default:
+      }
+    }
+  }
+
 // global variable follows !!! Make sure it is set everywhere as required
 Operator lastOp;
   /*************************************************************************
@@ -3916,7 +3952,8 @@ Expression() : {
   OperatorStack.newStack();
 } {
 ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isMinusOpStart()})
   (  tn = PrefixOp() {kind = N_GenPrefixOp;}
    | tn = InfixOp()  {kind = N_GenInfixOp;}
        /********************************************************************
@@ -4030,7 +4067,8 @@ ExtendableExpr() : {
      if (OperatorStack.size() != 1) {OperatorStack.reduceStack();} ;
    }
   ( LOOKAHEAD( PrefixOpToken() | <op_77> /* "-" */,
-             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
+             {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)
+              && !isMinusOpStart()})
     (  tn = PrefixOp() {kind = N_GenPrefixOp;}
      | tn = InfixOp()  {kind = N_GenInfixOp;}
          /********************************************************************
