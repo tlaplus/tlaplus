@@ -118,13 +118,14 @@ implements Enumerable, Reducible {
 		if (this.high < this.low) {
 			return 0;
 		}
-		try {
-			return Math.addExact(Math.subtractExact(this.high, this.low), 1);
-		} catch (ArithmeticException e) {
+		// Cannot overflow: the widest interval, MIN_VALUE..MAX_VALUE, has 2^32 elements.
+		final long size = (long) this.high - (long) this.low + 1L;
+		if (size > Integer.MAX_VALUE) {
 			Assert.fail("Size of interval value exceeds the maximum representable size (32bits): "
 			      + Values.ppr(this.toString()) + ".", getSource());
 			return 0; // unreachable, but it satisfies the compiler
 		}
+		return (int) size;
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

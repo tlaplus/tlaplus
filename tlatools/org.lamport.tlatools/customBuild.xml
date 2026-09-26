@@ -1509,6 +1509,113 @@
 		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
+	<!-- Verifies TLC value semantics with the JBMC bounded model checker.
+	     A suitable CBMC release (which includes JBMC) must be installed manually:
+	     https://github.com/diffblue/cbmc -->
+	<target name="test-jbmc" depends="compile"
+		description="Run JBMC verification harnesses (requires jbmc on PATH)">
+		<!-- Override this property to analyze FcnRcdValue classes built from
+		     another revision while retaining the current harness. -->
+		<property name="jbmc.production.classpath" location="${class.dir}" />
+		<!-- The CBMC Debian package installs its Java library models here.
+		     Override jbmc.library.jar for other installations. -->
+		<property name="jbmc.library.jar" location="/usr/lib/core-models.jar" />
+		<fail message="JBMC's Java library models are missing; set -Djbmc.library.jar=/path/to/core-models.jar">
+			<condition>
+				<not><available file="${jbmc.library.jar}" type="file" /></not>
+			</condition>
+		</fail>
+		<delete dir="target/jbmc" />
+		<delete dir="target/jbmc-models" />
+		<delete dir="target/jbmc-jdk" />
+		<mkdir dir="target/jbmc" />
+		<mkdir dir="target/jbmc-models" />
+		<mkdir dir="target/jbmc-jdk" />
+
+		<!-- Use the JDK's binary search implementation; JBMC's library jar omits it. -->
+		<exec executable="${java.home}/bin/jar" dir="target/jbmc-jdk" failonerror="true">
+			<arg value="xf" />
+			<arg file="${java.home}/jmods/java.base.jmod" />
+			<arg value="classes/java/util/Arrays.class" />
+			<arg value="classes/java/util/Comparator.class" />
+		</exec>
+
+		<!-- Compile JBMC dependency overlays separately. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc-models"
+			destdir="target/jbmc-models"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
+		<!-- Harnesses compile against the production TLC classes. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jbmc"
+			destdir="target/jbmc"
+			debug="true"
+			verbose="false"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+			</classpath>
+		</javac>
+
+		<presetdef name="jbmc">
+			<exec executable="jbmc" failifexecutionfails="true" failonerror="true">
+				<arg value="--classpath" />
+				<arg value="target/jbmc${path.separator}${jbmc.production.classpath}${path.separator}target/jbmc-models${path.separator}target/jbmc-jdk/classes${path.separator}${jbmc.library.jar}" />
+				<!-- JBMC 6.11's boxed getInteger model calls itself recursively.
+				     Leave system-property lookup outside these value checks.
+				     https://github.com/diffblue/cbmc/issues/9168 -->
+				<arg value="--context-exclude" />
+				<arg value="java.lang.Integer.getInteger:(Ljava/lang/String;Ljava/lang/Integer;)" />
+				<arg value="--no-refine-strings"/>
+				<!-- IntValue's ten-entry cache needs eleven unwindings. -->
+				<arg value="--unwindset" />
+				<arg value="java::tlc2.value.impl.IntValue.&lt;clinit&gt;:()V.0:11" />
+				<!-- Less verbose output compared to default 8 (https://github.com/diffblue/cbmc/blob/cbmc-6.11.0/src/util/message.h#L167-L171) -->
+				<arg value="--verbosity" />
+				<arg value="6"/>
+			</exec>
+		</presetdef>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.IntervalValueHarness.verify:(IIIJ)V" />
+			<!-- Three elements need four unwindings, including the loop exit check. -->
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.FcnRcdValueHarness.verify:(IZIIII[I[I[I[II)V" />
+			<!-- Bound the input arrays, not the comparison code. The loop bound
+			     must exceed the maximum array length; unwinding assertions check it.
+			     Three entries reach normalize's insertion loop, which starts at index 2. -->
+			<arg value="--max-nondet-array-length" />
+			<arg value="3" />
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<jbmc>
+			<arg value="tlc2.module.TLCHarness.verify:(IIIII)V" />
+			<!-- Three elements per domain need four unwindings, including the loop exit check. -->
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+	</target>
+
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
 	<target name="benchmark" description="Generate the self-contained JMH benchmark JAR (run with java -jar target/benchmarks.jar)">
 		<!-- Compile benchmark class files in test-benchmark against jmh. -->
