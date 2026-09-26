@@ -1607,6 +1607,13 @@
 			<arg value="4" />
 		</jbmc>
 
+		<jbmc>
+			<arg value="tlc2.module.TLCHarness.verify:(IIIII)V" />
+			<!-- Three elements per domain need four unwindings, including the loop exit check. -->
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->

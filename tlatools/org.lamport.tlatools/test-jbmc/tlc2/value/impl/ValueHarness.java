@@ -29,7 +29,7 @@ package tlc2.value.impl;
 /**
  * Common helpers for bounded JBMC value harnesses.
  */
-abstract class ValueHarness {
+public abstract class ValueHarness {
 	protected static boolean isInt(final Value value, final int expected) {
 		return value instanceof IntValue && ((IntValue) value).val == expected;
 	}
