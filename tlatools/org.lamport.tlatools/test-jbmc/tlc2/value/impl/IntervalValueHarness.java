@@ -51,6 +51,9 @@ public final class IntervalValueHarness extends ValueHarness {
 		case 4:
 			verifyFingerprint(low, high, fp);
 			break;
+		case 5:
+			verifySize(low, high);
+			break;
 		default:
 			// SKIP: This selector value does not identify a property to check.
 			return;
@@ -168,6 +171,40 @@ public final class IntervalValueHarness extends ValueHarness {
 		verifyInterval(set, low, size);
 		assert interval.fingerPrint(fp) == set.fingerPrint(fp)
 				: "An interval and its enumerated set must have identical fingerprints for the same seed.";
+	}
+
+	// TLA+: Cardinality(low..high), or a TLC error if it exceeds Integer.MAX_VALUE.
+	// Check that size() agrees with its specification for every pair of endpoints.
+	private static void verifySize(final int low, final int high) {
+		final boolean specFails = specSize(low, high) < 0;
+		boolean sizeFails = false;
+		int size = -1;
+		try {
+			size = new IntervalValue(low, high).size();
+		} catch (final RuntimeException e) {
+			sizeFails = true;
+		}
+		assert sizeFails == specFails : "size() must fail exactly when the specification overflows.";
+		assert sizeFails || size == specSize(low, high) : "size() must equal the specified cardinality.";
+	}
+
+	// Specification of size(): Math.addExact(Math.subtractExact(high, low), 1)
+	// with the JDK's overflow checks inlined, because JBMC has no models for the
+	// exact-arithmetic methods. Returns -1 where either method would throw
+	// ArithmeticException.
+	private static int specSize(final int low, final int high) {
+		if (high < low) {
+			return 0;
+		}
+		final int diff = high - low;
+		if (((high ^ low) & (high ^ diff)) < 0) {
+			return -1;
+		}
+		final int size = diff + 1;
+		if (((diff ^ size) & (1 ^ size)) < 0) {
+			return -1;
+		}
+		return size;
 	}
 
 	private static void verifyInterval(final Value result, final int low, final int size) {
