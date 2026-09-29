@@ -1623,6 +1623,8 @@
 				<arg value="--context-exclude" />
 				<arg value="java.lang.Integer.getInteger:(Ljava/lang/String;Ljava/lang/Integer;)" />
 				<arg value="--no-refine-strings"/>
+				<!-- Drop assignments that no property depends on before solving. -->
+				<arg value="--slice-formula"/>
 				<!-- IntValue's ten-entry cache needs eleven unwindings. -->
 				<arg value="--unwindset" />
 				<arg value="java::tlc2.value.impl.IntValue.&lt;clinit&gt;:()V.0:11" />
@@ -1653,6 +1655,34 @@
 		<jbmc>
 			<arg value="tlc2.value.impl.FcnLambdaValueHarness.verify:(III[I)V" />
 			<!-- Bound the values array to three entries; four unwindings include the loop exit check. -->
+			<arg value="--max-nondet-array-length" />
+			<arg value="3" />
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<!-- With three elements, sort's binary search runs over two inserted elements,
+		     the smallest range with a nontrivial midpoint. Four unwindings include the
+		     loop exit check. Raising the array length requires raising
+		     ValueVecHarness.CAPACITY. -->
+		<jbmc>
+			<arg value="tlc2.value.impl.ValueVecHarness.verifySortWithoutDuplicates:([I)V" />
+			<arg value="--max-nondet-array-length" />
+			<arg value="3" />
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.ValueVecHarness.verifySortWithDuplicates:([I)V" />
+			<arg value="--max-nondet-array-length" />
+			<arg value="3" />
+			<arg value="--unwind" />
+			<arg value="4" />
+		</jbmc>
+
+		<jbmc>
+			<arg value="tlc2.value.impl.ValueVecHarness.verifySearch:([II)V" />
 			<arg value="--max-nondet-array-length" />
 			<arg value="3" />
 			<arg value="--unwind" />
