@@ -112,6 +112,9 @@ implements Enumerable, Reducible {
   @Override
   public final boolean isFinite() { return true; }
 
+  //@ also
+  //@ ensures 0 <= \result;
+  //@ ensures 0 < \result ==> (long) this.low + \result - 1 == this.high;
   @Override
   public final int size() {
     try {
@@ -264,8 +267,10 @@ implements Enumerable, Reducible {
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, this.size()) ;
       final int sz = this.size();
+      //@ maintaining 0 <= i;
       for (int i = 0; i < sz; i++) {
         fp = FP64.Extend(fp, INTVALUE);
+        //@ assert (\bigint) this.low + i <= Integer.MAX_VALUE;
         fp = FP64.Extend(fp, this.low + i);
       }
       return fp;

@@ -6,12 +6,16 @@ on:
   push:
     paths:
       - '.github/workflows/test-openjml.yml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/FP64.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/IValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
   pull_request:
     paths:
       - '.github/workflows/test-openjml.yml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/FP64.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/IValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
 
 env:

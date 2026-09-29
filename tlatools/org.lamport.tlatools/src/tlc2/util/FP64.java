@@ -117,6 +117,7 @@ public class FP64 {
 
     /** Extend the fingerprint <code>fp</code> by a byte
 	<code>c</code>. */
+    //@ assignable \nothing;
     public static long Extend(long fp, byte b)
     {
     	long[] mod = ByteModTable_7;
@@ -139,6 +140,7 @@ public class FP64 {
 	return fp;
     }
 
+    //@ assignable \nothing;
     public static long Extend(long fp, int x)
     {
       final long[] mod = ByteModTable_7;
@@ -403,6 +405,11 @@ public class FP64 {
 
     /* This is the irreducible polynomial used as seed.  */
     private static long IrredPoly;
+
+    /* OpenJML warns about the static final arrays above unless FP64 has a
+       static_initializer clause. No proof yet depends on their contents, so
+       the clause is empty. */
+    //@ static_initializer
 
     public static long getIrredPoly() { return IrredPoly; }
   
