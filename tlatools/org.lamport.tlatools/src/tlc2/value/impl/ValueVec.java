@@ -143,7 +143,7 @@ public class ValueVec implements Serializable {
     if (sorted) {
       int cmp = 0, mid = 0, low = 0, high = this.elementCount;
       while (low < high) {
-	mid = (low + high) >> 1;
+	mid = low + ((high - low) >> 1);
 	cmp = elem.compareTo(this.elementData[mid]);
 	if (cmp == 0) return true;
 	if (cmp < 0) {
@@ -170,7 +170,7 @@ public class ValueVec implements Serializable {
       Value  elem = this.elementData[i];
       int cmp = 0, idx = 0, low = 0, high = newCount;
       while (low < high) {
-	idx = (low + high) >> 1;
+	idx = low + ((high - low) >> 1);
 	cmp = elem.compareTo(this.elementData[idx]);
 	if (cmp == 0) break;
 	if (cmp < 0) {
