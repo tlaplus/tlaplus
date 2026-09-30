@@ -101,6 +101,10 @@ import tlc2.value.impl.TLCVariable;
 public interface IValue extends Comparable<Object> {
 
 	/* This method compares this with val.  */
+	// val may be a value of another kind, because TLC compares such values.
+	// Comparable's JML specification requires an argument of the same type.
+	//@ also
+	//@ signals_only RuntimeException;
 	@Override
 	int compareTo(Object val);
 

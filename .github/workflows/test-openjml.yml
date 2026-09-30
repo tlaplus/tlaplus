@@ -1,0 +1,42 @@
+name: TLC OpenJML Proofs
+# Proves the JML specifications in TLC's sources with OpenJML.
+# It's run whenever the specified classes are updated.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/test-openjml.yml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/IValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
+  pull_request:
+    paths:
+      - '.github/workflows/test-openjml.yml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/IValue.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
+
+env:
+  OPENJML_VERSION: '21.0.27'
+
+jobs:
+  run-tlc-test-openjml:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: adopt
+          java-version: 17
+
+      - name: Install OpenJML
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$OPENJML_VERSION" -R OpenJML/OpenJML \
+            -p "openjml-ubuntu-24.04-*.zip" -O "$RUNNER_TEMP/openjml.zip"
+          unzip -q "$RUNNER_TEMP/openjml.zip" -d "$RUNNER_TEMP/openjml"
+
+      - name: Run TLC test openjml
+        run: ant -f tlatools/org.lamport.tlatools/customBuild.xml -Dopenjml.executable="$RUNNER_TEMP/openjml/openjml" compile test-openjml
