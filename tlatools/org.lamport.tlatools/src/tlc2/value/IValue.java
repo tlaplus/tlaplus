@@ -116,8 +116,10 @@ public interface IValue extends Comparable<Object> {
 
 	void setSource(SemanticNode semanticNode);
 
+	//@ pure
 	SemanticNode getSource();
 
+	//@ pure
 	boolean hasSource();
 
 	/* MAK 09/17/2019: Introduced to guarantee that Value instances are

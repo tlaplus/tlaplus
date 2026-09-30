@@ -124,7 +124,7 @@ implements Enumerable, Reducible {
 		final long sz = (long) this.high - this.low + 1;
 		if (sz > Integer.MAX_VALUE) {
 			Assert.fail("Size of interval value exceeds the maximum representable size (32bits): "
-			      + Values.ppr(this.toString()) + ".", getSource());
+			      + Values.ppr(this.low + ".." + this.high) + ".", getSource());
 			return 0; // unreachable, but it satisfies the compiler
 		}
 		return (int) sz;
