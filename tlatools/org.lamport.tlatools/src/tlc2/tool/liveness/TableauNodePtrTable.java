@@ -356,7 +356,7 @@ public class TableauNodePtrTable {
 
 	/* Double the table when the table is full by the threshhold. */
 	private final void grow() {
-		this.length = 2 * this.length + 1;
+		this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		this.thresh = (int) (this.length * 0.75);
 		int[][] oldNodes = this.nodes;
 		this.nodes = new int[this.length][];

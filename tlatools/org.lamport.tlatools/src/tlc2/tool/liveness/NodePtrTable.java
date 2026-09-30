@@ -111,7 +111,7 @@ public class NodePtrTable {
 
 	/* Double the table when the table is full by the threshhold. */
 	private final void grow() {
-		final int newLength = 2 * this.length + 1;
+		final int newLength = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		grow(newLength);
 	}
 
@@ -150,7 +150,7 @@ public class NodePtrTable {
 			// Handle OOM error locally because grow is on the code path of safety checking
 			// (LiveCheck#addInit/addNext...).
 			System.gc();
-			if (newLength <= this.length + 1) {
+			if (newLength <= this.length + 1L) {
 				MP.printError(EC.SYSTEM_OUT_OF_MEMORY, t);
 				System.exit(1);
 			}

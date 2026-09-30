@@ -23,7 +23,7 @@ public final class NodeTable {
 	private final void grow() {
 		Object[] oldElems = this.elems;
 		this.count = 0;
-		this.length = 2 * this.length + 1;
+		this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		this.thresh = this.length / 2;
 		this.elems = new Object[this.length];
 		for (int i = 0; i < oldElems.length; i++) {
