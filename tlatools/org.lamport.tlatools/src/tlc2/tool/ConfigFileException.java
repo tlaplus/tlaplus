@@ -1,6 +1,7 @@
 package tlc2.tool;
 
 import tlc2.output.MP;
+import util.Assert.TLCRuntimeException;
 
 /**
  * Exceptions signaling errors in the config file
@@ -9,15 +10,16 @@ import tlc2.output.MP;
  * @author Simon Zambrovski
  * @version $Id$
  */
-public class ConfigFileException extends RuntimeException
+public class ConfigFileException extends TLCRuntimeException
 {
     public ConfigFileException(int errorCode, String[] parameters)
     {
-        super(MP.getMessage(errorCode, parameters));
+        super(errorCode, parameters, MP.getMessage(errorCode, parameters));
     }
 
     public ConfigFileException(int errorCode, String[] parameters, Exception cause)
     {
-        super(MP.getMessage(errorCode, parameters), cause);
+        super(errorCode, MP.getMessage(errorCode, parameters), cause);
+        this.parameters = parameters;
     }
 }

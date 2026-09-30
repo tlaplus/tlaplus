@@ -459,6 +459,12 @@ public interface EC
 	        case TLC_CONFIG_NO_STATE_TYPE:
 	        case TLC_CANT_HANDLE_REAL_NUMBERS: // might also be in the spec
 	        case TLC_NO_MODULES:
+	        case CFG_ERROR_READING_FILE:
+	        case CFG_GENERAL:
+	        case CFG_MISSING_ID:
+	        case CFG_TWICE_KEYWORD:
+	        case CFG_EXPECT_ID:
+	        case CFG_EXPECTED_SYMBOL:
 	        	return ERROR_CONFIG_PARSE;
 	        	
 	        case TLC_PARSING_FAILED2:
