@@ -6,11 +6,12 @@
 package tlc2.util;
 
 public final class LongObjTable {
-  private int count;
-  private int length;
-  private int thresh;
-  private long[] keys;
-  private Object[] elems;
+  //@ public model \datagroup content;
+  private /*@ spec_public */ int count; //@ in content;
+  private /*@ spec_public */ int length; //@ in content;
+  private /*@ spec_public */ int thresh; //@ in content;
+  private /*@ spec_public */ long[] keys; //@ in content; maps keys[*] \into content;
+  private /*@ spec_public */ Object[] elems; //@ in content; maps elems[*] \into content;
 
   public LongObjTable(int size) {
     this.keys = new long[size];
@@ -20,6 +21,7 @@ public final class LongObjTable {
     this.thresh = this.length / 2;
   }
 
+  //@ requires 0 <= length && keys.length == elems.length;
   private final void grow() {
     long[] oldKeys = this.keys;
     Object[] oldElems = this.elems;
@@ -28,6 +30,8 @@ public final class LongObjTable {
     this.thresh = this.length / 2;
     this.keys = new long[length];
     this.elems = new Object[length];
+    //@ maintaining 0 <= i;
+    //@ loop_writes i, content;
     for (int i = 0; i < oldKeys.length; i++) {
       Object elem = oldElems[i];
       if (elem != null) this.put(oldKeys[i], elem);
@@ -36,6 +40,7 @@ public final class LongObjTable {
 
   public final int size() { return this.count; }
 
+  //@ assignable content;
   public final int put(long k, Object elem) {
     if (count >= thresh) this.grow();
     int loc = ((int)k & 0x7FFFFFFF) % length ;

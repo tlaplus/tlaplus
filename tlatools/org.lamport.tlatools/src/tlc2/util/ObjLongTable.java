@@ -6,11 +6,12 @@
 package tlc2.util;
 
 public final class ObjLongTable<T> {
-  private int count;
-  private int length;
-  private int thresh;
-  private T[] keys;
-  private long[] elems;
+  //@ public model \datagroup content;
+  private /*@ spec_public */ int count; //@ in content;
+  private /*@ spec_public */ int length; //@ in content;
+  private /*@ spec_public */ int thresh; //@ in content;
+  private /*@ spec_public */ T[] keys; //@ in content; maps keys[*] \into content;
+  private /*@ spec_public */ long[] elems; //@ in content; maps elems[*] \into content;
 
   @SuppressWarnings("unchecked")
   public ObjLongTable(int size) {
@@ -21,6 +22,7 @@ public final class ObjLongTable<T> {
     this.thresh = this.length / 2;
   }
 
+  //@ requires 0 <= length && keys.length == elems.length;
   @SuppressWarnings("unchecked")
   private final void grow() {
     Object[] oldKeys = this.keys;
@@ -30,6 +32,8 @@ public final class ObjLongTable<T> {
     this.thresh = this.length / 2;
     this.keys = (T[]) new Object[this.length];
     this.elems = new long[this.length];
+    //@ maintaining 0 <= i;
+    //@ loop_writes i, content;
     for (int i = 0; i < oldKeys.length; i++) {
       T key = (T) oldKeys[i];
       if (key != null) this.put(key, oldElems[i]);
@@ -38,6 +42,7 @@ public final class ObjLongTable<T> {
 
   public final int size() { return this.count; }
 
+  //@ assignable content;
   public final int put(T k, long elem) {
     if (count >= thresh) this.grow();
     int loc = ((int)k.hashCode() & 0x7FFFFFFF) % this.length;

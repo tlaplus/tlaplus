@@ -21,11 +21,12 @@ import tlc2.tool.distributed.InternRMI;
 public final class InternTable implements Serializable
 {
 
-    private int count;  // The number of entries in the table.
-    private int length; // The length of the table.
-    private int thresh; // The maximum number of entries before the table
+    //@ public model \datagroup content;
+    private /*@ spec_public */ int count; /*@ in content; @*/ // The number of entries in the table.
+    private /*@ spec_public */ int length; /*@ in content; @*/ // The length of the table.
+    private /*@ spec_public */ int thresh; /*@ in content; @*/ // The maximum number of entries before the table
                         // needs to be grown.
-    private UniqueString[] table;  // The array that holds the entries.
+    private /*@ spec_public */ UniqueString[] table; /*@ in content; maps table[*] \into content; @*/ // The array that holds the entries.
 
     // SZ 10.04.2009: removed unused variable
     // made token counter to instance variable, since there is only one instance of the InternTable
@@ -41,6 +42,7 @@ public final class InternTable implements Serializable
         this.thresh = this.length / 2;
     }
     
+    //@ requires 0 <= length;
     private void grow()
     {
         UniqueString[] old = this.table;
@@ -48,6 +50,8 @@ public final class InternTable implements Serializable
         this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
         this.thresh = this.length / 2;
         this.table = new UniqueString[this.length];
+        //@ maintaining 0 <= i;
+        //@ loop_writes i, content;
         for (int i = 0; i < old.length; i++)
         {
             UniqueString var = old[i];
@@ -56,6 +60,7 @@ public final class InternTable implements Serializable
         }
     }
 
+    //@ assignable content;
     private void put(UniqueString var)
     {
         // The following statement was added on 14 Feb 2012 by M.K.  

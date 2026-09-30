@@ -75,6 +75,7 @@ public class LongVec implements Serializable {
 		return this.elementCount;
 	}
 
+	//@ requires 0 <= elementCount && elementCount <= elementData.length;
 	private final void ensureCapacity(int minCapacity) {
 		if (elementData.length < minCapacity) {
 			int newCapacity = (int) Math.min(2L * elementData.length, Integer.MAX_VALUE - 8);
