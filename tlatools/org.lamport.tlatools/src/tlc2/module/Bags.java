@@ -38,6 +38,17 @@ public class Bags implements ValueConstants
         Assert.check(TLARegistry.put("SqSubseteq", "\\sqsubseteq") == null, EC.TLC_REGISTRY_INIT_ERROR, "SqSubseteq");
     }
 
+    private static int addCounts(final int n1, final int n2)
+    {
+        try
+        {
+            return Math.addExact(n1, n2);
+        } catch (ArithmeticException e)
+        {
+            throw new EvalException(EC.TLC_MODULE_OVERFLOW, n1 + "+" + n2);
+        }
+    }
+
     public static Value EmptyBag()
     {
         return FcnRcdValue.EmptyFcn;
@@ -81,7 +92,7 @@ public class Bags implements ValueConstants
                 int cnt = ((IntValue) vals[i]).val;
                 if (cnt > 0)
                 {
-                    num += ((IntValue) vals[i]).val;
+                    num = addCounts(num, cnt);
                 } else
                 {
                     throw new EvalException(EC.TLC_MODULE_APPLYING_TO_WRONG_VALUE, new String[] { "BagCardinality", "a bag",
@@ -170,7 +181,7 @@ public class Bags implements ValueConstants
                 {
                     int v1 = ((IntValue) values1[j]).val;
                     int v2 = ((IntValue) values2[i]).val;
-                    vVec.setElementAt(IntValue.gen(v1 + v2), j);
+                    vVec.setElementAt(IntValue.gen(addCounts(v1, v2)), j);
                     found = true;
                     break;
                 }
@@ -295,7 +306,7 @@ public class Bags implements ValueConstants
                     {
                         int v1 = ((IntValue) vVec.elementAt(k)).val;
                         int v2 = ((IntValue) values[j]).val;
-                        vVec.setElementAt(IntValue.gen(v1 + v2), k);
+                        vVec.setElementAt(IntValue.gen(addCounts(v1, v2)), k);
                         found = true;
                         break;
                     }
@@ -384,7 +395,7 @@ public class Bags implements ValueConstants
                 {
                     int v1 = ((IntValue) vVec.elementAt(j)).val;
                     int v2 = ((IntValue) values[i]).val;
-                    vVec.setElementAt(IntValue.gen(v1 + v2), j);
+                    vVec.setElementAt(IntValue.gen(addCounts(v1, v2)), j);
                     found = true;
                     break;
                 }
