@@ -24,7 +24,7 @@ public final class LongObjTable {
     long[] oldKeys = this.keys;
     Object[] oldElems = this.elems;
     this.count = 0;
-    this.length = 2 * this.length + 1;
+    this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
     this.thresh = this.length / 2;
     this.keys = new long[length];
     this.elems = new Object[length];

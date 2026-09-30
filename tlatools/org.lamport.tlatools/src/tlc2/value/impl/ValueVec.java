@@ -92,7 +92,7 @@ public class ValueVec implements Serializable {
 		  TLCGlobals.setBound + ").");
     }
     if (elementData.length < minCapacity) {
-      int newCapacity = elementData.length + elementData.length;
+      int newCapacity = (int) Math.min(2L * elementData.length, Integer.MAX_VALUE - 8);
       if (newCapacity < minCapacity) {
 	newCapacity = minCapacity;
       }

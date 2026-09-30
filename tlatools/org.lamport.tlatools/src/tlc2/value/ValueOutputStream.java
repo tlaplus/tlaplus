@@ -193,7 +193,7 @@ public final class ValueOutputStream implements IValueOutputStream {
     }
 
     private final void growEntries() {
-      int newLength = this.next.length * 2;
+      int newLength = (int) Math.min(2L * this.next.length, Integer.MAX_VALUE);
       int[] newNext = new int[newLength];
       System.arraycopy(this.next, 0, newNext, 0, this.size);
       this.next = newNext;
@@ -204,7 +204,7 @@ public final class ValueOutputStream implements IValueOutputStream {
     }
 
     private final void growSpine() {
-      int len = (this.spine.length * 2) + 1;
+      int len = (int) Math.min(2L * this.spine.length + 1, Integer.MAX_VALUE);
       this.spine = new int[len];
       this.threshold = (int)(len * 0.75);
       Arrays.fill(this.spine, -1);

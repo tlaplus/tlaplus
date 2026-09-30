@@ -45,7 +45,7 @@ public final class InternTable implements Serializable
     {
         UniqueString[] old = this.table;
         this.count = 0;
-        this.length = 2 * this.length + 1;
+        this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
         this.thresh = this.length / 2;
         this.table = new UniqueString[this.length];
         for (int i = 0; i < old.length; i++)
