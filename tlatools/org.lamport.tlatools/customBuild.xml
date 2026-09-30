@@ -1509,6 +1509,33 @@
 		<fail if="verify-test.failed" message="JPF verification failed." />
 	</target>
 
+	<!-- Proves the JML specifications with OpenJML (https://www.openjml.org).
+	     Requires the classes in ${class.dir}, see the compile target.
+	     Set -Dopenjml.executable=... unless openjml is on the PATH. -->
+	<property name="openjml.executable" value="openjml" />
+	<target name="test-openjml" description="Prove the JML specifications with OpenJML">
+		<exec executable="${openjml.executable}" dir="${basedir}" failonerror="true">
+			<!-- Prove the specifications statically with an SMT solver, instead of only type-checking them. -->
+			<arg value="--esc" />
+			<!-- Report every int operation in the Java code that may overflow (the default, stated for the reader). -->
+			<arg value="--code-math=safe" />
+			<!-- Evaluate arithmetic in specifications over the mathematical integers (the default). -->
+			<arg value="--spec-math=bigint" />
+			<!-- After reporting an overflow, assume it did not happen, so the overflow is not also reported as an out-of-bounds index. -->
+			<arg value="--arithmetic-failure=hard" />
+			<arg value="--progress" />
+			<arg value="--no-show-skipped" />
+			<arg value="--class-path" />
+			<arg path="${class.dir}" />
+			<arg value="--source-path" />
+			<arg path="${src.dir}" />
+			<arg value="--method=tlc2.value.impl.ValueVec.search,tlc2.value.impl.ValueVec.sort" />
+			<arg path="${src.dir}/tlc2/value/impl/ValueVec.java" />
+			<!-- OpenJML reads the JML of IValue only if IValue.java is on the command line. -->
+			<arg path="${src.dir}/tlc2/value/IValue.java" />
+		</exec>
+	</target>
+
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
 	<target name="benchmark" description="Generate the self-contained JMH benchmark JAR (run with java -jar target/benchmarks.jar)">
 		<!-- Compile benchmark class files in test-benchmark against jmh. -->

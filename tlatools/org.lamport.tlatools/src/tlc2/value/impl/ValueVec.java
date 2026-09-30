@@ -12,8 +12,8 @@ import tlc2.TLCGlobals;
 import util.WrongInvocationException;
 
 public class ValueVec implements Serializable {
-  private Value [] elementData;
-  private int elementCount;
+  private /*@ spec_public */ Value [] elementData;
+  private /*@ spec_public */ int elementCount;
          
   private static final Value [] empty = new Value [0];
 
@@ -139,9 +139,11 @@ public class ValueVec implements Serializable {
   public final int size() { return this.elementCount; }
 
   /* Assume that the elements are sorted. */
+  //@ requires 0 <= elementCount && elementCount <= elementData.length;
   public final boolean search(Value  elem, boolean sorted) {
     if (sorted) {
       int cmp = 0, mid = 0, low = 0, high = this.elementCount;
+      //@ maintaining 0 <= low && high <= elementCount;
       while (low < high) {
 	mid = low + ((high - low) >> 1);
 	cmp = elem.compareTo(this.elementData[mid]);
@@ -155,6 +157,7 @@ public class ValueVec implements Serializable {
       }
     }
     else {
+      //@ maintaining 0 <= i;
       for (int i = 0; i < this.elementCount; i++) {
 	if (this.elementData[i].equals(elem)) {
 	  return true;
@@ -164,11 +167,16 @@ public class ValueVec implements Serializable {
     return false;
   }
 
+  //@ requires 0 <= elementCount && elementCount <= elementData.length;
   public final ValueVec sort(boolean noDup) {
     int newCount = (this.elementCount == 0) ? 0 : 1;
+    //@ maintaining 1 <= i;
+    //@ maintaining 0 < elementCount ==> 1 <= newCount && newCount <= i;
     for (int i = 1; i < this.elementCount; i++) {
       Value  elem = this.elementData[i];
       int cmp = 0, idx = 0, low = 0, high = newCount;
+      //@ maintaining 0 <= low && high <= newCount;
+      //@ maintaining 0 <= idx && idx < newCount;
       while (low < high) {
 	idx = low + ((high - low) >> 1);
 	cmp = elem.compareTo(this.elementData[idx]);
@@ -182,6 +190,7 @@ public class ValueVec implements Serializable {
       }
       if (cmp != 0 || !noDup) {
 	idx = (cmp < 0) ? idx  : idx + 1;
+	//@ maintaining j <= newCount;
 	for (int j = newCount; j > idx; j--) {
 	  this.elementData[j] = this.elementData[j-1];
 	}
