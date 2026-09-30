@@ -86,6 +86,7 @@ public class ValueVec implements Serializable {
     return this.elementData[index];
   }
 
+  //@ requires 0 <= elementCount && elementCount <= elementData.length;
   public final void ensureCapacity(int minCapacity) {
     if (elementData.length >= TLCGlobals.setBound) {
       throw new WrongInvocationException("Attempted to construct a set with too many elements (>" +

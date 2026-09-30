@@ -20,8 +20,8 @@ public class Vect<E> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	
-  private E[] elementData;
-  private int elementCount;
+  private /*@ spec_public */ E[] elementData;
+  private /*@ spec_public */ int elementCount;
          
   final class Enumerator implements Enumeration<E> {
     int index = 0;
@@ -98,6 +98,7 @@ public class Vect<E> implements Serializable {
   @SuppressWarnings("rawtypes")
   public Enumeration<E> elements() { return new Vect.Enumerator(); }
 
+  //@ requires 0 <= elementCount && elementCount <= elementData.length;
   public final void ensureCapacity(int minCapacity) { 
     if (this.elementData.length < minCapacity) {
       int newCapacity = (int) Math.min(2L * elementData.length, Integer.MAX_VALUE - 8);

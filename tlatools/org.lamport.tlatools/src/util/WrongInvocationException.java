@@ -10,6 +10,7 @@ package util;
 public class WrongInvocationException extends RuntimeException
 {
 
+    //@ pure
     public WrongInvocationException(String message)
     {
         super(message);

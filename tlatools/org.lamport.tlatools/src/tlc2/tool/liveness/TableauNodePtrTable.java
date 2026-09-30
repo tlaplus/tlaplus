@@ -111,10 +111,11 @@ public class TableauNodePtrTable {
 	static final long UNDONE = 0xFFFFFFFE00000000L;
 	static final long DONE = 0xFFFFFFFD00000000L;
 	
-	private int count;
-	private int length;
-	private int thresh;
-	private int[][] nodes;
+	//@ public model \datagroup content;
+	private /*@ spec_public */ int count; //@ in content;
+	private /*@ spec_public */ int length; //@ in content;
+	private /*@ spec_public */ int thresh; //@ in content;
+	private /*@ spec_public */ int[][] nodes; //@ in content; maps nodes[*] \into content;
 
 	public TableauNodePtrTable(int size) {
 		this.count = 0;
@@ -321,6 +322,7 @@ public class TableauNodePtrTable {
 		}
 	}
 
+	//@ assignable content;
 	private final void put(int[] node) {
 		long k = getKey(node);
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
@@ -355,11 +357,14 @@ public class TableauNodePtrTable {
 	}
 
 	/* Double the table when the table is full by the threshhold. */
+	//@ requires 0 <= length;
 	private final void grow() {
 		this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		this.thresh = (int) (this.length * 0.75);
 		int[][] oldNodes = this.nodes;
 		this.nodes = new int[this.length][];
+		//@ maintaining 0 <= i;
+		//@ loop_writes i, content;
 		for (int i = 0; i < oldNodes.length; i++) {
 			int[] node = oldNodes[i];
 			if (node != null) {

@@ -11,11 +11,12 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public final class SetOfLong {
-  private int count;
-  private int length;
-  private int thresh;
-  private long table[];
-  private boolean hasZero;
+  //@ public model \datagroup content;
+  private /*@ spec_public */ int count; //@ in content;
+  private /*@ spec_public */ int length; //@ in content;
+  private /*@ spec_public */ int thresh; //@ in content;
+  private /*@ spec_public */ long table[]; //@ in content; maps table[*] \into content;
+  private /*@ spec_public */ boolean hasZero; //@ in content;
 
   public SetOfLong(int size) {
     this.table = new long[size];
@@ -27,12 +28,15 @@ public final class SetOfLong {
 
   public SetOfLong(int size, float ignore) { this(size); }
 
+  //@ requires 0 <= length;
   private final void grow() {
     long[] old = table;
     this.count = 0;
     this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
     this.thresh = this.length / 2;
     this.table = new long[this.length];
+    //@ maintaining 0 <= i;
+    //@ loop_writes i, content;
     for (int i = 0; i < old.length; i++) {
       long k = old[i];
       if (k != 0) this.put(k);
@@ -43,6 +47,7 @@ public final class SetOfLong {
    * Add k into the table. Return true iff the table has already
    * contained k.
    */
+  //@ assignable content;
   public final boolean put(long k) {
     if (count >= thresh) this.grow();
     if (k == 0) {

@@ -11,8 +11,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class TLCStateVec implements Serializable {
-  private TLCState[] elementData;
-  private int elementCount;
+  private /*@ spec_public */ TLCState[] elementData;
+  private /*@ spec_public */ int elementCount;
          
   public TLCStateVec() { this(10); }
 
@@ -34,6 +34,7 @@ public class TLCStateVec implements Serializable {
 
   public final int size() { return this.elementCount; }
 
+  //@ requires 0 <= elementCount && elementCount <= elementData.length;
   public final void ensureCapacity(int minCapacity) { 
     if (elementData.length < minCapacity) {
       int newCapacity = (int) Math.min(2L * elementData.length, Integer.MAX_VALUE - 8);

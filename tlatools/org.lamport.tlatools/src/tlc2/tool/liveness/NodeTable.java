@@ -5,11 +5,12 @@
 package tlc2.tool.liveness;
 
 public final class NodeTable {
-	private int count;
-	private int length;
-	private int thresh;
-	private Object[] elems;
-	private boolean isBT;
+	//@ public model \datagroup content;
+	private /*@ spec_public */ int count; //@ in content;
+	private /*@ spec_public */ int length; //@ in content;
+	private /*@ spec_public */ int thresh; //@ in content;
+	private /*@ spec_public */ Object[] elems; //@ in content; maps elems[*] \into content;
+	private /*@ spec_public */ boolean isBT;
 
 	public NodeTable(int size, boolean isBT) {
 		this.count = 0;
@@ -20,12 +21,16 @@ public final class NodeTable {
 	}
 
 	/* Double the table when the table is full by the threshhold. */
+	//@ requires 0 <= length;
+	//@ requires isBT || (\forall int j; 0 <= j && j < elems.length; elems[j] == null || elems[j] instanceof BEGraphNode);
 	private final void grow() {
 		Object[] oldElems = this.elems;
 		this.count = 0;
 		this.length = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		this.thresh = this.length / 2;
 		this.elems = new Object[this.length];
+		//@ maintaining 0 <= i;
+		//@ loop_writes i, content;
 		for (int i = 0; i < oldElems.length; i++) {
 			Object elem = oldElems[i];
 			if (elem != null) {
@@ -42,6 +47,7 @@ public final class NodeTable {
 		return this.count;
 	}
 
+	//@ assignable content;
 	public final int putBENode(BEGraphNode node) {
 		if (count >= thresh) {
 			this.grow();
@@ -76,6 +82,7 @@ public final class NodeTable {
 		}
 	}
 
+	//@ assignable content;
 	private final int putBTNodes(Object nodes) {
 		long k = ((nodes instanceof BTGraphNode) ? ((BTGraphNode) nodes).stateFP : ((BTGraphNode[]) nodes)[0].stateFP);
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
