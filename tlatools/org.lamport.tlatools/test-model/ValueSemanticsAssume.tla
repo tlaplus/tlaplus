@@ -453,6 +453,20 @@ ASSUME BoundaryFcnExcept
 ASSUME BoundaryFcnBinarySelect
 ASSUME FPBoundaryFcns
 
+ASSUME IssueIntSetPermutation
+ASSUME IssueIntSetNested
+ASSUME BoundaryIntSetPermutation
+ASSUME BoundaryIntSetNested
+ASSUME CardBoundaryIntSet
+ASSUME EmptyIntervalsEq
+ASSUME EmptyIntervalsPair
+ASSUME BoundaryEmptyIntervalsEq
+ASSUME BoundaryEmptyIntervals
+ASSUME FullIntervalMinMember
+ASSUME FullIntervalMaxMember
+ASSUME FullIntervalZeroMember
+ASSUME CardLargestInterval
+
 -----------------------------------------------------------------------------
 \* TLAPS proves every proposition below in ValueSemanticsTheorems.  Runaway
 \* evaluations stay commented so one case does not hide the others.  The
@@ -598,4 +612,12 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
 \* [STRING -> {0}] is a singleton, but membership converts the function.
 ASSUME AssertError("Attempted to compute the number of elements in the overridden value STRING.",
                    StringZeroFcnMember(0))
+\* Intervals with more than 2^31 - 1 elements have no 32-bit size, so
+\* cardinality and enumeration refuse them rather than wrap around.
+ASSUME AssertError("Size of interval value exceeds the maximum representable size (32bits): -2147483648..2147483647.",
+                   FullIntervalExists)
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nSize of interval value exceeds the maximum representable size (32bits): -2147483648..2147483647.",
+                   CardFullInterval)
+ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nSize of interval value exceeds the maximum representable size (32bits): 0..2147483647.",
+                   CardNatInterval)
 =============================================================================
