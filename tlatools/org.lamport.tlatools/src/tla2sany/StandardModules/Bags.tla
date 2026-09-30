@@ -15,7 +15,6 @@
 (* operators is defined in the static block at the beginning of the Java  *)
 (* class.                                                                 *)
 (**************************************************************************)
-EXTENDS TLC
 LOCAL INSTANCE Naturals
 
 IsABag(B) == 
