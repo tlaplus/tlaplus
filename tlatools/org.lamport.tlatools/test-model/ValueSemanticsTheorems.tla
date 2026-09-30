@@ -2138,4 +2138,76 @@ THEOREM FPBoundaryFcns == Cases!FPBoundaryFcns
            = [x \in {Cases!MaxInt} |-> x]
     BY <1>1, SingletonIntervalFcnEq
   <1>4. QED BY <1>2, <1>3 DEF Cases!FPBoundaryFcns
+
+THEOREM IssueIntSetPermutation == Cases!IssueIntSetPermutation
+  BY DEF Cases!IssueIntSetPermutation
+
+THEOREM IssueIntSetNested == Cases!IssueIntSetNested
+  BY IssueIntSetPermutation, FS_Singleton
+     DEF Cases!IssueIntSetNested, Cases!IssueIntSetPermutation
+
+THEOREM BoundaryIntSetPermutation == Cases!BoundaryIntSetPermutation
+  BY DEF Cases!BoundaryIntSetPermutation
+
+THEOREM BoundaryIntSetNested == Cases!BoundaryIntSetNested
+  BY BoundaryIntSetPermutation, FS_Singleton
+     DEF Cases!BoundaryIntSetNested, Cases!BoundaryIntSetPermutation
+
+THEOREM CardBoundaryIntSet == Cases!CardBoundaryIntSet
+  <1>1. Cases!MinInt # 0 /\ Cases!MinInt # Cases!MaxInt /\ 0 # Cases!MaxInt
+    BY DEF Cases!MinInt, Cases!MaxInt
+  <1>2. QED BY <1>1, TripleFiniteCardinality DEF Cases!CardBoundaryIntSet
+
+THEOREM EmptyIntervalsEq == Cases!EmptyIntervalsEq
+  BY DEF Cases!EmptyIntervalsEq
+
+THEOREM EmptyIntervalsPair == Cases!EmptyIntervalsPair
+  <1>1. 10..5 = {}
+    OBVIOUS
+  <1>2. 20..15 = {}
+    OBVIOUS
+  <1>3. {10..5, 20..15} = {{}}
+    BY <1>1, <1>2
+  <1>4. QED BY <1>3, FS_Singleton DEF Cases!EmptyIntervalsPair
+
+THEOREM BoundaryEmptyIntervalsEq == Cases!BoundaryEmptyIntervalsEq
+  BY DEF Cases!BoundaryEmptyIntervalsEq, Cases!MaxInt, Cases!MinInt
+
+THEOREM BoundaryEmptyIntervals == Cases!BoundaryEmptyIntervals
+  <1>1. Cases!MaxInt..Cases!MinInt = {} /\ 1..0 = {} /\ (-1)..(-2) = {}
+    BY DEF Cases!MaxInt, Cases!MinInt
+  <1>2. QED BY <1>1, FS_Singleton DEF Cases!BoundaryEmptyIntervals
+
+THEOREM FullIntervalMinMember == Cases!FullIntervalMinMember
+  BY DEF Cases!FullIntervalMinMember, Cases!FullInterval,
+         Cases!MinInt, Cases!MaxInt
+
+THEOREM FullIntervalMaxMember == Cases!FullIntervalMaxMember
+  BY DEF Cases!FullIntervalMaxMember, Cases!FullInterval,
+         Cases!MinInt, Cases!MaxInt
+
+THEOREM FullIntervalZeroMember == Cases!FullIntervalZeroMember
+  BY DEF Cases!FullIntervalZeroMember, Cases!FullInterval,
+         Cases!MinInt, Cases!MaxInt
+
+THEOREM FullIntervalExists == Cases!FullIntervalExists
+  BY FullIntervalMinMember
+     DEF Cases!FullIntervalExists, Cases!FullIntervalMinMember
+
+THEOREM CardFullInterval == Cases!CardFullInterval
+  <1>1. Cases!MinInt \in Int /\ Cases!MaxInt \in Int
+        /\ ~(Cases!MinInt > Cases!MaxInt)
+        /\ Cases!MaxInt - Cases!MinInt + 1 > 0
+    BY DEF Cases!MinInt, Cases!MaxInt
+  <1>2. QED BY <1>1, FS_Interval DEF Cases!CardFullInterval, Cases!FullInterval
+
+THEOREM CardNatInterval == Cases!CardNatInterval
+  <1>1. Cases!MaxInt \in Int /\ ~(0 > Cases!MaxInt)
+    BY DEF Cases!MaxInt
+  <1>2. QED BY <1>1, FS_Interval DEF Cases!CardNatInterval
+
+THEOREM CardLargestInterval == Cases!CardLargestInterval
+  <1>1. Cases!MaxInt \in Int /\ ~(1 > Cases!MaxInt)
+    BY DEF Cases!MaxInt
+  <1>2. QED BY <1>1, FS_Interval DEF Cases!CardLargestInterval
 =============================================================================

@@ -714,4 +714,30 @@ FPBoundaryFcns ==
   /\ Fingerprint([x \in MaxInt..MaxInt |-> x]) =
      Fingerprint([x \in {MaxInt} |-> x])
 
+\* Integers whose difference overflows 32 bits must still order consistently,
+\* so equal sets normalize to the same representation (GitHub issue #391).
+IssueIntSetPermutation    == {1157660672, -989822976} = {-989822976, 1157660672}
+IssueIntSetNested         == Cardinality({{1157660672, -989822976}, {-989822976, 1157660672}}) = 1
+BoundaryIntSetPermutation == {MaxInt, 0, MinInt} = {MinInt, MaxInt, 0}
+BoundaryIntSetNested      == Cardinality({{MaxInt, 0, MinInt}, {MinInt, MaxInt, 0}}) = 1
+CardBoundaryIntSet        == Cardinality({MinInt, 0, MaxInt}) = 3
+
+\* All empty intervals are the empty set, whatever their bounds, including
+\* bounds whose difference overflows 32 bits.
+EmptyIntervalsEq         == 10..5 = 20..15
+EmptyIntervalsPair       == Cardinality({10..5, 20..15}) = 1
+BoundaryEmptyIntervalsEq == MaxInt..MinInt = 1..0
+BoundaryEmptyIntervals   == Cardinality({MaxInt..MinInt, 1..0, (-1)..(-2)}) = 1
+
+\* The interval spanning all 32-bit integers has 2^32 elements; a size
+\* computed by wrapping 32-bit arithmetic would be 0.
+FullInterval           == MinInt..MaxInt
+FullIntervalMinMember  == MinInt \in FullInterval
+FullIntervalMaxMember  == MaxInt \in FullInterval
+FullIntervalZeroMember == 0 \in FullInterval
+FullIntervalExists     == \E x \in FullInterval : x = MinInt
+CardFullInterval       == Cardinality(FullInterval) > 0
+CardNatInterval        == Cardinality(0..MaxInt) = MaxInt + 1
+CardLargestInterval    == Cardinality(1..MaxInt) = MaxInt
+
 =============================================================================
