@@ -5,9 +5,11 @@
 
 package tlc2.tool.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -182,6 +184,13 @@ public class ModelConfig implements ValueConstants, Serializable {
 						// strip ".tla" from this.configFileName.
 						this.configFileName.replace(TLAConstants.Files.TLA_EXTENSION, ""));
             }
+            // The lexer requires a \* comment to end with a newline, which a
+            // configuration may lack, e.g. because MonolithSpecExtractor strips
+            // it from embedded configurations. TLC used to take any lexical
+            // error for the end of the file, which hid this for a trailing
+            // comment, but also silently dropped all directives after other
+            // lexical errors, see https://github.com/tlaplus/tlaplus/issues/1455
+            fis = new SequenceInputStream(fis, new ByteArrayInputStream(new byte[] { '\n' }));
             SimpleCharStream scs = new SimpleCharStream(fis, 1, 1);
             TLAplusParserTokenManager tmgr = new TLAplusParserTokenManager(scs, 2);
 
@@ -569,6 +578,9 @@ public class ModelConfig implements ValueConstants, Serializable {
      * Retrieves the next token from the token manager
      * @param tmgr
      * @return
+     * @throws ConfigFileException if the input is not a valid token. This must
+     *         not be mapped to EOF, which would silently drop all directives
+     *         that follow the malformed input.
      */
     private static Token getNextToken(TLAplusParserTokenManager tmgr)
     {
@@ -577,9 +589,7 @@ public class ModelConfig implements ValueConstants, Serializable {
             return tmgr.getNextToken();
         } catch (TokenMgrError e)
         {
-            Token tt = new Token();
-            tt.kind = TLAplusParserConstants.EOF;
-            return tt;
+            throw new ConfigFileException(EC.CFG_LEXICAL_ERROR, new String[] { e.getMessage() });
         }
     }
     private static Token getNextToken(TLAplusParserTokenManager tmgr, StringBuffer buf)
@@ -591,9 +601,7 @@ public class ModelConfig implements ValueConstants, Serializable {
 			return nextToken;
         } catch (TokenMgrError e)
         {
-            Token tt = new Token();
-            tt.kind = TLAplusParserConstants.EOF;
-            return tt;
+            throw new ConfigFileException(EC.CFG_LEXICAL_ERROR, new String[] { e.getMessage() });
         }
     }
 

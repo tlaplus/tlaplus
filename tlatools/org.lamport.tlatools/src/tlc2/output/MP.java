@@ -1517,6 +1517,10 @@ public class MP
             b.append(CONFIG_FILE_ERROR);
             b.append("It was expecting %2%, but did not find it.");
             break;
+
+        case EC.CFG_LEXICAL_ERROR:
+            b.append("TLC found an error in the configuration file:\n%1%");
+            break;
         case EC.CFG_ERROR_READING_FILE:
             b.append("TLC encountered the following error when trying to read the configuration file %1%:\n%2%");
             break;

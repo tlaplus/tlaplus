@@ -227,6 +227,7 @@ public interface EC
     public static final int CFG_TWICE_KEYWORD = 5004;
     public static final int CFG_EXPECT_ID = 5005;
     public static final int CFG_EXPECTED_SYMBOL = 5006;
+    public static final int CFG_LEXICAL_ERROR = 5007;
     public static final int TLC_MODE_MC = 2187;
     public static final int TLC_MODE_MC_DFS = 2271;
     public static final int TLC_MODE_SIMU = 2188;
@@ -465,6 +466,7 @@ public interface EC
 	        case CFG_TWICE_KEYWORD:
 	        case CFG_EXPECT_ID:
 	        case CFG_EXPECTED_SYMBOL:
+	        case CFG_LEXICAL_ERROR:
 	        	return ERROR_CONFIG_PARSE;
 	        	
 	        case TLC_PARSING_FAILED2:
