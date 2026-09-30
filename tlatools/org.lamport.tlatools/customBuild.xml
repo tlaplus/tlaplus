@@ -1529,7 +1529,7 @@
 			<arg path="${class.dir}" />
 			<arg value="--source-path" />
 			<arg path="${src.dir}" />
-			<arg value="--method=tlc2.value.impl.ValueVec.search,tlc2.value.impl.ValueVec.sort,tlc2.value.impl.IntervalValue.fingerPrint" />
+			<arg value="--method=tlc2.value.impl.ValueVec.search,tlc2.value.impl.ValueVec.sort,tlc2.value.impl.IntervalValue.fingerPrint,tlc2.value.impl.IntervalValue.size" />
 			<arg path="${src.dir}/tlc2/value/impl/ValueVec.java" />
 			<arg path="${src.dir}/tlc2/value/impl/IntervalValue.java" />
 			<!-- OpenJML reads the JML of IValue and FP64 only if their sources are on the command line;
