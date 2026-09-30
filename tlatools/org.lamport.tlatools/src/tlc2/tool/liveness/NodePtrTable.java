@@ -12,11 +12,12 @@ import tlc2.output.MP;
  */
 public class NodePtrTable {
 
-	private int count;
-	private int length;
-	private int thresh;
-	private long[] keys;
-	private long[] elems;
+	//@ public model \datagroup content;
+	private /*@ spec_public */ int count; //@ in content;
+	private /*@ spec_public */ int length; //@ in content;
+	private /*@ spec_public */ int thresh; //@ in content;
+	private /*@ spec_public */ long[] keys; //@ in content; maps keys[*] \into content;
+	private /*@ spec_public */ long[] elems; //@ in content; maps elems[*] \into content;
 
 	/**
 	 * @param size
@@ -110,25 +111,32 @@ public class NodePtrTable {
 	}
 
 	/* Double the table when the table is full by the threshhold. */
+	//@ requires 0 <= length && keys.length == elems.length;
+	//@ assignable content;
 	private final void grow() {
 		final int newLength = (int) Math.min(2L * this.length + 1, Integer.MAX_VALUE);
 		grow(newLength);
 	}
 
+    //@ requires 0 < newLength && keys.length == elems.length;
+    //@ assignable content;
     private final void grow(final int newLength) {
 		try {
 			final long[] oldKeys = this.keys;
 			final long[] oldElems = this.elems;
 			this.keys = new long[newLength];
 			this.elems = new long[newLength];
+			//@ maintaining 0 <= i;
 			for (int i = 0; i < newLength; i++) {
 				this.elems[i] = -1;
 			}
 			this.count = 0;
+			//@ maintaining 0 <= i && 0 <= count && count <= i;
 			for (int i = 0; i < oldElems.length; i++) {
 				final long elem = oldElems[i];
 				if (elem != -1) {
-					int loc = ((int) oldKeys[i] & 0x7FFFFFFF) % newLength;
+					int loc = (int) (oldKeys[i] & 0x7FFFFFFFL) % newLength;
+					//@ maintaining 0 <= loc && loc < newLength && 0 <= count && count <= i;
 					while (true) {
 						if (this.elems[loc] == -1) {
 							this.keys[loc] = oldKeys[i];

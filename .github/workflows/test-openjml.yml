@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/test-openjml.yml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/TLCStateVec.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/NodePtrTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/NodeTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/TableauNodePtrTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/util/FP64.java'
@@ -25,6 +26,7 @@ on:
     paths:
       - '.github/workflows/test-openjml.yml'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/TLCStateVec.java'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/NodePtrTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/NodeTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/tool/liveness/TableauNodePtrTable.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/util/FP64.java'

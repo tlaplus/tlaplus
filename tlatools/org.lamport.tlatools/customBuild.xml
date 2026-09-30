@@ -1529,7 +1529,7 @@
 			<arg path="${class.dir}" />
 			<arg value="--source-path" />
 			<arg path="${src.dir}" />
-			<arg value="--method=tlc2.value.impl.ValueVec.search,tlc2.value.impl.ValueVec.sort,tlc2.value.impl.ValueVec.ensureCapacity,tlc2.value.impl.IntervalValue.fingerPrint,tlc2.value.impl.IntervalValue.size,tlc2.util.Vect.ensureCapacity,tlc2.util.LongVec.ensureCapacity,tlc2.tool.TLCStateVec.ensureCapacity,tlc2.util.SetOfLong.grow,tlc2.util.LongObjTable.grow,tlc2.util.ObjLongTable.grow,util.InternTable.grow,tlc2.tool.liveness.NodeTable.grow,tlc2.tool.liveness.TableauNodePtrTable.grow,tlc2.value.ValueOutputStream.HandleTable.growEntries,tlc2.value.ValueOutputStream.HandleTable.growSpine" />
+			<arg value="--method=tlc2.value.impl.ValueVec.search,tlc2.value.impl.ValueVec.sort,tlc2.value.impl.ValueVec.ensureCapacity,tlc2.value.impl.IntervalValue.fingerPrint,tlc2.value.impl.IntervalValue.size,tlc2.util.Vect.ensureCapacity,tlc2.util.LongVec.ensureCapacity,tlc2.tool.TLCStateVec.ensureCapacity,tlc2.util.SetOfLong.grow,tlc2.util.LongObjTable.grow,tlc2.util.ObjLongTable.grow,util.InternTable.grow,tlc2.tool.liveness.NodeTable.grow,tlc2.tool.liveness.TableauNodePtrTable.grow,tlc2.tool.liveness.NodePtrTable.grow,tlc2.value.ValueOutputStream.HandleTable.growEntries,tlc2.value.ValueOutputStream.HandleTable.growSpine" />
 			<arg path="${src.dir}/tlc2/value/impl/ValueVec.java" />
 			<arg path="${src.dir}/tlc2/value/impl/IntervalValue.java" />
 			<arg path="${src.dir}/tlc2/util/Vect.java" />
@@ -1541,6 +1541,7 @@
 			<arg path="${src.dir}/util/InternTable.java" />
 			<arg path="${src.dir}/tlc2/tool/liveness/NodeTable.java" />
 			<arg path="${src.dir}/tlc2/tool/liveness/TableauNodePtrTable.java" />
+			<arg path="${src.dir}/tlc2/tool/liveness/NodePtrTable.java" />
 			<arg path="${src.dir}/tlc2/value/ValueOutputStream.java" />
 			<!-- OpenJML reads the JML of IValue, FP64, and WrongInvocationException only if their sources
 			     are on the command line; otherwise it may read the newer class files, which have no JML. -->
