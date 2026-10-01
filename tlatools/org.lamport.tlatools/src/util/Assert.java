@@ -21,11 +21,15 @@ public class Assert
      * Unconditioned way to throw an exception
      * @param reason the explaining message to be enclosed into the exception
      */
+    //@ public exceptional_behavior
+    //@   signals_only RuntimeException;
     public static void fail(String reason) throws RuntimeException
     {
         throw new TLCRuntimeException(reason);
     }
 
+	//@ public exceptional_behavior
+	//@   signals_only RuntimeException;
 	public static void fail(String reason, SemanticNode expr) throws RuntimeException {
     	if (expr == null) {
     		// expr is null if Value#getSource returns null in Tool.

@@ -1543,11 +1543,12 @@
 			<arg path="${src.dir}/tlc2/tool/liveness/TableauNodePtrTable.java" />
 			<arg path="${src.dir}/tlc2/tool/liveness/NodePtrTable.java" />
 			<arg path="${src.dir}/tlc2/value/ValueOutputStream.java" />
-			<!-- OpenJML reads the JML of IValue, FP64, and WrongInvocationException only if their sources
+			<!-- OpenJML reads the JML of IValue, FP64, WrongInvocationException, and Assert only if their sources
 			     are on the command line; otherwise it may read the newer class files, which have no JML. -->
 			<arg path="${src.dir}/tlc2/value/IValue.java" />
 			<arg path="${src.dir}/tlc2/util/FP64.java" />
 			<arg path="${src.dir}/util/WrongInvocationException.java" />
+			<arg path="${src.dir}/util/Assert.java" />
 		</exec>
 	</target>
 

@@ -20,6 +20,7 @@ on:
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/ValueOutputStream.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
+      - 'tlatools/org.lamport.tlatools/src/util/Assert.java'
       - 'tlatools/org.lamport.tlatools/src/util/InternTable.java'
       - 'tlatools/org.lamport.tlatools/src/util/WrongInvocationException.java'
   pull_request:
@@ -39,6 +40,7 @@ on:
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/ValueOutputStream.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/IntervalValue.java'
       - 'tlatools/org.lamport.tlatools/src/tlc2/value/impl/ValueVec.java'
+      - 'tlatools/org.lamport.tlatools/src/util/Assert.java'
       - 'tlatools/org.lamport.tlatools/src/util/InternTable.java'
       - 'tlatools/org.lamport.tlatools/src/util/WrongInvocationException.java'
 
