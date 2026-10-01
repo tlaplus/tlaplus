@@ -2210,4 +2210,34 @@ THEOREM CardLargestInterval == Cases!CardLargestInterval
   <1>1. Cases!MaxInt \in Int /\ ~(1 > Cases!MaxInt)
     BY DEF Cases!MaxInt
   <1>2. QED BY <1>1, FS_Interval DEF Cases!CardLargestInterval
+
+THEOREM TupleParamFcnDomain == Cases!TupleParamFcnDomain
+  BY DEF Cases!TupleParamFcnDomain, Cases!TupleParamFcn
+
+THEOREM TupleParamFcnOneForall == Cases!TupleParamFcnOneForall
+  <1>1. DOMAIN Cases!TupleParamFcnOne = {1} \X {1} \X {<<3, 4>>}
+    BY DEF Cases!TupleParamFcnOne
+  <1>2. <<1, 1, <<3, 4>>>> \in {1} \X {1} \X {<<3, 4>>}
+    OBVIOUS
+  <1>3. QED BY <1>1, <1>2 DEF Cases!TupleParamFcnOneForall
+
+\*
+\* tlapm fails to load an instantiated module with a tuple-bound function
+\* constructor unless that module is also on its command line:
+\*   tlapm --strict ValueSemanticsCases.tla ValueSemanticsTheorems.tla
+\*
+\* The backends cannot apply a function constructor that binds several
+\* arguments, with or without a tuple-bound one, and a curried rewrite would
+\* no longer be the case.  Apalache flattens the tuple into extra arguments:
+\*   https://github.com/tlaplus/tlapm/issues/294
+\*   https://github.com/apalache-mc/apalache/issues/3491
+THEOREM TupleParamFcnApply == Cases!TupleParamFcnApply
+  OMITTED
+
+THEOREM TupleParamFcnEq == Cases!TupleParamFcnEq
+  OMITTED
+
+THEOREM TupleParamFcnOneRange == Cases!TupleParamFcnOneRange
+  OMITTED
+
 =============================================================================

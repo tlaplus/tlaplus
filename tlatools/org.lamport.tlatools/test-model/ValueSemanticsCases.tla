@@ -740,4 +740,14 @@ CardFullInterval       == Cardinality(FullInterval) > 0
 CardNatInterval        == Cardinality(0..MaxInt) = MaxInt + 1
 CardLargestInterval    == Cardinality(1..MaxInt) = MaxInt
 
+\* A tuple-bound parameter ranges over its own domain, also when it follows
+\* a group that binds several names to one domain.
+TupleParamFcn       == [x, y \in {1, 2}, <<a, b>> \in {<<3, 4>>} |-> x + y + a + b]
+TupleParamFcnApply  == TupleParamFcn[2, 1, <<3, 4>>] = 10
+TupleParamFcnDomain == DOMAIN TupleParamFcn = {1, 2} \X {1, 2} \X {<<3, 4>>}
+TupleParamFcnEq     == TupleParamFcn = [t \in {1, 2} \X {1, 2} \X {<<3, 4>>} |-> t[1] + t[2] + t[3][1] + t[3][2]]
+TupleParamFcnOne       == [x, y \in {1}, <<a, b>> \in {<<3, 4>>} |-> a]
+TupleParamFcnOneForall == ~ \A t \in DOMAIN TupleParamFcnOne : FALSE
+TupleParamFcnOneRange  == {TupleParamFcnOne[t] : t \in DOMAIN TupleParamFcnOne} = {3}
+
 =============================================================================
