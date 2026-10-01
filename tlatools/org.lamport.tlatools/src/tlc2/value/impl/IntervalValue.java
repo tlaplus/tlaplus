@@ -113,8 +113,9 @@ implements Enumerable, Reducible {
   public final boolean isFinite() { return true; }
 
   //@ also
-  //@ ensures 0 <= \result;
-  //@ ensures 0 < \result ==> (long) this.low + \result - 1 == this.high;
+  //@ ensures this.low == \old(this.low) && this.high == \old(this.high);
+  //@ ensures \result == (this.high < this.low ? 0 : (\bigint) this.high - this.low + 1);
+  //@ signals (RuntimeException e) (\bigint) \old(this.high) - \old(this.low) + 1 > Integer.MAX_VALUE;
   @Override
   public final int size() {
     try {
