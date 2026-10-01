@@ -60,6 +60,14 @@ public class ExecutionStatisticsCollectorTest {
 			this.hostname = hostname;
 			this.parameters = parameters;
 		}
+
+		@Override
+		protected void collect0(Map<String, String> parameters) {
+			this.submitted = false;
+			super.collect0(parameters);
+			assertEquals("get() must show NO_ESC exactly when collect0 sends nothing", this.submitted,
+					get() != ExecutionStatisticsCollector.Selection.NO_ESC);
+		}
 	}
 
 	// Opt-In with company-level enabled execution statistics.
@@ -82,6 +90,8 @@ public class ExecutionStatisticsCollectorTest {
 		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector("/path/does/not/exist",
 				COMPANY);
 		assertNull(esc.getIdentifier());
+		assertEquals("Without esc.txt, company-level reporting must show as ON",
+				ExecutionStatisticsCollector.Selection.ON, esc.get());
 
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
@@ -156,6 +166,8 @@ public class ExecutionStatisticsCollectorTest {
 		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
 				COMPANY);
 		assertNull(esc.getIdentifier());
+		assertEquals("NO_STATISTICS in esc.txt must show as NO_ESC even with company-level reporting",
+				ExecutionStatisticsCollector.Selection.NO_ESC, esc.get());
 
 		esc.collect0(new HashMap<>());
 		assertFalse(esc.submitted);

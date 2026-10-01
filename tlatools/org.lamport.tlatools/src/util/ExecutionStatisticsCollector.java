@@ -274,16 +274,25 @@ public class ExecutionStatisticsCollector {
 	}
 	
 	public Selection get() {
+		// Mirror the decisions of collect0: an explicit opt-out in esc.txt wins even
+		// if the company-level DNS record resolves, and a missing esc.txt does not
+		// prevent company-level reporting.
 		if (isEnabled()) {
+			String line = null;
 			try (BufferedReader br = new BufferedReader(new FileReader(new File(pathname)))) {
-				String line = br.readLine();
-				if (line != null && RND_ID_STR.equals(line.trim())) {
-					return Selection.RANDOM_IDENTIFIER;
-				} else {
-					return Selection.ON;
-				}
-			} catch (Exception e) {
+				line = br.readLine();
+			} catch (FileNotFoundException | NoSuchFileException swallow) {
+			} catch (IOException e) {
+				return Selection.NO_ESC;
 			}
+			if (line != null) {
+				if (NO_ESC_STR.equals(line.trim())) {
+					return Selection.NO_ESC;
+				} else if (RND_ID_STR.equals(line.trim())) {
+					return Selection.RANDOM_IDENTIFIER;
+				}
+			}
+			return Selection.ON;
 		}
 		return Selection.NO_ESC;
 	}
