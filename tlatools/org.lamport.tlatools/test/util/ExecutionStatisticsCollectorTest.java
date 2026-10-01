@@ -315,4 +315,45 @@ public class ExecutionStatisticsCollectorTest {
 		assertEquals("esc01.tlapl.us", esc.hostname);
 		assertEquals("123456789ABCDEFGHIJKLMNOPQRSTUVW", esc.parameters.get("id"));
 	}
+
+	// set(...) must write to the collector's own path, not to ~/.tlaplus/esc.txt.
+	@Test
+	public void testSetWritesToOwnPath() throws IOException {
+		final File tempDir = Files.createTempDirectory("esc").toFile();
+		tempDir.deleteOnExit();
+		final File escFile = new File(new File(tempDir, "sub"), "esc.txt");
+
+		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(escFile.getAbsolutePath(),
+				NO_COMPANY);
+
+		esc.set(ExecutionStatisticsCollector.Selection.NO_ESC);
+		escFile.getParentFile().deleteOnExit();
+		escFile.deleteOnExit();
+		assertEquals("set(NO_ESC) must write NO_STATISTICS to the collector's own esc.txt",
+				ExecutionStatisticsCollector.Selection.NO_ESC.toString(),
+				Files.readAllLines(escFile.toPath()).get(0));
+		assertEquals("get() must read back the NO_ESC written by set()",
+				ExecutionStatisticsCollector.Selection.NO_ESC, esc.get());
+
+		esc.set(ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER);
+		assertEquals("get() must read back the RANDOM_IDENTIFIER written by set()",
+				ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER, esc.get());
+	}
+
+	// A relative path without a directory has no parent file.
+	@Test
+	public void testSetWritesToRelativePath() throws IOException {
+		final File escFile = new File("esc-" + System.nanoTime() + ".txt");
+		escFile.deleteOnExit();
+		try {
+			final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(escFile.getPath(),
+					NO_COMPANY);
+
+			esc.set(ExecutionStatisticsCollector.Selection.NO_ESC);
+			assertEquals("get() must read back the NO_ESC written by set()",
+					ExecutionStatisticsCollector.Selection.NO_ESC, esc.get());
+		} finally {
+			escFile.delete();
+		}
+	}
 }

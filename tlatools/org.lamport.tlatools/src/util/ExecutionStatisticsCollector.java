@@ -256,11 +256,14 @@ public class ExecutionStatisticsCollector {
 	}
 
 	public void set(final Selection c) throws IOException {
-		final File udcFile = new File(PATH);
+		final File udcFile = new File(pathname);
 		// Create ~/.tlaplus/ parent directory if it doesn't exist. This will probably
 		// only ever be the case on a development machine where the Toolbox runs from
 		// inside Eclipse with a workspace location ("-data") other than ~/.tlaplus/ .
-		udcFile.getParentFile().mkdirs();
+		final File parent = udcFile.getParentFile();
+		if (parent != null) {
+			parent.mkdirs();
+		}
 		udcFile.createNewFile();
 		
 		try (BufferedWriter br = new BufferedWriter(new FileWriter(udcFile))) {
