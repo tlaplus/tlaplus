@@ -277,7 +277,7 @@ public class ExecutionStatisticsCollector {
 		if (isEnabled()) {
 			try (BufferedReader br = new BufferedReader(new FileReader(new File(pathname)))) {
 				String line = br.readLine();
-				if (RND_ID_STR.equals(line)) {
+				if (line != null && RND_ID_STR.equals(line.trim())) {
 					return Selection.RANDOM_IDENTIFIER;
 				} else {
 					return Selection.ON;

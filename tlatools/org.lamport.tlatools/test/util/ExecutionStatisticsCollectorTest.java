@@ -170,6 +170,8 @@ public class ExecutionStatisticsCollectorTest {
 
 		TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
 				COMPANY);
+		assertEquals("RANDOM_IDENTIFIER surrounded by whitespace must show as RANDOM_IDENTIFIER",
+				ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER, esc.get());
 
 		final String identifierA = esc.getIdentifier();
 		assertNotNull(identifierA);
@@ -284,6 +286,8 @@ public class ExecutionStatisticsCollectorTest {
 
 		TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
 				NO_COMPANY);
+		assertEquals("RANDOM_IDENTIFIER surrounded by whitespace must show as RANDOM_IDENTIFIER",
+				ExecutionStatisticsCollector.Selection.RANDOM_IDENTIFIER, esc.get());
 
 		final String identifierA = esc.getIdentifier();
 		assertNotNull(identifierA);
@@ -308,6 +312,8 @@ public class ExecutionStatisticsCollectorTest {
 		final TestExecutionStatisticsCollector esc = new TestExecutionStatisticsCollector(tempFile.getAbsolutePath(),
 				NO_COMPANY);
 		assertEquals("123456789ABCDEFGHIJKLMNOPQRSTUVW", esc.getIdentifier());
+		assertEquals("A user-defined identifier in esc.txt must show as ON",
+				ExecutionStatisticsCollector.Selection.ON, esc.get());
 
 		esc.collect0(new HashMap<>(Map.of("foo", "bar")));
 		assertTrue(esc.submitted);
