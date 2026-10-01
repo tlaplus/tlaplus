@@ -114,7 +114,7 @@ public class FcnParams implements IFcnParams {
 	}
 	if (isTuples[i]) {
 	  this.enums[idx] = ((Enumerable)domains[i]).elements();
-	  this.currentElems[idx] = this.enums[i].nextElement();
+	  this.currentElems[idx] = this.enums[idx].nextElement();
 	  if (this.currentElems[idx] == null) {
 	    this.enums = null;
 	    this.currentElems = null;
