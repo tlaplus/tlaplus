@@ -620,4 +620,24 @@ ASSUME AssertError("Attempted to apply the operator overridden by the Java metho
                    CardFullInterval)
 ASSUME AssertError("Attempted to apply the operator overridden by the Java method\npublic static tlc2.value.impl.IntValue tlc2.module.FiniteSets.Cardinality(tlc2.value.impl.Value),\nbut it produced the following error:\nSize of interval value exceeds the maximum representable size (32bits): 0..2147483647.",
                    CardNatInterval)
+
+-----------------------------------------------------------------------------
+ASSUME TupleParamFcnApply
+
+\* TLC fails on the following although it represents every value involved.
+\* They stay commented until it is fixed.  FcnParams.Enumerator initializes
+\* the tuple-bound parameter from the enumerator of y instead of its own, so
+\* enumerating the domain yields an integer where a tuple belongs and fails
+\* with a ClassCastException.
+\* ASSUME TupleParamFcnDomain
+\* ASSUME TupleParamFcnEq
+
+\* TLC gives a wrong answer on the following instead of failing.  When the
+\* group before the tuple-bound parameter has a single-element domain, the
+\* enumerator of y has no second element, and enumerating the domain yields
+\* nothing although the domain has one element.
+\* \* TLC evaluates \A t \in DOMAIN TupleParamFcnOne : FALSE to TRUE.
+\* ASSUME TupleParamFcnOneForall
+\* \* TLC evaluates {TupleParamFcnOne[t] : t \in DOMAIN TupleParamFcnOne} to {}.
+\* ASSUME TupleParamFcnOneRange
 =============================================================================
