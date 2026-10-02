@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.math3.primes.Primes;
+import org.apache.commons.math3.primes.TLCPrimes;
 
 import tlc2.tool.FingerprintException;
 import tlc2.util.RandomGenerator;
@@ -134,12 +134,12 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 		// i counts the number of calls.
 		protected int i;
 		
-		// The seed, X, index, ...
-		private int index; // X_i or seed
+		// The seed, X, index, ... (long because m can exceed Integer.MAX_VALUE)
+		private long index; // X_i or seed
 		// Multiplier (long because intermediate values in nextIndex can exceed Int.MAX_VALUE)
 		protected long a;
-		// Modulo
-		private int m;
+		// Modulo (long because the smallest suitable m >= n can exceed Integer.MAX_VALUE)
+		private long m;
 		// Increment
 		private int c;
 
@@ -161,7 +161,7 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 			// Calculating optimal parameters for the given n is expensive! We assume that
 			// we will only have to calculate parameters for a small number of ns per
 			// model-checker run.
-			int[] vals = MULTIPLIERS.computeIfAbsent(n, j -> computeOptimalMandA(j));
+			long[] vals = MULTIPLIERS.computeIfAbsent(n, j -> computeOptimalMandA(j));
 			this.m = vals[0];
 			this.a = vals[1];
 			
@@ -200,11 +200,11 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 				return 0;
 			}
 			do {
-				index = (int) ((this.a * index + this.c) % this.m);
+				index = (this.a * index + this.c) % this.m;
 			} while (index >= this.n);
 			i++;
 			assert 0 <= index && index < this.n;
-			return index;
+			return (int) index;
 		}
 
 		@Override
@@ -213,38 +213,38 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 	
 	// Consider bootstrapping the parameters for the upper range of Integers (where
 	// prime factorization becomes more expensive)?
-	private static Map<Integer, int[]> MULTIPLIERS = new ConcurrentHashMap<>();
+	private static Map<Integer, long[]> MULTIPLIERS = new ConcurrentHashMap<>();
 
 	// https://en.wikipedia.org/wiki/Linear_congruential_generator#c_%E2%89%A0_0
 	// When c # 0, correctly chosen parameters allow a period equal to m, for all seed values. This will occur iff:
 	// m and c are relatively prime,
 	// a-1 is divisible by all prime factors of m
 	// a-1 is divisible by 4 if m is divisible by 4.
-	static int[] computeOptimalMandA(int n) {
-		if (n < 9) {
-			// while loop will increment n to 9 for all values lower than 9 anyway.
-			n = 9;
-		}
+	// m is the smallest number >= n that is neither divisible by 4 nor square-free,
+	// which exceeds Integer.MAX_VALUE for n close to it (2^31 + 2 for n = 2^31 - 1).
+	static long[] computeOptimalMandA(final int size) {
+		// while loop will increment n to 9 for all values lower than 9 anyway.
+		long n = Math.max(size, 9);
 
 		// Prime factorization is expensive!!! As a minor optimization, we could in-line
 		// primeFactor and use counters and track the product while looping instead of
 		// storing all primes in a list, comparing its size to the set, and calculating
 		// the product of the set.  However, I don't want to spend the time to extract
 		// Apache Commons Math's primeFactors implementation.
-		List<Integer> primeFactors = Primes.primeFactors(n);
+		List<Long> primeFactors = TLCPrimes.primeFactors(n);
 		while (n % 4 == 0 || new HashSet<>(primeFactors).size() == primeFactors.size()) {
 			n = n + 1;
-			primeFactors = Primes.primeFactors(n);
+			primeFactors = TLCPrimes.primeFactors(n);
 		}
 
-		int a = 1;
-		for (Integer prime : new HashSet<>(primeFactors)) {
+		long a = 1;
+		for (Long prime : new HashSet<>(primeFactors)) {
 			a *= prime;
 		}
 		a += 1;
 		
 		// Unfortunately, Java doesn't have tuples/pairs.
-		return new int[] {n, a};
+		return new long[] {n, a};
 	}
 }
 
