@@ -30,6 +30,7 @@ import tla2sany.semantic.Generator;
 import tla2sany.semantic.ModuleNode;
 import tla2sany.st.TreeNode;
 import util.FileUtil;
+import util.SimpleFilenameToStream;
 import util.ToolIO;
 import util.UniqueString;
 import util.UsageGenerator;
@@ -603,7 +604,7 @@ public class SANY {
     }
   }
 
-  public static void SANYmain0(String args[]) throws SANYExitException {
+  public static void SANYmain0(String[] args) throws SANYExitException {
     if (args.length == 0) {
       printUsage();
       throw new SANYExitException(SanyExitCode.ERROR, "No arguments provided");
@@ -729,7 +730,8 @@ public class SANY {
       // semantically analyze, and level check the spec started in
       // file Filename leaving the result (normally) in Specification
       // spec.
-      SpecObj spec = new SpecObj(args[i], null);
+      final SpecObj spec = new SpecObj(args[i], SimpleFilenameToStream.specDirAndTlaLibrary(args[i]));
+
       // check if file exists
       if (FileUtil.createNamedInputStream(args[i], spec.getResolver()) != null) 
       {

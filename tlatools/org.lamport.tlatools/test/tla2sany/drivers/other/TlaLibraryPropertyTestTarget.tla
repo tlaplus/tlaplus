@@ -1,0 +1,3 @@
+---- MODULE TlaLibraryPropertyTestTarget ----
+op == TRUE
+====
