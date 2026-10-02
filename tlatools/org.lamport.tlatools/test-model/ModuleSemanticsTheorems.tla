@@ -1,7 +1,7 @@
 ---------------------- MODULE ModuleSemanticsTheorems -----------------------
 \* Representation-independent proofs of the propositions that
 \* ModuleSemanticsAssume.tla asks TLC to evaluate.
-EXTENDS Integers, TLAPS
+EXTENDS FiniteSets, FiniteSetTheorems, Integers, TLAPS
 
 Cases == INSTANCE ModuleSemanticsCases
 
@@ -122,4 +122,53 @@ THEOREM BagUnionMax == Cases!BagUnionMax
           = [x \in {1} |-> Cases!MaxInt + 2]
     BY <1>1, BagUnionSingletons
   <1>3. QED BY <1>2, SMT DEF Cases!BagUnionMax, Cases!MaxInt
+
+\* The singleton {e} witnesses the CHOOSE in RandomSubset(1, S).  Randomization
+\* reaches Cardinality through a LOCAL INSTANCE of FiniteSets, which TLAPS
+\* cannot unfold (https://github.com/tlaplus/tlapm/issues/119), so the proof
+\* below is commented out.  It checks after temporarily changing
+\* Randomization.tla's LOCAL INSTANCE FiniteSets to INSTANCE FiniteSets.
+LEMMA RandomSubsetChoose ==
+  ASSUME NEW S, NEW e \in S
+  PROVE  /\ Cases!RandomSubset(1, S) \in SUBSET S
+         /\ Cardinality(Cases!RandomSubset(1, S)) = 1
+  OMITTED
+\*  <1>1. \A T : Cases!Cardinality(T) = Cardinality(T)
+\*    BY DEF Cases!Cardinality, Cardinality
+\*  <1>2. {e} \in SUBSET S /\ Cases!Cardinality({e}) = 1
+\*    BY <1>1, FS_Singleton
+\*  <1>3. QED BY <1>1, <1>2 DEF Cases!RandomSubset
+
+LEMMA RandomSubsetSingleton ==
+  ASSUME NEW S, IsFiniteSet(S), NEW e \in S
+  PROVE  Cases!SingletonOf(Cases!RandomSubset(1, S), S)
+  <1> DEFINE T == Cases!RandomSubset(1, S)
+  <1>2. T \in SUBSET S /\ Cardinality(T) = 1
+    BY RandomSubsetChoose
+  <1>3. IsFiniteSet(T)
+    BY <1>2, FS_Subset
+  <1>4. \E x : T = {x}
+    BY <1>2, <1>3, FS_Singleton
+  <1>5. QED BY <1>2, <1>4 DEF Cases!SingletonOf
+
+THEOREM RandomSubsetOne == Cases!RandomSubsetOne
+  BY 1 \in 1..3, FS_Interval, RandomSubsetSingleton DEF Cases!RandomSubsetOne
+
+THEOREM RandomSubsetBelowMaxOne == Cases!RandomSubsetBelowMaxOne
+  <1>1. Cases!MaxInt - 1 \in Int /\ 1 \in 1..(Cases!MaxInt - 1)
+    BY DEF Cases!MaxInt
+  <1>2. QED BY <1>1, FS_Interval, RandomSubsetSingleton
+            DEF Cases!RandomSubsetBelowMaxOne
+
+THEOREM RandomSubsetMaxOne == Cases!RandomSubsetMaxOne
+  <1>1. Cases!MaxInt \in Int /\ 1 \in 1..Cases!MaxInt
+    BY DEF Cases!MaxInt
+  <1>2. QED BY <1>1, FS_Interval, RandomSubsetSingleton
+            DEF Cases!RandomSubsetMaxOne
+
+THEOREM RandomSubsetNegRefl == Cases!RandomSubsetNegRefl
+  BY DEF Cases!RandomSubsetNegRefl
+
+THEOREM RandomSubsetDet == Cases!RandomSubsetDet
+  BY DEF Cases!RandomSubsetDet
 =============================================================================
