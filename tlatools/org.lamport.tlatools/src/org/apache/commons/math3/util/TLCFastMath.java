@@ -8,6 +8,10 @@ public class TLCFastMath {
 		// in many dependencies. We don't want nor need those dependencies.
 		return Math.sqrt(d);
 	}
+
+	public static double sqrt(long d) {
+		return Math.sqrt(d);
+	}
 	
     public static int abs(final int x) {
         return Math.abs(x);

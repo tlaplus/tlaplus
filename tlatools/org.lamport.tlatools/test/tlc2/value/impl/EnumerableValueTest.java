@@ -26,6 +26,7 @@
  ******************************************************************************/
 package tlc2.value.impl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -56,6 +57,23 @@ public class EnumerableValueTest {
 			}
 			assertEquals("Missing indices.", n, indices.size());
 			indices.clear();
+		}
+	}
+
+	@Test
+	public void testNearMaxInt() {
+		RandomEnumerableValues.setSeed(15041980);
+
+		// 2^31 + 2 = 2 * 5^2 * 13 * 41 * 61 * 1321
+		assertArrayEquals(new long[] { 2147483650L, 429496731L },
+				EnumerableValue.computeOptimalMandA(Integer.MAX_VALUE));
+
+		for (final int n : new int[] { Integer.MAX_VALUE - 2, Integer.MAX_VALUE - 1, Integer.MAX_VALUE }) {
+			final SubsetEnumerator enumerator = (SubsetEnumerator) new DummyValue(n).elements(1000);
+			while (enumerator.hasNext()) {
+				final int index = enumerator.nextIndex();
+				assertTrue("Index %s out of bounds.", 0 <= index && index < n);
+			}
 		}
 	}
 
