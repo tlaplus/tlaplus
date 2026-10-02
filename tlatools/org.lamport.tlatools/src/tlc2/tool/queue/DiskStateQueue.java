@@ -228,7 +228,7 @@ public class DiskStateQueue extends StateQueue {
 	public final void recover() throws IOException {
 		String filename = this.filePrefix + "queue.chkpt";
 		ValueInputStream vis = new ValueInputStream(filename);
-		this.len = vis.readInt();
+		this.len = vis.readLongNat();
 		this.loPool = vis.readInt();
 		this.hiPool = vis.readInt();
 		this.enqIndex = vis.readInt();
