@@ -40,7 +40,7 @@ public class PcalDebug
      */
     public static void reportWarning(String warningText)
     {
-        ToolIO.out.println(new StringBuffer(WARNING).append(warningText));
+        ToolIO.out.println(new StringBuffer(WARNING).append(warningText).toString());
     }
 
     /**
