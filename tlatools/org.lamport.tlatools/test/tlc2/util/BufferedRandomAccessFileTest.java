@@ -98,6 +98,21 @@ public class BufferedRandomAccessFileTest {
 	}
 
 	@Test
+	public void testWriteReadShortNat() throws IOException {
+		final File tmpFile = File.createTempFile("BufferedRandomAccessFileTest_testWriteReadShortNat", ".bin");
+		tmpFile.deleteOnExit();
+		try (BufferedRandomAccessFile raf = new BufferedRandomAccessFile(tmpFile, "rw")) {
+			for (int i = 0; i <= Short.MAX_VALUE; i++) {
+				raf.writeShortNat(i);
+			}
+			raf.seek(0);
+			for (int i = 0; i <= Short.MAX_VALUE; i++) {
+				assertEquals(i, raf.readShortNat());
+			}
+		}
+	}
+
+	@Test
 	public void testReadSeekNoLength() throws IOException {
 		final File tmpFile = File.createTempFile("BufferedRandomAccessFileTest_testReadSeekNoLength", ".bin");
 		tmpFile.deleteOnExit();
