@@ -506,7 +506,7 @@ public final class BufferedRandomAccessFile extends java.io.RandomAccessFile {
         if (res >= 0) {
             return res;
         }
-        res = (res << 16) | (this.readByte() & 0xff);
+        res = (res << 8) | (this.readByte() & 0xff);
         return -res;
     }
 
