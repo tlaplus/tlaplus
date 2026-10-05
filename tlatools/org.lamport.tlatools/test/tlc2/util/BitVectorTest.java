@@ -27,6 +27,7 @@
 package tlc2.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -63,5 +64,16 @@ public class BitVectorTest {
 		bitVector.set(7);
 		
 		assertEquals("[001]", bitVector.toString(4, 3));
+	}
+
+	@Test
+	public void testInitValueTrue() {
+		for (int n : new int[] { 0, 1, 63, 64, 65, 128, 1000 }) {
+			final BitVector bitVector = new BitVector(n, true);
+			for (int i = 0; i < n; i++) {
+				assertTrue("bit " + i + " of " + n, bitVector.get(i));
+			}
+			assertEquals("trueCnt of " + n, n, bitVector.trueCnt());
+		}
 	}
 }

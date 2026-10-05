@@ -405,16 +405,16 @@ public class DynamicFPSetManagerTest {
 		 */
 
 		bvs = dfm.putBlock(fps);
-		assertEquals(2, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
-		assertEquals(2, bvs[1].trueCnt());
+		assertEquals(1, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
+		assertEquals(1, bvs[1].trueCnt());
 		
 		// The previous putBlock call has caused the FPSetManager to detect the
 		// failure state of both FPSets
 		assertEquals(0, dfm.numOfAliveServers());
 		
 		bvs = dfm.containsBlock(fps);
-		assertEquals(2, bvs[0].trueCnt()); // fingerprint is known again
-		assertEquals(2, bvs[1].trueCnt());
+		assertEquals(1, bvs[0].trueCnt()); // fingerprint is known again
+		assertEquals(1, bvs[1].trueCnt());
 	}
 	
 	/**
@@ -460,16 +460,16 @@ public class DynamicFPSetManagerTest {
 			 */
 			
 			bvs = dfm.putBlock(fps, es);
-			assertEquals(2, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
-			assertEquals(2, bvs[1].trueCnt());
+			assertEquals(1, bvs[0].trueCnt()); // fingerprint is unknown after fpset crash
+			assertEquals(1, bvs[1].trueCnt());
 			
 			// The previous putBlock call has caused the FPSetManager to detect the
 			// failure state of both FPSets
 			assertEquals(0, dfm.numOfAliveServers());
 			
 			bvs = dfm.containsBlock(fps, es);
-			assertEquals(2, bvs[0].trueCnt()); // fingerprint is known again
-			assertEquals(2, bvs[1].trueCnt());
+			assertEquals(1, bvs[0].trueCnt()); // fingerprint is known again
+			assertEquals(1, bvs[1].trueCnt());
 		} finally {
 			es.shutdown();
 		}
