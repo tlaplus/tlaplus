@@ -42,8 +42,8 @@ public class BitVector implements Serializable {
 	public BitVector(int initCapacity, boolean initValue) {
 		int len = (initCapacity == 0) ? 0 : ((initCapacity - 1) / 64 + 1);
 		this.word = new long[len];
-		if (initValue) {
-			set(0, len);
+		if (initValue && initCapacity > 0) {
+			set(0, initCapacity - 1);
 		}
 	}
    
