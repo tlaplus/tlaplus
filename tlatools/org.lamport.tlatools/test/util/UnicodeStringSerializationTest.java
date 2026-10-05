@@ -53,6 +53,8 @@ public class UnicodeStringSerializationTest {
 	// Escapes keep this file independent of the encoding javac assumes.
 	private static final String LATIN1 = "caf\u00e9";
 	private static final String BEYOND_LATIN1 = "\u03bb-calculus";
+	private static final String THREE_BYTES = "\u2200x \u2208 S: \uffff";
+	private static final String SURROGATE_PAIR = "\ud83d\ude00!";
 
 	private static String roundTrip(final String original) throws IOException {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -78,6 +80,29 @@ public class UnicodeStringSerializationTest {
 	@Test
 	public void testBufferedDataStreamRoundTripBeyondLatin1() throws IOException {
 		assertEquals(BEYOND_LATIN1, roundTrip(BEYOND_LATIN1));
+	}
+
+	@Test
+	public void testBufferedDataStreamRoundTripThreeBytes() throws IOException {
+		assertEquals(THREE_BYTES, roundTrip(THREE_BYTES));
+	}
+
+	@Test
+	public void testBufferedDataStreamRoundTripSurrogatePair() throws IOException {
+		assertEquals(SURROGATE_PAIR, roundTrip(SURROGATE_PAIR));
+	}
+
+	/**
+	 * The chars of a long string straddle the boundary of the 8192 byte buffers
+	 * of the streams.
+	 */
+	@Test
+	public void testBufferedDataStreamRoundTripLong() throws IOException {
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10000; i++) {
+			sb.append(LATIN1).append(THREE_BYTES).append(SURROGATE_PAIR);
+		}
+		assertEquals(sb.toString(), roundTrip(sb.toString()));
 	}
 
 	/**

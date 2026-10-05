@@ -31,7 +31,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import util.UniqueString;
 
 /**
  * {@link FP64#Extend(long, String)} and {@link FP64#Extend(long, char)} only
@@ -62,8 +65,25 @@ public class FP64UnicodeTest {
 	}
 
 	@Test
+	public void testThreeByteChars() {
+		// U+2200 ("∀") and U+3200 share their low byte.
+		assertNotEquals(FP64.New("\u2200"), FP64.New("\u3200"));
+	}
+
+	@Test
 	public void testStringValueFingerprintsDiffer() {
 		assertNotEquals(new StringValue(E_ACUTE).fingerPrint(FP64.New()),
 				new StringValue(K_CARON).fingerPrint(FP64.New()));
+	}
+
+	/**
+	 * {@link RecordValue#fingerPrint(long)} fingerprints its field names with
+	 * {@link FP64#Extend(long, String)}.
+	 */
+	@Test
+	public void testRecordValueFingerprintsDiffer() {
+		assertNotEquals(
+				new RecordValue(UniqueString.uniqueStringOf(E_ACUTE), IntValue.gen(1)).fingerPrint(FP64.New()),
+				new RecordValue(UniqueString.uniqueStringOf(K_CARON), IntValue.gen(1)).fingerPrint(FP64.New()));
 	}
 }

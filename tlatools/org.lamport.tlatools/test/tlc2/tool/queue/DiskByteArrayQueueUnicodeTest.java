@@ -32,7 +32,10 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import tlc2.value.impl.IntValue;
+import tlc2.value.impl.RecordValue;
 import tlc2.value.impl.StringValue;
+import util.UniqueString;
 
 /**
  * {@link DiskByteArrayQueue} has its own copy of the string serialization code
@@ -56,5 +59,20 @@ public class DiskByteArrayQueueUnicodeTest {
 
 		assertEquals(original, restored);
 		assertEquals(original.getVal().toString(), restored.getVal().toString());
+	}
+
+	@Test
+	public void testRecordValueFieldNameRoundTrip() throws IOException {
+		final RecordValue original = new RecordValue(UniqueString.uniqueStringOf("caf\u00e9"), IntValue.gen(1));
+
+		final DiskByteArrayQueue.ByteValueOutputStream out = new DiskByteArrayQueue.ByteValueOutputStream();
+		original.write(out);
+
+		final DiskByteArrayQueue.ByteValueInputStream in = new DiskByteArrayQueue.ByteValueInputStream(
+				out.toByteArray());
+		final RecordValue restored = (RecordValue) in.read();
+
+		assertEquals(original, restored);
+		assertEquals(original.names[0].toString(), restored.names[0].toString());
 	}
 }
