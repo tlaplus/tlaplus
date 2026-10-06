@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -188,5 +189,44 @@ public class SequencesTest {
 		Value v = Sequences.SubSeq(new StringValue("abc"), IntValue.ValOne, IntValue.ValOne);
 		assertTrue(v instanceof StringValue);
 		assertEquals(UniqueString.of("a"), ((StringValue) v).val);
+	}
+
+	// TLC has no characters (see Head above), but Len, Tail, and SubSeq treat a
+	// string as a sequence of them. Java stores "😀" (U+1F600) as the two UTF-16
+	// chars \ud83d\ude00 (a surrogate pair), and these operators count Java
+	// chars: Len("😀") = 2, and Tail and SubSeq return strings that hold half of
+	// the pair.
+	// https://github.com/tlaplus/tlaplus/issues/1076
+
+	private static final String GRINNING_FACE = "\ud83d\ude00";
+
+	@Test
+	public void testLenString() {
+		assertEquals(IntValue.gen(0), Sequences.Len(new StringValue("")));
+		assertEquals(IntValue.gen(3), Sequences.Len(new StringValue("abc")));
+		assertEquals(IntValue.gen(7), Sequences.Len(new StringValue("a\\b\"c\nd")));
+	}
+
+	@Ignore("Len, Tail, and SubSeq count UTF-16 chars, not characters")
+	@Test
+	public void testLenStringSurrogatePair() {
+		assertEquals(IntValue.gen(1), Sequences.Len(new StringValue(GRINNING_FACE)));
+		assertEquals(IntValue.gen(2), Sequences.Len(new StringValue(GRINNING_FACE + "!")));
+	}
+
+	@Ignore("Len, Tail, and SubSeq count UTF-16 chars, not characters")
+	@Test
+	public void testTailStringSurrogatePair() {
+		Value v = Sequences.Tail(new StringValue(GRINNING_FACE + "!"));
+		assertTrue(v instanceof StringValue);
+		assertEquals(UniqueString.of("!"), ((StringValue) v).val);
+	}
+
+	@Ignore("Len, Tail, and SubSeq count UTF-16 chars, not characters")
+	@Test
+	public void testSubseqStringSurrogatePair() {
+		Value v = Sequences.SubSeq(new StringValue(GRINNING_FACE + "!"), IntValue.ValOne, IntValue.ValOne);
+		assertTrue(v instanceof StringValue);
+		assertEquals(UniqueString.of(GRINNING_FACE), ((StringValue) v).val);
 	}
 }
