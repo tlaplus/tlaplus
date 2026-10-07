@@ -27,7 +27,7 @@ import util.Assert;
 public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final Value domain;        /* Function domain  */
   public final Value range;         /* Function range   */
-  protected SetEnumValue fcnSet;
+  protected volatile SetEnumValue fcnSet;
 
   /* Constructor */
   public SetOfFcnsValue(Value domain, Value range) {
@@ -380,10 +380,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.fcnSet == null) {
-      this.fcnSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.fcnSet == SetEnumValue.DummyEnum) {
+    if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.fcnSet = val;

@@ -20,7 +20,7 @@ import util.Assert;
 public class SetCapValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue capSet;
+  protected volatile SetEnumValue capSet;
 
   /* Constructor */
   public SetCapValue(Value set1, Value set2) {
@@ -197,10 +197,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.capSet == null) {
-      this.capSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.capSet == SetEnumValue.DummyEnum) {
+    if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.capSet = val;

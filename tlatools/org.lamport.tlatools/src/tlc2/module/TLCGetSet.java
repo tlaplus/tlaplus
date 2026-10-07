@@ -497,8 +497,11 @@ public class TLCGetSet implements ValueConstants {
 				if (th instanceof IdThread) {
 					((IdThread) th).setLocalValue(idx, val);
 				} else if (TLCGlobals.mainChecker != null) {
+					// All workers share val.
+					val.deepNormalize();
 					TLCGlobals.mainChecker.setAllValues(idx, val);
 				} else {
+					val.deepNormalize();
 					tlc2.TLCGlobals.simulator.setAllValues(idx, val);
 				}
 				return BoolValue.ValTrue;
@@ -539,8 +542,11 @@ public class TLCGetSet implements ValueConstants {
 				if (th instanceof IdThread) {
 					((IdThread) th).setNamedRegister(sv.val, val);
 				} else if (TLCGlobals.mainChecker != null) {
+					// All workers share val.
+					val.deepNormalize();
 					TLCGlobals.mainChecker.setAllNamedValues(sv.val, val);
 				} else if (TLCGlobals.simulator != null) {
+					val.deepNormalize();
 					TLCGlobals.simulator.setAllNamedValues(sv.val, val);
 				}
 				return BoolValue.ValTrue;

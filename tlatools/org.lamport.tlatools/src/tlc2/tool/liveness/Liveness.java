@@ -310,7 +310,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				Context con1;
 				LNDisj res = new LNDisj(0);
 				while ((con1 = Enum.nextElement()) != null) {
-					LiveExprNode kid = astToLive(tool, body, con1);
+					LiveExprNode kid = astToLive(tool, body, con1.deepNormalize(con));
 					res.addDisj(kid);
 				}
 				if (res.getCount() == 0) {
@@ -341,7 +341,7 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				Context con1;
 				LNConj res = new LNConj(0);
 				while ((con1 = Enum.nextElement()) != null) {
-					LiveExprNode kid = astToLive(tool, body, con1);
+					LiveExprNode kid = astToLive(tool, body, con1.deepNormalize(con));
 					res.addConj(kid);
 				}
 				if (res.getCount() == 0) {
