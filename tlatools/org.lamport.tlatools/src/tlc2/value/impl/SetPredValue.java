@@ -40,7 +40,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
    * might interfere.
    * MAK 07/18/2019
    */
-  private boolean converted = false; 
+  private volatile boolean converted = false;
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
@@ -86,8 +86,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
+      this.convertAndCache();
       return this.inVal.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -98,8 +97,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
+      this.convertAndCache();
       return this.inVal.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -202,8 +200,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
+      this.convertAndCache();
       return this.inVal.size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -218,10 +215,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   private final void writeObject(ObjectOutputStream oos) throws IOException {
-    if (!this.converted) {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-    }
+    this.convertAndCache();
     oos.writeObject(this.inVal);
   }
 
@@ -270,8 +264,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
+      this.convertAndCache();
       return this.inVal.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -283,8 +276,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
+      this.convertAndCache();
       return this.inVal.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -293,11 +285,23 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  private final void convertAndCache() {
+    if (!this.converted) {
+      final Value val = this.toSetEnum();
+      val.deepNormalize();
+      this.inVal = val;
+      this.converted = true;
+    }
+  }
+
   @Override
   public Value toSetEnum() {
       if (this.converted) {
     	  return (SetEnumValue) this.inVal;
       }
+      // Read before enumerating, because another worker may concurrently replace
+      // inVal with its (normalized) enumeration.
+      final boolean isNorm = this.isNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value  elem;
@@ -305,7 +309,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   @Override

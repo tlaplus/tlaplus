@@ -27,7 +27,7 @@ import util.UniqueString;
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final UniqueString[] names;      // The names of the fields.
   public final Value[] values;            // The values of the fields.
-  protected SetEnumValue rcdSet;
+  protected volatile SetEnumValue rcdSet;
 
   /* Constructor */
   public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
@@ -365,10 +365,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.rcdSet == null) {
-      this.rcdSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.rcdSet == SetEnumValue.DummyEnum) {
+    if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.rcdSet = val;

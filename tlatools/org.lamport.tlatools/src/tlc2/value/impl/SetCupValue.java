@@ -21,7 +21,7 @@ import util.Assert;
 public class SetCupValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue cupSet;
+  protected volatile SetEnumValue cupSet;
 
   /* Constructor */
   public SetCupValue(Value set1, Value set2) {
@@ -213,10 +213,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.cupSet == null) {
-      this.cupSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.cupSet == SetEnumValue.DummyEnum) {
+    if (this.cupSet == null || this.cupSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.cupSet = val;
