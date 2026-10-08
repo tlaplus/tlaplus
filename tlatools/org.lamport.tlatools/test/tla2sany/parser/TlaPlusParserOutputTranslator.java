@@ -952,6 +952,13 @@ public class TlaPlusParserOutputTranslator {
 				} else if (parser.match(SyntaxTreeConstants.N_StructOp)) {
 					component = Kind.SUBEXPR_TREE_NAV.asNode();
 					component.addChild(translate(parser.previous()));
+				} else if (parser.match(SyntaxTreeConstants.N_NonExpPrefixOp)
+						|| parser.match(SyntaxTreeConstants.N_InfixOp)
+						|| parser.match(SyntaxTreeConstants.N_PostfixOp)) {
+					// Operator symbol used as a subexpression component,
+					// e.g. the "!!" in "A!!! !!!(1,2)" (GH tlaplus/tlaplus #884).
+					component = Kind.SUBEXPR_COMPONENT.asNode();
+					component.addChild(translate(parser.previous()));
 				} else {
 					component = parser.translate(
 						TLAplusParserConstants.ProofStepLexeme,
