@@ -53,6 +53,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
     this.intv = null;
     this.isNorm = isNorm;
 //    this.indexTbl = null;
+    this.normalize();
   }
 
   public FcnRcdValue(IntervalValue intv, Value[] values) {
