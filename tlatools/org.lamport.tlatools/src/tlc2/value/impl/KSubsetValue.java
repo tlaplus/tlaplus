@@ -152,8 +152,7 @@ public class KSubsetValue extends SubsetValue {
 					return true;
 				}
 			}
-			super.convertAndCache();
-			return this.pset.equals(obj);
+			return super.convertAndCache().equals(obj);
 		} catch (RuntimeException | OutOfMemoryError e) {
 			if (hasSource()) {
 				throw FingerprintException.getNewHead(this, e);
@@ -209,8 +208,7 @@ public class KSubsetValue extends SubsetValue {
 					return 0;
 				}
 			}
-			super.convertAndCache();
-			return this.pset.compareTo(obj);
+			return super.convertAndCache().compareTo(obj);
 		} catch (RuntimeException | OutOfMemoryError e) {
 			if (hasSource()) {
 				throw FingerprintException.getNewHead(this, e);
