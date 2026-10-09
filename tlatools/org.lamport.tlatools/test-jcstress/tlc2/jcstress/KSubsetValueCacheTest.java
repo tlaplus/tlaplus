@@ -25,7 +25,7 @@
  ******************************************************************************/
 package tlc2.jcstress;
 
-import static tlc2.value.impl.ValueFixtures.ints;
+import static tlc2.value.impl.ValueFixtures.sortedSet;
 
 import org.openjdk.jcstress.annotations.Actor;
 import org.openjdk.jcstress.annotations.Expect;
@@ -35,13 +35,11 @@ import org.openjdk.jcstress.annotations.State;
 import org.openjdk.jcstress.infra.results.II_Result;
 
 import tlc2.value.impl.KSubsetValue;
-import tlc2.value.impl.SetEnumValue;
 
 /**
- * The set kSubset(2, {3, 1, 2}), which TLC has deep-normalized as it does
- * before it shares a value. One worker fills the cache pset, which KSubsetValue
- * inherits from SubsetValue, while another reads it. See SetCupValueCacheTest
- * and LazySets.
+ * The set kSubset(2, {1, 2, 3}), whose cache pset, which KSubsetValue
+ * inherits from SubsetValue, one worker fills while another reads it. See
+ * LazySets.
  * 
  * @see https://github.com/tlaplus/tlaplus/issues/439
  */
@@ -51,13 +49,7 @@ import tlc2.value.impl.SetEnumValue;
 @State
 public class KSubsetValueCacheTest {
 
-	private final KSubsetValue set;
-
-	public KSubsetValueCacheTest() {
-		set = new KSubsetValue(2,
-				new SetEnumValue(ints(3, 1, 2), false));
-		set.deepNormalize();
-	}
+	private final KSubsetValue set = new KSubsetValue(2, sortedSet(1, 2, 3));
 
 	@Actor
 	public void publisher(final II_Result r) {

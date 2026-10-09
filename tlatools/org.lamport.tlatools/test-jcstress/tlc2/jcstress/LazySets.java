@@ -36,7 +36,9 @@ import tlc2.value.impl.SetEnumValue;
  * reader may see the cache but, because SetEnumValue#elems isn't final, elems
  * as null (-1) or as an empty ValueVec. TLC as of 425dc60aa did so, although
  * its lifecycle (#361) assumes that workers never fill the cache of a shared
- * value.
+ * value. It also built the cache in one synchronized block and published it in
+ * another, and read it without a lock, so that the reader could see elems as
+ * stale.
  * <p>
  * The operands of the sets are sorted, so that enumerating them doesn't sort
  * them in place, which is the race of #1445, not of #439.
