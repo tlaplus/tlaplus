@@ -62,6 +62,7 @@ public class RecordValue extends Value implements FunctionValue {
     this.names = names;
     this.values = values;
     this.isNorm = isNorm;
+    this.normalize();
   }
 
   public RecordValue(UniqueString[] names, Value[] values, boolean isNorm, CostModel cm) {
@@ -92,6 +93,7 @@ public class RecordValue extends Value implements FunctionValue {
 			this.names[i] = entries.get(i).getKey();
 			this.values[i] = entries.get(i).getValue();
 		}
+		this.normalize();
 	}
 
   public RecordValue(final RecordValue existing, UniqueString name, Value v) {
@@ -118,7 +120,7 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[4] = MOD;
 		this.values[4] = new StringValue(location.sourceAsUniqueString());
 		
-		this.isNorm = false;
+		this.normalize();
   }
   
   public RecordValue(final OpDefNode odn) {
@@ -131,7 +133,7 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[1] = LOC;
 		this.values[1] = new RecordValue(odn.getLocation());
     	
-		this.isNorm = false;
+		this.normalize();
   }
   
   public RecordValue(final OpDeclNode odn) {
@@ -144,7 +146,7 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[1] = LOC;
 		this.values[1] = new RecordValue(odn.getLocation());
     	
-		this.isNorm = false;
+		this.normalize();
   }
   
   public RecordValue(final OpDeclNode odn, final UniqueString u, final Value v) {
@@ -160,7 +162,7 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[2] = u;
 		this.values[2] = v;
 
-		this.isNorm = false;
+		this.normalize();
   }
 
   public RecordValue(final Action action) {
@@ -186,7 +188,7 @@ public class RecordValue extends Value implements FunctionValue {
 		this.names[1] = LOC;
 		this.values[1] = new RecordValue(action.getDefinition());
 		
-		this.isNorm = false;
+		this.normalize();
   }
 
   public RecordValue(final Action action, final UniqueString u, final Value v) {
@@ -212,7 +214,7 @@ public class RecordValue extends Value implements FunctionValue {
 					action.getParameters().keySet().stream().map(StringValue::new).toArray(Value[]::new));
 		}
 		
-		this.isNorm = false;
+		this.normalize();
   }
 
   public RecordValue(final TLCStateInfo info) {
@@ -230,7 +232,7 @@ public class RecordValue extends Value implements FunctionValue {
 			this.values[i] = (Value) state.lookup(this.names[i]); 
 		}
 
-		this.isNorm = false;
+		this.normalize();
   }
 
   public RecordValue(final TLCState state, final Action action) {
@@ -248,7 +250,7 @@ public class RecordValue extends Value implements FunctionValue {
 			this.values[i+1] = (Value) state.lookup(this.names[i+1]); 
 		}
 		
-		this.isNorm = false;
+		this.normalize();
   }
 
   public RecordValue(final TLCState state, final Value defVal) {
@@ -292,7 +294,7 @@ public class RecordValue extends Value implements FunctionValue {
 			}
 		}
 
-		this.isNorm = false;
+		this.normalize();
   }
 
   @Override

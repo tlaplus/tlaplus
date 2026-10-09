@@ -45,6 +45,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public SetEnumValue(ValueVec elems, boolean isNorm) {
     this.elems = elems;
     this.isNorm = isNorm;
+    this.normalize();
   }
 
   public SetEnumValue(ValueVec elems, boolean isNorm, final CostModel cm) {
