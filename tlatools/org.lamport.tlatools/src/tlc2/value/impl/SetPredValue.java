@@ -86,8 +86,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.inVal.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -97,8 +96,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.convertAndCache();
-      return this.inVal.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -200,8 +198,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.convertAndCache();
-      return this.inVal.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -215,8 +212,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   private final void writeObject(ObjectOutputStream oos) throws IOException {
-    this.convertAndCache();
-    oos.writeObject(this.inVal);
+    oos.writeObject(this.convertAndCache());
   }
 
   /* This method normalizes (destructively) this set. */
@@ -264,8 +260,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.inVal.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -276,8 +271,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.inVal.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -285,13 +279,15 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
+  private final SetEnumValue convertAndCache() {
     if (!this.converted) {
-      final Value val = this.toSetEnum();
+      final SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.normalize();
       this.inVal = val;
       this.converted = true;
+      return val;
     }
+    return (SetEnumValue) this.inVal;
   }
 
   @Override
