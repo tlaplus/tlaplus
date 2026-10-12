@@ -206,8 +206,10 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		
 		// Only pay the price of creating threads when array is
 		// sufficiently large and the array size is large enough to
-		// partition it for multiple threads.
-		flusher = getFlusher(numThreads, insertions);
+		// partition it for multiple threads. A ConcurrentOffHeapMSBFlusher
+		// cannot be reused after its merge, thus do not assign it to
+		// this.flusher.
+		final Flusher flusher = getFlusher(numThreads, insertions);
 		
 		try {
 			flusher.flushTable(); // Evict()
@@ -496,8 +498,7 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// 1) Sort all fingerprints, either with a sequential or concurrent
 		// flusher depending on the size of the array.
 		final int numThreads = TLCGlobals.getNumWorkers();
-		this.flusher = getFlusher(numThreads, getTblCnt());
-		this.flusher.prepareTable();
+		getFlusher(numThreads, getTblCnt()).prepareTable();
 		
 		// 2) A task finds the pair with the minimum distance in an ordered
 		// subrange of array. Each task is assigned an id. This id determines
