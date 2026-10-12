@@ -121,6 +121,11 @@ jobs:
       with:
         distribution: adopt
         java-version: 17
+    - name: Set up Maven 3.9.9
+      # Tycho 4.0.13 fails to initialize with Maven 3.10.0.
+      uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+      with:
+        maven-version: '3.9.9'
     - name: Build & Test Eclipse Toolbox with Maven
       run: |
         ${{ matrix.MVN_COMMAND }}                                                                     \
