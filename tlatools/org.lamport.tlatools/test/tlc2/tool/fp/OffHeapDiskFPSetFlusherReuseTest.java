@@ -87,6 +87,20 @@ public class OffHeapDiskFPSetFlusherReuseTest {
 	}
 
 	@Test
+	public void testCheckFPsWithConcurrentFlusherAfterConcurrentEviction() throws Exception {
+		final int oldWorkers = TLCGlobals.getNumWorkers();
+		final OffHeapDiskFPSet fpSet = newEvictedFPSet("FlusherReuseCheckFPsConcurrent");
+		try {
+			TLCGlobals.setNumWorkers(2);
+			fpSet.checkFPs();
+			assertContainsAll(fpSet);
+		} finally {
+			TLCGlobals.setNumWorkers(oldWorkers);
+			fpSet.close();
+		}
+	}
+
+	@Test
 	public void testDefaultFlusherSurvivesConcurrentEviction() throws Exception {
 		final OffHeapDiskFPSet fpSet = newEvictedFPSet("FlusherReuseDefault");
 		try {

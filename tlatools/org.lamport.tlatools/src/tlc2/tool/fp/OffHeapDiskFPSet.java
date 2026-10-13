@@ -28,7 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 
-import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.fp.LongArrays.LongComparator;
@@ -496,8 +495,9 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// of the current approximation which skips fingerprints on disk.
 		
 		// 1) Sort all fingerprints, either with a sequential or concurrent
-		// flusher depending on the size of the array.
-		final int numThreads = TLCGlobals.getNumWorkers();
+		// flusher depending on the size of the array. Use the numThreads passed
+		// to init, because braf has one entry per thread passed to init.
+		final int numThreads = this.numThreads;
 		getFlusher(numThreads, getTblCnt()).prepareTable();
 		
 		// 2) A task finds the pair with the minimum distance in an ordered
