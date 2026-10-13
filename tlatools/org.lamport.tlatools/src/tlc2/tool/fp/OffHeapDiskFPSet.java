@@ -498,7 +498,12 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 		// flusher depending on the size of the array. Use the numThreads passed
 		// to init, because braf has one entry per thread passed to init.
 		final int numThreads = this.numThreads;
-		getFlusher(numThreads, getTblCnt()).prepareTable();
+		final Flusher flusher = getFlusher(numThreads, getTblCnt());
+		try {
+			flusher.prepareTable();
+		} finally {
+			flusher.shutdown();
+		}
 		
 		// 2) A task finds the pair with the minimum distance in an ordered
 		// subrange of array. Each task is assigned an id. This id determines
@@ -964,6 +969,20 @@ public final class OffHeapDiskFPSet extends NonCheckpointableDiskFPSet implement
 
 			this.length = (long) Math.floor(a.size() / (double) numThreads);
 			this.executorService = Executors.newFixedThreadPool(numThreads);
+		}
+
+		/* (non-Javadoc)
+		 * @see tlc2.tool.fp.DiskFPSet.Flusher#shutdown()
+		 */
+		@Override
+		protected void shutdown() {
+			// The constructor starts the executor and only mergeNewEntries shuts
+			// it down. Any use that does not reach mergeNewEntries (prepareTable
+			// alone, flushTable on an empty table, an exception before the merge)
+			// must call shutdown, or the executor's non-daemon threads stay alive
+			// until the JVM exits. Calling shutdown after mergeNewEntries is safe:
+			// shutting down an executor that is already shut down has no effect.
+			executorService.shutdown();
 		}
 		
 		/* (non-Javadoc)

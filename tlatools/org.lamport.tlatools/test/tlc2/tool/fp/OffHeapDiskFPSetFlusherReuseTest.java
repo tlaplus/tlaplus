@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -118,6 +119,27 @@ public class OffHeapDiskFPSetFlusherReuseTest {
 		try {
 			assertTrue(fpSet.checkInvariant(4L));
 			assertContainsAll(fpSet);
+		} finally {
+			fpSet.close();
+		}
+	}
+
+	// A leaked executor thread never ends, so join blocks until the timeout
+	// fails the test. Without a leak, join returns once the threads end.
+	@Test(timeout = 60000L)
+	public void testCheckFPsLeavesNoThreadsBehind() throws Exception {
+		final OffHeapDiskFPSet fpSet = newEvictedFPSet("FlusherReuseCheckFPsThreads");
+		try {
+			final Set<Thread> before = Thread.getAllStackTraces().keySet();
+			// floor(8192 / 1) > 2 * PROBE_LIMIT, so checkFPs sorts with a
+			// ConcurrentOffHeapMSBFlusher.
+			fpSet.checkFPs();
+
+			for (final Thread t : Thread.getAllStackTraces().keySet()) {
+				if (!before.contains(t) && !t.isDaemon()) {
+					t.join();
+				}
+			}
 		} finally {
 			fpSet.close();
 		}
