@@ -1049,6 +1049,14 @@ public abstract class DiskFPSet extends FPSet implements FPSetStatistic {
 		}
 
 		/**
+		 * Release the resources held by this flusher.
+		 */
+		protected void shutdown() {
+			// no-op
+			// subclasses may override
+		}
+
+		/**
 		 * Flush the contents of in-memory "this.tbl" to the backing disk file, and update
 		 * "this.index". This method requires that "this.rwLock" has been acquired
 		 * for writing by the caller, and that the mutex "this.rwLock" is also held.
