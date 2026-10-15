@@ -106,6 +106,14 @@ public abstract class ValueLincheckTestCase {
 	}
 
 	/**
+	 * Sorts the given function, whose values are integers, and applies it to arg.
+	 */
+	protected static int sortAndSelect(final FcnRcdValue fcn, final Value arg) {
+		fcn.normalize();
+		return ((IntValue) fcn.select(arg)).val;
+	}
+
+	/**
 	 * The elements that the enumeration returns, each followed by a space.
 	 */
 	protected static String enumerate(final ValueEnumeration elements) {
