@@ -96,6 +96,14 @@ public abstract class ValueLincheckTestCase {
 	}
 
 	/**
+	 * Sorts the given function, whose values are integers, and applies it to arg.
+	 */
+	protected static int sortAndSelect(final FcnRcdValue fcn, final Value arg) {
+		fcn.normalize();
+		return ((IntValue) fcn.select(arg)).val;
+	}
+
+	/**
 	 * A tool that evaluates every expression to the given value, and supports
 	 * nothing else.
 	 */
