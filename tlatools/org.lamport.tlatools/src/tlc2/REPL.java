@@ -60,7 +60,7 @@ public class REPL {
     private static final String prompt = "(tla+) ";
 
     private final Writer replWriter = new PrintWriter(System.out);
-    
+
     // A temporary directory to place auxiliary files needed for REPL evaluation.
     Path replTempDir;
 
@@ -74,10 +74,11 @@ public class REPL {
 
     /**
      * Evaluate the given string input as a TLA+ expression.
+     * If ignoreTLAExceptions, it disables the catch for TLA related exceptions
      *
-     * @return the pretty printed result of the evaluation or an empty string if there was an error.
+     * @return Value result of the evaluation or null if error
      */
-    public String processInput(String evalExpr) {
+    public Value processInputToValue(String evalExpr, boolean ignoreTLAExceptions) {
 
         // The modules we will extend in the REPL environment.
         String moduleExtends = "Reals,Sequences,Bags,FiniteSets,TLC,Randomization";
@@ -148,12 +149,13 @@ public class REPL {
 				// and unset in finally below to suppress output of FastTool instantiation
 				// above.
 				tlc2.module.TLC.OUTPUT = replWriter;
-				final Value exprVal = (Value) tool.eval(valueNode.getBody());
-				return exprVal.toString();
+                return (Value) tool.eval(valueNode.getBody());
             } catch (EvalException exc) {
+                if (ignoreTLAExceptions) throw exc;
                 // TODO: Improve error messages with more specific detail.
             	System.out.printf("Error evaluating expression: '%s'%n%s%n", evalExpr, exc);
             } catch (Assert.TLCRuntimeException exc) {
+                if (ignoreTLAExceptions) throw exc;
             	if (exc.parameters != null && exc.parameters.length > 0) {
 					// 0..1 \X 0..1 has non-null params of length zero. Actual error message is
 					// "Parsing or semantic analysis failed.".
@@ -183,7 +185,25 @@ public class REPL {
         } catch (IOException pe) {
             pe.printStackTrace();
         }
-        return "";
+        return null;
+    }
+
+    public Value processInputToValue(String evalExpr) {
+        return processInputToValue(evalExpr, true);
+    }
+
+    /**
+     * Evaluate the given string input as a TLA+ expression.
+     *
+     * @return the pretty printed result of the evaluation or an empty string if there was an error.
+     */
+    public String processInput(String evalExpr) {
+        final Value exprValue = processInputToValue(evalExpr, false);
+
+        if (exprValue != null)
+            return exprValue.toString();
+        else
+            return "";
     }
 
     /**
