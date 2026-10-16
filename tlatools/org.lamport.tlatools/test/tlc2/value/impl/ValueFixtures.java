@@ -81,6 +81,18 @@ public final class ValueFixtures {
 	}
 
 	/**
+	 * The sum of the integers that the enumeration returns.
+	 */
+	public static int sum(final ValueEnumeration elements) {
+		int sum = 0;
+		Value elem;
+		while ((elem = elements.nextElement()) != null) {
+			sum += ((IntValue) elem).val;
+		}
+		return sum;
+	}
+
+	/**
 	 * A tool that evaluates every expression in a context to what eval maps the
 	 * context to, and supports nothing else.
 	 */
