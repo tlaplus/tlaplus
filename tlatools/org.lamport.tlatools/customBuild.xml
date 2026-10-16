@@ -1758,6 +1758,79 @@
 		<fail if="lincheck.failed" message="Lincheck tests failed" />
 	</target>
 
+	<target name="test-jcstress" depends="compile"
+		description="Run the jcstress concurrency tests in test-jcstress (requires jcstress in target/jcstress/lib)">
+		<!-- Override this property to check classes built from another revision
+		     while retaining the current tests. -->
+		<property name="jcstress.production.classpath" location="${class.dir}" />
+		<!-- The JIT and the memory model differ between JDKs, and so do the races
+		     jcstress observes: those of Github issue #439 show up on JDK 11 and 17. -->
+		<property name="jcstress.java.home" location="${java.home}" />
+		<!-- sanity, quick, default, tough, or stress; see jcstress -h. On JDK 11,
+		     default takes 15 minutes and showed every race of TLC as of 932d35ec2.
+		     quick takes two minutes and missed that of SetOfTuplesValueNullCacheTest. -->
+		<property name="jcstress.mode" value="default" />
+		<!-- jcstress and its dependencies, which test-jcstress/pom.xml resolves. -->
+		<property name="jcstress.lib.dir" location="target/jcstress/lib" />
+		<fail message="jcstress is missing from ${jcstress.lib.dir}. Run: mvn -f test-jcstress/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=${jcstress.lib.dir}">
+			<condition>
+				<not>
+					<available file="${jcstress.lib.dir}" type="dir" />
+				</not>
+			</condition>
+		</fail>
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="target/jcstress" excludes="lib/**" />
+		</delete>
+		<mkdir dir="target/jcstress/classes" />
+		<path id="jcstress.classpath">
+			<fileset dir="${jcstress.lib.dir}" includes="*.jar" />
+		</path>
+		<!-- jcstress's annotation processor generates the test harnesses. As with
+		     test-lincheck, javac compiles only the classes in test that the tests use. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jcstress/"
+			sourcepath="test"
+			destdir="target/jcstress/classes"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<compilerarg value="-processorpath" />
+			<compilerarg pathref="jcstress.classpath" />
+			<compilerarg value="-implicit:class" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<path refid="jcstress.classpath" />
+			</classpath>
+		</javac>
+		<java classname="org.openjdk.jcstress.Main" fork="yes" jvm="${jcstress.java.home}/bin/java"
+			dir="target/jcstress" failonerror="true" output="target/jcstress/jcstress.log" logError="true">
+			<classpath>
+				<pathelement path="target/jcstress/classes" />
+				<pathelement path="${jcstress.production.classpath}" />
+				<path refid="jcstress.classpath" />
+			</classpath>
+			<arg value="-t" />
+			<arg value="tlc2.jcstress" />
+			<arg value="-m" />
+			<arg value="${jcstress.mode}" />
+			<arg value="-r" />
+			<arg file="target/jcstress/results" />
+		</java>
+		<!-- jcstress exits with 0 even if tests fail, so check its summary. -->
+		<fail message="jcstress tests failed; see target/jcstress/jcstress.log and target/jcstress/results/index.html">
+			<condition>
+				<not>
+					<and>
+						<resourcecontains resource="${basedir}/target/jcstress/jcstress.log" substring="Failed tests: No matches." />
+						<resourcecontains resource="${basedir}/target/jcstress/jcstress.log" substring="Error tests: No matches." />
+					</and>
+				</not>
+			</condition>
+		</fail>
+	</target>
+
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
 	<target name="benchmark" description="Generate the self-contained JMH benchmark JAR (run with java -jar target/benchmarks.jar)">
 		<!-- Compile benchmark class files in test-benchmark against jmh. -->

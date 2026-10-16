@@ -1,0 +1,60 @@
+name: TLC jcstress Tests
+# It's run whenever the tested classes are updated.
+
+on:
+  push:
+    paths:
+      - '.github/workflows/test-jcstress.yml'
+      - 'tlatools/org.lamport.tlatools/customBuild.xml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/module/**'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/**'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/**'
+      - 'tlatools/org.lamport.tlatools/test-jcstress/**'
+  pull_request:
+    paths:
+      - '.github/workflows/test-jcstress.yml'
+      - 'tlatools/org.lamport.tlatools/customBuild.xml'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/module/**'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/util/**'
+      - 'tlatools/org.lamport.tlatools/src/tlc2/value/**'
+      - 'tlatools/org.lamport.tlatools/test-jcstress/**'
+
+jobs:
+  run-tlc-test-jcstress:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # The jgit task nested in customBuild.xml requires repository history.
+          fetch-depth: '0'
+
+      # The races of Github issue #439 show up on JDK 11 (see customBuild.xml).
+      - name: Set up JDK 11
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Install jcstress
+        working-directory: tlatools/org.lamport.tlatools
+        run: mvn --batch-mode -f test-jcstress/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$PWD/target/jcstress/lib
+
+      - name: Run TLC jcstress tests
+        run: ant -f tlatools/org.lamport.tlatools/customBuild.xml info test-jcstress
+
+      # jcstress writes its log and the HTML report of the results to files.
+      - name: Print jcstress summary
+        if: failure()
+        run: sed -n '/RUN RESULTS/,$p' tlatools/org.lamport.tlatools/target/jcstress/jcstress.log
+
+      - name: Upload jcstress results
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jcstress-results
+          path: |
+            tlatools/org.lamport.tlatools/target/jcstress/jcstress.log
+            tlatools/org.lamport.tlatools/target/jcstress/results/

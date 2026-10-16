@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Resolves jcstress for the test-jcstress target in customBuild.xml:
+     mvn -f test-jcstress/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$PWD/target/jcstress/lib -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.lamport</groupId>
+	<artifactId>tlatools-jcstress</artifactId>
+	<version>1</version>
+	<dependencies>
+		<dependency>
+			<groupId>org.openjdk.jcstress</groupId>
+			<artifactId>jcstress-core</artifactId>
+			<version>0.16</version>
+		</dependency>
+	</dependencies>
+</project>
