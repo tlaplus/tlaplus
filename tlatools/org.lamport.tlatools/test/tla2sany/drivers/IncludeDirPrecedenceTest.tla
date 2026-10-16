@@ -1,0 +1,3 @@
+---- MODULE IncludeDirPrecedenceTest ----
+EXTENDS IncludeDirPrecedenceTestTarget
+====

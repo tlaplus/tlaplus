@@ -1,0 +1,3 @@
+---- MODULE TlaLibraryPropertyTest ----
+EXTENDS TlaLibraryPropertyTestTarget
+====
