@@ -27,11 +27,12 @@ import util.UniqueString;
 @SuppressWarnings("serial")
 public class SetEnumValue extends EnumerableValue
 implements Enumerable, Reducible {
-  public ValueVec elems;         // the elements of the set
-  private boolean isNorm;        // normalized?
+  // Workers may share this set. normalize() therefore never sorts elems in
+  // place, but replaces it with a sorted copy before it sets isNorm. A method
+  // must read isNorm before elems, and read elems only once.
+  public volatile ValueVec elems;  // the elements of the set
+  private volatile boolean isNorm; // normalized?
 public static final SetEnumValue EmptySet = new SetEnumValue(new ValueVec(0), true);
-public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, true);
-
   /* Constructor */
   public SetEnumValue(Value[] elems, boolean isNorm) {
 	  this(new ValueVec(elems), isNorm);
@@ -67,9 +68,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   
   // See IValue#isAtom except that this is for sets of atoms.
   public final boolean isSetOfAtoms() {
-      final int len = this.elems.size();
+      final ValueVec elems = this.elems;
+      final int len = elems.size();
       for (int i = 0; i < len; i++) {
-    	  final Value v = this.elems.elementAt(i);
+    	  final Value v = elems.elementAt(i);
     	  if (v instanceof SetEnumValue) {
     		  // Sets of sets of sets... of atoms.
     		  final SetEnumValue sev = (SetEnumValue) v;
@@ -99,11 +101,13 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       }
       this.normalize();
       set.normalize();
-      int sz = this.elems.size();
-      int cmp = sz - set.elems.size();
+      final ValueVec elems = this.elems;
+      final ValueVec setElems = set.elems;
+      int sz = elems.size();
+      int cmp = sz - setElems.size();
       if (cmp != 0) return cmp;
       for (int i = 0; i < sz; i++) {
-        cmp = this.elems.elementAt(i).compareTo(set.elems.elementAt(i));
+        cmp = elems.elementAt(i).compareTo(setElems.elementAt(i));
         if (cmp != 0) return cmp;
       }
       return 0;
@@ -125,12 +129,14 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
       }
       this.normalize();
       set.normalize();
-      int sz = this.elems.size();
-      if (sz != set.elems.size()) {
+      final ValueVec elems = this.elems;
+      final ValueVec setElems = set.elems;
+      int sz = elems.size();
+      if (sz != setElems.size()) {
         return false;
       }
       for (int i = 0; i < sz; i++) {
-        if (!this.elems.elementAt(i).equals(set.elems.elementAt(i))) {
+        if (!elems.elementAt(i).equals(setElems.elementAt(i))) {
           return false;
         }
       }
@@ -145,7 +151,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final boolean member(Value elem) {
     try {
-      return this.elems.search(elem, this.isNorm);
+      final boolean isNorm = this.isNorm;
+      return this.elems.search(elem, isNorm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -159,15 +166,17 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final Value diff(Value val) {
     try {
-      int sz = this.elems.size();
+      final boolean isNorm = this.isNorm;
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       ValueVec diffElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-    	  Value elem = this.elems.elementAt(i);
+    	  Value elem = elems.elementAt(i);
         if (!val.member(elem)) {
           diffElems.addElement(elem);
         }
       }
-      return new SetEnumValue(diffElems, this.isNormalized(), cm);
+      return new SetEnumValue(diffElems, isNorm, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -178,15 +187,17 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final Value cap(Value val) {
     try {
-      int sz = this.elems.size();
+      final boolean isNorm = this.isNorm;
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       ValueVec capElems = new ValueVec();
       for (int i = 0; i < sz; i++) {
-    	  Value elem = this.elems.elementAt(i);
+    	  Value elem = elems.elementAt(i);
         if (val.member(elem)) {
           capElems.addElement(elem);
         }
       }
-      return new SetEnumValue(capElems, this.isNormalized(), cm);
+      return new SetEnumValue(capElems, isNorm, cm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -197,13 +208,14 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final Value cup(Value set) {
     try {
-      int sz = this.elems.size();
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       if (sz == 0) return set;
 
       if (set instanceof Reducible) {
         ValueVec cupElems = new ValueVec();
         for (int i = 0; i < sz; i++) {
-        	Value elem = this.elems.elementAt(i);
+        	Value elem = elems.elementAt(i);
           cupElems.addElement(elem);
         }
         ValueEnumeration Enum = ((Enumerable)set).elements();
@@ -269,7 +281,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final Value normalize() {
     try {
       if (!this.isNorm) {
-        this.elems.sort(true);   // duplicates eliminated
+        final ValueVec elems = this.elems;
+        final Value[] copy = new Value[elems.size()];
+        elems.copyInto(copy);
+        this.elems = new ValueVec(copy).sort(true);   // duplicates eliminated
         this.isNorm = true;
       }
       return this;
@@ -283,6 +298,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final void deepNormalize() {
 	    try {
+      final ValueVec elems = this.elems;
       for (int i = 0; i < elems.size(); i++) {
           elems.elementAt(i).deepNormalize();
         }
@@ -312,9 +328,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final boolean isDefined() {
     try {
       boolean defined = true;
-      int sz = this.elems.size();
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       for (int i = 0; i < sz; i++) {
-        defined = defined && this.elems.elementAt(i).isDefined();
+        defined = defined && elems.elementAt(i).isDefined();
       }
       return defined;
     }
@@ -332,8 +349,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(SETENUMVALUE);
+			final boolean isNorm = this.isNorm;
+			final ValueVec elems = this.elems;
 			final int len = elems.size();
-			vos.writeInt((isNormalized()) ? len : -len);
+			vos.writeInt(isNorm ? len : -len);
 			for (int i = 0; i < len; i++) {
 				elems.elementAt(i).write(vos);
 			}
@@ -348,11 +367,12 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   public final long fingerPrint(long fp) {
     try {
       this.normalize();
-      int sz = this.elems.size();
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       fp = FP64.Extend(fp, SETENUMVALUE);
       fp = FP64.Extend(fp, sz);
       for (int i = 0; i < sz; i++) {
-        Value elem = this.elems.elementAt(i);
+        Value elem = elems.elementAt(i);
         fp = elem.fingerPrint(fp);
       }
       return fp;
@@ -366,12 +386,13 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      int sz = this.elems.size();
+      final ValueVec elems = this.elems;
+      int sz = elems.size();
       Value[] vals = new Value[sz];
       boolean changed = false;
       for (int i = 0; i < sz; i++) {
-        vals[i] = (Value) this.elems.elementAt(i).permute(perm);
-        changed = (changed || vals[i] != this.elems.elementAt(i));
+        vals[i] = (Value) elems.elementAt(i).permute(perm);
+        changed = (changed || vals[i] != elems.elementAt(i));
       }
       if (changed) {
         return new SetEnumValue(vals, false);
@@ -406,14 +427,15 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
           this.normalize();
       }
 
-      int len = this.elems.size();
+      final ValueVec elems = this.elems;
+      int len = elems.size();
       sb = sb.append("{");
       if (len > 0) {
-        this.elems.elementAt(0).toString(sb, offset, swallow);
+        elems.elementAt(0).toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb.append(", ");
-        this.elems.elementAt(i).toString(sb, offset, swallow);
+        elems.elementAt(i).toString(sb, offset, swallow);
       }
       sb.append("}");
       return sb;
@@ -425,9 +447,10 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
   }
 
   public final Value randomElement() {
-     int sz = size();
-     int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * sz);
-     return this.elems.elementAt(index);
+     this.normalize();
+     final ValueVec elems = this.elems;
+     int index = (int) Math.floor(RandomEnumerableValues.get().nextDouble() * elems.size());
+     return elems.elementAt(index);
   }
 
   @Override
@@ -443,9 +466,11 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 
   final class Enumerator implements ValueEnumeration {
     int index = 0;
+    final ValueVec elems;
 
     public Enumerator() {
     	normalize();
+    	this.elems = SetEnumValue.this.elems;
     }
 
     @Override
@@ -454,8 +479,8 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
     @Override
     public final Value nextElement() {
     	if (coverage) { cm.incSecondary(); }
-      if (this.index < elems.size()) {
-        return elems.elementAt(this.index++);
+      if (this.index < this.elems.size()) {
+        return this.elems.elementAt(this.index++);
       }
       return null;
     }
@@ -485,6 +510,7 @@ public static final SetEnumValue DummyEnum = new SetEnumValue((ValueVec)null, tr
 	@Override
 	public ValueEnumeration elements(final int k) {
 		normalize();
+		final ValueVec elems = this.elems;
 		return new EnumerableValue.SubsetEnumerator(k) {
 			@Override
 			public Value nextElement() {

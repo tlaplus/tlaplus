@@ -339,14 +339,15 @@ public class Json {
       return getArrayNode(value);
     }
 
-    final Value[] domain = value.getDomainAsValues();
+    final FcnRcdValue fcn = value.snapshot();
+    final Value[] domain = fcn.getDomainAsValues();
     JsonObject jsonObject = new JsonObject();
     for (int i = 0; i < domain.length; i++) {
       Value domainValue = domain[i];
       if (domainValue instanceof StringValue) {
-        jsonObject.add(((StringValue) domainValue).val.toString(), getNode(value.values[i]));
+        jsonObject.add(((StringValue) domainValue).val.toString(), getNode(fcn.values[i]));
       } else {
-        jsonObject.add(domainValue.toString(), getNode(value.values[i]));
+        jsonObject.add(domainValue.toString(), getNode(fcn.values[i]));
       }
     }
     return jsonObject;
@@ -359,9 +360,10 @@ public class Json {
    * @return the converted {@code JsonElement}
    */
   private static JsonElement getObjectNode(RecordValue value) throws IOException {
+    final RecordValue rcd = value.snapshot();
     JsonObject jsonObject = new JsonObject();
-    for (int i = 0; i < value.names.length; i++) {
-      jsonObject.add(value.names[i].toString(), getNode(value.values[i]));
+    for (int i = 0; i < rcd.names.length; i++) {
+      jsonObject.add(rcd.names[i].toString(), getNode(rcd.values[i]));
     }
     return jsonObject;
   }

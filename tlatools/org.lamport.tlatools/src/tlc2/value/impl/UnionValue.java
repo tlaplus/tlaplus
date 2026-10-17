@@ -20,7 +20,7 @@ import util.Assert;
 
 public class UnionValue extends EnumerableValue implements Enumerable {
   public final Value set;
-  protected SetEnumValue realSet;
+  protected volatile SetEnumValue realSet;
 
   /* Constructor */
   public UnionValue(Value set) {
@@ -39,8 +39,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.realSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -50,8 +49,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.convertAndCache();
-      return this.realSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -131,8 +129,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.convertAndCache();
-      return this.realSet.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -143,9 +140,8 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      return (this.realSet != null &&
-        this.realSet != SetEnumValue.DummyEnum &&
-        this.realSet.isNormalized());
+      final SetEnumValue realSet = this.realSet;
+      return realSet != null && realSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -156,8 +152,9 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
-        this.realSet.normalize();
+      final SetEnumValue realSet = this.realSet;
+      if (realSet != null) {
+        realSet.normalize();
       }
       return this;
     }
@@ -186,13 +183,6 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 	    	//    Worker A reads inconsistent data and thus reports the invariant to be violated.
 	    	// Thanks to Calvin Loncaric for suggesting this fix.
 	    	this.set.deepNormalize();
-	    	
-      if (realSet == null) {
-        realSet = SetEnumValue.DummyEnum;
-      }
-      else if (realSet != SetEnumValue.DummyEnum) {
-        realSet.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -242,15 +232,14 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 
 	@Override
 	public void write(final IValueOutputStream vos) throws IOException {
-		realSet.write(vos);
+		convertAndCache().write(vos);
 	}
 
   /* The fingerprint  */
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.realSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -261,8 +250,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.realSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -270,21 +258,26 @@ public class UnionValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.realSet == null) {
-      this.realSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue realSet = this.realSet;
+    if (realSet == null) {
+      realSet = (SetEnumValue) this.toSetEnum();
+      realSet.deepNormalize();
+      this.realSet = realSet;
     }
-    else if (this.realSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.realSet = val;
-    }
+    return realSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.realSet != null && this.realSet != SetEnumValue.DummyEnum) {
-        return this.realSet;
+      final SetEnumValue realSet = this.realSet;
+      if (realSet != null) {
+        return realSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
@@ -320,10 +313,11 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.realSet == null || this.realSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue realSet = this.realSet;
+      if (realSet == null) {
         return new Enumerator();
       }
-      return this.realSet.elements();
+      return realSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

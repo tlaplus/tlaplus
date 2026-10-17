@@ -27,7 +27,7 @@ import util.UniqueString;
 public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final UniqueString[] names;      // The names of the fields.
   public final Value[] values;            // The values of the fields.
-  protected SetEnumValue rcdSet;
+  protected volatile SetEnumValue rcdSet;
 
   /* Constructor */
   public SetOfRcdsValue(UniqueString[] names, Value[] values, boolean isNorm) {
@@ -52,8 +52,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.rcdSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -81,8 +80,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         }
         return true;
       }
-      this.convertAndCache();
-      return this.rcdSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -232,15 +230,11 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
-        for (int i = 0; i < this.names.length; i++) {
-          if (!this.values[i].isNormalized()) {
-            return false;
-          }
-        }
-        return true;
+      final SetEnumValue rcdSet = this.rcdSet;
+      if (rcdSet == null) {
+        return this.valuesNormalized();
       }
-      return this.rcdSet.isNormalized();
+      return rcdSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -248,16 +242,26 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
+  private final boolean valuesNormalized() {
+    for (int i = 0; i < this.names.length; i++) {
+      if (!this.values[i].isNormalized()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public final Value normalize() {
     try {
-      if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue rcdSet = this.rcdSet;
+      if (rcdSet == null) {
         for (int i = 0; i < this.names.length; i++) {
           this.values[i].normalize();
         }
       }
       else {
-        this.rcdSet.normalize();
+        rcdSet.normalize();
       }
       return this;
     }
@@ -272,12 +276,6 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	    try {
       for (int i = 0; i < values.length; i++) {
           values[i].deepNormalize();
-        }
-        if (rcdSet == null) {
-          rcdSet = SetEnumValue.DummyEnum;
-        }
-        else if (rcdSet != SetEnumValue.DummyEnum) {
-          rcdSet.deepNormalize();
         }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
@@ -343,8 +341,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.rcdSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -355,8 +352,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.rcdSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -364,22 +360,30 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.rcdSet == null) {
-      this.rcdSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue rcdSet = this.rcdSet;
+    if (rcdSet == null) {
+      rcdSet = (SetEnumValue) this.toSetEnum();
+      rcdSet.deepNormalize();
+      this.rcdSet = rcdSet;
     }
-    else if (this.rcdSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.rcdSet = val;
-    }
+    return rcdSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.rcdSet != null && this.rcdSet != SetEnumValue.DummyEnum) {
-        return this.rcdSet;
+      final SetEnumValue rcdSet = this.rcdSet;
+      if (rcdSet != null) {
+        return rcdSet;
       }
+      // Not this.isNormalized(), which reads the cache that another worker may
+      // publish during the enumeration below.
+      final boolean isNorm = this.valuesNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value elem;
@@ -387,12 +391,12 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   @Override
   public final void write(final IValueOutputStream vos) throws IOException {
-	  rcdSet.write(vos);
+	  convertAndCache().write(vos);
   }
 
   /* The string representation of the value. */
@@ -448,7 +452,8 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.rcdSet == null || this.rcdSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue rcdSet = this.rcdSet;
+      if (rcdSet == null) {
         // [l1 : v1, ..., ln : vn] = {} <=> \E i : vi = {}, which decides emptiness
         // without the enumeration of v1..vi that Enumerator below needs.
         if (this.isEmpty()) {
@@ -456,7 +461,7 @@ public class SetOfRcdsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         }
         return new Enumerator();
       }
-      return this.rcdSet.elements();
+      return rcdSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

@@ -353,6 +353,7 @@ public abstract class Tool
               Context con1 = con;
               for (int i = 0; i < alen; i++) {
                 IValue aval = this.eval(args[i], con, TLCState.Empty, cm);
+                aval.deepNormalize();
                 con1 = con1.cons(formals[i], aval);
               }
               // Recurse/go deeper if none of the (formal) parameters are of state-level or
@@ -388,7 +389,7 @@ public abstract class Tool
           }
           Context econ;
           while ((econ = Enum.nextElement()) != null) {
-            this.getActions(args[0], econ, actionName, cm);
+            this.getActions(args[0], econ.deepNormalize(con), actionName, cm);
           }
 			assert (cnt < this.actionVec.size())
 					: "AssertionError when creating Actions. This case should have been handled by Enum.isDone conditional above!";
@@ -1826,7 +1827,7 @@ public abstract class Tool
         case DecimalKind:
         case StringKind:
           {
-            return (Value) WorkerValue.mux(expr.getToolObject(toolId));
+            return (Value) expr.getToolObject(toolId);
           }
         case AtNodeKind:
           {
@@ -2407,7 +2408,7 @@ public abstract class Tool
         case OPCODE_rs:     // RcdSelect
           {
             Value rval = this.eval(args[0], c, s0, s1, control, cm);
-            Value sval = (Value) WorkerValue.mux(args[1].getToolObject(toolId));
+            Value sval = (Value) args[1].getToolObject(toolId);
             if (rval instanceof RecordValue) {
               Value result = (Value) ((RecordValue)rval).select(sval);
               if (result == null) {
@@ -3961,14 +3962,6 @@ public abstract class Tool
 					  
 					  if (o instanceof SetEnumValue) {
 						  return (SetEnumValue)o;
-					  } else if (o instanceof WorkerValue) {
-						  // If TLC was started with a -workers N specification, N > 1, o will be a WorkerValue instance
-						  final WorkerValue wv = (WorkerValue)o;
-						  final Object unwrapped = WorkerValue.mux(wv);
-						  
-						  if (unwrapped instanceof SetEnumValue) {
-							  return (SetEnumValue)unwrapped;
-						  }
 					  }
 				  }
 			  }

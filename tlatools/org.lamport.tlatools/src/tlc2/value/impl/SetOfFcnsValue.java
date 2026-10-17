@@ -27,7 +27,7 @@ import util.Assert;
 public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   public final Value domain;        /* Function domain  */
   public final Value range;         /* Function range   */
-  protected SetEnumValue fcnSet;
+  protected volatile SetEnumValue fcnSet;
 
   /* Constructor */
   public SetOfFcnsValue(Value domain, Value range) {
@@ -47,8 +47,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.fcnSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -94,8 +93,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         return (this.domain.equals(fcns.domain) &&
           this.range.equals(fcns.range));
       }
-      this.convertAndCache();
-      return this.fcnSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -293,10 +291,11 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue fcnSet = this.fcnSet;
+      if (fcnSet == null) {
         return this.domain.isNormalized() && this.range.isNormalized();
       }
-      return this.fcnSet.isNormalized();
+      return fcnSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -307,12 +306,13 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue fcnSet = this.fcnSet;
+      if (fcnSet == null) {
         this.domain.normalize();
         this.range.normalize();
       }
       else {
-        this.fcnSet.normalize();
+        fcnSet.normalize();
       }
       return this;
     }
@@ -327,12 +327,6 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
 	    try {
       domain.deepNormalize();
       range.deepNormalize();
-      if (fcnSet == null) {
-        fcnSet = SetEnumValue.DummyEnum;
-      }
-      else if (fcnSet != SetEnumValue.DummyEnum) {
-        fcnSet.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -358,8 +352,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.fcnSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -370,8 +363,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.fcnSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -379,22 +371,30 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.fcnSet == null) {
-      this.fcnSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue fcnSet = this.fcnSet;
+    if (fcnSet == null) {
+      fcnSet = (SetEnumValue) this.toSetEnum();
+      fcnSet.deepNormalize();
+      this.fcnSet = fcnSet;
     }
-    else if (this.fcnSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.fcnSet = val;
-    }
+    return fcnSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.fcnSet != null && this.fcnSet != SetEnumValue.DummyEnum) {
-        return this.fcnSet;
+      final SetEnumValue fcnSet = this.fcnSet;
+      if (fcnSet != null) {
+        return fcnSet;
       }
+      // Not this.isNormalized(), which reads the cache that another worker may
+      // publish during the enumeration below.
+      final boolean isNorm = this.domain.isNormalized() && this.range.isNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value elem;
@@ -402,12 +402,12 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   @Override
   public final void write(final IValueOutputStream vos) throws IOException {
-	  fcnSet.write(vos);
+	  convertAndCache().write(vos);
   }
 
   /* The string representation of the value. */
@@ -457,7 +457,8 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.fcnSet == null || this.fcnSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue fcnSet = this.fcnSet;
+      if (fcnSet == null) {
         // [S -> T] = {} <=> S # {} /\ T = {}, which decides emptiness without the
         // enumeration of S that the enumerators below need. They answer the other
         // rule, [{} -> T] = { <<>> }.
@@ -469,7 +470,7 @@ public class SetOfFcnsValue extends SetOfFcnsOrRcdsValue implements Enumerable {
     	  }
         return new Enumerator();
       }
-      return this.fcnSet.elements();
+      return fcnSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
