@@ -93,7 +93,7 @@ public interface SymbolNodeValueLookupProvider {
 
 		result = opNode.getToolObject(forToolId);
 		if (result != null) {
-			return WorkerValue.mux(result);
+			return result;
 		}
 
 		if (opNode.getKind() == ASTConstants.UserDefinedOpKind) {

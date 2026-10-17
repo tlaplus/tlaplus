@@ -34,11 +34,10 @@ import tlc2.output.EC;
 /**
  * Regression test for https://github.com/tlaplus/tlaplus/issues/1445
  *
- * SpecProcessor#processConstantDefns evaluates constant definitions at
- * startup, and WorkerValue#demux gives each worker its own copy of a
- * definition. If all workers shared a single copy, they would race to normalize
- * the definition or the cache of its enumeration, which drops elements from it
- * and causes a bogus violation of the invariant. Break in WorkerValue#mux.
+ * SpecProcessor#processConstantDefns evaluates constant definitions once at
+ * startup, and all workers share the value of a definition. If workers raced
+ * to normalize the definition or the cache of its enumeration, elements would
+ * drop from it and cause a bogus violation of the invariant.
  */
 public class Github1445gTest extends Github1445TestCase {
 
