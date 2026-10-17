@@ -31,7 +31,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   // e.g. {1} \X {2} \X {3} = {<<1, 2, 3>>}, whereas the elements of
   // ({1} \X {2}) \X {3} = {<<<<1, 2>>, 3>>} have the domain 1..2.
   public final Value[] sets;
-  protected SetEnumValue tupleSet;
+  protected volatile SetEnumValue tupleSet;
 
   /* Constructor */
   public SetOfTuplesValue(Value[] sets) {
@@ -390,10 +390,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   }
 
   private final void convertAndCache() {
-    if (this.tupleSet == null) {
-      this.tupleSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.tupleSet == SetEnumValue.DummyEnum) {
+    if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.tupleSet = val;

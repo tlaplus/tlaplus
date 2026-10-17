@@ -20,7 +20,7 @@ import util.Assert;
 
 public class UnionValue extends EnumerableValue implements Enumerable {
   public final Value set;
-  protected SetEnumValue realSet;
+  protected volatile SetEnumValue realSet;
 
   /* Constructor */
   public UnionValue(Value set) {
@@ -271,10 +271,7 @@ public class UnionValue extends EnumerableValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.realSet == null) {
-      this.realSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.realSet == SetEnumValue.DummyEnum) {
+    if (this.realSet == null || this.realSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.realSet = val;
