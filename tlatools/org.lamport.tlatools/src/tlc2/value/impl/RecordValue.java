@@ -54,7 +54,9 @@ public class RecordValue extends Value implements FunctionValue {
 
   public final UniqueString[] names;   // the field names
   public final Value[] values;         // the field values
-  private boolean isNorm;
+  // Workers may share this record, so normalize() sorts names and values in
+  // place under a lock. A method that reads them unsorted reads snapshot().
+  private volatile boolean isNorm;
   public static final RecordValue EmptyRcd = new RecordValue(new UniqueString[0], new Value[0], true);
 
   /* Constructor */
@@ -95,8 +97,12 @@ public class RecordValue extends Value implements FunctionValue {
 	}
 
   public RecordValue(final RecordValue existing, UniqueString name, Value v) {
+	  this(existing.snapshot(), name, v, false);
+  }
+
+  private RecordValue(final RecordValue existing, UniqueString name, Value v, boolean isNorm) {
 	  this(Stream.concat(Arrays.stream(existing.names), Stream.of(name)).toArray(UniqueString[]::new),
-				Stream.concat(Arrays.stream(existing.values), Stream.of(v)).toArray(Value[]::new), false);
+				Stream.concat(Arrays.stream(existing.values), Stream.of(v)).toArray(Value[]::new), isNorm);
   }
 
   public RecordValue(final Location location) {
@@ -386,28 +392,23 @@ public class RecordValue extends Value implements FunctionValue {
   public final Value takeExcept(ValueExcept ex) {
     try {
       if (ex.idx < ex.path.length) {
-        int rlen = this.names.length;
+        final RecordValue r = this.snapshot();
+        int rlen = r.names.length;
         Value[] newValues = new Value[rlen];
         Value arcVal = ex.path[ex.idx];
         if (arcVal instanceof StringValue) {
           UniqueString arc = ((StringValue)arcVal).val;
           for (int i = 0; i < rlen; i++) {
-            if (this.names[i].equals(arc)) {
+            if (r.names[i].equals(arc)) {
               ex.idx++;
-              newValues[i] = this.values[i].takeExcept(ex);
+              newValues[i] = r.values[i].takeExcept(ex);
             }
             else {
-              newValues[i] = this.values[i];
+              newValues[i] = r.values[i];
             }
           }
-          UniqueString[] newNames = this.names;
-          if (!this.isNorm) {
-            newNames = new UniqueString[rlen];
-            for (int i = 0; i < rlen; i++) {
-              newNames[i] = this.names[i];
-            }
-          }
-          return new RecordValue(newNames, newValues, this.isNorm);
+          // An unsorted snapshot's names are already a private copy.
+          return new RecordValue(r.names, newValues, r.isNorm);
         }
         else {
             MP.printWarning(EC.TLC_WRONG_RECORD_FIELD_NAME, new String[]{Values.ppr(arcVal.toString())});
@@ -475,11 +476,9 @@ public class RecordValue extends Value implements FunctionValue {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
       UniqueString name = ((StringValue)arg).getVal();
-      int rlen = this.names.length;
-      for (int i = 0; i < rlen; i++) {
-        if (name.equals(this.names[i])) {
-          return this.values[i];
-        }
+      final Value v = this.lookup(name);
+      if (v != null) {
+        return v;
       }
       Assert.fail("Attempted to access nonexistent field '" + name +
           "' of record\n" + Values.ppr(this.toString()), getSource());
@@ -513,13 +512,7 @@ public class RecordValue extends Value implements FunctionValue {
         Assert.fail("Attempted to access record by a non-string argument: " + Values.ppr(arg.toString()), getSource());
       }
       UniqueString name = ((StringValue)arg).getVal();
-      int rlen = this.names.length;
-      for (int i = 0; i < rlen; i++) {
-        if (name.equals(this.names[i])) {
-          return this.values[i];
-        }
-      }
-      return null;
+      return this.lookup(name);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -527,14 +520,35 @@ public class RecordValue extends Value implements FunctionValue {
     }
   }
 
+  // Comparing UniqueStrings locks nothing, so the search may hold the lock.
+  private final Value lookup(final UniqueString name) {
+    if (this.isNorm) {
+      return this.find(name);
+    }
+    synchronized (this) {
+      return this.find(name);
+    }
+  }
+
+  private final Value find(final UniqueString name) {
+    int rlen = this.names.length;
+    for (int i = 0; i < rlen; i++) {
+      if (name.equals(this.names[i])) {
+        return this.values[i];
+      }
+    }
+    return null;
+  }
+
   @Override
   public final Value getDomain() {
     try {
-    	Value[] dElems = new Value[this.names.length];
-      for (int i = 0; i < this.names.length; i++) {
-        dElems[i] = new StringValue(this.names[i]);
+      final RecordValue r = this.snapshot();
+    	Value[] dElems = new Value[r.names.length];
+      for (int i = 0; i < r.names.length; i++) {
+        dElems[i] = new StringValue(r.names[i]);
       }
-      return new SetEnumValue(dElems, this.isNormalized());
+      return new SetEnumValue(dElems, r.isNorm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -566,10 +580,43 @@ public class RecordValue extends Value implements FunctionValue {
   @Override
   public final boolean isNormalized() { return this.isNorm; }
 
+  // Returns this record if it's sorted, or else a copy of it taken under the
+  // lock. The copy is private to the caller, so no worker sorts it midway.
+  // Code outside this class must read names and values only of a snapshot.
+  public final RecordValue snapshot() {
+    if (this.isNorm) {
+      return this;
+    }
+    synchronized (this) {
+      if (this.isNorm) {
+        return this;
+      }
+      final RecordValue r = new RecordValue(this.names.clone(), this.values.clone(), false);
+      r.cm = this.cm;
+      return r;
+    }
+  }
+
   @Override
   public final Value normalize() {
     try {
       if (!this.isNorm) {
+        synchronized (this) {
+          if (!this.isNorm) {
+            sort();
+            this.isNorm = true;
+          }
+        }
+      }
+      return this;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  private final void sort() {
         int len = this.names.length;
         for (int i = 1; i < len; i++) {
           int cmp = this.names[0].compareTo(this.names[i]);
@@ -601,19 +648,12 @@ public class RecordValue extends Value implements FunctionValue {
           this.names[j] = st;
           this.values[j] = val;
         }
-        this.isNorm = true;
-      }
-      return this;
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
   }
 
   @Override
   public final void deepNormalize() {
 	  try {
+      final Value[] values = this.snapshot().values;
       for (int i = 0; i < values.length; i++) {
           values[i].deepNormalize();
         }
@@ -628,9 +668,10 @@ public class RecordValue extends Value implements FunctionValue {
   @Override
   public final boolean isDefined() {
     try {
+      final Value[] values = this.snapshot().values;
       boolean defined = true;
-      for (int i = 0; i < this.values.length; i++) {
-        defined = defined && this.values[i].isDefined();
+      for (int i = 0; i < values.length; i++) {
+        defined = defined && values[i].isDefined();
       }
       return defined;
     }
@@ -643,9 +684,10 @@ public class RecordValue extends Value implements FunctionValue {
   @Override
   public final IValue deepCopy() {
     try {
-    	Value[] vals = new Value[this.values.length];
-      for (int i = 0; i < this.values.length; i++) {
-        vals[i] = (Value) this.values[i].deepCopy();
+      final RecordValue r = this.snapshot();
+    	Value[] vals = new Value[r.values.length];
+      for (int i = 0; i < r.values.length; i++) {
+        vals[i] = (Value) r.values[i].deepCopy();
       }
       // Following code modified 16 June 2015 by adding Arrays.copyOf to fix
       // the following bug that seems to have manifested itself only in TLC.Print and
@@ -654,7 +696,7 @@ public class RecordValue extends Value implements FunctionValue {
       // corresponding modification on the values array. Thus, the names are
       // copied too to prevent any modification/normalization done to the
       // original to appear in the deepCopy.
-      return new RecordValue(Arrays.copyOf(this.names, this.names.length), vals, this.isNorm);
+      return new RecordValue(Arrays.copyOf(r.names, r.names.length), vals, r.isNorm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -667,8 +709,11 @@ public class RecordValue extends Value implements FunctionValue {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(RECORDVALUE);
+			final RecordValue r = this.snapshot();
+			final UniqueString[] names = r.names;
+			final Value[] values = r.values;
 			final int len = names.length;
-			vos.writeInt((isNormalized()) ? len : -len);
+			vos.writeInt(r.isNorm ? len : -len);
 			for (int i = 0; i < len; i++) {
 				final int index1 = vos.put(names[i]);
 				if (index1 == -1) {
@@ -735,17 +780,18 @@ public class RecordValue extends Value implements FunctionValue {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      int len = this.names.length;
+      final RecordValue r = this.snapshot();
+      int len = r.names.length;
 
       sb.append("[");
       if (len > 0) {
-        sb.append(this.names[0] + TLAConstants.RECORD_ARROW);
-        sb = this.values[0].toString(sb, offset, swallow);
+        sb.append(r.names[0] + TLAConstants.RECORD_ARROW);
+        sb = r.values[0].toString(sb, offset, swallow);
       }
       for (int i = 1; i < len; i++) {
         sb.append(", ");
-        sb.append(this.names[i] + TLAConstants.RECORD_ARROW);
-        sb = this.values[i].toString(sb, offset, swallow);
+        sb.append(r.names[i] + TLAConstants.RECORD_ARROW);
+        sb = r.values[i].toString(sb, offset, swallow);
       }
       return sb.append("]");
     }
@@ -818,16 +864,18 @@ public class RecordValue extends Value implements FunctionValue {
 		// nested TLCStateMut or TLCStateMutExt to correctly handle fingerprinting, ....
 			final TLCState state = TLCState.Empty.createEmpty();
 			final OpDeclNode[] vars = state.getVars();
+			final RecordValue r = this.snapshot();
 			for (int i = 0; i < vars.length; i++) {
 				final UniqueString name = vars[i].getName();
-				int rlen = this.names.length;
+				int rlen = r.names.length;
 				for (int j = 0; j < rlen; j++) {
-					if (name.equals(this.names[j])) {
-						state.bind(name, this.values[j]);
+					if (name.equals(r.names[j])) {
+						state.bind(name, r.values[j]);
 					}
 				}
 			}
-			return new PrintTLCState(this, state);
+			// PrintTLCState reads the record's fields after this method returns.
+			return new PrintTLCState(r, state);
 		}
 
 		public static final class PrintTLCState extends TLCState {
@@ -974,6 +1022,9 @@ public class RecordValue extends Value implements FunctionValue {
 
 		@Override
 		public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
+			final RecordValue r = this.snapshot();
+			final UniqueString[] names = r.names;
+			final Value[] values = r.values;
 			final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
 			for (int i = 0; i < names.length; i++) {
 				final UniqueString uniqueString = names[i];
