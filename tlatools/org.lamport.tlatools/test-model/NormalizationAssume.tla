@@ -22,6 +22,14 @@ ASSUME TypedIntMember
 ASSUME TypedStringMember
 ASSUME IntTypedMember
 
+ASSUME MixedBoundMember
+
+\* Caching the value sorts it, but not its elements.
+ASSUME LazyFcnExceptDomain
+ASSUME LazyFcnInTuple
+ASSUME LazyPredFcnSetNeqEmpty
+ASSUME LazyPredSubsetNeqEmpty
+
 ASSUME TupleApplyMixed
 ASSUME HeadMixed
 ASSUME TailMixed
