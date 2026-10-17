@@ -266,7 +266,10 @@ public class DotStateWriter extends StateWriter {
 				this.writer.append(successorsFP);
 				this.writer.append(" [label=\"");
 				if (TLCGlobals.printDiffsOnly) {
-					this.writer.append(states2dot(state.evalStateLevelAlias(), successor.evalStateLevelAlias()));
+					final TLCState alias = successor.evalStateLevelAlias();
+					// If the ALIAS is not a record for the successor, TLC prints the successor
+					// itself, so diff it against the state itself (see StatePrinter#getPreviousState).
+					this.writer.append(states2dot(alias == successor ? state : state.evalStateLevelAlias(), alias));
 				} else {
 					this.writer.append(states2dot(successor.evalStateLevelAlias()));
 				}

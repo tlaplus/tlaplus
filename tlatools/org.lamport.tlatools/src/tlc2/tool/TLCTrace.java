@@ -373,14 +373,15 @@ public class TLCTrace {
 		MP.printError(EC.TLC_BEHAVIOR_UP_TO_THIS_POINT);
 		
 		// Print the prefix leading to s1:
-		TLCState lastState = null;
+		TLCStateInfo lastPrinted = null;
 		int idx = 0;
 		while (idx < prefix.length - 1) {
 			final int j = idx + 1;
-			StatePrinter.printInvariantViolationStateTraceState(
-					this.tool.evalAlias(prefix[idx], prefix[j].state, () -> Arrays.asList(prefix).subList(0, j)),
-					lastState, idx + 1);
-			lastState = prefix[idx].state;
+			final TLCStateInfo info = this.tool.evalAlias(prefix[idx], prefix[j].state,
+					() -> Arrays.asList(prefix).subList(0, j));
+			StatePrinter.printInvariantViolationStateTraceState(info,
+					StatePrinter.getPreviousState(info, lastPrinted), idx + 1);
+			lastPrinted = info;
 			idx++;
 		}
 
@@ -400,9 +401,10 @@ public class TLCTrace {
 			final int j = prefix.length - 1;
 			TLCStateInfo s0 = prefix[j];
 			s1.setPredecessor(s0);
-			StatePrinter.printInvariantViolationStateTraceState(
-					this.tool.evalAlias(s0, s1, prefix), lastState, ++idx);
-			lastState = s0.state;
+			final TLCStateInfo info = this.tool.evalAlias(s0, s1, prefix);
+			StatePrinter.printInvariantViolationStateTraceState(info,
+					StatePrinter.getPreviousState(info, lastPrinted), ++idx);
+			lastPrinted = info;
 			
 			sinfo = this.tool.getState(s1.fingerPrint(), s0.state);
 			if (sinfo == null) {
@@ -415,11 +417,11 @@ public class TLCTrace {
 			sinfo.state.workerId = s1.workerId;
 		}
 		if (s2 == null) {
-			lastState = null;
+			lastPrinted = null;
 		}
-		StatePrinter.printInvariantViolationStateTraceState(
-				this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo), lastState, ++idx, s2 == null);
-		lastState = sinfo.state;
+		final TLCStateInfo info = this.tool.evalAlias(sinfo, s2 == null ? sinfo.state : s2, prefix, sinfo);
+		StatePrinter.printInvariantViolationStateTraceState(info, StatePrinter.getPreviousState(info, lastPrinted),
+				++idx, s2 == null);
 
 		// Print s2:
 		// The predecessor to s2 is s1.
