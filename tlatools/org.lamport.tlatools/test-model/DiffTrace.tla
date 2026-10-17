@@ -15,4 +15,7 @@ InvD == d = 0
 
 \* Violated by the third state.
 InvB == b = 0
+
+\* Violated by the second state.
+InvA == a = 0
 ====
