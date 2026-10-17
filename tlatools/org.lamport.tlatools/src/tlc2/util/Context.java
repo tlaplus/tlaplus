@@ -236,6 +236,21 @@ public final class Context implements Iterator<Context> {
 		}
 		return new Context(this.name, this.value, this.next.deepCopy());
 	}
+
+	/**
+	 * Deeply normalizes the values bound in this context up to, but excluding,
+	 * base. Workers share a context that TLC creates at startup, and they must not
+	 * normalize its values concurrently
+	 * (https://github.com/tlaplus/tlaplus/issues/1445).
+	 */
+	public final Context deepNormalize(final Context base) {
+		for (Context cur = this; cur != base && cur != null; cur = cur.next) {
+			if (cur.value instanceof Value) {
+				((Value) cur.value).deepNormalize();
+			}
+		}
+		return this;
+	}
 }
 /*
 ----------------------------- MODULE Scoping -----------------------------

@@ -1520,7 +1520,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					Context c1;
 					while ((c1 = ctxts.nextElement()) != null) {
 						final ExprNode expr = (ExprNode) args[0];
-						this.processConfigProps(expr.toString(), configName, expr, c1, subs);
+						this.processConfigProps(expr.toString(), configName, expr, c1.deepNormalize(c), subs);
 					}
 					return;
 				}

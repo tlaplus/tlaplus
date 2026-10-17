@@ -353,6 +353,7 @@ public abstract class Tool
               Context con1 = con;
               for (int i = 0; i < alen; i++) {
                 IValue aval = this.eval(args[i], con, TLCState.Empty, cm);
+                aval.deepNormalize();
                 con1 = con1.cons(formals[i], aval);
               }
               // Recurse/go deeper if none of the (formal) parameters are of state-level or
@@ -388,7 +389,7 @@ public abstract class Tool
           }
           Context econ;
           while ((econ = Enum.nextElement()) != null) {
-            this.getActions(args[0], econ, actionName, cm);
+            this.getActions(args[0], econ.deepNormalize(con), actionName, cm);
           }
 			assert (cnt < this.actionVec.size())
 					: "AssertionError when creating Actions. This case should have been handled by Enum.isDone conditional above!";
