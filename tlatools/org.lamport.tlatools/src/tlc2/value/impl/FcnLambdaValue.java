@@ -39,7 +39,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
   private final TLCState state;
   private final TLCState pstate;
   private int control;
-  public FcnRcdValue fcnRcd;
+  public volatile FcnRcdValue fcnRcd;
 
 	/*
 	 * Constructor: E.g. [ s \in {"A", "B", "C"} |-> "foo" ] where s \in {"A", "B",
@@ -647,7 +647,8 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
   public final Value toFcnRcd() {
     try {
 
-      if (this.fcnRcd == null) {
+      FcnRcdValue fcnRcd = this.fcnRcd;
+      if (fcnRcd == null) {
         int sz = this.params.size();
         FormalParamNode[][] formals = this.params.formals;
         boolean[] isTuples = this.params.isTuples;
@@ -675,9 +676,9 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
           }
 	      if (this.params.domains[0] instanceof IntervalValue) {
 	      	final IntervalValue iv = (IntervalValue) this.params.domains[0];
-	      	this.fcnRcd = new FcnRcdValue(iv, values, cm);
+	      	fcnRcd = new FcnRcdValue(iv, values, cm);
 	      } else {
-	        this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
+	        fcnRcd = new FcnRcdValue(domain, values, false, cm);
 	      }
         }
         else {
@@ -702,7 +703,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             }
             values[idx++] = evalBody(c1);
           }
-          this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
+          fcnRcd = new FcnRcdValue(domain, values, false, cm);
         }
         if (coverage) {cm.incSecondary(sz);}
         if (this.excepts != null) {
@@ -723,10 +724,12 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
 			// Value#toFcnRcd allows null, the cast could be secured with a conditional
 			// and null returned otherwise. In case of null, toString returns the symbolic
 			// value.
-	        this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(excepts);
+	        fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(excepts);
         }
+        fcnRcd.deepNormalize();
+        this.fcnRcd = fcnRcd;
       }
-      return this.fcnRcd;
+      return fcnRcd;
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
