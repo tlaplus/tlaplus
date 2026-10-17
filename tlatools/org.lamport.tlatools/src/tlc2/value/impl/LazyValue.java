@@ -92,17 +92,35 @@ public class LazyValue extends Value {
   public final Context con;
 
   /**
-   * The field val is the result of evaluating expr in context con and
-   * a pair of states.  If val is null, then the value has not been
-   * computed, but when computed, the value can be cached in the field
-   * val. If val is ValUndef, then the value has not been computed,
-   * and when computed, it can not be cached in the field val.
+   * The value of expr in context con, and the tool, states, and control
+   * with which TLC evaluated it. Workers may share a lazy value, so a worker
+   * replaces the whole entry and never changes one of its fields.
    */
-  private Value val;
-  private int toolID;
-  private TLCState s0;
-  private TLCState s1;
-  private int control;
+  private static final class Cache {
+    private final Value val;
+    private final int toolID;
+    private final TLCState s0;
+    private final TLCState s1;
+    private final int control;
+
+    private Cache(final Value val, final int toolID, final TLCState s0, final TLCState s1, final int control) {
+      this.val = val;
+      this.toolID = toolID;
+      this.s0 = s0;
+      this.s1 = s1;
+      this.control = control;
+    }
+  }
+
+  private static final Cache UNCACHABLE = new Cache(UndefValue.ValUndef, 0, null, null, 0);
+
+  /**
+   * If cache is null, then the value has not been computed, but when
+   * computed, the value can be cached. If cache is UNCACHABLE, then the
+   * value has not been computed, and when computed, it can not be cached.
+   * A method must read cache only once.
+   */
+  private volatile Cache cache;
   private int cacheCount = 0;
 
   public LazyValue(SemanticNode expr, Context con, final CostModel cm) {
@@ -113,15 +131,18 @@ public class LazyValue extends Value {
     this.expr = expr;
     this.con = con;
     this.cm = coverage ? cm.get(expr) : cm;
-    this.val = null;
+    this.cache = null;
     // See comment on cachable's meager performance in the docstring above.
     // See other note about a bug that surfaced with LazyValue in the docstring above.
     if (LAZYEVAL_OFF || !cachable) {
-    	this.val = UndefValue.ValUndef;
+    	this.cache = UNCACHABLE;
     }
   }
 
-  private boolean isCachable() { return this.val != UndefValue.ValUndef; }
+  private Value val() {
+    final Cache cache = this.cache;
+    return cache == null ? null : cache.val;
+  }
 
   /** For testing only. */
   public int getNumTimesThatANewValueWasCached() {
@@ -141,13 +162,14 @@ public class LazyValue extends Value {
    *         computing the requested value would require work
    */
   public Value getCachedValue(Tool tool, TLCState s0, TLCState s1, int control) {
-    if (val != null &&
-            isCachable() &&
-            tool.getId() == toolID &&
-            TLCState.isSubset(s0, this.s0).isDefinitely(true) &&
-            TLCState.isSubset(s1, this.s1).isDefinitely(true) &&
-            EvalControl.semanticallyEquivalent(control, this.control).isDefinitely(true)) {
-      return val;
+    final Cache cache = this.cache;
+    if (cache != null &&
+            cache != UNCACHABLE &&
+            tool.getId() == cache.toolID &&
+            TLCState.isSubset(s0, cache.s0).isDefinitely(true) &&
+            TLCState.isSubset(s1, cache.s1).isDefinitely(true) &&
+            EvalControl.semanticallyEquivalent(control, cache.control).isDefinitely(true)) {
+      return cache.val;
     }
     return null;
   }
@@ -170,12 +192,11 @@ public class LazyValue extends Value {
     Value res = getCachedValue(tool, s0, s1, control);
     if (res == null) {
       res = tool.eval(this.expr, this.con, s0, s1, control, getCostModel());
-      if (isCachable()) {
-        this.val = res;
-        this.toolID = tool.getId();
-        this.s0 = s0 != null ? s0.copy() : null;
-        this.s1 = s1 != null ? s1.copy() : null;
-        this.control = control;
+      if (this.cache != UNCACHABLE) {
+        // Workers that race here each publish a whole entry, and whichever entry
+        // stays, getCachedValue returns its value only for its states.
+        this.cache = new Cache(res, tool.getId(), s0 != null ? s0.copy() : null,
+            s1 != null ? s1.copy() : null, control);
         ++cacheCount;
       }
     }
@@ -188,10 +209,11 @@ public class LazyValue extends Value {
   @Override
   public final int compareTo(Object obj) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to compare lazy values.", getSource());
       }
-      return this.val.compareTo(obj);
+      return val.compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -201,10 +223,11 @@ public class LazyValue extends Value {
 
   public final boolean equals(Object obj) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check equality of lazy values.", getSource());
       }
-      return this.val.equals(obj);
+      return val.equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -215,10 +238,11 @@ public class LazyValue extends Value {
   @Override
   public final boolean member(Value elem) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check set membership of lazy values.", getSource());
       }
-      return this.val.member(elem);
+      return val.member(elem);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -229,10 +253,11 @@ public class LazyValue extends Value {
   @Override
   public final boolean isFinite() {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to check if a lazy value is a finite set.", getSource());
       }
-      return this.val.isFinite();
+      return val.isFinite();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -243,10 +268,11 @@ public class LazyValue extends Value {
   @Override
   public final Value takeExcept(ValueExcept ex) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.", getSource());
       }
-      return this.val.takeExcept(ex);
+      return val.takeExcept(ex);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -257,10 +283,11 @@ public class LazyValue extends Value {
   @Override
   public final Value takeExcept(ValueExcept[] exs) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply EXCEPT construct to lazy value.", getSource());
       }
-      return this.val.takeExcept(exs);
+      return val.takeExcept(exs);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -271,10 +298,11 @@ public class LazyValue extends Value {
   @Override
   public final int size() {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
          Assert.fail("Error(TLC): Attempted to compute size of lazy value.", getSource());
       }
-      return this.val.size();
+      return val.size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -283,24 +311,26 @@ public class LazyValue extends Value {
   }
 
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    this.val = (Value)ois.readObject();
+    this.cache = new Cache((Value)ois.readObject(), 0, null, null, 0);
   }
 
   private void writeObject(ObjectOutputStream oos) throws IOException {
-    if (this.val == null || this.val == UndefValue.ValUndef) {
+    final Value val = this.val();
+    if (val == null || val == UndefValue.ValUndef) {
       Assert.fail("Error(TLC): Attempted to serialize lazy value.", getSource());
     }
-    oos.writeObject(this.val);
+    oos.writeObject(val);
   }
 
   /* Nothing to normalize. */
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.", getSource());
       }
-      return this.val.isNormalized();
+      return val.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -311,10 +341,11 @@ public class LazyValue extends Value {
   @Override
   public final Value normalize() {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to normalize lazy value.", getSource());
       }
-      this.val.normalize();
+      val.normalize();
       return this;
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -329,8 +360,9 @@ public class LazyValue extends Value {
   @Override
   public final IValue deepCopy() {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) return this;
-      return this.val.deepCopy();
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) return this;
+      return val.deepCopy();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -342,10 +374,11 @@ public class LazyValue extends Value {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to fingerprint a lazy value.", getSource());
       }
-      return this.val.fingerPrint(fp);
+      return val.fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -356,10 +389,11 @@ public class LazyValue extends Value {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         Assert.fail("Error(TLC): Attempted to apply permutation to lazy value.", getSource());
       }
-      return this.val.permute(perm);
+      return val.permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -371,10 +405,11 @@ public class LazyValue extends Value {
   @Override
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
-      if (this.val == null || this.val == UndefValue.ValUndef) {
+      final Value val = this.val();
+      if (val == null || val == UndefValue.ValUndef) {
         return sb.append("<LAZY " + this.expr + ">");
       }
-      return this.val.toString(sb, offset, swallow);
+      return val.toString(sb, offset, swallow);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
