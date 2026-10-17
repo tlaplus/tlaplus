@@ -159,8 +159,8 @@ LazyFcn == \A P \in {LET K == {2049 - i : i \in 1..2048}
 -----------------------------------------------------------
 
 \* SpecProcessor#processConstantDefns evaluates the constant definitions below
-\* at startup, and WorkerValue gives each worker its own copy of a definition.
-\* Without the copies, workers race to normalize a definition or its cache.
+\* once at startup, and all workers share the value of a definition. Workers
+\* must not race to normalize a definition or its cache.
 
 \* Enumerated in descending order.
 EnumDef == {2049 - i : i \in 1..2048}

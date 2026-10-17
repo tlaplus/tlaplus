@@ -71,7 +71,6 @@ import tlc2.tool.INextStateFunctor.InvariantViolatedException;
 import tlc2.tool.TLCState;
 import tlc2.tool.impl.SpecProcessor;
 import tlc2.tool.impl.Tool;
-import tlc2.tool.impl.WorkerValue;
 import tlc2.util.Context;
 import tlc2.value.IValue;
 import tlc2.value.impl.LazyValue;
@@ -305,7 +304,7 @@ public class TLCStackFrame extends StackFrame {
 			if (ctxtId == vr) {
 				Context c = this.ctxt;
 				while (c.hasNext()) {
-					Object val = WorkerValue.mux(c.getValue());
+					Object val = c.getValue();
 					if (val instanceof LazyValue) {
 						// unlazy/eval LazyValues
 						val = unlazy((LazyValue) c.getValue());
@@ -320,7 +319,7 @@ public class TLCStackFrame extends StackFrame {
 					} else if (val instanceof RuntimeException) {
 						final Variable variable = new Variable();
 						variable.setName(c.getName().getName().toString());
-						variable.setValue(WorkerValue.mux(c.getValue()).toString());
+						variable.setValue(c.getValue().toString());
 						final RuntimeException re = (RuntimeException) val;
 						variable.setType(re.getMessage());
 						vars.add(variable);
@@ -358,7 +357,7 @@ public class TLCStackFrame extends StackFrame {
 					// view by modules. In other words, constants get moved up by one level in the
 					// variable view iff there is only one module.
 					e.getValue().entrySet().stream()
-							.map(c -> getVariable((Value) WorkerValue.mux(c.getValue()), c.getKey().getName()))
+							.map(c -> getVariable((Value) c.getValue(), c.getKey().getName()))
 							.forEach(var -> vars.add(var));
 				} else {
 					final ModuleNode module = e.getKey();
@@ -379,7 +378,7 @@ public class TLCStackFrame extends StackFrame {
 					final Set<Entry<OpDefOrDeclNode,Object>> entrySet = e.getValue().entrySet();
 					for (Entry<OpDefOrDeclNode, Object> entry : entrySet) {
 						final OpDefOrDeclNode oddn = entry.getKey();
-						final Object value = WorkerValue.mux(entry.getValue());
+						final Object value = entry.getValue();
 						if (oddn instanceof OpDefNode) {
 							final OpDefNode odn = (OpDefNode) oddn;
 							l.add((DebugTLCVariable) ((Value) value)
