@@ -23,6 +23,12 @@ TypedStringMember == TypedA \in {TypedA, "a"}
 IntTypedMember    == 1 \in {1, TypedA}
 
 -----------------------------------------------------------------------------
+\* Quantifiers that bind a set enumeration. NormalizationLiveness.tla binds it
+\* in a liveness property.
+
+MixedBoundMember == \A S \in {{1, "a"}} : 1 \in S
+
+-----------------------------------------------------------------------------
 \* Set operators.
 
 MixedCupEmptyMember == 1 \in {1, "a"} \cup {}
@@ -41,6 +47,15 @@ MixedFcnExcept        == [[x \in {1, "a"} |-> x] EXCEPT ![1] = 2][1] = 2
 MixedDomainMember     == 1 \in DOMAIN [x \in {1, "a"} |-> x]
 MixedFcnEq            == [x \in {1, "a"} |-> x] = [x \in {1, "a"} |-> x]
 FcnRangeMixedNeqEmpty == [x \in {1} |-> {1, "a"}][1] # {}
+
+-----------------------------------------------------------------------------
+\* A function and a set comprehension over a lazy set, whose values TLC
+\* computes and caches the first time it needs them.
+
+LazyFcnExceptDomain    == DOMAIN [[x \in {1} |-> {1, "a"}] EXCEPT ![1] = 2] = {1}
+LazyFcnInTuple         == Len(<<[x \in {1} |-> {1, "a"}]>>) = 1
+LazyPredFcnSetNeqEmpty == {f \in [{1} -> {{1, "a"}}] : TRUE} # {}
+LazyPredSubsetNeqEmpty == {s \in SUBSET {{1, "a"}} : s # {}} # {}
 
 -----------------------------------------------------------------------------
 \* Tuples, sequences, and records with a set enumeration as a component.

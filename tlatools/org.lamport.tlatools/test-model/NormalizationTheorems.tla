@@ -52,6 +52,25 @@ THEOREM TypedStringMember == Cases!TypedStringMember
 THEOREM IntTypedMember == Cases!IntTypedMember
   BY DEF Cases!IntTypedMember
 
+THEOREM MixedBoundMember == Cases!MixedBoundMember
+  BY DEF Cases!MixedBoundMember
+
+THEOREM LazyFcnExceptDomain == Cases!LazyFcnExceptDomain
+  BY DEF Cases!LazyFcnExceptDomain
+
+THEOREM LazyFcnInTuple == Cases!LazyFcnInTuple
+  BY DEF Cases!LazyFcnInTuple
+
+THEOREM LazyPredFcnSetNeqEmpty == Cases!LazyPredFcnSetNeqEmpty
+  <1>1. [x \in {1} |-> {1, "a"}] \in [{1} -> {{1, "a"}}]
+    OBVIOUS
+  <1>2. QED BY <1>1 DEF Cases!LazyPredFcnSetNeqEmpty
+
+THEOREM LazyPredSubsetNeqEmpty == Cases!LazyPredSubsetNeqEmpty
+  <1>1. {{1, "a"}} \in SUBSET {{1, "a"}} /\ {{1, "a"}} # {}
+    OBVIOUS
+  <1>2. QED BY <1>1 DEF Cases!LazyPredSubsetNeqEmpty
+
 THEOREM TupleApplyMixed == Cases!TupleApplyMixed
   BY DEF Cases!TupleApplyMixed
 
