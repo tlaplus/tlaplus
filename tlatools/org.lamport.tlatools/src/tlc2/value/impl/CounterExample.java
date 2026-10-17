@@ -108,9 +108,10 @@ public class CounterExample extends RecordValue {
 
     public Value toTrace() {
 		final SetEnumValue set = (SetEnumValue) this.select(new StringValue(STATES));
-		final Value[] v = new Value[set.elems.size()];
+		final ValueVec elems = set.elems;
+		final Value[] v = new Value[elems.size()];
 		for (int i = 0; i < v.length; i++) {
-			final TupleValue tv = (TupleValue) set.elems.elementAt(i);
+			final TupleValue tv = (TupleValue) elems.elementAt(i);
 			v[((IntValue) tv.getElem(0)).val - 1] = (Value) tv.getElem(1);
 		}
 		return new TupleValue(v);

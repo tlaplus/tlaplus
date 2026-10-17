@@ -185,7 +185,10 @@ public abstract class SetOfFcnsOrRcdsValue extends EnumerableValue {
 			BigInteger numElems = BigInteger.ONE; // 1 to avoid div by zero in elementAt
 			for (int j = constituents.length - 1; j >= 0; j--) {
 				rescaleBy[j] = numElems;
-				numElems = numElems.multiply(BigInteger.valueOf(constituents[j].elems.size()));
+				// Call SetEnumValue#size, not elems.size(): it normalizes the constituent,
+				// which another worker may share, so that elems no longer changes and
+				// elementAt reads the same elements for every index.
+				numElems = numElems.multiply(BigInteger.valueOf(constituents[j].size()));
 			}
 
 			// The size of the (enumerated) SetOfFcnsOrRcdsValue needs BigInteger.
