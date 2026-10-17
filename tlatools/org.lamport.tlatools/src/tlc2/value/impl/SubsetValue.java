@@ -30,7 +30,7 @@ import util.Assert;
 import util.TLAConstants;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
-  public Value  set;           // SUBSET set
+  public final Value set;      // SUBSET set
   protected volatile SetEnumValue pset;
 
   /* Constructor */
@@ -770,10 +770,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     private BitSet descriptor;
 
     public Enumerator() {
-    	//WARNING! Mutates the outer instance!?
-      set = set.toSetEnum();
+      final SetEnumValue set = (SetEnumValue) SubsetValue.this.set.toSetEnum();
       set.normalize();
-      this.elems = ((SetEnumValue)set).elems;
+      this.elems = set.elems;
       this.descriptor = new BitSet(this.elems.size());
     }
 
