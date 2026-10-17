@@ -99,9 +99,11 @@ import tlc2.tool.Defns;
 import tlc2.tool.EvalException;
 import tlc2.tool.PossibleAction;
 import tlc2.tool.Specs;
+import tlc2.tool.TLCState;
 import tlc2.tool.TLCStateMut;
 import tlc2.tool.TLCStateMutExt;
 import tlc2.tool.ToolGlobals;
+import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool.Mode;
 import tlc2.util.Context;
 import tlc2.util.List;
@@ -231,6 +233,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
     private final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> constantDefns = new HashMap<>();
+
+    // All workers share the value, so it has to be normalized before they read it.
+    private IValue evalConstantDefn(final ExprNode body) {
+        final IValue val = opDefEvaluator.eval(body, Context.Empty, TLCState.Empty, CostModel.DO_NOT_RECORD);
+        val.deepNormalize();
+        return val;
+    }
     
     public final Map<ModuleNode, Map<OpDefOrDeclNode, Object>> getConstantDefns() {
     	return constantDefns;
@@ -255,10 +264,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
       for (int i = 0; i < consts.length; i++) {
         Object val = consts[i].getToolObject(toolId);
         if (val != null && val instanceof IValue) {
-		  // We do not wrap this value in a WorkerValue, because we assume that explicit
-		  // initialization does not pose a problem here. This is based on the observation,
-          // that val is either an atom (IValue#isAtom) or a set (of sets) of atoms (primarily
-          // ModelValues).
 	      ((IValue)val).initialize();
           constantDefns.computeIfAbsent(mod, key -> new HashMap<OpDefOrDeclNode, Object>()).put(consts[i], val);
           // System.err.println(consts[i].getName() + ": " + val);
@@ -274,7 +279,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
           if (opDef.getArity() == 0) {
             try {
-            	Object defVal = WorkerValue.demux(opDefEvaluator, opDef.getBody());
+            	Object defVal = evalConstantDefn(opDef.getBody());
             	opDef.setToolObject(toolId, defVal);
             	// https://github.com/tlaplus/tlaplus/issues/648
             	//
@@ -357,7 +362,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 	continue DEFS;
                 }
                 // System.err.println(opName);
-                final Object val = WorkerValue.demux(opDefEvaluator, opDef.getBody());
+                final Object val = evalConstantDefn(opDef.getBody());
                 opDef.setToolObject(toolId, val);
                 Object def = this.defns.get(opName);
                 if (def == opDef) {

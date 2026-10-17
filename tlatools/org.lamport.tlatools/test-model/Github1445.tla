@@ -164,8 +164,8 @@ LazyFcn == \A P \in {LET K == {2049 - i : i \in 1..2048}
 -----------------------------------------------------------
 
 \* SpecProcessor#processConstantDefns evaluates the constant definitions below
-\* at startup, and WorkerValue gives each worker its own copy of a definition.
-\* Without the copies, workers race to normalize a definition or its cache.
+\* once at startup, and all workers share the value of a definition. Workers
+\* must not race to normalize a definition or its cache.
 
 \* Enumerated in descending order.
 EnumDef == {2049 - i : i \in 1..2048}
@@ -244,12 +244,11 @@ CtxFcn == \A P \in {[n \in Nat |-> \E e \in T : e = n] : T \in {{2049 - i : i \i
 -----------------------------------------------------------
 
 \* SpecProcessor#processConstantDefns evaluates the constant definition below
-\* at startup, and WorkerValue gives each worker its own copy of it.  Tool
-\* converts the outer function, whose domain is an interval, to a FcnRcdValue.
-\* It leaves the inner functions lazy (FcnLambdaValue), because their domain
-\* is a lazy set (\X), and deepNormalize does not convert them either.
-\* Without the copies, all workers would share 2048 lazy functions whose
-\* caches are empty.
+\* once at startup, and all workers share its value.  Tool converts the outer
+\* function, whose domain is an interval, to a FcnRcdValue.  It leaves the
+\* inner functions lazy (FcnLambdaValue), because their domain is a lazy set
+\* (\X), and deepNormalize does not convert them either.  Thus, all workers
+\* share 2048 lazy functions whose caches are empty.
 LazyDefs == [i \in 1..2048 |-> [t \in (1..2) \X {0} |-> 0]]
 
 \* The workers that generate the 8 successor states with the same x take the

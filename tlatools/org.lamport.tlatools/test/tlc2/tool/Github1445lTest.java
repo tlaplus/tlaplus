@@ -34,14 +34,13 @@ import tlc2.output.EC;
 /**
  * Regression test for https://github.com/tlaplus/tlaplus/issues/1445
  *
- * SpecProcessor#processConstantDefns evaluates constant definitions at
- * startup, and WorkerValue#demux gives each worker its own copy of a
- * definition, whose lazy functions (FcnLambdaValue) have empty caches. If all
- * workers shared a single copy, one worker could compare a lazy function and
- * cache its FcnRcdValue while another takes an EXCEPT of it. If the cache
- * appeared between FcnLambdaValue#takeExcept's check for it and the copy of
- * the lazy function, the copy would evaluate to the cache and ignore the
- * EXCEPT, which causes a bogus violation of the invariant. Break in
+ * SpecProcessor#processConstantDefns evaluates constant definitions once at
+ * startup, and all workers share the lazy functions (FcnLambdaValue) of a
+ * definition, whose caches are empty. One worker compares a lazy function and
+ * caches its FcnRcdValue while another takes an EXCEPT of it. If the cache
+ * appears between FcnLambdaValue#takeExcept's check for it and the copy of the
+ * lazy function, the copy evaluates to the cache and ignores the EXCEPT, which
+ * causes a bogus violation of the invariant. Break in
  * FcnLambdaValue#takeExcept.
  */
 public class Github1445lTest extends Github1445TestCase {
