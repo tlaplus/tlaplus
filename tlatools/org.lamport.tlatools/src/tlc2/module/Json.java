@@ -335,18 +335,19 @@ public class Json {
    * @return the converted {@code JsonElement}
    */
   private static JsonElement getObjectNode(FcnRcdValue value) throws IOException {
-    if (isValidSequence(value)) {
-      return getArrayNode(value);
+    final FcnRcdValue fcn = value.snapshot();
+    if (isValidSequence(fcn)) {
+      return getArrayNode(fcn);
     }
 
-    final Value[] domain = value.getDomainAsValues();
+    final Value[] domain = fcn.getDomainAsValues();
     JsonObject jsonObject = new JsonObject();
     for (int i = 0; i < domain.length; i++) {
       Value domainValue = domain[i];
       if (domainValue instanceof StringValue) {
-        jsonObject.add(((StringValue) domainValue).val.toString(), getNode(value.values[i]));
+        jsonObject.add(((StringValue) domainValue).val.toString(), getNode(fcn.values[i]));
       } else {
-        jsonObject.add(domainValue.toString(), getNode(value.values[i]));
+        jsonObject.add(domainValue.toString(), getNode(fcn.values[i]));
       }
     }
     return jsonObject;
@@ -359,9 +360,10 @@ public class Json {
    * @return the converted {@code JsonElement}
    */
   private static JsonElement getObjectNode(RecordValue value) throws IOException {
+    final RecordValue rcd = value.snapshot();
     JsonObject jsonObject = new JsonObject();
-    for (int i = 0; i < value.names.length; i++) {
-      jsonObject.add(value.names[i].toString(), getNode(value.values[i]));
+    for (int i = 0; i < rcd.names.length; i++) {
+      jsonObject.add(rcd.names[i].toString(), getNode(rcd.values[i]));
     }
     return jsonObject;
   }
@@ -423,14 +425,14 @@ public class Json {
    * @return the converted {@code JsonElement}
    */
   private static JsonElement getArrayNode(FcnRcdValue value) throws IOException {
-    if (!isValidSequence(value)) {
-      return getObjectNode(value);
+    final FcnRcdValue fcn = value.snapshot();
+    if (!isValidSequence(fcn)) {
+      return getObjectNode(fcn);
     }
 
-    value.normalize();
-    JsonArray jsonArray = new JsonArray(value.values.length);
-    for (int i = 0; i < value.values.length; i++) {
-      jsonArray.add(getNode(value.values[i]));
+    JsonArray jsonArray = new JsonArray(fcn.values.length);
+    for (int i = 0; i < fcn.values.length; i++) {
+      jsonArray.add(getNode(fcn.values[i]));
     }
     return jsonArray;
   }

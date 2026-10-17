@@ -167,6 +167,9 @@ public class TLC implements ValueConstants
             throw new EvalException(EC.TLC_MODULE_ARGUMENT_ERROR, new String[] { "second", "@@", "function",
                     Values.ppr(f2.toString()) });
         }
+        // Another worker may sort a shared fcn1 or fcn2 while this one reads it.
+        fcn1 = fcn1.snapshot();
+        fcn2 = fcn2.snapshot();
         ValueVec dom = new ValueVec();
         ValueVec vals = new ValueVec();
         Value [] vals1 = fcn1.values;

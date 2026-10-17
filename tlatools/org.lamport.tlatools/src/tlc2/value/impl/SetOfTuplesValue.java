@@ -135,8 +135,9 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
                 "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
         }
         if (fcn.intv != null) return false;
-        for (int i = 0; i < fcn.domain.length; i++) {
-          if (!(fcn.domain[i] instanceof IntValue)) {
+        final Value[] domain = fcn.snapshot().domain;
+        for (int i = 0; i < domain.length; i++) {
+          if (!(domain[i] instanceof IntValue)) {
             Assert.fail("Attempted to check if non-tuple\n" + Values.ppr(elem.toString()) +
                   "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
           }
