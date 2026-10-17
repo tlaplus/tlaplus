@@ -699,7 +699,7 @@ public class LiveCheck1 implements ILiveCheck {
 		// Print all trace states (prefix + cycle).
 		for (int i = 0; i < trace.size(); i++) {
 			StatePrinter.printInvariantViolationStateTraceState(trace.get(i),
-					i == 0 ? null : trace.get(i - 1).state, i + 1);
+					StatePrinter.getPreviousState(trace.get(i), i == 0 ? null : trace.get(i - 1)), i + 1);
 		}
 
 		if (node.stateFP == lastState.fingerPrint()) {

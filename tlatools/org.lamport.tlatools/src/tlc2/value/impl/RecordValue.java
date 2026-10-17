@@ -24,6 +24,7 @@ import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
+import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -37,6 +38,7 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
+import util.Assert.TLCRuntimeException;
 import util.TLAConstants;
 import util.UniqueString;
 
@@ -891,6 +893,11 @@ public class RecordValue extends Value implements FunctionValue {
 
 			@Override
 			public String toString() {
+				return toString((TLCState) null);
+			}
+
+			@Override
+			public String toString(final TLCState lastState) {
 				final StringBuffer result = new StringBuffer();
 				final int vlen = rcd.names.length;
 				
@@ -910,6 +917,20 @@ public class RecordValue extends Value implements FunctionValue {
 				for (int i = 0; i < vlen; i++) {
 					if (i == idx) {
 						continue;
+					}
+					if (lastState != null) {
+						// lastState is the predecessor as printed, usually its alias. this.state
+						// lacks the fields that are not variables, but the lookup of an alias
+						// finds them.
+						final IValue last = lastState.lookup(rcd.names[i]);
+						try {
+							if (last != null && last.equals(rcd.values[i])) {
+								continue;
+							}
+						} catch (TLCRuntimeException | EvalException | FingerprintException e) {
+							// TLC cannot compare some values, such as a string and an integer,
+							// so they differ.
+						}
 					}
 					final String key = rcd.names[i].toString();
 					final String value = Values.ppr(rcd.values[i]);
@@ -937,11 +958,6 @@ public class RecordValue extends Value implements FunctionValue {
 			@Override
 			public boolean allAssigned() {
 				return this.state.allAssigned();
-			}
-
-			@Override
-			public String toString(TLCState lastState) {
-				return this.state.toString(this.rcd.names, lastState);
 			}
 
 			@Override
