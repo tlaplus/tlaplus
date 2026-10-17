@@ -65,6 +65,25 @@ public class StatePrinter
     	printInvariantViolationStateTraceState(currentStateInfo, previousState, num, false);
     }
 
+    /**
+     * Returns the state to diff the current state against if
+     * {@link TLCGlobals#printDiffsOnly} is set. With an ALIAS, that is the
+     * predecessor's alias, unless the ALIAS is not a record for the current state.
+     * TLC then prints the state itself, so it is diffed against the predecessor itself.
+     * @param currentStateInfo The state to print, possibly an alias.
+     * @param previousStateInfo The predecessor as printed, or null.
+     */
+    public static TLCState getPreviousState(TLCStateInfo currentStateInfo, TLCStateInfo previousStateInfo)
+    {
+    	if (previousStateInfo == null) {
+    		return null;
+    	}
+    	if (currentStateInfo.state == currentStateInfo.getOriginalState()) {
+    		return previousStateInfo.getOriginalState();
+    	}
+    	return previousStateInfo.state;
+    }
+
     public static void printInvariantViolationStateTraceState(TLCStateInfo currentStateInfo, TLCState previousState, int num, final boolean isFinal)
     {
         final String stateString =

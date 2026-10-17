@@ -28,23 +28,12 @@ package tlc2.tool;
 import org.junit.Test;
 
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.liveness.ModelCheckerTestCase;
-import util.TestPrintStream;
-import util.ToolIO;
 
-public class DiffTraceThreeStatesTest extends ModelCheckerTestCase {
-
-	private TestPrintStream testPrintStream;
+public class DiffTraceThreeStatesTest extends DiffTraceTestCase {
 
 	public DiffTraceThreeStatesTest() {
 		super("DiffTrace", new String[] { "-difftrace", "-config", "DiffTraceThreeStates.cfg" },
 				ExitStatus.VIOLATION_SAFETY);
-	}
-
-	@Override
-	public void beforeSetUp() {
-		testPrintStream = new TestPrintStream();
-		ToolIO.out = testPrintStream;
 	}
 
 	@Test
