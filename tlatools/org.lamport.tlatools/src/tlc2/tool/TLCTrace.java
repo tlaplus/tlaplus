@@ -402,6 +402,7 @@ public class TLCTrace {
 			s1.setPredecessor(s0);
 			StatePrinter.printInvariantViolationStateTraceState(
 					this.tool.evalAlias(s0, s1, prefix), lastState, ++idx);
+			lastState = s0.state;
 			
 			sinfo = this.tool.getState(s1.fingerPrint(), s0.state);
 			if (sinfo == null) {
