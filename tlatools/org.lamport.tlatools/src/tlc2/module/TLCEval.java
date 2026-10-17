@@ -128,6 +128,9 @@ public class TLCEval implements ValueConstants {
 				eval = (Value) WorkerValue.mux((WorkerValue) demuxed);
 			}
 			eval = convert(eval);
+			// All workers share eval, which convert may have replaced with a value that
+			// is not normalized.
+			eval.deepNormalize();
 			arg.setToolObject(tool.getId(), eval);
 			return eval;
 		} finally {
