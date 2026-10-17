@@ -358,7 +358,7 @@ public class TLCTrace {
 			} else {
 				// Print initial state
 				StatePrinter.printInvariantViolationStateTraceState(
-						this.tool.evalAlias(new TLCStateInfo(s1), s2, prefix), s1, 1);
+						this.tool.evalAlias(new TLCStateInfo(s1), s2, prefix), null, 1);
 				
 				// Create TLCStateInfo instance to include corresponding action in output.
 				TLCStateInfo state = this.tool.getState(s2, s1);
@@ -402,6 +402,7 @@ public class TLCTrace {
 			s1.setPredecessor(s0);
 			StatePrinter.printInvariantViolationStateTraceState(
 					this.tool.evalAlias(s0, s1, prefix), lastState, ++idx);
+			lastState = s0.state;
 			
 			sinfo = this.tool.getState(s1.fingerPrint(), s0.state);
 			if (sinfo == null) {
