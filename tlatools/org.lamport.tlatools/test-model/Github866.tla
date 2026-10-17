@@ -9,14 +9,14 @@ r == 0
 \* Initialize the register to a value *outside* of X.
 ASSUME TLCSet(r, {0})
 
-\* At startup, SpecProcessor evaluates X. The likelihood that two or more
-\* workers will evaluate X differently is proportional to the size of the
-\* input set provided to RandomElement.
+\* At startup, SpecProcessor evaluates X. If TLC evaluated X once per worker,
+\* the likelihood that two or more workers would evaluate X differently would
+\* be proportional to the size of the input set provided to RandomElement.
 X ==
-  \* The value that RandomElement evaluates to has to be nested in a TLC 
-  \* IValue instance that may change its internal representation during
-  \* normalization/fingerprinting (see IValue#mutates). Otherwise,
-  \* WorkerValue#demux becomes a no-op.
+  \* The value that RandomElement evaluates to is nested in a TLC IValue
+  \* instance that may change its internal representation during
+  \* normalization/fingerprinting (see IValue#mutates). All workers have to
+  \* see the same value.
   {RandomElement(1..10000)}
 
 -------------------------------------------------------------------------
