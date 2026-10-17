@@ -23,10 +23,11 @@ public abstract class MVPerms {
     // Compute the group generators:
     Value elem;
     while ((elem = Enum.nextElement()) != null) {
-      final FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
+      FcnRcdValue fcn = (FcnRcdValue) elem.toFcnRcd();
       if (fcn == null) {
 	Assert.fail("The symmetry operator must specify a set of functions.");
       }
+      fcn = fcn.snapshot();
       final IMVPerm perm = new MVPerm();
       for (int i = 0; i < fcn.domain.length; i++) {
 	final IValue dval = fcn.domain[i];
