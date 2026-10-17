@@ -20,7 +20,7 @@ import util.Assert;
 public class SetDiffValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue diffSet;
+  protected volatile SetEnumValue diffSet;
 
   /* Constructor */
   public SetDiffValue(Value set1, Value set2) {
@@ -218,10 +218,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   }
 
   private final void convertAndCache() {
-    if (this.diffSet == null) {
-      this.diffSet = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.diffSet == SetEnumValue.DummyEnum) {
+    if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.diffSet = val;
