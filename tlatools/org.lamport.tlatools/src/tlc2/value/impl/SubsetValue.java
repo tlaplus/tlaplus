@@ -31,7 +31,7 @@ import util.TLAConstants;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
   public Value  set;           // SUBSET set
-  protected SetEnumValue pset;
+  protected volatile SetEnumValue pset;
 
   /* Constructor */
   public SubsetValue(Value  set) {
@@ -286,10 +286,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   }
 
   protected final void convertAndCache() {
-    if (this.pset == null) {
-      this.pset = (SetEnumValue) this.toSetEnum();
-    }
-    else if (this.pset == SetEnumValue.DummyEnum) {
+    if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
       SetEnumValue val = (SetEnumValue) this.toSetEnum();
       val.deepNormalize();
       this.pset = val;
