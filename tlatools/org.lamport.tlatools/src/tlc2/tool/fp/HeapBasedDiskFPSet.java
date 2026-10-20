@@ -305,7 +305,15 @@ public abstract class HeapBasedDiskFPSet extends DiskFPSet {
 			rwLock.acquireAllLocks();
 			
 			// flush memory entries to disk
-			flusher.flushTable();
+			try {
+				flusher.flushTable();
+			} catch (Throwable e) {
+				// Keep forceFlush because the requested flush did not happen.
+				rwLock.releaseAllLocks();
+				this.flusherChosen.set(false);
+				w.unlock();
+				throw e;
+			}
 			
 			// release _all_ write locks
 			rwLock.releaseAllLocks();

@@ -38,8 +38,12 @@ public class LSBDiskFPSet extends HeapBasedDiskFPSet {
 		@Override
 		protected void prepareTable() {
 			// Verify tblCnt is still within positive Integer.MAX_VALUE bounds
-			int cnt = (int) getTblCnt();
-			Assert.check(cnt > 0, EC.GENERAL);
+			final long tblCnt = getTblCnt();
+			int cnt = (int) tblCnt;
+			Assert.check(cnt > 0 && cnt == tblCnt, EC.GENERAL, String.format(
+					"LSBDiskFPSet cannot flush %d in-memory fingerprints to disk because they exceed "
+							+ "the maximum Java array length; reduce -fpmem or use the default fingerprint set (MSBDiskFPSet).",
+					tblCnt));
 			
 			// Why not sort this.tbl in-place rather than doubling memory
 			// requirements by copying to clone array and subsequently sorting it?
