@@ -246,6 +246,17 @@ public interface EC
     public static final int TLC_CHECKPOINT_END = 2196;
     public static final int TLC_CHECKPOINT_RECOVER_START = 2197;
     public static final int TLC_CHECKPOINT_RECOVER_END = 2198;
+    /**
+     * Recovery continued with a different seed, fingerprint, or worker count than
+     * the one stored in the checkpoint. Results may be unreliable.
+     */
+    public static final int TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH = 2285;
+    /**
+     * Checkpoint settings metadata is missing required fields, is truncated or
+     * malformed, or uses a version this TLC does not understand. Recovery
+     * continued because the metadata could not be checked.
+     */
+    public static final int TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE = 2286;
     public static final int TLC_STATS = 2199;
     public static final int TLC_STATS_DFID = 2204;
     public static final int TLC_STATS_SIMU = 2210;

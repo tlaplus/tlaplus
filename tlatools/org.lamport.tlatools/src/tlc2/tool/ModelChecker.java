@@ -8,7 +8,17 @@
 package tlc2.tool;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -26,9 +36,11 @@ import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.impl.CallStackTool;
 import tlc2.tool.liveness.LiveCheck;
 import tlc2.tool.queue.IStateQueue;
+import tlc2.util.FP64;
 import tlc2.util.IStateWriter;
 import tlc2.util.SetOfStates;
 import tlc2.util.statistics.BucketStatistics;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.impl.BoolValue;
 import tlc2.value.impl.CounterExample;
 import util.Assert;
@@ -53,6 +65,15 @@ public class ModelChecker extends AbstractChecker
 	 * If the state/ dir should be cleaned up after a successful model run
 	 */
 	public static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
+
+	/**
+	 * Versioned sidecar written next to the other checkpoint files. Legacy
+	 * checkpoints simply do not have this file.
+	 */
+	private static final int CHECKPOINT_SETTINGS_VERSION = 1;
+	private static final String CHECKPOINT_SETTINGS_PREFIX = "settings";
+	/** Larger than any settings file this version writes; anything bigger is not metadata. */
+	private static final int CHECKPOINT_SETTINGS_MAX_BYTES = 4096;
 
 	private long numberOfInitialStates;
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
@@ -750,6 +771,9 @@ public class ModelChecker extends AbstractChecker
 		{
 			liveCheck.beginChkpt();
 		}
+		// Settings are fixed for the run, but they still follow begin/commit so a
+		// partial write stays in the temporary file and is not recovered.
+		beginCheckpointSettings();
 		// Resume the workers' state-space exploration, which potentially mutates
 		// the intern table and liveness graph.
 		this.theStateQueue.resumeAll();
@@ -762,7 +786,232 @@ public class ModelChecker extends AbstractChecker
 		{
 			liveCheck.commitChkpt();
 		}
+		commitCheckpointSettings();
     	MP.printMessage(EC.TLC_CHECKPOINT_END);
+	}
+
+	/**
+	 * Write the effective seed, fingerprint, and worker count to a temporary
+	 * sidecar. {@link #commitCheckpointSettings()} publishes it.
+	 */
+	private void beginCheckpointSettings() throws IOException {
+		final File tmp = checkpointSettingsFile(this.metadir, "tmp");
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmp), StandardCharsets.UTF_8)) {
+			writer.write(checkpointSettingsText());
+		} catch (IOException e) {
+			if (!tmp.delete() && tmp.exists()) {
+				tmp.deleteOnExit();
+			}
+			throw e;
+		}
+	}
+
+	private String checkpointSettingsText() {
+		final long poly = FP64.getIrredPoly();
+		return "version=" + CHECKPOINT_SETTINGS_VERSION + "\n"
+				+ "seed=" + RandomEnumerableValues.getSeed() + "\n"
+				+ "fpIndex=" + fingerprintIndex(poly) + "\n"
+				+ "fp=" + poly + "\n"
+				+ "workers=" + this.workers.length + "\n";
+	}
+
+	private void commitCheckpointSettings() throws IOException {
+		final File oldChkpt = checkpointSettingsFile(this.metadir, "chkpt");
+		final File newChkpt = checkpointSettingsFile(this.metadir, "tmp");
+		if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt)) {
+			throw new IOException("ModelChecker.commitChkpt: cannot delete " + oldChkpt);
+		}
+	}
+
+	private static File checkpointSettingsFile(String dir, String ext) {
+		return new File(dir, CHECKPOINT_SETTINGS_PREFIX + "." + ext);
+	}
+
+	/** @return the {@link FP64#Polys} index of {@code poly}, or -1 if it is not in the table */
+	private static int fingerprintIndex(final long poly) {
+		final long[] polys = FP64.Polys;
+		for (int i = 0; i < polys.length; i++) {
+			if (polys[i] == poly) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Compare the checkpoint sidecar to this run. A missing sidecar is a legacy
+	 * checkpoint and is recovered unchanged. Unreadable or inconsistent metadata
+	 * produces a warning and recovery continues with the requested settings.
+	 * Genuine I/O failures propagate to the existing fatal recovery handling.
+	 */
+	private void checkCheckpointSettings() throws IOException {
+		final File file = checkpointSettingsFile(this.fromChkpt, "chkpt");
+		if (!file.isFile()) {
+			return;
+		}
+		final byte[] bytes = new byte[CHECKPOINT_SETTINGS_MAX_BYTES + 1];
+		int byteLength = 0;
+		try (InputStream input = Files.newInputStream(file.toPath())) {
+			while (byteLength < bytes.length) {
+				final int count = input.read(bytes, byteLength, bytes.length - byteLength);
+				if (count == -1) {
+					break;
+				}
+				byteLength += count;
+			}
+		} catch (NoSuchFileException e) {
+			return;
+		}
+		if (byteLength > CHECKPOINT_SETTINGS_MAX_BYTES) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return;
+		}
+		final String text;
+		try {
+			text = StandardCharsets.UTF_8.newDecoder()
+					.onMalformedInput(CodingErrorAction.REPORT)
+					.onUnmappableCharacter(CodingErrorAction.REPORT)
+					.decode(ByteBuffer.wrap(bytes, 0, byteLength)).toString();
+		} catch (CharacterCodingException e) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return;
+		}
+		final CheckpointSettings settings = parseCheckpointSettings(text, byteLength);
+		if (settings == null) {
+			return;
+		}
+		warnIfCheckpointSettingsDiffer(settings);
+	}
+
+	private void warnUnverifiableCheckpointSettings(final String reason) {
+		MP.printWarning(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE, reason);
+	}
+
+	/**
+	 * @return parsed settings, or null when a warning was already emitted
+	 */
+	private CheckpointSettings parseCheckpointSettings(final String text, final int byteLength) {
+		if (byteLength > CHECKPOINT_SETTINGS_MAX_BYTES) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return null;
+		}
+		final String[] rawLines = text.split("\n", -1);
+		int lineCount = rawLines.length;
+		if (lineCount > 0 && rawLines[lineCount - 1].isEmpty()) {
+			lineCount--;
+		}
+		if (lineCount < 5) {
+			warnUnverifiableCheckpointSettings("truncated");
+			return null;
+		}
+		if (lineCount > 5) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return null;
+		}
+		final String[] lines = new String[5];
+		for (int i = 0; i < lines.length; i++) {
+			lines[i] = rawLines[i].endsWith("\r") ? rawLines[i].substring(0, rawLines[i].length() - 1) : rawLines[i];
+		}
+		final Integer version = parseSettingsField(lines[0], "version");
+		if (version == null) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return null;
+		}
+		if (version.intValue() != CHECKPOINT_SETTINGS_VERSION) {
+			warnUnverifiableCheckpointSettings("unsupported version");
+			return null;
+		}
+		final Long seed = parseSettingsLong(lines[1], "seed");
+		final Integer fpIndex = parseSettingsField(lines[2], "fpIndex");
+		final Long fp = parseSettingsLong(lines[3], "fp");
+		final Integer workers = parseSettingsField(lines[4], "workers");
+		if (seed == null || fpIndex == null || fp == null || workers == null) {
+			warnUnverifiableCheckpointSettings("malformed");
+			return null;
+		}
+		if (workers.intValue() < 1) {
+			warnUnverifiableCheckpointSettings("invalid workers");
+			return null;
+		}
+		if (fpIndex.intValue() < 0 || fpIndex.intValue() >= FP64.Polys.length
+				|| FP64.Polys[fpIndex.intValue()] != fp.longValue()) {
+			warnUnverifiableCheckpointSettings("invalid fingerprint");
+			return null;
+		}
+		return new CheckpointSettings(seed.longValue(), fpIndex.intValue(), fp.longValue(), workers.intValue());
+	}
+
+	/** @return the integer value, or null when the line is not {@code key=integer} */
+	private static Integer parseSettingsField(final String line, final String key) {
+		final Long parsed = parseSettingsLong(line, key);
+		if (parsed == null || parsed.longValue() < Integer.MIN_VALUE || parsed.longValue() > Integer.MAX_VALUE) {
+			return null;
+		}
+		return Integer.valueOf(parsed.intValue());
+	}
+
+	/** @return the long value, or null when the line is not {@code key=long} */
+	private static Long parseSettingsLong(final String line, final String key) {
+		final String prefix = key + "=";
+		if (!line.startsWith(prefix) || line.length() == prefix.length()) {
+			return null;
+		}
+		try {
+			return Long.valueOf(line.substring(prefix.length()));
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	private void warnIfCheckpointSettingsDiffer(final CheckpointSettings original) {
+		final long currentPoly = FP64.getIrredPoly();
+		final int currentFpIndex = fingerprintIndex(currentPoly);
+		final long currentSeed = RandomEnumerableValues.getSeed();
+		final int currentWorkers = this.workers.length;
+		final StringBuilder changed = new StringBuilder();
+		if (original.seed != currentSeed) {
+			appendChangedSetting(changed, "seed");
+		}
+		if (original.fpIndex != currentFpIndex || original.fp != currentPoly) {
+			appendChangedSetting(changed, "fingerprint");
+		}
+		if (original.workers != currentWorkers) {
+			appendChangedSetting(changed, "workers");
+		}
+		if (changed.length() == 0) {
+			return;
+		}
+		MP.printWarning(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH, new String[] {
+				Long.toString(original.seed),
+				Integer.toString(original.fpIndex),
+				Integer.toString(original.workers),
+				Long.toString(original.fp),
+				Long.toString(currentSeed),
+				Integer.toString(currentFpIndex),
+				Integer.toString(currentWorkers),
+				Long.toString(currentPoly),
+				changed.toString() });
+	}
+
+	private static void appendChangedSetting(final StringBuilder changed, final String name) {
+		if (changed.length() > 0) {
+			changed.append(", ");
+		}
+		changed.append(name);
+	}
+
+	private static final class CheckpointSettings {
+		final long seed;
+		final int fpIndex;
+		final long fp;
+		final int workers;
+
+		CheckpointSettings(long seed, int fpIndex, long fp, int workers) {
+			this.seed = seed;
+			this.fpIndex = fpIndex;
+			this.fp = fp;
+			this.workers = workers;
+		}
 	}
 
 	public void forceLiveCheck() {
@@ -812,6 +1061,10 @@ public class ModelChecker extends AbstractChecker
         {
             // We recover from previous checkpoint.
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, this.fromChkpt);
+            // Warn before trace, queue, or fingerprint restoration. A later
+            // recovery failure (for example a different worker layout) must not
+            // hide the fact that the requested settings do not match.
+            checkCheckpointSettings();
             this.trace.recover();
             this.theStateQueue.recover();
             this.theFPSet.recover(this.trace);
