@@ -692,7 +692,7 @@ public class LiveCheck1 implements ILiveCheck {
 		// The full lasso is now available. Perform post-hoc property
 		// attribution to determine which property/properties are violated.
 		final Set<String> violated = Liveness.findViolatedProperties(myTool,
-				trace.stream().map(s -> s.state).collect(Collectors.toList()), cyclePos - 1);
+				trace.stream().map(s -> s.getOriginalState()).collect(Collectors.toList()), cyclePos - 1);
 		MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, violated.toArray(String[]::new));
 		MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
