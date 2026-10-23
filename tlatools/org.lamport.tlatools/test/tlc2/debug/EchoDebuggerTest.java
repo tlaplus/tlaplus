@@ -412,7 +412,7 @@ public class EchoDebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.continue_();
 		assertEquals(20, stackFrames.length);
 		final OpDeclNode[] vars = getVars();
-		assertTLCActionFrame(stackFrames[0], 140, 16, 140, 59, RM, (Context) null, vars[1], vars[2], vars[3], vars[4]);
+		assertTLCActionFrame(stackFrames[0], 140, 16, 140, 59, RM, (Context) null, vars[2], vars[3], vars[4], vars[5]);
 		
 		// Remove all breakpoints and run the spec to completion.
 		debugger.unsetBreakpoints();
