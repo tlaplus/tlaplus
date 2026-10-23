@@ -269,8 +269,8 @@ jobs:
 
     ## 
     ## Update all git tags to make the download urls work, i.e.
-    ## //github.com/tlaplus/tlaplus/releases/download/nightly/tla2tools.jar
-    ## won't work without the 'nightly' tag pointing to the corresponding
+    ## //github.com/tlaplus/tlaplus/releases/download/rolling/tla2tools.jar
+    ## won't work without the 'rolling' tag pointing to the corresponding
     ## git sha of this build.
     ## 
     - name: Update tags
@@ -279,6 +279,7 @@ jobs:
         git config --local user.email "tlaplus-action@github.com"
         git config --local user.name "TLA+ GitHub Action"
         git tag -f v1.8.0
+        git tag -f rolling
 
         ## Strip TLA+ string quotes and the println newline from the REPL output.
         CALVER=$(java -cp tlatools/org.lamport.tlatools/dist/tla2tools.jar \
@@ -292,6 +293,21 @@ jobs:
         git tag -a "$CALVER" -m "TLA+ Tools $CALVER"
 
         git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git --follow-tags --tags --force
+
+      ##
+      ## Unlike v1.8.0, the rolling tag survives version bumps, which gives
+      ## consumers a stable download URL for the most recent build.
+      ## Must run before the Maven Central step strips dist/tla2tools.jar.
+      ##
+    - name: Update rolling release
+      if: matrix.operating-system == 'ubuntu-latest'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release view rolling -R ${{ github.repository }} > /dev/null 2>&1 || \
+          gh release create rolling -R ${{ github.repository }} --prerelease --latest=false \
+            --title "Rolling build" --notes "Most recent build of the master branch."
+        gh release upload rolling -R ${{ github.repository }} --clobber tlatools/org.lamport.tlatools/dist/tla2tools.jar
 
       ##
       ## Upload tla2tools.jar to Maven Central (via Central Publisher Portal).
