@@ -745,7 +745,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
 
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
-		fcnRcd.write(vos);
+		this.toFcnRcd().write(vos);
 	}
   
   /* The fingerprint methods.  */
