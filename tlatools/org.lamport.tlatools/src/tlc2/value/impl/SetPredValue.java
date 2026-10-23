@@ -310,7 +310,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   @Override
   public void write(final IValueOutputStream vos) throws IOException {
-	  inVal.write(vos);
+	  this.convertAndCache().write(vos);
   }
 
   /* The string representation of the value. */
