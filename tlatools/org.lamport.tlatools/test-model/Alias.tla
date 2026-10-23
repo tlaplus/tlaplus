@@ -69,6 +69,9 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
           te |-> ENABLED Next,      \* Trace Expression
           lvl |-> [ i \in {1,2} |-> TLCGet("level")]]
 
+\* Omits x, which Prop refers to.
+YAlias == [y |-> y]
+
 PostCondition ==
 	/\ TLCGet("config").mode = "bfs" => TLCSet(42, TLCGet("generated"))
   	/\ CounterExample = 
