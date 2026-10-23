@@ -54,6 +54,12 @@ public class ModelChecker extends AbstractChecker
 	 */
 	public static final boolean VETO_CLEANUP = Boolean.getBoolean(ModelChecker.class.getName() + ".vetoCleanup");
 
+	/**
+	 * Versioned sidecar written next to the other checkpoint files. Legacy
+	 * checkpoints simply do not have this file.
+	 */
+	private CheckpointSettings checkpointSettings;
+
 	private long numberOfInitialStates;
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
     public IStateQueue theStateQueue; // the state queue
@@ -83,6 +89,7 @@ public class ModelChecker extends AbstractChecker
 			this.workers[i] = this.trace.addWorker(
 					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
+        this.checkpointSettings = new CheckpointSettings(this.metadir, this.fromChkpt, this.workers.length);
     }
     
     public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
@@ -97,6 +104,7 @@ public class ModelChecker extends AbstractChecker
 			this.workers[i] = this.trace.addWorker(
 					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
+        this.checkpointSettings = new CheckpointSettings(this.metadir, this.fromChkpt, this.workers.length);
     }
     
     /**
@@ -750,6 +758,9 @@ public class ModelChecker extends AbstractChecker
 		{
 			liveCheck.beginChkpt();
 		}
+		// Settings are fixed for the run, but they still follow begin/commit so a
+		// partial write stays in the temporary file and is not recovered.
+		this.checkpointSettings.beginChkpt();
 		// Resume the workers' state-space exploration, which potentially mutates
 		// the intern table and liveness graph.
 		this.theStateQueue.resumeAll();
@@ -762,6 +773,7 @@ public class ModelChecker extends AbstractChecker
 		{
 			liveCheck.commitChkpt();
 		}
+		this.checkpointSettings.commitChkpt();
     	MP.printMessage(EC.TLC_CHECKPOINT_END);
 	}
 
@@ -812,6 +824,10 @@ public class ModelChecker extends AbstractChecker
         {
             // We recover from previous checkpoint.
             MP.printMessage(EC.TLC_CHECKPOINT_RECOVER_START, this.fromChkpt);
+            // Warn before trace, queue, or fingerprint restoration. A later
+            // recovery failure (for example a different worker layout) must not
+            // hide the fact that the requested settings do not match.
+            this.checkpointSettings.recover();
             this.trace.recover();
             this.theStateQueue.recover();
             this.theFPSet.recover(this.trace);
