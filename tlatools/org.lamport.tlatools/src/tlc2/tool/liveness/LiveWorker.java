@@ -986,7 +986,10 @@ public class LiveWorker implements Callable<Boolean> {
 
 		// Print all trace states (prefix + cycle).
 		for (int i = 0; i < printableStates.size(); i++) {
-			StatePrinter.printInvariantViolationStateTraceState(printableStates.get(i));
+			final TLCStateInfo printable = printableStates.get(i);
+			StatePrinter.printInvariantViolationStateTraceState(printable,
+					StatePrinter.getPreviousState(printable, i == 0 ? null : printableStates.get(i - 1)),
+					(int) printable.stateNumber);
 		}
 
 		/* What is left is to print either the stuttering or the
