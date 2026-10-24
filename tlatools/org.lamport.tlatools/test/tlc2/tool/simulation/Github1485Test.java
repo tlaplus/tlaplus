@@ -45,8 +45,8 @@ import util.UniqueString;
  * trace length of one and check the frequency of the successor states in the
  * final states of the generated behaviors.  A worker subclass forces uniform
  * successor selection (the behavior of -generate) because the probabilistic
- * system property cannot be flipped for an already loaded Tool class in the
- * test JVM.
+ * system property cannot be flipped for an already loaded SimulationWorker
+ * class in the test JVM.
  */
 public class Github1485Test extends CommonTestCase {
 

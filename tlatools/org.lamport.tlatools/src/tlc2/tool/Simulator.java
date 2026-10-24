@@ -972,7 +972,7 @@ public class Simulator {
 		final Value[] v = new Value[n.length];
 		
 		n[0] = TLCGetSet.MODE;
-		v[0] = Tool.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
+		v[0] = SimulationWorker.isProbabilistic() ? new StringValue("generate") : new StringValue("simulate");
 
 		n[1] = TLCGetSet.DEPTH;
 		v[1] = IntValue.gen(this.traceDepth == Integer.MAX_VALUE ? -1 : this.traceDepth);

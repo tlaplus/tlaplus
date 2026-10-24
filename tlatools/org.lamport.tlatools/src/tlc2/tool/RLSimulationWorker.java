@@ -33,7 +33,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
-import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.util.Context;
 import tlc2.util.RandomGenerator;
@@ -186,7 +185,7 @@ public class RLSimulationWorker extends SimulationWorker {
 			final List<Action> l = new ArrayList<>();
 			for (int i = 0; i < actions.length; i++) {
 				// In -generate, an ENABLED witness avoids retaining the entire successor set.
-				final boolean enabled = Tool.isProbabilistic()
+				final boolean enabled = isProbabilistic()
 						? this.tool.enabled(actions[i].pred, Context.branch(actions[i].con), curState,
 								TLCStateFun.Empty) != null
 						: !this.tool.getNextStates(actions[i], curState).empty();
