@@ -483,6 +483,7 @@ public class Simulator {
 			// -> last to print the action's name as part of the error trace. This is
 			// especially useful for Error-Trace Explorer in the Toolbox.
 			TLCState lastState = null;
+			TLCStateInfo lastPrinted = null;
 			TLCStateInfo sinfo;
 			int omitted = 0;
 			for (int i = 0; i < stateTrace.size(); i++) {
@@ -499,9 +500,11 @@ public class Simulator {
 					sinfo = new TLCStateInfo(curState);
 				} else {
 					sinfo = new TLCStateInfo(curState);
-					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState,
+					final TLCStateInfo printed = tool.evalAlias(sinfo, sucState);
+					StatePrinter.printInvariantViolationStateTraceState(printed, lastState,
 							curState.getLevel(), i + 1 == stateTrace.size());
 					lastState = curState;
+					lastPrinted = printed;
 					continue;
 				}
 				
@@ -525,7 +528,11 @@ public class Simulator {
 				} else {
 					// print the state's actual level and not a monotonically increasing state
 					// number => Numbering will have gaps with difftrace.
-					StatePrinter.printInvariantViolationStateTraceState(tool.evalAlias(sinfo, sucState), lastState, curState.getLevel(), i + 1 == stateTrace.size());
+					final TLCStateInfo printed = tool.evalAlias(sinfo, sucState);
+					StatePrinter.printInvariantViolationStateTraceState(printed,
+							StatePrinter.getPreviousState(printed, lastPrinted), curState.getLevel(),
+							i + 1 == stateTrace.size());
+					lastPrinted = printed;
 				}
 				lastState = curState;
 			}

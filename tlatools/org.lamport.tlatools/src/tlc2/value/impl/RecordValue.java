@@ -833,6 +833,7 @@ public class RecordValue extends Value implements FunctionValue {
 		public static final class PrintTLCState extends TLCState {
 
 			private static final UniqueString _FORMAT = UniqueString.of("_format");
+			public static final UniqueString _ALIAS_EVAL_ERROR = UniqueString.of("_ALIASEvalError");
 			private final RecordValue rcd;
 			private final TLCState state;
 
@@ -843,6 +844,11 @@ public class RecordValue extends Value implements FunctionValue {
 
 			@Override
 			public String toString() {
+				return toString((TLCState) null);
+			}
+
+			@Override
+			public String toString(final TLCState lastState) {
 				final StringBuffer result = new StringBuffer();
 				final int vlen = rcd.names.length;
 				
@@ -862,6 +868,16 @@ public class RecordValue extends Value implements FunctionValue {
 				for (int i = 0; i < vlen; i++) {
 					if (i == idx) {
 						continue;
+					}
+					// An ALIAS evaluation error is listed even if it did not change, so that it
+					// is not overlooked in a long trace.
+					if (lastState != null && rcd.names[i] != _ALIAS_EVAL_ERROR) {
+						// lastState is the predecessor as printed, usually its alias. this.state
+						// lacks the fields that are not variables, but the lookup of an alias
+						// finds them.
+						if (isUnchanged(lastState.lookup(rcd.names[i]), rcd.values[i])) {
+							continue;
+						}
 					}
 					final String key = rcd.names[i].toString();
 					final String value = Values.ppr(rcd.values[i]);
@@ -889,11 +905,6 @@ public class RecordValue extends Value implements FunctionValue {
 			@Override
 			public boolean allAssigned() {
 				return this.state.allAssigned();
-			}
-
-			@Override
-			public String toString(TLCState lastState) {
-				return this.state.toString(this.rcd.names, lastState);
 			}
 
 			@Override
