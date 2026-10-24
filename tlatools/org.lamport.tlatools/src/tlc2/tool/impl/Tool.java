@@ -56,7 +56,6 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
-import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
@@ -904,7 +903,6 @@ public abstract class Tool
     StateVec nss = new StateVec(0);
     this.getNextStates(action, action.pred, acts, ctx, state, s1.setPredecessor(state).setAction(action), nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
-    if (PROBABILISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
     return nss;
   }
   
@@ -1198,47 +1196,25 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
-		if (PROBABILISTIC) {
-			// probabilistic (return after a state has been generated, ordered is randomized)
-			final RandomGenerator rng = TLCGlobals.simulator.getRNG();
-			int index = (int) Math.floor(rng.nextDouble() * alen);
-			final int p = rng.nextPrime();
-		    for (int i = 0; i < alen; i++) {
-			      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
-				  if (nss.hasStates()) {
-						return resState;
-				  }
-				  index = (index + p) % alen;
-			}
-		} else {
-		    for (int i = 0; i < alen; i++) {
-		      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
-		    }
-		}
+		// In simulation mode (-generate), the random selection of one of the
+		// successor states happens in SimulationWorker#addElement (reservoir
+		// sampling), which requires every successor state to be reported to the
+		// functor below (tlapus/tlaplus#1485).
+	    for (int i = 0; i < alen; i++) {
+	      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
+	    }
 	    return resState;
 	  }
 	case OPCODE_be:     // BoundedExists
 	  {
 	    SemanticNode body = args[0];
-	    
-	    if (PROBABILISTIC) {
-		    // probabilistic (return after a state has been generated, ordered is randomized)
-			final ContextEnumerator Enum = this.contexts(Ordering.RANDOMIZED, pred, c, s0, s1, EvalControl.Clear, cm);
-			Context c1;
-		    while ((c1 = Enum.nextElement()) != null) {
-				resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
-				if (nss.hasStates()) {
-					return resState;
-				}
-		    }
-	    } else {
-	    	// non-deterministically generate successor states (potentially many)
-	    	ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
-	    	Context c1;
-	    	while ((c1 = Enum.nextElement()) != null) {
-	    		resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
-	    	}
-	    }
+
+            // non-deterministically generate successor states (potentially many)
+            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
+            Context c1;
+            while ((c1 = Enum.nextElement()) != null) {
+              resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+            }
 
 	    return resState;
 	  }
@@ -1321,11 +1297,6 @@ public abstract class Tool
 	case OPCODE_case:   // Case
 	  {
 	    SemanticNode other = null;
-		if (PROBABILISTIC) {
-			// See Bounded exists above!
-			throw new UnsupportedOperationException(
-							"Probabilistic evaluation of next-state relation not implemented for CASE yet.");
-		}
 	    for (int i = 0; i < alen; i++) {
 	      OpApplNode pair = (OpApplNode)args[i];
 	      ExprOrOpArgNode[] pairArgs = pair.getArgs();
@@ -1391,19 +1362,6 @@ public abstract class Tool
 	      Value rset = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
 	      if (lval == null) {
-	        if (PROBABILISTIC) {
-	          final ValueEnumeration Enum = rval.elements(Ordering.RANDOMIZED);
-	          Value elem;
-	          while ((elem = Enum.nextElement()) != null) {
-	            resState.bind(varName, elem);
-	            resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-	            resState.unbind(varName);
-	            if (nss.hasStates()) {
-	              return resState;
-	            }
-	          }
-	        }
-
 	        ValueEnumeration Enum = rval.elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
@@ -1438,19 +1396,6 @@ public abstract class Tool
 	          Assert.fail("In computing next states, the right side of \\IN" +
 	                      " is not enumerable.\n" + pred, pred, c);
 	        }
-	        
-			if (PROBABILISTIC) {
-				final ValueEnumeration Enum = ((Enumerable)rval).elements(Ordering.RANDOMIZED);
-				Value elem;
-			    while ((elem = Enum.nextElement()) != null) {
-			        resState.bind(varName, elem);
-			        resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-			        resState.unbind(varName);
-					if (nss.hasStates()) {
-						return resState;
-					}
-			    }
-			}
 
 	        ValueEnumeration Enum = ((Enumerable)rval).elements();
 	        Value elem;
