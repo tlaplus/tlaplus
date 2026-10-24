@@ -24,7 +24,6 @@ import tla2sany.st.Location;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.Action;
-import tlc2.tool.EvalException;
 import tlc2.tool.FingerprintException;
 import tlc2.tool.StateVec;
 import tlc2.tool.TLCState;
@@ -38,7 +37,6 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.ValueInputStream;
 import tlc2.value.Values;
 import util.Assert;
-import util.Assert.TLCRuntimeException;
 import util.TLAConstants;
 import util.UniqueString;
 
@@ -874,14 +872,8 @@ public class RecordValue extends Value implements FunctionValue {
 						// lastState is the predecessor as printed, usually its alias. this.state
 						// lacks the fields that are not variables, but the lookup of an alias
 						// finds them.
-						final IValue last = lastState.lookup(rcd.names[i]);
-						try {
-							if (last != null && last.equals(rcd.values[i])) {
-								continue;
-							}
-						} catch (TLCRuntimeException | EvalException | FingerprintException e) {
-							// TLC cannot compare some values, such as a string and an integer,
-							// so they differ.
+						if (isUnchanged(lastState.lookup(rcd.names[i]), rcd.values[i])) {
+							continue;
 						}
 					}
 					final String key = rcd.names[i].toString();
