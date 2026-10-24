@@ -172,6 +172,19 @@ public abstract class TLCState implements Serializable {
   public abstract String toString();
   public abstract String toString(TLCState lastState);
   public abstract String toString(UniqueString[] vars, TLCState lastState);
+
+  /**
+   * Returns true if a value equals its value in the previous state, which is
+   * null if that state lacks it. Values that TLC cannot compare, such as a
+   * string and an integer, count as changed.
+   */
+  protected static boolean isUnchanged(final IValue previous, final IValue current) {
+	  try {
+		  return previous != null && previous.equals(current);
+	  } catch (Assert.TLCRuntimeException | EvalException | FingerprintException e) {
+		  return false;
+	  }
+  }
   
   public Object execCallable() throws Exception {
 	  // no-op - see TLAPlusExecutorState
