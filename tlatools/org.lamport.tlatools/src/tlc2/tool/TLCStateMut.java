@@ -371,7 +371,7 @@ public final class TLCStateMut extends TLCState implements Serializable {
       UniqueString key = vars[0];
       IValue val = this.lookup(key);
       IValue lstateVal = lstate.lookup(key);
-      if (!lstateVal.equals(val)) {
+      if (!isUnchanged(lstateVal, val)) {
 	result.append(key.toString());
 	result.append(" = " + Values.ppr(val) + "\n");
       }
@@ -381,7 +381,7 @@ public final class TLCStateMut extends TLCState implements Serializable {
 	UniqueString key = vars[i];
 	IValue val = this.lookup(key);
 	IValue lstateVal = lstate.lookup(key);
-	if (!lstateVal.equals(val)) {
+	if (!isUnchanged(lstateVal, val)) {
 	  result.append("/\\ ");
 	  result.append(key.toString());
 	  result.append(" = " + Values.ppr(val) + "\n");
