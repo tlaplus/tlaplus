@@ -14,7 +14,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -76,7 +75,7 @@ public class Github1485GenerateTest extends CommonTestCase {
 				"-workers", "1", "-noGenerateSpecTE", spec);
 		pb.command().addAll(1, Arrays.asList(jvmOptions));
 		pb.directory(new File(ToolIO.getUserDir()));
-		return runProcess(pb, 120);
+		return runProcess(pb.redirectErrorStream(true).start(), 120);
 	}
 
 	private static String javaExecutable() {
@@ -85,8 +84,7 @@ public class Github1485GenerateTest extends CommonTestCase {
 				+ (windows ? ".exe" : "");
 	}
 
-	private String runProcess(final ProcessBuilder pb, final long timeoutSeconds) throws Exception {
-		final Process process = pb.redirectErrorStream(true).start();
+	private String runProcess(final Process process, final long timeoutSeconds) throws Exception {
 		final ExecutorService reader = Executors.newSingleThreadExecutor();
 		try {
 			// Drain output concurrently so neither a full pipe nor an EOF read defeats the timeout.
@@ -174,20 +172,26 @@ public class Github1485GenerateTest extends CommonTestCase {
 	public void testProcessTimeout() throws Exception {
 		final ProcessBuilder pb = new ProcessBuilder(javaExecutable(), "-cp",
 				System.getProperty("java.class.path"), SleepingProcess.class.getName());
+		final Process unrelated = pb.start();
 		try {
-			runProcess(pb, 1);
-			fail("Expected the child process to time out");
-		} catch (final AssertionError e) {
-			assertTrue(e.getMessage(), e.getMessage().startsWith("TLC did not terminate in time:\n"));
-		}
-		try (Stream<ProcessHandle> children = ProcessHandle.current().children()) {
-			assertFalse("Timed out child process was not reaped", children.anyMatch(ProcessHandle::isAlive));
+			final Process process = pb.redirectErrorStream(true).start();
+			try {
+				runProcess(process, 1);
+				fail("Expected the child process to time out");
+			} catch (final AssertionError e) {
+				assertTrue(e.getMessage(), e.getMessage().startsWith("TLC did not terminate in time:\n"));
+			}
+			assertFalse("Timed out child process was not reaped", process.isAlive());
+			assertTrue("Unrelated child process was terminated", unrelated.isAlive());
+		} finally {
+			unrelated.destroyForcibly();
+			assertTrue("Unrelated child process could not be terminated", unrelated.waitFor(10, TimeUnit.SECONDS));
 		}
 	}
 
 	public static final class SleepingProcess {
 		public static void main(final String[] args) throws Exception {
-			Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+			Thread.sleep(TimeUnit.SECONDS.toMillis(30));
 		}
 	}
 }
