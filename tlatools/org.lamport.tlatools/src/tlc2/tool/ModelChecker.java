@@ -578,9 +578,7 @@ public class ModelChecker extends AbstractChecker
 		    	} else {
 		    		MP.printError(ec, param);
 		    	}
-				this.trace.printTrace(curState, succState);
-				this.theStateQueue.finishAll();
-				this.notify();
+				printTraceAndStop(curState, succState);
 			}
 		}
 		return true;
@@ -604,9 +602,7 @@ public class ModelChecker extends AbstractChecker
 									unassigned.stream().map(n -> n.getName().toString())
 											.collect(Collectors.joining(", ")) });
 				}
-				this.trace.printTrace(curState, succState);
-				this.theStateQueue.finishAll();
-				this.notify();
+				printTraceAndStop(curState, succState);
 			}
 			return true;
 		}
@@ -618,9 +614,7 @@ public class ModelChecker extends AbstractChecker
 		    if (this.setErrState(curState, succState, true, ec))
 		    {
 				MP.printError(ec, new String[] { param, (e.getMessage() == null) ? e.toString() : e.getMessage() });
-				this.trace.printTrace(curState, succState);
-				this.theStateQueue.finishAll();
-				this.notify();
+				printTraceAndStop(curState, succState);
 			}
 			throw e;
 		}
@@ -675,10 +669,24 @@ public class ModelChecker extends AbstractChecker
 						MP.printError(ec, e);
 					}
 		        }
-				this.trace.printTrace(curState, succState);
-				this.theStateQueue.finishAll();
-				this.notify();
+				printTraceAndStop(curState, succState);
 			}
+		}
+	}
+
+	/**
+	 * Prints the trace of the error that was just reported and stops the workers. If
+	 * printing throws, the exception is reported here: the error state is already set,
+	 * so the worker would drop it and keep checking.
+	 */
+	private void printTraceAndStop(final TLCState curState, final TLCState succState) {
+		try {
+			this.trace.printTrace(curState, succState);
+		} catch (final Throwable e) {
+			MP.printError(EC.GENERAL, e);
+		} finally {
+			this.theStateQueue.finishAll();
+			this.notify();
 		}
 	}
 
