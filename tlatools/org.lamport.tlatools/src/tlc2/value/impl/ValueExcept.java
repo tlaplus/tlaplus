@@ -18,9 +18,9 @@ import tla2sany.semantic.FormalParamNode;
  */
 public class ValueExcept {
   /** The subscript arguments of the EXCEPT clause, e.g. {@code [a, b]} for {@code ![a][b]}. */
-  public Value[] path;
+  public final Value[] path;
   /** The replacement value, i.e. the right-hand side of the {@code = v} in the EXCEPT clause. */
-  public Value value;
+  public final Value value;
   /**
    * Current position in {@link #path}. Advanced by {@code Value.takeExcept}
    * as each level of the path is consumed. When {@code idx >= path.length},

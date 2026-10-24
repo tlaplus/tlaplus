@@ -21,7 +21,7 @@ import util.Assert;
 public class SetCupValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue cupSet;
+  protected volatile SetEnumValue cupSet;
 
   /* Constructor */
   public SetCupValue(Value set1, Value set2) {
@@ -41,8 +41,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.cupSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -52,8 +51,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.convertAndCache();
-      return this.cupSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -114,8 +112,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.convertAndCache();
-      return this.cupSet.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -126,9 +123,8 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      return (this.cupSet != null &&
-        this.cupSet != SetEnumValue.DummyEnum &&
-        this.cupSet.isNormalized());
+      final SetEnumValue cupSet = this.cupSet;
+      return cupSet != null && cupSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -139,8 +135,9 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.cupSet != null && this.cupSet != SetEnumValue.DummyEnum) {
-        this.cupSet.normalize();
+      final SetEnumValue cupSet = this.cupSet;
+      if (cupSet != null) {
+        cupSet.normalize();
       }
       return this;
     }
@@ -155,12 +152,6 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 	    try {
       set1.deepNormalize();
       set2.deepNormalize();
-      if (cupSet == null) {
-        cupSet = SetEnumValue.DummyEnum;
-      }
-      else if (cupSet != SetEnumValue.DummyEnum) {
-        cupSet.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -184,15 +175,14 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
 
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
-		cupSet.write(vos);
+		convertAndCache().write(vos);
 	}
 
   /* The fingerprint methods */
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.cupSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -203,8 +193,7 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.cupSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -212,21 +201,26 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.cupSet == null) {
-      this.cupSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue cupSet = this.cupSet;
+    if (cupSet == null) {
+      cupSet = (SetEnumValue) this.toSetEnum();
+      cupSet.deepNormalize();
+      this.cupSet = cupSet;
     }
-    else if (this.cupSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.cupSet = val;
-    }
+    return cupSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.cupSet != null && this.cupSet != SetEnumValue.DummyEnum) {
-        return this.cupSet;
+      final SetEnumValue cupSet = this.cupSet;
+      if (cupSet != null) {
+        return cupSet;
       }
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
@@ -264,10 +258,11 @@ public class SetCupValue extends EnumerableValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.cupSet == null || this.cupSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue cupSet = this.cupSet;
+      if (cupSet == null) {
         return new Enumerator();
       }
-      return this.cupSet.elements();
+      return cupSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

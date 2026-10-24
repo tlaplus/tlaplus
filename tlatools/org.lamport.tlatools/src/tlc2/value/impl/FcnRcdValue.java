@@ -42,7 +42,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   public final Value[] domain;
   public final IntervalValue intv;
   public final Value[] values;
-  private boolean isNorm;
+  // Workers may share this function, so normalize() sorts domain and values in
+  // place under a lock. A method that reads them unsorted reads snapshot().
+  private volatile boolean isNorm;
 //  private int[] indexTbl;  // speed up function application
   public static final Value EmptyFcn = new FcnRcdValue(new Value[0], new Value[0], true);
 
@@ -391,7 +393,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
           return null;
       }
       else {
-    	  return selectBinarySearch(arg);
+    	  return snapshot().selectBinarySearch(arg);
       }
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -504,10 +506,11 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
       if (ex.idx >= ex.path.length) return ex.value;
 
-      int flen = this.values.length;
+      final FcnRcdValue f = this.snapshot();
+      int flen = f.values.length;
       Value[] newValues = new Value[flen];
       for (int i = 0; i < flen; i++) {
-        newValues[i] = this.values[i];
+        newValues[i] = f.values[i];
       }
       Value arg = ex.path[ex.idx];
 
@@ -525,7 +528,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
             }
             final int vidx = (int) offset;
             ex.idx++;
-            newValues[vidx] = this.values[vidx].takeExcept(ex);
+            newValues[vidx] = f.values[vidx].takeExcept(ex);
           }
           return new FcnRcdValue(this.intv, newValues);
         }
@@ -533,17 +536,11 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
       else {
         // domain is represented as an array of values:
         for (int i = 0; i < flen; i++) {
-          if (arg.equals(this.domain[i])) {
+          if (arg.equals(f.domain[i])) {
             ex.idx++;
             newValues[i] = newValues[i].takeExcept(ex);
-            Value[] newDomain = this.domain;
-            if (!this.isNorm) {
-              newDomain = new Value[flen];
-              for (int j = 0; j < flen; j++) {
-                newDomain[j] = this.domain[j];
-              }
-            }
-            return new FcnRcdValue(newDomain, newValues, this.isNorm);
+            // An unsorted snapshot's domain is already a private copy.
+            return new FcnRcdValue(f.domain, newValues, f.isNorm);
           }
         }
       }
@@ -626,14 +623,15 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
         if (this.intv.low != 1 && this.intv.size() != 0) return null;
         return new TupleValue(this.values);
       }
-      int len = this.values.length;
+      final FcnRcdValue f = this.snapshot();
+      int len = f.values.length;
       Value[] elems = new Value[len];
       for (int i = 0; i < len; i++) {
-        if (!(this.domain[i] instanceof IntValue)) return null;
-        int idx = ((IntValue)this.domain[i]).val;
+        if (!(f.domain[i] instanceof IntValue)) return null;
+        int idx = ((IntValue)f.domain[i]).val;
         if (0 < idx && idx <= len) {
           if (elems[idx-1] != null) return null;
-          elems[idx-1] = this.values[i];
+          elems[idx-1] = f.values[i];
         }
         else {
           return null;
@@ -677,11 +675,43 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   public final boolean isNormalized() { return this.isNorm; }
 
   /* This method normalizes (destructively) this function. */
+  // Returns this function if it's sorted, or else a copy of it taken under the
+  // lock. The copy is private to the caller, so no worker sorts it midway.
+  // Code outside this class must read domain and values only of a snapshot.
+  public final FcnRcdValue snapshot() {
+    if (this.isNorm) {
+      return this;
+    }
+    synchronized (this) {
+      if (this.isNorm) {
+        return this;
+      }
+      final FcnRcdValue f = new FcnRcdValue(this.domain.clone(), this.values.clone(), false);
+      f.cm = this.cm;
+      return f;
+    }
+  }
+
   @Override
   public final Value normalize() {
     try {
-
       if (!this.isNorm) {
+        synchronized (this) {
+          if (!this.isNorm) {
+            sort();
+            this.isNorm = true;
+          }
+        }
+      }
+      return this;
+    }
+    catch (RuntimeException | OutOfMemoryError e) {
+      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
+      else { throw e; }
+    }
+  }
+
+  private final void sort() {
         // Assert.check(this.domain != null)
         int dlen = this.domain.length;
         for (int i = 1; i < dlen; i++) {
@@ -716,19 +746,12 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
           this.domain[j] = d;
           this.values[j] = v;
         }
-        this.isNorm = true;
-      }
-      return this;
-    }
-    catch (RuntimeException | OutOfMemoryError e) {
-      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
-      else { throw e; }
-    }
   }
 
   @Override
   public final void deepNormalize() {
 	  try {
+      final Value[] values = this.snapshot().values;
       for (int i = 0; i < values.length; i++) {
            values[i].deepNormalize();
         }
@@ -744,14 +767,15 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   public final boolean isDefined() {
     try {
 
+      final FcnRcdValue f = this.snapshot();
       boolean defined = true;
-      if (this.intv == null) {
-        for (int i = 0; i < this.values.length; i++) {
-          defined = defined && this.domain[i].isDefined();
+      if (f.intv == null) {
+        for (int i = 0; i < f.values.length; i++) {
+          defined = defined && f.domain[i].isDefined();
         }
       }
-      for (int i = 0; i < this.values.length; i++) {
-        defined = defined && this.values[i].isDefined();
+      for (int i = 0; i < f.values.length; i++) {
+        defined = defined && f.values[i].isDefined();
       }
       return defined;
 
@@ -765,14 +789,15 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   @Override
   public final IValue deepCopy() {
     try {
-    	Value[] vals = new Value[this.values.length];
+      final FcnRcdValue f = this.snapshot();
+    	Value[] vals = new Value[f.values.length];
       for (int i = 0; i < vals.length; i++) {
-        vals[i] = (Value) this.values[i].deepCopy();
+        vals[i] = (Value) f.values[i].deepCopy();
       }
       // WRT Arrays.copyOf, see comment in tlc2.value.impl.RecordValue.deepCopy() introduced
       // by git commit 09cfee2d47f98cf9d76b906e1a8cda7cfd06eccc.
-      if (this.intv == null) {
-    	  return new FcnRcdValue(Arrays.copyOf(this.domain, this.domain.length), vals, false);
+      if (f.intv == null) {
+    	  return new FcnRcdValue(Arrays.copyOf(f.domain, f.domain.length), vals, false);
       }
       return new FcnRcdValue(this, vals);
     }
@@ -787,6 +812,9 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 		final int index = vos.put(this);
 		if (index == -1) {
 			vos.writeByte(FCNRCDVALUE);
+			final FcnRcdValue f = this.snapshot();
+			final Value[] values = f.values;
+			final Value[] domain = f.domain;
 			int len = values.length;
 			vos.writeNat(len);
 			if (intv != null) {
@@ -797,7 +825,7 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 					values[i].write(vos);
 				}
 			} else {
-				vos.writeByte((isNormalized()) ? (byte) 1 : (byte) 2);
+				vos.writeByte(f.isNorm ? (byte) 1 : (byte) 2);
 				for (int i = 0; i < len; i++) {
 					domain[i].write(vos);
 					values[i].write(vos);
@@ -929,45 +957,47 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
   public final StringBuffer toString(StringBuffer sb, int offset, boolean swallow) {
     try {
 
-      int len = this.values.length;
+      // isTuple() normalizes f, which is this function or a private copy of it.
+      final FcnRcdValue f = this.snapshot();
+      int len = f.values.length;
       if (len == 0) {
         sb.append("<<>>");
       }
-      else if (this.isRcd()) {
+      else if (f.isRcd()) {
         sb.append("[");
-        sb.append(((StringValue)this.domain[0]).val + TLAConstants.RECORD_ARROW);
-        sb = this.values[0].toString(sb, offset, swallow);
+        sb.append(((StringValue)f.domain[0]).val + TLAConstants.RECORD_ARROW);
+        sb = f.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(", ");
-          sb.append(((StringValue)this.domain[i]).val + TLAConstants.RECORD_ARROW);
-          sb = this.values[i].toString(sb, offset, swallow);
+          sb.append(((StringValue)f.domain[i]).val + TLAConstants.RECORD_ARROW);
+          sb = f.values[i].toString(sb, offset, swallow);
         }
         sb.append("]");
       }
-      else if (this.isTuple()) {
+      else if (f.isTuple()) {
         // It is actually a sequence:
         sb = sb.append("<<");
-        sb = this.values[0].toString(sb, offset, swallow);
+        sb = f.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(", ");
-          sb = this.values[i].toString(sb, offset, swallow);
+          sb = f.values[i].toString(sb, offset, swallow);
         }
         sb.append(">>");
       }
       else {
-    	final Value[] domainAsValues = getDomainAsValues();
+    	final Value[] domainAsValues = f.intv != null ? f.intv.asValues() : f.domain;
         sb = sb.append("(");
         sb = domainAsValues[0].toString(sb, offset, swallow);
         sb.append(" :> ");
-        sb = this.values[0].toString(sb, offset, swallow);
+        sb = f.values[0].toString(sb, offset, swallow);
 
         for (int i = 1; i < len; i++) {
           sb.append(" @@ ");
           sb = domainAsValues[i].toString(sb, offset, swallow);
           sb.append(" :> ");
-          sb = this.values[i].toString(sb, offset, swallow);
+          sb = f.values[i].toString(sb, offset, swallow);
         }
         sb.append(")");
       }
@@ -1034,8 +1064,10 @@ public class FcnRcdValue extends Value implements FunctionValue, IFcnRcdValue {
 
 	@Override
 	public List<TLCVariable> getTLCVariables(final TLCVariable prototype, Random rnd) {
+		final FcnRcdValue f = this.snapshot();
+		final Value[] values = f.values;
 		final List<TLCVariable> nestedVars = new ArrayList<>(values.length);
-		final Value[] domains = getDomainAsValues();
+		final Value[] domains = f.intv != null ? f.intv.asValues() : f.domain;
 		for (int i = 0; i < domains.length; i++) {
 			Value dom = domains[i];
 			Value value = values[i];

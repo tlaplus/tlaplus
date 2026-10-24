@@ -39,7 +39,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
   private final TLCState state;
   private final TLCState pstate;
   private int control;
-  public FcnRcdValue fcnRcd;
+  public volatile FcnRcdValue fcnRcd;
 
 	/*
 	 * Constructor: E.g. [ s \in {"A", "B", "C"} |-> "foo" ] where s \in {"A", "B",
@@ -398,6 +398,9 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
         return this.fcnRcd.takeExcept(ex);
       }
       FcnLambdaValue fcn = new FcnLambdaValue(this);
+      // Another worker may have set this.fcnRcd since the check above. The
+      // cache lacks ex, so the copy fcn must not inherit it.
+      fcn.fcnRcd = null;
       if (this.excepts == null) {
         fcn.excepts = new ValueExcept[1];
         fcn.excepts[0] = ex;
@@ -428,6 +431,8 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
         return this.fcnRcd.takeExcept(exs);
       }
       FcnLambdaValue fcn = new FcnLambdaValue(this);
+      // See takeExcept(ValueExcept).
+      fcn.fcnRcd = null;
       int exslen = exs.length;
       if (exslen != 0) {
         int i = 0;
@@ -647,7 +652,8 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
   public final Value toFcnRcd() {
     try {
 
-      if (this.fcnRcd == null) {
+      FcnRcdValue fcnRcd = this.fcnRcd;
+      if (fcnRcd == null) {
         int sz = this.params.size();
         FormalParamNode[][] formals = this.params.formals;
         boolean[] isTuples = this.params.isTuples;
@@ -675,9 +681,9 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
           }
 	      if (this.params.domains[0] instanceof IntervalValue) {
 	      	final IntervalValue iv = (IntervalValue) this.params.domains[0];
-	      	this.fcnRcd = new FcnRcdValue(iv, values, cm);
+	      	fcnRcd = new FcnRcdValue(iv, values, cm);
 	      } else {
-	        this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
+	        fcnRcd = new FcnRcdValue(domain, values, false, cm);
 	      }
         }
         else {
@@ -702,7 +708,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
             }
             values[idx++] = evalBody(c1);
           }
-          this.fcnRcd = new FcnRcdValue(domain, values, false, cm);
+          fcnRcd = new FcnRcdValue(domain, values, false, cm);
         }
         if (coverage) {cm.incSecondary(sz);}
         if (this.excepts != null) {
@@ -723,10 +729,12 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
 			// Value#toFcnRcd allows null, the cast could be secured with a conditional
 			// and null returned otherwise. In case of null, toString returns the symbolic
 			// value.
-	        this.fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(excepts);
+	        fcnRcd = (FcnRcdValue)fcnRcd.takeExcept(excepts);
         }
+        fcnRcd.normalize();
+        this.fcnRcd = fcnRcd;
       }
-      return this.fcnRcd;
+      return fcnRcd;
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -737,7 +745,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
 
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
-		fcnRcd.write(vos);
+		this.toFcnRcd().write(vos);
 	}
   
   /* The fingerprint methods.  */

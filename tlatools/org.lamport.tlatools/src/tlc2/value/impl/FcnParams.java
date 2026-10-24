@@ -12,19 +12,20 @@ import tlc2.value.IValue;
 import util.Assert;
 
 public class FcnParams implements IFcnParams {
-  public FormalParamNode[][] formals;  // array of formal params
-  public boolean[] isTuples;      // true iff tuple param
-  public Value[] domains;         // the bounds of the formals
-  public int argLen;              // the number of arguments
+  public final FormalParamNode[][] formals;  // array of formal params
+  public final boolean[] isTuples;      // true iff tuple param
+  public final Value[] domains;         // the bounds of the formals
+  public final int argLen;              // the number of arguments
   
   public FcnParams(FormalParamNode[][] formals, boolean[] isTuples, Value[] domains) {
     this.formals = formals;
     this.isTuples = isTuples;
     this.domains = domains;
-    this.argLen = 0;
+    int argLen = 0;
     for (int i = 0; i < formals.length; i++) {
-      this.argLen += (isTuples[i]) ? 1 : formals[i].length;
+      argLen += (isTuples[i]) ? 1 : formals[i].length;
     }
+    this.argLen = argLen;
   }
 
   @Override

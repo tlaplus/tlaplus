@@ -30,8 +30,8 @@ import util.Assert;
 import util.TLAConstants;
 
 public class SubsetValue extends EnumerableValue implements Enumerable {
-  public Value  set;           // SUBSET set
-  protected SetEnumValue pset;
+  public final Value set;      // SUBSET set
+  protected volatile SetEnumValue pset;
 
   /* Constructor */
   public SubsetValue(Value  set) {
@@ -60,8 +60,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (obj instanceof SubsetValue) {
         return this.set.compareTo(((SubsetValue)obj).set);
       }
-      this.convertAndCache();
-      return this.pset.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -79,8 +78,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (obj instanceof SubsetValue) {
         return this.set.equals(((SubsetValue)obj).set);
       }
-      this.convertAndCache();
-      return this.pset.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -197,9 +195,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      return (this.pset != null &&
-        this.pset != SetEnumValue.DummyEnum &&
-        this.pset.isNormalized());
+      final SetEnumValue pset = this.pset;
+      return pset != null && pset.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -210,11 +207,12 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
+      final SetEnumValue pset = this.pset;
+      if (pset == null) {
         this.set.normalize();
       }
       else {
-        this.pset.normalize();
+        pset.normalize();
       }
       return this;
     }
@@ -228,12 +226,6 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   public final void deepNormalize() {
 	    try {
       set.deepNormalize();
-      if (pset == null) {
-        pset = SetEnumValue.DummyEnum;
-      }
-      else if (pset != SetEnumValue.DummyEnum) {
-        pset.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -257,15 +249,14 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
-		pset.write(vos);
+		convertAndCache().write(vos);
 	}
 
   /* The fingerprint  */
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.pset.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -276,8 +267,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.pset.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -285,21 +275,26 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  protected final void convertAndCache() {
-    if (this.pset == null) {
-      this.pset = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  protected final SetEnumValue convertAndCache() {
+    SetEnumValue pset = this.pset;
+    if (pset == null) {
+      pset = (SetEnumValue) this.toSetEnum();
+      pset.deepNormalize();
+      this.pset = pset;
     }
-    else if (this.pset == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.pset = val;
-    }
+    return pset;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.pset != null && this.pset != SetEnumValue.DummyEnum) {
-        return this.pset;
+      final SetEnumValue pset = this.pset;
+      if (pset != null) {
+        return pset;
       }
       ValueVec vals = new ValueVec(this.size());
       ValueEnumeration Enum = this.elements();
@@ -752,12 +747,13 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   @Override
   public ValueEnumeration elements() {
     try {
-      if (this.pset == null || this.pset == SetEnumValue.DummyEnum) {
+      final SetEnumValue pset = this.pset;
+      if (pset == null) {
     	  // See note on SetEnumValue#convert for SubsetValue wrt
     	  // the normalized SetEnumValue result.
     	  return elementsNormalized();
       }
-      return this.pset.elements();
+      return pset.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -774,10 +770,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
     private BitSet descriptor;
 
     public Enumerator() {
-    	//WARNING! Mutates the outer instance!?
-      set = set.toSetEnum();
+      final SetEnumValue set = (SetEnumValue) SubsetValue.this.set.toSetEnum();
       set.normalize();
-      this.elems = ((SetEnumValue)set).elems;
+      this.elems = set.elems;
       this.descriptor = new BitSet(this.elems.size());
     }
 

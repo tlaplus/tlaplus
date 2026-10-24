@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Resolves Lincheck for the test-lincheck target in customBuild.xml:
+     mvn -f test-lincheck/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=$PWD/target/lincheck/lib -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.lamport</groupId>
+	<artifactId>tlatools-lincheck</artifactId>
+	<version>1</version>
+	<dependencies>
+		<dependency>
+			<groupId>org.jetbrains.lincheck</groupId>
+			<artifactId>lincheck</artifactId>
+			<version>3.7</version>
+		</dependency>
+	</dependencies>
+</project>

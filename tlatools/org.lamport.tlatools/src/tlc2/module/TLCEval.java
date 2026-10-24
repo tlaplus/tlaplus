@@ -34,7 +34,6 @@ import tlc2.overrides.Evaluation;
 import tlc2.tool.TLCState;
 import tlc2.tool.coverage.CostModel;
 import tlc2.tool.impl.Tool;
-import tlc2.tool.impl.WorkerValue;
 import tlc2.util.Context;
 import tlc2.value.ValueConstants;
 import tlc2.value.impl.Value;
@@ -73,8 +72,6 @@ public class TLCEval implements ValueConstants {
 			// For a non-constant expression, all we can do is to evaluate
 			// and convert the value according to the old implementation
 			// of TLCEval.
-			// Since there is no sharing going on, there is no need to deal
-			// with WorkerValue here.
 			
 			// The value that a constant-level expression evaluates to is stored in the
 			// semantic graph. 
@@ -96,7 +93,7 @@ public class TLCEval implements ValueConstants {
 		lock.readLock().lock();
 
 		// Read with ReadLock
-		Object obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
+		Object obj = arg.getToolObject(tool.getId());
 		if (obj != null) {
 			// Return the cached value.
 			try {
@@ -114,20 +111,16 @@ public class TLCEval implements ValueConstants {
 		try {
 			// Re-read with WriteLock in case another thread obtained
 			// the write lock while this thread waited.
-			obj = WorkerValue.mux(arg.getToolObject(tool.getId()));
+			obj = arg.getToolObject(tool.getId());
 			if (obj != null) {
 				return (Value) obj;
 			}
 
 			// Create/Write the value!
-			final Object demuxed =  WorkerValue.demux(tool, arg, cm);
-			Value eval;
-			if (demuxed instanceof Value) {
-				eval = (Value) demuxed;
-			} else {
-				eval = (Value) WorkerValue.mux((WorkerValue) demuxed);
-			}
-			eval = convert(eval);
+			final Value eval = convert((Value) tool.eval(arg, Context.Empty, TLCState.Empty, cm));
+			// All workers share eval, which convert may have replaced with a value that
+			// is not normalized.
+			eval.deepNormalize();
 			arg.setToolObject(tool.getId(), eval);
 			return eval;
 		} finally {

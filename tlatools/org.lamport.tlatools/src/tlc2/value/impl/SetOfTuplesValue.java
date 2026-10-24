@@ -31,7 +31,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   // e.g. {1} \X {2} \X {3} = {<<1, 2, 3>>}, whereas the elements of
   // ({1} \X {2}) \X {3} = {<<<<1, 2>>, 3>>} have the domain 1..2.
   public final Value[] sets;
-  protected SetEnumValue tupleSet;
+  protected volatile SetEnumValue tupleSet;
 
   /* Constructor */
   public SetOfTuplesValue(Value[] sets) {
@@ -63,8 +63,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.tupleSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -91,8 +90,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
         }
         return true;
       }
-      this.convertAndCache();
-      return this.tupleSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -137,8 +135,9 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
                 "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
         }
         if (fcn.intv != null) return false;
-        for (int i = 0; i < fcn.domain.length; i++) {
-          if (!(fcn.domain[i] instanceof IntValue)) {
+        final Value[] domain = fcn.snapshot().domain;
+        for (int i = 0; i < domain.length; i++) {
+          if (!(domain[i] instanceof IntValue)) {
             Assert.fail("Attempted to check if non-tuple\n" + Values.ppr(elem.toString()) +
                   "\nis in the set of tuples:\n" + Values.ppr(this.toString()), getSource());
           }
@@ -292,15 +291,11 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
-        for (int i = 0; i < this.sets.length; i++) {
-          if (!this.sets[i].isNormalized()) {
-            return false;
-          }
-        }
-        return true;
+      final SetEnumValue tupleSet = this.tupleSet;
+      if (tupleSet == null) {
+        return this.setsNormalized();
       }
-      return this.tupleSet.isNormalized();
+      return tupleSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -308,16 +303,26 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
     }
   }
 
+  private final boolean setsNormalized() {
+    for (int i = 0; i < this.sets.length; i++) {
+      if (!this.sets[i].isNormalized()) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public final Value normalize() {
     try {
-      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue tupleSet = this.tupleSet;
+      if (tupleSet == null) {
         for (int i = 0; i < this.sets.length; i++) {
           this.sets[i].normalize();
         }
       }
       else {
-        this.tupleSet.normalize();
+        tupleSet.normalize();
       }
       return this;
     }
@@ -332,12 +337,6 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
 	    try {
       for (int i = 0; i < sets.length; i++) {
           sets[i].deepNormalize();
-        }
-        if (tupleSet == null) {
-          tupleSet = SetEnumValue.DummyEnum;
-        }
-        else if (tupleSet != SetEnumValue.DummyEnum) {
-          tupleSet.deepNormalize();
         }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
@@ -368,8 +367,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.tupleSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -380,8 +378,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.tupleSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -389,22 +386,30 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
     }
   }
 
-  private final void convertAndCache() {
-    if (this.tupleSet == null) {
-      this.tupleSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue tupleSet = this.tupleSet;
+    if (tupleSet == null) {
+      tupleSet = (SetEnumValue) this.toSetEnum();
+      tupleSet.deepNormalize();
+      this.tupleSet = tupleSet;
     }
-    else if (this.tupleSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.tupleSet = val;
-    }
+    return tupleSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.tupleSet != null && this.tupleSet != SetEnumValue.DummyEnum) {
-        return this.tupleSet;
+      final SetEnumValue tupleSet = this.tupleSet;
+      if (tupleSet != null) {
+        return tupleSet;
       }
+      // Not this.isNormalized(), which reads the cache that another worker may
+      // publish during the enumeration below.
+      final boolean isNorm = this.setsNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value elem;
@@ -412,12 +417,12 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   @Override
   public final void write(final IValueOutputStream vos) throws IOException {
-	  tupleSet.write(vos);
+	  convertAndCache().write(vos);
   }
 
   /* The string representation of the value. */
@@ -472,7 +477,8 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.tupleSet == null || this.tupleSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue tupleSet = this.tupleSet;
+      if (tupleSet == null) {
         // s1 \X s2 ... \X sn = {} <=> \E i : si = {}, which decides emptiness
         // without the enumeration of s1..si that Enumerator below needs.
         if (this.isEmpty()) {
@@ -480,7 +486,7 @@ public class SetOfTuplesValue extends SetOfFcnsOrRcdsValue implements Enumerable
         }
         return new Enumerator();
       }
-      return this.tupleSet.elements();
+      return tupleSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
