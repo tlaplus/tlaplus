@@ -1693,7 +1693,7 @@ public abstract class Tool
 			}
 		} catch (EvalException | TLCRuntimeException e) {
 			// Compare evalAlias(TLCStateInfo current, TLCState successor, Context ctxt) below.
-			return new RecordValue(new RecordValue(current), UniqueString.of("_ALIASEvalError"),
+			return new RecordValue(new RecordValue(current), RecordValue.PrintTLCState._ALIAS_EVAL_ERROR,
 					new StringValue(e.getMessage())).toState();
 		}
 		
@@ -1760,7 +1760,7 @@ public abstract class Tool
 			//
 			// see https://github.com/tlaplus/tlaplus/issues/543
 			return new AliasTLCStateInfo(new RecordValue((RecordValue) current.toRecordValue(),
-					UniqueString.of("_ALIASEvalError"), new StringValue(e.getMessage())).toState(), current);
+					RecordValue.PrintTLCState._ALIAS_EVAL_ERROR, new StringValue(e.getMessage())).toState(), current);
 		}
 		
 		return current;

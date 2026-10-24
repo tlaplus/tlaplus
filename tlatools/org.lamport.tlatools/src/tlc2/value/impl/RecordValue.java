@@ -881,6 +881,7 @@ public class RecordValue extends Value implements FunctionValue {
 		public static final class PrintTLCState extends TLCState {
 
 			private static final UniqueString _FORMAT = UniqueString.of("_format");
+			public static final UniqueString _ALIAS_EVAL_ERROR = UniqueString.of("_ALIASEvalError");
 			private final RecordValue rcd;
 			private final TLCState state;
 
@@ -916,7 +917,9 @@ public class RecordValue extends Value implements FunctionValue {
 					if (i == idx) {
 						continue;
 					}
-					if (lastState != null) {
+					// An ALIAS evaluation error is listed even if it did not change, so that it
+					// is not overlooked in a long trace.
+					if (lastState != null && rcd.names[i] != _ALIAS_EVAL_ERROR) {
 						// lastState is the predecessor as printed, usually its alias. this.state
 						// lacks the fields that are not variables, but the lookup of an alias
 						// finds them.
