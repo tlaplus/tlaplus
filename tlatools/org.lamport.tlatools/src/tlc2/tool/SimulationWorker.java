@@ -45,7 +45,6 @@ import tlc2.TLCGlobals;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCounterExampleException;
 import tlc2.util.IdThread;
@@ -81,6 +80,14 @@ import util.UniqueString;
  * clients that this thread has terminated.
  */
 public class SimulationWorker extends IdThread implements INextStateFunctor {
+
+	// Keep the existing system property compatible with command-line users.
+	public static final String PROBABILISTIC_KEY = "tlc2.tool.impl.Tool.probabilistic";
+	private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
+
+	public static boolean isProbabilistic() {
+		return PROBABILISTIC;
+	}
 
 	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
 
@@ -615,7 +622,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		if ((tool.isInModel(t) && tool.isInActions(s, t))) {
 			if (coverage) {	a.cm.incSecondary(); }
-			if (Tool.isProbabilistic() || isUniformSuccessorSelection()) {
+			if (isProbabilistic() || isUniformSuccessorSelection()) {
 				// Reservoir sampling (Algorithm R) over the successors reported for this
 				// step: all actions for the random scheduler, or the chosen action for RL.
 				// Each reported transition is picked with equal
@@ -639,7 +646,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	@Override
 	public boolean hasStates() {
-		assert Tool.isProbabilistic();
+		assert isProbabilistic();
 		return !nextStates.isEmpty();
 	}
 	
@@ -687,7 +694,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 * the RL workers, override this to preserve their semantics.
 	 */
 	protected boolean isUniformSuccessorSelection() {
-		return Tool.isProbabilistic();
+		return isProbabilistic();
 	}
 
 	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {

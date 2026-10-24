@@ -135,28 +135,6 @@ public abstract class Tool
 	 */
 	public static final String CDOT_KEY = Tool.class.getName() + ".cdot";
 	
-  	public static final String PROBABILISTIC_KEY = Tool.class.getName() + ".probabilistic";
-    /*
-	 * Prototype, do *not* activate when checking safety or liveness!!!:
-	 * For simulation that is not meant as a substitute of exhaustive checking for too
-	 * large models, it can be useful to generate behaviors as quickly as possible,
-	 * i.e. without checking all successor states along the states of the behavior.
-	 * This flag activates the code path that efficiently generate only a single 
-	 * successor state during simulation.  It does not let the user parameterize
-	 * the code with a particular distribution, but instead draws from the uniform
-	 * distribution.  
-	 * 
-	 * In its current form, it only handles non-determinism expressed with opcode
-	 * OPCODE_be (bounded exist), i.e. (which simply happened to be the primary
-	 * expression that we encountered in the SWIM spec during this work):
-	 * 
-	 * VARIABLE x
-	 * \E n \in S: x' = n
-	 * 
-	 * Activate with: -Dtlc2.tool.impl.Tool.probabilistic=true
-	 */
-  private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
-
   public enum Mode {
 	  Simulation, MC, MC_DEBUG, Executor;
   }
@@ -1196,10 +1174,6 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
-		// In simulation mode (-generate), the random selection of one of the
-		// successor states happens in SimulationWorker#addElement (reservoir
-		// sampling), which requires every successor state to be reported to the
-		// functor below (tlapus/tlaplus#1485).
 	    for (int i = 0; i < alen; i++) {
 	      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
 	    }
@@ -4083,7 +4057,4 @@ public abstract class Tool
 		return getVal(expr, con, b, toolId);
 	}
 
-	public static boolean isProbabilistic() {
-		return PROBABILISTIC;
-	}
 }

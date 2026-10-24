@@ -39,6 +39,7 @@ import tlc2.output.Messages;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.SimulationWorker;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
@@ -465,7 +466,7 @@ public class TLC {
             if (args[index].equals("-simulate") || args[index].equals("-generate"))
             {
             	if (args[index].equals("-generate")) {
-					System.setProperty(Tool.class.getName() + ".probabilistic", Boolean.TRUE.toString());
+					System.setProperty(SimulationWorker.PROBABILISTIC_KEY, Boolean.TRUE.toString());
             	}
             	runMode = RunMode.SIMULATE;
                 index++;
