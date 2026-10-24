@@ -13,7 +13,7 @@ import tlc2.value.Values;
 import util.Assert;
 
 public class UserValue extends Value {
-  public UserObj userObj;
+  public final UserObj userObj;
 
   public UserValue(UserObj obj) { this.userObj = obj; }
 
