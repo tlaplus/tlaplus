@@ -20,7 +20,7 @@ import util.Assert;
 
 public class IntervalValue extends EnumerableValue
 implements Enumerable, Reducible {
-  public int low, high;   // the integer interval [low, high]
+  public final int low, high;   // the integer interval [low, high]
 
   /* Constructor */
   public IntervalValue(int low, int high) {
