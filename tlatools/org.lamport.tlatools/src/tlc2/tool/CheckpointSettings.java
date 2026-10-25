@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.util.FP64;
@@ -67,7 +68,8 @@ public class CheckpointSettings {
 				+ "seed=" + RandomEnumerableValues.getSeed() + "\n"
 				+ "fpIndex=" + fingerprintIndex(poly) + "\n"
 				+ "fp=" + poly + "\n"
-				+ "workers=" + this.workers + "\n";
+				+ "workers=" + this.workers + "\n"
+				+ "revision=" + TLCGlobals.Version.revisionOrDev() + "\n";
 	}
 
 	public void commitChkpt() throws IOException {
@@ -79,7 +81,7 @@ public class CheckpointSettings {
 	}
 
 	private static File checkpointSettingsFile(String dir, String ext) {
-		return new File(dir, CHECKPOINT_SETTINGS_PREFIX + "." + ext);
+		return new File(dir, CHECKPOINT_SETTINGS_PREFIX + "." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
 	}
 
 	/** @return the {@link FP64#Polys} index of {@code poly}, or -1 if it is not in the table */
@@ -161,7 +163,7 @@ public class CheckpointSettings {
 			warnUnverifiableCheckpointSettings("truncated");
 			return null;
 		}
-		if (lineCount > 5) {
+		if (lineCount > 6 || (lineCount == 6 && !rawLines[5].matches("revision=[^\\r\\n]+\\r?"))) {
 			warnUnverifiableCheckpointSettings("malformed");
 			return null;
 		}
@@ -194,6 +196,16 @@ public class CheckpointSettings {
 				|| FP64.Polys[fpIndex.intValue()] != fp.longValue()) {
 			warnUnverifiableCheckpointSettings("invalid fingerprint");
 			return null;
+		}
+		if (lineCount == 6) {
+			final String checkpointRevision = rawLines[5].trim().substring("revision=".length());
+			final String currentRevision = TLCGlobals.Version.revisionOrDev();
+			if (!checkpointRevision.equals(currentRevision)) {
+				MP.printWarning(EC.GENERAL, "This checkpoint was created by TLC revision " + checkpointRevision
+						+ ", but this run is TLC revision " + currentRevision
+						+ ". Recovering a checkpoint with a different TLC version is not supported:"
+						+ " states may be skipped and counterexamples may contain missing or incorrect states.");
+			}
 		}
 		return new Values(seed.longValue(), fpIndex.intValue(), fp.longValue(), parsedWorkers.intValue());
 	}

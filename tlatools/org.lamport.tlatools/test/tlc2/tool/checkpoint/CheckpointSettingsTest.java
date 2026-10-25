@@ -37,6 +37,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import tlc2.TestMPRecorder;
+import tlc2.TLCGlobals;
 import tlc2.output.EC;
 import tlc2.output.MP;
 import tlc2.tool.CheckpointSettings;
@@ -151,6 +152,20 @@ public class CheckpointSettingsTest {
 		assertValues(sameDir.recover(), SEED, FP, WORKERS);
 	}
 
+	@Test
+	public void testDifferentRevisionAndLegacyMetadata() throws Exception {
+		final File dir = scratchDir();
+		install(SEED, FP);
+		final CheckpointSettings settings = new CheckpointSettings(dir.getAbsolutePath(), WORKERS);
+		final String legacy = text(SEED, FP, WORKERS).split("revision=")[0];
+		Files.write(file(dir, "chkpt").toPath(), legacy.getBytes(StandardCharsets.UTF_8));
+		assertValues(settings.recover(), SEED, FP, WORKERS);
+		assertFalse(recorder.recorded(EC.GENERAL));
+		Files.write(file(dir, "chkpt").toPath(), (legacy + "revision=other-build\n").getBytes(StandardCharsets.UTF_8));
+		assertValues(settings.recover(), SEED, FP, WORKERS);
+		assertTrue(recorder.recorded(EC.GENERAL));
+	}
+
 	private void install(long seed, int fp) {
 		if (recorder == null) {
 			recorder = new TestMPRecorder();
@@ -161,6 +176,7 @@ public class CheckpointSettingsTest {
 	}
 
 	private void assertNoSettingsWarning() {
+		assertFalse(recorder.recorded(EC.GENERAL));
 		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH));
 		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
 	}
@@ -177,7 +193,8 @@ public class CheckpointSettingsTest {
 				+ "seed=" + seed + "\n"
 				+ "fpIndex=" + fp + "\n"
 				+ "fp=" + FP64.Polys[fp] + "\n"
-				+ "workers=" + workers + "\n";
+				+ "workers=" + workers + "\n"
+				+ "revision=" + TLCGlobals.Version.revisionOrDev() + "\n";
 	}
 
 	private static String read(File file) throws Exception {
@@ -185,7 +202,7 @@ public class CheckpointSettingsTest {
 	}
 
 	private static File file(File dir, String ext) {
-		return new File(dir, "settings." + ext);
+		return new File(dir, "settings." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
 	}
 
 	private File scratchDir() throws Exception {

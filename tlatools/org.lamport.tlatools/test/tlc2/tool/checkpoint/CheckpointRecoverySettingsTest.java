@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2026, Oracle and/or its affiliates.
+ * Copyright (c) 2026 Matt Van Horn.
  *
  * The MIT License (MIT)
  *
@@ -279,7 +279,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 
 	private static void assertCommittedSettings(File dir, long seed, int fp, int workers) throws IOException {
 		final List<String> lines = Files.readAllLines(settingsFile(dir, "chkpt").toPath(), StandardCharsets.UTF_8);
-		assertEquals(settings(1, seed, fp, FP64.Polys[fp], workers).trim(), join(lines));
+		assertEquals((settings(1, seed, fp, FP64.Polys[fp], workers) + "revision=" + TLCGlobals.Version.revisionOrDev()).trim(), join(lines));
 		assertEquals(Long.toString(RandomEnumerableValues.getSeed()), Long.toString(seed));
 		assertEquals(FP64.Polys[fp], FP64.getIrredPoly());
 		assertEquals(workers, TLCGlobals.getNumWorkers());
@@ -413,7 +413,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 	}
 
 	private static File settingsFile(File dir, String ext) {
-		return new File(dir, "settings." + ext);
+		return new File(dir, "settings." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
 	}
 
 	private static String settings(int version, long seed, int fpIndex, long fp, int workers) {
