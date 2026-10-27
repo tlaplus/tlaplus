@@ -21,7 +21,7 @@ CONSTANTS p0, p1
 
 PostCondition ==
    CounterExample = 
-    [ action |->
+[ action |->
       { << << 1,
               [ participant |->
                     ( p0 :>
@@ -52,7 +52,7 @@ PostCondition ==
                    endLine |-> 105,
                    endColumn |-> 41,
                    module |-> "ACP_SB" ],
-             context |-> [i |-> p0],
+             context |-> [i |-> p1],
              parameters |-> <<"i">> ],
            << 2,
               [ participant |->
@@ -76,7 +76,7 @@ PostCondition ==
                       alive |-> TRUE,
                       faulty |-> FALSE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >> >>,
+                      request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >> >>,
         << << 2,
               [ participant |->
                     ( p0 :>
@@ -99,15 +99,15 @@ PostCondition ==
                       alive |-> TRUE,
                       faulty |-> FALSE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >>,
-           [ name |-> "sendVote",
+                      request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >>,
+           [ name |-> "parDie",
              location |->
-                 [ beginLine |-> 211,
-                   beginColumn |-> 16,
-                   endLine |-> 216,
-                   endColumn |-> 42,
+                 [ beginLine |-> 280,
+                   beginColumn |-> 14,
+                   endLine |-> 284,
+                   endColumn |-> 40,
                    module |-> "ACP_SB" ],
-             context |-> [i |-> p0],
+             context |-> [i |-> p1],
              parameters |-> <<"i">> ],
            << 3,
               [ participant |->
@@ -116,13 +116,13 @@ PostCondition ==
                             vote |-> yes,
                             alive |-> TRUE,
                             faulty |-> FALSE,
-                            voteSent |-> TRUE,
+                            voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
@@ -131,7 +131,7 @@ PostCondition ==
                       alive |-> TRUE,
                       faulty |-> FALSE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >> >>,
+                      request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >> >>,
         << << 3,
               [ participant |->
                     ( p0 :>
@@ -139,13 +139,13 @@ PostCondition ==
                             vote |-> yes,
                             alive |-> TRUE,
                             faulty |-> FALSE,
-                            voteSent |-> TRUE,
+                            voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
@@ -154,7 +154,7 @@ PostCondition ==
                       alive |-> TRUE,
                       faulty |-> FALSE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >>,
+                      request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >>,
            [ name |-> "request",
              location |->
                  [ beginLine |-> 100,
@@ -162,7 +162,7 @@ PostCondition ==
                    endLine |-> 105,
                    endColumn |-> 41,
                    module |-> "ACP_SB" ],
-             context |-> [i |-> p1],
+             context |-> [i |-> p0],
              parameters |-> <<"i">> ],
            << 4,
               [ participant |->
@@ -171,13 +171,13 @@ PostCondition ==
                             vote |-> yes,
                             alive |-> TRUE,
                             faulty |-> FALSE,
-                            voteSent |-> TRUE,
+                            voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
@@ -194,73 +194,18 @@ PostCondition ==
                             vote |-> yes,
                             alive |-> TRUE,
                             faulty |-> FALSE,
-                            voteSent |-> TRUE,
+                            voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
                       vote |-> (p0 :> waiting @@ p1 :> waiting),
-                      alive |-> TRUE,
-                      faulty |-> FALSE,
-                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >>,
-           [ name |-> "getVote",
-             location |->
-                 [ beginLine |-> 118,
-                   beginColumn |-> 15,
-                   endLine |-> 126,
-                   endColumn |-> 41,
-                   module |-> "ACP_SB" ],
-             context |-> [i |-> p0],
-             parameters |-> <<"i">> ],
-           << 5,
-              [ participant |->
-                    ( p0 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
-                            voteSent |-> TRUE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
-                      p1 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
-                            voteSent |-> FALSE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
-                coordinator |->
-                    [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
-                      alive |-> TRUE,
-                      faulty |-> FALSE,
-                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >> >>,
-        << << 5,
-              [ participant |->
-                    ( p0 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
-                            voteSent |-> TRUE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
-                      p1 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
-                            voteSent |-> FALSE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
-                coordinator |->
-                    [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
                       alive |-> TRUE,
                       faulty |-> FALSE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -272,6 +217,61 @@ PostCondition ==
                    endLine |-> 198,
                    endColumn |-> 39,
                    module |-> "ACP_SB" ] ],
+           << 5,
+              [ participant |->
+                    ( p0 :>
+                          [ decision |-> undecided,
+                            vote |-> yes,
+                            alive |-> TRUE,
+                            faulty |-> FALSE,
+                            voteSent |-> FALSE,
+                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
+                      p1 :>
+                          [ decision |-> undecided,
+                            vote |-> yes,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
+                            voteSent |-> FALSE,
+                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
+                coordinator |->
+                    [ decision |-> undecided,
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
+                      alive |-> FALSE,
+                      faulty |-> TRUE,
+                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
+                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >> >>,
+        << << 5,
+              [ participant |->
+                    ( p0 :>
+                          [ decision |-> undecided,
+                            vote |-> yes,
+                            alive |-> TRUE,
+                            faulty |-> FALSE,
+                            voteSent |-> FALSE,
+                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
+                      p1 :>
+                          [ decision |-> undecided,
+                            vote |-> yes,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
+                            voteSent |-> FALSE,
+                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
+                coordinator |->
+                    [ decision |-> undecided,
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
+                      alive |-> FALSE,
+                      faulty |-> TRUE,
+                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
+                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >>,
+           [ name |-> "sendVote",
+             location |->
+                 [ beginLine |-> 211,
+                   beginColumn |-> 16,
+                   endLine |-> 216,
+                   endColumn |-> 42,
+                   module |-> "ACP_SB" ],
+             context |-> [i |-> p0],
+             parameters |-> <<"i">> ],
            << 6,
               [ participant |->
                     ( p0 :>
@@ -284,13 +284,13 @@ PostCondition ==
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
                       alive |-> FALSE,
                       faulty |-> TRUE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -307,13 +307,13 @@ PostCondition ==
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
                       alive |-> FALSE,
                       faulty |-> TRUE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -339,13 +339,13 @@ PostCondition ==
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
                       alive |-> FALSE,
                       faulty |-> TRUE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -362,13 +362,13 @@ PostCondition ==
                       p1 :>
                           [ decision |-> undecided,
                             vote |-> yes,
-                            alive |-> TRUE,
-                            faulty |-> FALSE,
+                            alive |-> FALSE,
+                            faulty |-> TRUE,
                             voteSent |-> FALSE,
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
                       alive |-> FALSE,
                       faulty |-> TRUE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -380,9 +380,9 @@ PostCondition ==
                    endLine |-> 284,
                    endColumn |-> 40,
                    module |-> "ACP_SB" ],
-             context |-> [i |-> p1],
+             context |-> [i |-> p0],
              parameters |-> <<"i">> ],
-           << 8,
+           << 7,
               [ participant |->
                     ( p0 :>
                           [ decision |-> undecided,
@@ -400,62 +400,7 @@ PostCondition ==
                             forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
                 coordinator |->
                     [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
-                      alive |-> FALSE,
-                      faulty |-> TRUE,
-                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >> >>,
-        << << 8,
-              [ participant |->
-                    ( p0 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> FALSE,
-                            faulty |-> TRUE,
-                            voteSent |-> TRUE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
-                      p1 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> FALSE,
-                            faulty |-> TRUE,
-                            voteSent |-> FALSE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
-                coordinator |->
-                    [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
-                      alive |-> FALSE,
-                      faulty |-> TRUE,
-                      broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                      request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >>,
-           [ name |-> "parDie",
-             location |->
-                 [ beginLine |-> 280,
-                   beginColumn |-> 14,
-                   endLine |-> 284,
-                   endColumn |-> 40,
-                   module |-> "ACP_SB" ],
-             context |-> [i |-> p1],
-             parameters |-> <<"i">> ],
-           << 8,
-              [ participant |->
-                    ( p0 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> FALSE,
-                            faulty |-> TRUE,
-                            voteSent |-> TRUE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
-                      p1 :>
-                          [ decision |-> undecided,
-                            vote |-> yes,
-                            alive |-> FALSE,
-                            faulty |-> TRUE,
-                            voteSent |-> FALSE,
-                            forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
-                coordinator |->
-                    [ decision |-> undecided,
-                      vote |-> (p0 :> yes @@ p1 :> waiting),
+                      vote |-> (p0 :> waiting @@ p1 :> waiting),
                       alive |-> FALSE,
                       faulty |-> TRUE,
                       broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -506,7 +451,7 @@ PostCondition ==
                    alive |-> TRUE,
                    faulty |-> FALSE,
                    broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                   request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >>,
+                   request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >>,
         << 3,
            [ participant |->
                  ( p0 :>
@@ -514,13 +459,13 @@ PostCondition ==
                          vote |-> yes,
                          alive |-> TRUE,
                          faulty |-> FALSE,
-                         voteSent |-> TRUE,
+                         voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                    p1 :>
                        [ decision |-> undecided,
                          vote |-> yes,
-                         alive |-> TRUE,
-                         faulty |-> FALSE,
+                         alive |-> FALSE,
+                         faulty |-> TRUE,
                          voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
              coordinator |->
@@ -529,7 +474,7 @@ PostCondition ==
                    alive |-> TRUE,
                    faulty |-> FALSE,
                    broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                   request |-> (p0 :> TRUE @@ p1 :> FALSE) ] ] >>,
+                   request |-> (p0 :> FALSE @@ p1 :> TRUE) ] ] >>,
         << 4,
            [ participant |->
                  ( p0 :>
@@ -537,13 +482,13 @@ PostCondition ==
                          vote |-> yes,
                          alive |-> TRUE,
                          faulty |-> FALSE,
-                         voteSent |-> TRUE,
+                         voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                    p1 :>
                        [ decision |-> undecided,
                          vote |-> yes,
-                         alive |-> TRUE,
-                         faulty |-> FALSE,
+                         alive |-> FALSE,
+                         faulty |-> TRUE,
                          voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
              coordinator |->
@@ -560,20 +505,20 @@ PostCondition ==
                          vote |-> yes,
                          alive |-> TRUE,
                          faulty |-> FALSE,
-                         voteSent |-> TRUE,
+                         voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
                    p1 :>
                        [ decision |-> undecided,
                          vote |-> yes,
-                         alive |-> TRUE,
-                         faulty |-> FALSE,
+                         alive |-> FALSE,
+                         faulty |-> TRUE,
                          voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
              coordinator |->
                  [ decision |-> undecided,
-                   vote |-> (p0 :> yes @@ p1 :> waiting),
-                   alive |-> TRUE,
-                   faulty |-> FALSE,
+                   vote |-> (p0 :> waiting @@ p1 :> waiting),
+                   alive |-> FALSE,
+                   faulty |-> TRUE,
                    broadcast |-> (p0 :> notsent @@ p1 :> notsent),
                    request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >>,
         << 6,
@@ -588,13 +533,13 @@ PostCondition ==
                    p1 :>
                        [ decision |-> undecided,
                          vote |-> yes,
-                         alive |-> TRUE,
-                         faulty |-> FALSE,
+                         alive |-> FALSE,
+                         faulty |-> TRUE,
                          voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
              coordinator |->
                  [ decision |-> undecided,
-                   vote |-> (p0 :> yes @@ p1 :> waiting),
+                   vote |-> (p0 :> waiting @@ p1 :> waiting),
                    alive |-> FALSE,
                    faulty |-> TRUE,
                    broadcast |-> (p0 :> notsent @@ p1 :> notsent),
@@ -611,39 +556,15 @@ PostCondition ==
                    p1 :>
                        [ decision |-> undecided,
                          vote |-> yes,
-                         alive |-> TRUE,
-                         faulty |-> FALSE,
-                         voteSent |-> FALSE,
-                         forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
-             coordinator |->
-                 [ decision |-> undecided,
-                   vote |-> (p0 :> yes @@ p1 :> waiting),
-                   alive |-> FALSE,
-                   faulty |-> TRUE,
-                   broadcast |-> (p0 :> notsent @@ p1 :> notsent),
-                   request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >>,
-        << 8,
-           [ participant |->
-                 ( p0 :>
-                       [ decision |-> undecided,
-                         vote |-> yes,
-                         alive |-> FALSE,
-                         faulty |-> TRUE,
-                         voteSent |-> TRUE,
-                         forward |-> (p0 :> notsent @@ p1 :> notsent) ] @@
-                   p1 :>
-                       [ decision |-> undecided,
-                         vote |-> yes,
                          alive |-> FALSE,
                          faulty |-> TRUE,
                          voteSent |-> FALSE,
                          forward |-> (p0 :> notsent @@ p1 :> notsent) ] ),
              coordinator |->
                  [ decision |-> undecided,
-                   vote |-> (p0 :> yes @@ p1 :> waiting),
+                   vote |-> (p0 :> waiting @@ p1 :> waiting),
                    alive |-> FALSE,
                    faulty |-> TRUE,
                    broadcast |-> (p0 :> notsent @@ p1 :> notsent),
                    request |-> (p0 :> TRUE @@ p1 :> TRUE) ] ] >> } ]
-
 ================================================================================
