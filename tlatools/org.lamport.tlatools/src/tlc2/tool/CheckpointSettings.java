@@ -42,15 +42,16 @@ import tlc2.util.FP64;
 import tlc2.value.RandomEnumerableValues;
 
 /**
- * Versioned sidecar written next to the other checkpoint files. Legacy
- * checkpoints simply do not have this file.
+ * Sidecar written next to the other checkpoint files. Its first line is the
+ * revision of the TLC that wrote it. Legacy checkpoints simply do not have
+ * this file.
  */
 public class CheckpointSettings {
 
-	private static final int CHECKPOINT_SETTINGS_VERSION = 1;
 	private static final String CHECKPOINT_SETTINGS_FILE = "settings.chkpt";
 	private static final String CHECKPOINT_SETTINGS_TMP_FILE = "settings.tmp.chkpt";
-	/** Larger than any settings file this version writes; anything bigger is not metadata. */
+	private static final int CHECKPOINT_SETTINGS_LINES = 5;
+	/** Larger than any settings file TLC writes; anything bigger is not metadata. */
 	private static final int CHECKPOINT_SETTINGS_MAX_BYTES = 4096;
 
 	private final String metadir;
@@ -85,12 +86,11 @@ public class CheckpointSettings {
 
 	private String checkpointSettingsText() {
 		final long poly = FP64.getIrredPoly();
-		return "version=" + CHECKPOINT_SETTINGS_VERSION + "\n"
+		return "revision=" + TLCGlobals.Version.revisionOrDev() + "\n"
 				+ "seed=" + RandomEnumerableValues.getSeed() + "\n"
 				+ "fpIndex=" + fingerprintIndex(poly) + "\n"
 				+ "fp=" + poly + "\n"
-				+ "workers=" + this.workers + "\n"
-				+ "revision=" + TLCGlobals.Version.revisionOrDev() + "\n";
+				+ "workers=" + this.workers + "\n";
 	}
 
 	public void commitChkpt() throws IOException {
@@ -154,7 +154,7 @@ public class CheckpointSettings {
 			warnUnverifiableCheckpointSettings("malformed");
 			return null;
 		}
-		final Values settings = parseCheckpointSettings(text, byteLength);
+		final Values settings = parseCheckpointSettings(text);
 		if (settings == null) {
 			return null;
 		}
@@ -169,35 +169,38 @@ public class CheckpointSettings {
 	/**
 	 * @return parsed settings, or null when a warning was already emitted
 	 */
-	private Values parseCheckpointSettings(final String text, final int byteLength) {
-		if (byteLength > CHECKPOINT_SETTINGS_MAX_BYTES) {
-			warnUnverifiableCheckpointSettings("malformed");
-			return null;
-		}
+	private Values parseCheckpointSettings(final String text) {
 		final String[] rawLines = text.split("\n", -1);
 		int lineCount = rawLines.length;
 		if (lineCount > 0 && rawLines[lineCount - 1].isEmpty()) {
 			lineCount--;
 		}
-		if (lineCount < 5) {
-			warnUnverifiableCheckpointSettings("truncated");
-			return null;
-		}
-		if (lineCount > 6 || (lineCount == 6 && !rawLines[5].matches("revision=[^\\r\\n]+\\r?"))) {
-			warnUnverifiableCheckpointSettings("malformed");
-			return null;
-		}
-		final String[] lines = new String[5];
+		final String[] lines = new String[lineCount];
 		for (int i = 0; i < lines.length; i++) {
 			lines[i] = rawLines[i].endsWith("\r") ? rawLines[i].substring(0, rawLines[i].length() - 1) : rawLines[i];
 		}
-		final Integer version = parseSettingsField(lines[0], "version");
-		if (version == null) {
+		if (lineCount == 0) {
+			warnUnverifiableCheckpointSettings("truncated");
+			return null;
+		}
+		// The rest of the layout belongs to the TLC revision that wrote the file,
+		// so the revision is checked before any other field is interpreted.
+		final String revision = parseSettingsString(lines[0], "revision");
+		if (revision == null) {
 			warnUnverifiableCheckpointSettings("malformed");
 			return null;
 		}
-		if (version.intValue() != CHECKPOINT_SETTINGS_VERSION) {
-			warnUnverifiableCheckpointSettings("unsupported version");
+		final String currentRevision = TLCGlobals.Version.revisionOrDev();
+		if (!revision.equals(currentRevision)) {
+			MP.printWarning(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH, new String[] { revision, currentRevision });
+			return null;
+		}
+		if (lineCount < CHECKPOINT_SETTINGS_LINES) {
+			warnUnverifiableCheckpointSettings("truncated");
+			return null;
+		}
+		if (lineCount > CHECKPOINT_SETTINGS_LINES) {
+			warnUnverifiableCheckpointSettings("malformed");
 			return null;
 		}
 		final Long seed = parseSettingsLong(lines[1], "seed");
@@ -217,14 +220,6 @@ public class CheckpointSettings {
 			warnUnverifiableCheckpointSettings("invalid fingerprint");
 			return null;
 		}
-		if (lineCount == 6) {
-			final String checkpointRevision = rawLines[5].trim().substring("revision=".length());
-			final String currentRevision = TLCGlobals.Version.revisionOrDev();
-			if (!checkpointRevision.equals(currentRevision)) {
-				MP.printWarning(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
-						new String[] { checkpointRevision, currentRevision });
-			}
-		}
 		return new Values(seed.longValue(), fpIndex.intValue(), fp.longValue(), parsedWorkers.intValue());
 	}
 
@@ -239,15 +234,24 @@ public class CheckpointSettings {
 
 	/** @return the long value, or null when the line is not {@code key=long} */
 	private static Long parseSettingsLong(final String line, final String key) {
+		final String value = parseSettingsString(line, key);
+		if (value == null) {
+			return null;
+		}
+		try {
+			return Long.valueOf(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** @return the non-empty value, or null when the line is not {@code key=value} */
+	private static String parseSettingsString(final String line, final String key) {
 		final String prefix = key + "=";
 		if (!line.startsWith(prefix) || line.length() == prefix.length()) {
 			return null;
 		}
-		try {
-			return Long.valueOf(line.substring(prefix.length()));
-		} catch (NumberFormatException e) {
-			return null;
-		}
+		return line.substring(prefix.length());
 	}
 
 	private void warnIfCheckpointSettingsDiffer(final Values original) {

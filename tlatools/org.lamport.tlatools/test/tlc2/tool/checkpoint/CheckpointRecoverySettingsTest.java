@@ -139,7 +139,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 			public void edit(File dir) throws IOException {
 				assertTrue(settingsFile(dir, "chkpt").delete());
 				// A temporary settings file must not be treated as committed metadata.
-				write(settingsFile(dir, "tmp"), settings(1, 777L, 0, FP64.Polys[0], 9));
+				write(settingsFile(dir, "tmp"), settings(777L, 0, FP64.Polys[0], 9));
 			}
 		});
 		assertNoSettingsWarning(legacy);
@@ -147,20 +147,35 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 		assertEquals(trace(matching), trace(legacy));
 		assertEquals(matching.errorCode, legacy.errorCode);
 
-		assertUnverifiable(created.checkpoint, "truncated", "version=1\nseed=" + SEED + "\n", SEED, FP, WORKERS);
-		assertUnverifiable(created.checkpoint, "malformed",
-				"version=1\nseed=nope\nfpIndex=" + FP + "\nfp=" + FP64.Polys[FP] + "\nworkers=" + WORKERS + "\n",
+		final String revision = TLCGlobals.Version.revisionOrDev();
+		assertUnverifiable(created.checkpoint, "truncated", "revision=" + revision + "\nseed=" + SEED + "\n",
 				SEED, FP, WORKERS);
-		assertUnverifiable(created.checkpoint, "unsupported version",
-				settings(99, SEED, FP, FP64.Polys[FP], WORKERS), SEED, FP, WORKERS);
+		assertUnverifiable(created.checkpoint, "malformed",
+				settings(SEED, FP, FP64.Polys[FP], WORKERS).replace("seed=" + SEED, "seed=nope"),
+				SEED, FP, WORKERS);
+		assertUnverifiable(created.checkpoint, "malformed",
+				settings(SEED, FP, FP64.Polys[FP], WORKERS).replace("revision=" + revision + "\n", ""),
+				SEED, FP, WORKERS);
 		assertUnverifiable(created.checkpoint, "invalid fingerprint",
-				settings(1, SEED, FP, FP64.Polys[FP + 1], WORKERS), SEED, FP, WORKERS);
+				settings(SEED, FP, FP64.Polys[FP + 1], WORKERS), SEED, FP, WORKERS);
 		assertUnverifiable(created.checkpoint, "invalid fingerprint",
-				settings(1, SEED, 100000, FP64.Polys[FP], WORKERS), SEED, FP, WORKERS);
+				settings(SEED, 100000, FP64.Polys[FP], WORKERS), SEED, FP, WORKERS);
 		assertUnverifiable(created.checkpoint, "invalid workers",
-				settings(1, SEED, FP, FP64.Polys[FP], 0), SEED, FP, WORKERS);
+				settings(SEED, FP, FP64.Polys[FP], 0), SEED, FP, WORKERS);
 		assertUnverifiable(created.checkpoint, "invalid workers",
-				settings(1, SEED, FP, FP64.Polys[FP], -1), SEED, FP, WORKERS);
+				settings(SEED, FP, FP64.Polys[FP], -1), SEED, FP, WORKERS);
+
+		final Run otherRevision = recoverCopy(created.checkpoint, "other-revision", SEED, FP, WORKERS,
+				new CopyEditor() {
+					public void edit(File dir) throws IOException {
+						write(settingsFile(dir, "chkpt"), settings("other-build", SEED, FP, FP64.Polys[FP], WORKERS));
+					}
+				});
+		assertTrue(otherRevision.recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
+				"other-build", revision));
+		assertFalse(otherRevision.recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH));
+		assertFalse(otherRevision.recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
+		assertTrue(otherRevision.recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_END, stats[1], stats[2]));
 	}
 
 	@Test
@@ -194,7 +209,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 			assertEquals(EC.NO_ERROR, ((ModelChecker) TLCGlobals.mainChecker).doPeriodicWork());
 			assertCommittedSettings(checkpoint, SEED, FP, WORKERS);
 			// An in-progress settings file must not become the committed sidecar.
-			write(settingsFile(checkpoint, "tmp"), settings(1, 777L, 0, FP64.Polys[0], 9));
+			write(settingsFile(checkpoint, "tmp"), settings(777L, 0, FP64.Polys[0], 9));
 			((ModelChecker) TLCGlobals.mainChecker).stop();
 			runner.join(20000);
 			assertFalse(runner.isAlive());
@@ -279,7 +294,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 
 	private static void assertCommittedSettings(File dir, long seed, int fp, int workers) throws IOException {
 		final List<String> lines = Files.readAllLines(settingsFile(dir, "chkpt").toPath(), StandardCharsets.UTF_8);
-		assertEquals((settings(1, seed, fp, FP64.Polys[fp], workers) + "revision=" + TLCGlobals.Version.revisionOrDev()).trim(), join(lines));
+		assertEquals(settings(seed, fp, FP64.Polys[fp], workers).trim(), join(lines));
 		assertEquals(Long.toString(RandomEnumerableValues.getSeed()), Long.toString(seed));
 		assertEquals(FP64.Polys[fp], FP64.getIrredPoly());
 		assertEquals(workers, TLCGlobals.getNumWorkers());
@@ -416,8 +431,12 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 		return new File(dir, "tmp".equals(ext) ? "settings.tmp.chkpt" : "settings.chkpt");
 	}
 
-	private static String settings(int version, long seed, int fpIndex, long fp, int workers) {
-		return "version=" + version + "\n"
+	private static String settings(long seed, int fpIndex, long fp, int workers) {
+		return settings(TLCGlobals.Version.revisionOrDev(), seed, fpIndex, fp, workers);
+	}
+
+	private static String settings(String revision, long seed, int fpIndex, long fp, int workers) {
+		return "revision=" + revision + "\n"
 				+ "seed=" + seed + "\n"
 				+ "fpIndex=" + fpIndex + "\n"
 				+ "fp=" + fp + "\n"

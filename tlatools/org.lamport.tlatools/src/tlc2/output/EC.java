@@ -252,9 +252,9 @@ public interface EC
      */
     public static final int TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH = 2285;
     /**
-     * Checkpoint settings metadata is missing required fields, is truncated or
-     * malformed, or uses a version this TLC does not understand. Recovery
-     * continued because the metadata could not be checked.
+     * Checkpoint settings metadata is missing required fields, or is truncated
+     * or malformed. Recovery continued because the metadata could not be
+     * checked.
      */
     public static final int TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE = 2286;
     /**

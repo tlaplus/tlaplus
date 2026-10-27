@@ -1265,7 +1265,7 @@ public class MP
             break;
         case EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE:
             b.append("Checkpoint settings metadata could not be verified (%1%). Results may be unreliable. States may be skipped and counterexamples may contain missing or incorrect states.\n"
-                    + "The metadata is truncated, malformed, or uses an unsupported version, so TLC cannot confirm that -seed, -fp, and -workers match the checkpoint.\n"
+                    + "The metadata is truncated or malformed, so TLC cannot confirm that -seed, -fp, and -workers match the checkpoint.\n"
                     + "Recovery will continue with the current settings.");
             break;
         case EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH:

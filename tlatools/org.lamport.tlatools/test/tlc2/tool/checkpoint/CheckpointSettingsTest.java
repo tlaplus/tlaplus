@@ -153,18 +153,54 @@ public class CheckpointSettingsTest {
 	}
 
 	@Test
-	public void testDifferentRevisionAndLegacyMetadata() throws Exception {
+	public void testDifferentRevision() throws Exception {
+		final File dir = scratchDir();
+		install(SEED, FP);
+		final CheckpointSettings settings = new CheckpointSettings(dir.getAbsolutePath(), WORKERS + 1);
+		write(file(dir, "chkpt"), withRevision(text(SEED, FP, WORKERS), "other-build"));
+		assertNull(settings.recover());
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
+				"other-build", TLCGlobals.Version.revisionOrDev()));
+		// The other fields belong to the other revision's layout and are not compared.
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH));
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
+	}
+
+	@Test
+	public void testDifferentRevisionIsReportedForUnparsableSettings() throws Exception {
 		final File dir = scratchDir();
 		install(SEED, FP);
 		final CheckpointSettings settings = new CheckpointSettings(dir.getAbsolutePath(), WORKERS);
-		final String legacy = text(SEED, FP, WORKERS).split("revision=")[0];
-		Files.write(file(dir, "chkpt").toPath(), legacy.getBytes(StandardCharsets.UTF_8));
-		assertValues(settings.recover(), SEED, FP, WORKERS);
-		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
-		Files.write(file(dir, "chkpt").toPath(), (legacy + "revision=other-build\n").getBytes(StandardCharsets.UTF_8));
-		assertValues(settings.recover(), SEED, FP, WORKERS);
+		write(file(dir, "chkpt"), "revision=other-build\nformat=from-the-future\n");
+		assertNull(settings.recover());
 		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
 				"other-build", TLCGlobals.Version.revisionOrDev()));
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
+	}
+
+	@Test
+	public void testRevisionIsMandatory() throws Exception {
+		final File dir = scratchDir();
+		install(SEED, FP);
+		final CheckpointSettings settings = new CheckpointSettings(dir.getAbsolutePath(), WORKERS);
+		final String withoutRevision = text(SEED, FP, WORKERS).substring(text(SEED, FP, WORKERS).indexOf('\n') + 1);
+
+		write(file(dir, "chkpt"), "");
+		assertNull(settings.recover());
+		write(file(dir, "chkpt"), withoutRevision);
+		assertNull(settings.recover());
+		write(file(dir, "chkpt"), "revision=\n" + withoutRevision);
+		assertNull(settings.recover());
+		write(file(dir, "chkpt"), "revision=" + TLCGlobals.Version.revisionOrDev() + "\n");
+		assertNull(settings.recover());
+
+		final List<Object> records = recorder.getRecords(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE);
+		assertEquals(4, records.size());
+		assertEquals("truncated", ((String[]) records.get(0))[0]);
+		assertEquals("malformed", ((String[]) records.get(1))[0]);
+		assertEquals("malformed", ((String[]) records.get(2))[0]);
+		assertEquals("truncated", ((String[]) records.get(3))[0]);
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
 	}
 
 	private void install(long seed, int fp) {
@@ -190,16 +226,23 @@ public class CheckpointSettingsTest {
 	}
 
 	private static String text(long seed, int fp, int workers) {
-		return "version=1\n"
+		return "revision=" + TLCGlobals.Version.revisionOrDev() + "\n"
 				+ "seed=" + seed + "\n"
 				+ "fpIndex=" + fp + "\n"
 				+ "fp=" + FP64.Polys[fp] + "\n"
-				+ "workers=" + workers + "\n"
-				+ "revision=" + TLCGlobals.Version.revisionOrDev() + "\n";
+				+ "workers=" + workers + "\n";
 	}
 
 	private static String read(File file) throws Exception {
 		return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+	}
+
+	private static String withRevision(String text, String revision) {
+		return "revision=" + revision + text.substring(text.indexOf('\n'));
+	}
+
+	private static void write(File file, String body) throws Exception {
+		Files.write(file.toPath(), body.getBytes(StandardCharsets.UTF_8));
 	}
 
 	private static File file(File dir, String ext) {
