@@ -1034,13 +1034,28 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     }
 
     /**
-     * Returns the expression a theorem asserts, or null for ASSUME/PROVE.
+     * Returns the expression a theorem asserts, or null for ASSUME/PROVE. SANY
+     * wraps the body of a theorem obtained through INSTANCE in an APSubstInNode,
+     * which becomes a SubstInNode as it does when an expression names the theorem.
      */
     private static ExprNode getTheoremExpr(final LevelNode body)
     {
         if (body instanceof ExprNode)
         {
             return (ExprNode) body;
+        }
+        if (body instanceof APSubstInNode)
+        {
+            final APSubstInNode subst = (APSubstInNode) body;
+            final ExprNode expr = getTheoremExpr(subst.getBody());
+            if (expr == null)
+            {
+                return null;
+            }
+            final Errors errors = new Errors();
+            final SubstInNode res = new SubstInNode(subst, expr, errors);
+            res.levelCheck(errors);
+            return res;
         }
         return null;
     }
