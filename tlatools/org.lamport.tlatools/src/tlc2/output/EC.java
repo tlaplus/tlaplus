@@ -325,6 +325,7 @@ public interface EC
     public static final int TLC_CONFIG_OP_NOT_IN_SPEC = 2235;
     public static final int TLC_CONFIG_OP_IS_EQUAL = 2236;
     public static final int TLC_CONFIG_SPEC_IS_TRIVIAL = 2237;
+    public static final int TLC_CONFIG_THEOREM_NOT_EXPRESSION = 2285;
     public static final int TLC_CANT_HANDLE_SUBSCRIPT = 2238;
     public static final int TLC_CANT_HANDLE_CONJUNCT = 2239;
     public static final int TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS = 2240;
@@ -449,6 +450,7 @@ public interface EC
 	        case TLC_CONFIG_OP_NOT_IN_SPEC:
 	        case TLC_CONFIG_OP_IS_EQUAL:
 	        case TLC_CONFIG_SPEC_IS_TRIVIAL:
+	        case TLC_CONFIG_THEOREM_NOT_EXPRESSION:
 	        case TLC_CANT_HANDLE_SUBSCRIPT:
 	        case TLC_CANT_HANDLE_CONJUNCT:
 	        case TLC_CANT_HANDLE_TOO_MANY_NEXT_STATE_RELS:

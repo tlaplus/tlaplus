@@ -838,6 +838,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             } else if (prop == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "property", propName });
+            } else if (prop instanceof ThmOrAssumpDefNode)
+            {
+                Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_EXPRESSION, new String[] { "property", propName });
             } else if (!(prop instanceof IBoolValue) || !(((BoolValue) prop).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "property", propName, prop.toString() });
@@ -1006,7 +1009,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
     /**
      * Returns the definition of name or, if there is none, the named theorem
-     * with an expression body that is visible from the root module.
+     * that is visible from the root module.
      */
     private Object lookupConfigDef(final String name)
     {
@@ -1017,7 +1020,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
         for (ThmOrAssumpDefNode thm : this.rootModule.getThmOrAssDefs())
         {
-            if (thm.isTheorem() && thm.getName().toString().equals(name) && getTheoremExpr(thm) != null)
+            if (thm.isTheorem() && thm.getName().toString().equals(name))
             {
                 return thm;
             }
@@ -1140,6 +1143,9 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             } else if (inv == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "invariant", name });
+            } else if (inv instanceof ThmOrAssumpDefNode)
+            {
+                Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_EXPRESSION, new String[] { "invariant", name });
             } else if (!(inv instanceof IBoolValue) || !(((BoolValue) inv).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "invariant", name, inv.toString() });
