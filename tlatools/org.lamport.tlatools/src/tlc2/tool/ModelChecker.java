@@ -58,7 +58,7 @@ public class ModelChecker extends AbstractChecker
 	 * Versioned sidecar written next to the other checkpoint files. Legacy
 	 * checkpoints simply do not have this file.
 	 */
-	private CheckpointSettings checkpointSettings;
+	private final CheckpointSettings checkpointSettings;
 
 	private long numberOfInitialStates;
     public FPSet theFPSet; // the set of reachable states (SZ: note the type)
@@ -89,7 +89,6 @@ public class ModelChecker extends AbstractChecker
 			this.workers[i] = this.trace.addWorker(
 					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
-        this.checkpointSettings = new CheckpointSettings(this.metadir, this.fromChkpt, this.workers.length);
     }
     
     public ModelChecker(ITool tool, String metadir, final IStateWriter stateWriter, boolean deadlock, String fromChkpt,
@@ -104,7 +103,6 @@ public class ModelChecker extends AbstractChecker
 			this.workers[i] = this.trace.addWorker(
 					new Worker(i, this, i == 0 ? tool : tool.noDebug(), this.metadir, this.tool.getRootName()));
         }
-        this.checkpointSettings = new CheckpointSettings(this.metadir, this.fromChkpt, this.workers.length);
     }
     
     /**
@@ -122,6 +120,8 @@ public class ModelChecker extends AbstractChecker
 
         // Finally, initialize the trace file:
         this.trace = new ConcurrentTLCTrace(this.metadir, this.tool.getRootName(), this.tool);
+
+        this.checkpointSettings = new CheckpointSettings(this.metadir, this.fromChkpt, TLCGlobals.getNumWorkers());
     }
 
     /**
