@@ -38,6 +38,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -152,6 +153,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
     private Vect<Action> initPredVec; // The initial state predicate.
     private Action nextPred; // The next state predicate.
     private OpDefNode specDef; // The SPECIFICATION, if any.
+    private final Map<ThmOrAssumpDefNode, ExprNode> theoremExprs = new IdentityHashMap<>();
     private Action[] temporals; // Fairness specifications...
     private String[] temporalNames; // ... and their names
     private Action[] impliedTemporals; // Liveness conds to check...
@@ -1015,7 +1017,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
         for (ThmOrAssumpDefNode thm : this.rootModule.getThmOrAssDefs())
         {
-            if (thm.isTheorem() && thm.getName().toString().equals(name) && getTheoremExpr(thm.getBody()) != null)
+            if (thm.isTheorem() && thm.getName().toString().equals(name) && getTheoremExpr(thm) != null)
             {
                 return thm;
             }
@@ -1056,16 +1058,16 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         return subs.isEmpty() && body == ((OpDefNode) def).getBody();
     }
 
-    private static boolean isConfigDef(final Object def)
+    private boolean isConfigDef(final Object def)
     {
         return def instanceof OpDefNode
-                || (def instanceof ThmOrAssumpDefNode && getTheoremExpr(((ThmOrAssumpDefNode) def).getBody()) != null);
+                || (def instanceof ThmOrAssumpDefNode && getTheoremExpr((ThmOrAssumpDefNode) def) != null);
     }
 
-    private static ExprNode getConfigDefBody(final SymbolNode def)
+    private ExprNode getConfigDefBody(final SymbolNode def)
     {
         return def instanceof OpDefNode ? ((OpDefNode) def).getBody()
-                : getTheoremExpr(((ThmOrAssumpDefNode) def).getBody());
+                : getTheoremExpr((ThmOrAssumpDefNode) def);
     }
 
     /**
@@ -1073,7 +1075,12 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
      * wraps the body of a theorem obtained through INSTANCE in an APSubstInNode,
      * which becomes a SubstInNode as it does when an expression names the theorem.
      */
-    private static ExprNode getTheoremExpr(final LevelNode body)
+    private ExprNode getTheoremExpr(final ThmOrAssumpDefNode thm)
+    {
+        return this.theoremExprs.computeIfAbsent(thm, t -> toTheoremExpr(t.getBody()));
+    }
+
+    private static ExprNode toTheoremExpr(final LevelNode body)
     {
         if (body instanceof ExprNode)
         {
@@ -1082,7 +1089,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         if (body instanceof APSubstInNode)
         {
             final APSubstInNode subst = (APSubstInNode) body;
-            final ExprNode expr = getTheoremExpr(subst.getBody());
+            final ExprNode expr = toTheoremExpr(subst.getBody());
             if (expr == null)
             {
                 return null;
