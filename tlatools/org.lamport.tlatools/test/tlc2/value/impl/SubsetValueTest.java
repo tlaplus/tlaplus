@@ -560,6 +560,28 @@ public class SubsetValueTest {
 		}
 		assertEquals(1, values.size()); //empty set
 	}
+
+	@Test
+	public void testRandomizedPowerSetIsLazyAndComplete() {
+		final SubsetValue large = new SubsetValue(new IntervalValue(1, 100));
+		final ValueEnumeration lazy = large.elements(Ordering.RANDOMIZED);
+		assertTrue(large.member(lazy.nextElement()));
+		assertTrue(large.pset == null);
+
+		final SubsetValue small = new SubsetValue(new IntervalValue(1, 5));
+		final ValueEnumeration all = small.elements(Ordering.RANDOMIZED);
+		final List<Value> firstPass = all.all();
+		assertEquals(32, firstPass.size());
+		assertEquals(32, new HashSet<>(firstPass).size());
+		for (final Value value : firstPass) {
+			assertTrue(small.member(value));
+		}
+		all.reset();
+		assertEquals(firstPass, all.all());
+		final ValueEnumeration empty = new SubsetValue(new IntervalValue(1, 0)).elements(Ordering.RANDOMIZED);
+		assertEquals(new SetEnumValue(), empty.nextElement());
+		assertNull(empty.nextElement());
+	}
 	
 	@Test
 	public void testRandomSubsetGeneratorKNegative() {

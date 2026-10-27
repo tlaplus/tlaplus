@@ -60,6 +60,7 @@ import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
@@ -1174,8 +1175,13 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
+		int index = nss.isFirstSuccessorOnly() && alen > 0 ? RandomEnumerableValues.get().nextInt(alen) : 0;
 	    for (int i = 0; i < alen; i++) {
-	      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
+	      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
+	      if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	        return resState;
+	      }
+	      index = (index + 1) % alen;
 	    }
 	    return resState;
 	  }
@@ -1184,10 +1190,14 @@ public abstract class Tool
 	    SemanticNode body = args[0];
 
             // non-deterministically generate successor states (potentially many)
-            ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
+            ContextEnumerator Enum = this.contexts(nss.isFirstSuccessorOnly() ? Ordering.RANDOMIZED : Ordering.NORMALIZED,
+                    pred, c, s0, s1, EvalControl.Clear, cm);
             Context c1;
             while ((c1 = Enum.nextElement()) != null) {
               resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+              if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+                return resState;
+              }
             }
 
 	    return resState;
@@ -1336,12 +1346,15 @@ public abstract class Tool
 	      Value rset = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
 	      if (lval == null) {
-	        ValueEnumeration Enum = rval.elements();
+	        ValueEnumeration Enum = nss.isFirstSuccessorOnly() ? rval.elements(Ordering.RANDOMIZED) : rval.elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
 	          resState.bind(varName, elem);
 	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
 	          resState.unbind(varName);
+	          if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	            return resState;
+	          }
 	        }
 	        return resState;
 	      }
@@ -1371,12 +1384,16 @@ public abstract class Tool
 	                      " is not enumerable.\n" + pred, pred, c);
 	        }
 
-	        ValueEnumeration Enum = ((Enumerable)rval).elements();
+	        ValueEnumeration Enum = nss.isFirstSuccessorOnly()
+	                ? ((Enumerable)rval).elements(Ordering.RANDOMIZED) : ((Enumerable)rval).elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
 	          resState.bind(varName, elem);
 	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
 	          resState.unbind(varName);
+	          if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	            return resState;
+	          }
 	        }
 	        return resState;
 	      }

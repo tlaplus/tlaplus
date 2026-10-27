@@ -742,7 +742,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	@Override
 	public ValueEnumeration elements(final Ordering ordering) {
 		if (ordering == Ordering.RANDOMIZED) {
-			return ((SetEnumValue) toSetEnum()).elements(ordering);
+			return new Enumerator(true);
 		}
 		// Use elementsNormalized regardless of requested ordering. Even for ordering
 		// UNDEFINED, elementsNormalized is fastest.
@@ -772,13 +772,26 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
   final class Enumerator implements ValueEnumeration {
     private ValueVec elems;
     private BitSet descriptor;
+    private final BitSet mask;
 
     public Enumerator() {
+      this(false);
+    }
+
+    private Enumerator(final boolean randomized) {
     	//WARNING! Mutates the outer instance!?
       set = set.toSetEnum();
       set.normalize();
       this.elems = ((SetEnumValue)set).elems;
       this.descriptor = new BitSet(this.elems.size());
+      // XOR a random mask with the counter to visit every subset once without materializing the power set.
+      this.mask = new BitSet(this.elems.size());
+      if (randomized) {
+        final Random random = RandomEnumerableValues.get();
+        for (int i = 0; i < this.elems.size(); i++) {
+          this.mask.set(i, random.nextBoolean());
+        }
+      }
     }
 
     @Override
@@ -796,9 +809,9 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 				vals = new ValueVec(0);
 				this.descriptor = null;
 			} else {
-				vals = new ValueVec(this.descriptor.cardinality());
+				vals = new ValueVec(this.mask.isEmpty() ? this.descriptor.cardinality() : sz);
 				for (int i = 0; i < sz; i++) {
-					if (this.descriptor.get(i)) {
+					if (this.descriptor.get(i) ^ this.mask.get(i)) {
 						vals.addElement(this.elems.elementAt(i));
 					}
 				}

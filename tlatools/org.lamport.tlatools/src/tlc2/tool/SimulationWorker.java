@@ -83,7 +83,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 	// Keep the existing system property compatible with command-line users.
 	public static final String PROBABILISTIC_KEY = "tlc2.tool.impl.Tool.probabilistic";
+	public static final String FAST_KEY = "tlc2.tool.SimulationWorker.fast";
 	private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
+	private static final boolean FAST = Boolean.getBoolean(FAST_KEY);
 
 	public static boolean isProbabilistic() {
 		return PROBABILISTIC;
@@ -649,6 +651,11 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		assert isProbabilistic();
 		return !nextStates.isEmpty();
 	}
+
+	@Override
+	public boolean isFirstSuccessorOnly() {
+		return isProbabilistic() && FAST;
+	}
 	
 	@Override
     public SetOfStates getStates() {
@@ -694,7 +701,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	 * the RL workers, override this to preserve their semantics.
 	 */
 	protected boolean isUniformSuccessorSelection() {
-		return isProbabilistic();
+		return isProbabilistic() && !isFirstSuccessorOnly();
 	}
 
 	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {

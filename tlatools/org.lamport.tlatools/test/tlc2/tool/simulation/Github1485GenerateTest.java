@@ -25,7 +25,12 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 @SuiteClasses({ Github1485GenerateTest.AllSuccessors.class, Github1485GenerateTest.Case.class,
 		Github1485GenerateTest.RLChosenAction.class, Github1485GenerateTest.RLActionChosenAction.class,
 		Github1485GenerateTest.RLHighFanout.class, Github1485GenerateTest.RLActionHighFanout.class,
-		Github1485GenerateTest.RLEnabledOnly.class, Github1485GenerateTest.RLActionEnabledOnly.class })
+		Github1485GenerateTest.RLEnabledOnly.class, Github1485GenerateTest.RLActionEnabledOnly.class,
+		Github1485GenerateTest.FastActions.class, Github1485GenerateTest.FastDisjunction.class,
+		Github1485GenerateTest.FastBindings.class, Github1485GenerateTest.FastHighFanout.class,
+		Github1485GenerateTest.FastSubset.class, Github1485GenerateTest.FastSubsetBinding.class,
+		Github1485GenerateTest.FastSubsetEq.class, Github1485GenerateTest.FastCase.class,
+		Github1485GenerateTest.FastRL.class, Github1485GenerateTest.FastRLAction.class })
 public class Github1485GenerateTest {
 
 	public abstract static class GenerateTestCase extends ModelCheckerTestCase {
@@ -45,7 +50,7 @@ public class Github1485GenerateTest {
 		@Override
 		protected void beforeSetUp() {
 			// Properties outlive the test runner's class-loader isolation.
-			for (final String key : new String[] { SimulationWorker.PROBABILISTIC_KEY,
+			for (final String key : new String[] { SimulationWorker.PROBABILISTIC_KEY, "tlc2.tool.SimulationWorker.fast",
 					"tlc2.tool.Simulator.rl", "tlc2.tool.Simulator.rlaction", "tlc2.tool.Simulator.rl.enabledOnly" }) {
 				properties.put(key, System.getProperty(key));
 				System.clearProperty(key);
@@ -143,6 +148,66 @@ public class Github1485GenerateTest {
 	public static class RLActionEnabledOnly extends GenerateTestCase {
 		public RLActionEnabledOnly() {
 			super("Github1485HighFanout", "num=1,sched=rlaction", true, 1000001, 1000001);
+		}
+	}
+
+	public static class FastActions extends GenerateTestCase {
+		public FastActions() {
+			super("Github1485Disj", "num=200,sampling=fast", false, 201, 201);
+		}
+	}
+
+	public static class FastDisjunction extends GenerateTestCase {
+		public FastDisjunction() {
+			super("Github1485ConjTRUE", "num=200,sampling=fast", false, 201, 201);
+		}
+	}
+
+	public static class FastBindings extends GenerateTestCase {
+		public FastBindings() {
+			super("Github1485BoundedExists", "num=200,sampling=fast", false, 201, 201);
+		}
+	}
+
+	public static class FastHighFanout extends GenerateTestCase {
+		public FastHighFanout() {
+			super("Github1485HighFanout", "num=200,sampling=fast", false, 201, 201);
+		}
+	}
+
+	public static class FastSubset extends GenerateTestCase {
+		public FastSubset() {
+			super("Github1485Subset", "num=1,sampling=fast", false, 2, 2);
+		}
+	}
+
+	public static class FastSubsetBinding extends GenerateTestCase {
+		public FastSubsetBinding() {
+			super("Github1485SubsetBinding", "num=1,sampling=fast", false, 2, 2);
+		}
+	}
+
+	public static class FastSubsetEq extends GenerateTestCase {
+		public FastSubsetEq() {
+			super("Github1485SubsetEq", "num=1,sampling=fast", false, 2, 2);
+		}
+	}
+
+	public static class FastCase extends GenerateTestCase {
+		public FastCase() {
+			super("Github1485Case", "num=200,sampling=fast", false, 201, 201);
+		}
+	}
+
+	public static class FastRL extends GenerateTestCase {
+		public FastRL() {
+			super("Github1485HighFanout", "num=1,sched=rl,sampling=fast", true, 2, 2);
+		}
+	}
+
+	public static class FastRLAction extends GenerateTestCase {
+		public FastRLAction() {
+			super("Github1485HighFanout", "num=1,sched=rlaction,sampling=fast", true, 2, 2);
 		}
 	}
 }
