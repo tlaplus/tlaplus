@@ -20,7 +20,7 @@ import util.Assert;
 public class SetCapValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue capSet;
+  protected volatile SetEnumValue capSet;
 
   /* Constructor */
   public SetCapValue(Value set1, Value set2) {
@@ -35,8 +35,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.capSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -46,8 +45,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.convertAndCache();
-      return this.capSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -111,8 +109,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.convertAndCache();
-      return this.capSet.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -123,10 +120,11 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue capSet = this.capSet;
+      if (capSet == null) {
         return (this.set1.isNormalized() && this.set2.isNormalized());
       }
-      return this.capSet.isNormalized();
+      return capSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -137,12 +135,13 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue capSet = this.capSet;
+      if (capSet == null) {
         this.set1.normalize();
         this.set2.normalize();
       }
       else {
-        this.capSet.normalize();
+        capSet.normalize();
       }
       return this;
     }
@@ -168,15 +167,14 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 
 	@Override
 	public void write(final IValueOutputStream vos) throws IOException {
-		capSet.write(vos);
+		convertAndCache().write(vos);
 	}
 
   /* The fingerprint methods */
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.capSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -187,8 +185,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.capSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -196,15 +193,19 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.capSet == null) {
-      this.capSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue capSet = this.capSet;
+    if (capSet == null) {
+      capSet = (SetEnumValue) this.toSetEnum();
+      capSet.deepNormalize();
+      this.capSet = capSet;
     }
-    else if (this.capSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.capSet = val;
-    }
+    return capSet;
   }
   
   @Override
@@ -212,12 +213,6 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 	    try {
       set1.deepNormalize();
       set2.deepNormalize();
-      if (capSet == null) {
-        capSet = SetEnumValue.DummyEnum;
-      }
-      else if (capSet != SetEnumValue.DummyEnum) {
-        capSet.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -227,9 +222,13 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
 	  
   @Override
   public final Value toSetEnum() {
-      if (this.capSet != null && this.capSet != SetEnumValue.DummyEnum) {
-        return this.capSet;
+      final SetEnumValue capSet = this.capSet;
+      if (capSet != null) {
+        return capSet;
       }
+      // Not this.isNormalized(), which reads the cache that another worker may
+      // publish during the enumeration below.
+      final boolean isNorm = this.set1.isNormalized() && this.set2.isNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();	
       Value elem;
@@ -237,7 +236,7 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   /* String representation of this value.  */
@@ -266,10 +265,11 @@ public class SetCapValue extends EnumerableValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.capSet == null || this.capSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue capSet = this.capSet;
+      if (capSet == null) {
         return new Enumerator();
       }
-      return this.capSet.elements();
+      return capSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

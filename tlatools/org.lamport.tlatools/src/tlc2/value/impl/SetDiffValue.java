@@ -20,7 +20,7 @@ import util.Assert;
 public class SetDiffValue extends EnumerableValue implements Enumerable {
   public final Value set1;
   public final Value set2;
-  protected SetEnumValue diffSet;
+  protected volatile SetEnumValue diffSet;
 
   /* Constructor */
   public SetDiffValue(Value set1, Value set2) {
@@ -35,8 +35,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.convertAndCache();
-      return this.diffSet.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -46,8 +45,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.convertAndCache();
-      return this.diffSet.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -114,8 +112,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.convertAndCache();
-      return this.diffSet.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -126,10 +123,11 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final boolean isNormalized() {
     try {
-      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue diffSet = this.diffSet;
+      if (diffSet == null) {
         return this.set1.isNormalized();
       }
-      return this.diffSet.isNormalized();
+      return diffSet.isNormalized();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -140,12 +138,13 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final Value normalize() {
     try {
-      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue diffSet = this.diffSet;
+      if (diffSet == null) {
         this.set1.normalize();
         this.set2.normalize();
       }
       else {
-        this.diffSet.normalize();
+        diffSet.normalize();
       }
       return this;
     }
@@ -160,12 +159,6 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 	    try {
      set1.deepNormalize();
       set2.deepNormalize();
-      if (diffSet == null) {
-        diffSet = SetEnumValue.DummyEnum;
-      }
-      else if (diffSet != SetEnumValue.DummyEnum) {
-        diffSet.deepNormalize();
-      }
 	    }
 	    catch (RuntimeException | OutOfMemoryError e) {
 	      if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -189,15 +182,14 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
 
 	@Override
 	public final void write(final IValueOutputStream vos) throws IOException {
-		diffSet.write(vos);
+		convertAndCache().write(vos);
 	}
 
   /* The fingerprint methods */
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.convertAndCache();
-      return this.diffSet.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -208,8 +200,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.convertAndCache();
-      return this.diffSet.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -217,22 +208,30 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
     }
   }
 
-  private final void convertAndCache() {
-    if (this.diffSet == null) {
-      this.diffSet = (SetEnumValue) this.toSetEnum();
+  /**
+   * Returns the normalized enumeration of this set, which this method caches.
+   * Workers may share this set, so the cache only changes from null to its
+   * normalized value, and a method must read the cache only once.
+   */
+  private final SetEnumValue convertAndCache() {
+    SetEnumValue diffSet = this.diffSet;
+    if (diffSet == null) {
+      diffSet = (SetEnumValue) this.toSetEnum();
+      diffSet.deepNormalize();
+      this.diffSet = diffSet;
     }
-    else if (this.diffSet == SetEnumValue.DummyEnum) {
-      SetEnumValue val = (SetEnumValue) this.toSetEnum();
-      val.deepNormalize();
-      this.diffSet = val;
-    }
+    return diffSet;
   }
 
   @Override
   public final Value toSetEnum() {
-      if (this.diffSet != null && this.diffSet != SetEnumValue.DummyEnum) {
-        return this.diffSet;
+      final SetEnumValue diffSet = this.diffSet;
+      if (diffSet != null) {
+        return diffSet;
       }
+      // Before the enumeration, during which another worker may publish the
+      // cache of set1.
+      final boolean isNorm = this.set1.isNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value elem;
@@ -240,7 +239,7 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.set1.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   /* The string representation  */
@@ -269,10 +268,11 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
   @Override
   public final ValueEnumeration elements() {
     try {
-      if (this.diffSet == null || this.diffSet == SetEnumValue.DummyEnum) {
+      final SetEnumValue diffSet = this.diffSet;
+      if (diffSet == null) {
         return new Enumerator();
       }
-      return this.diffSet.elements();
+      return diffSet.elements();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }

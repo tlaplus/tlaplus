@@ -31,7 +31,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     /***********************************************************************
     * Was OpDeclNode or OpDeclNode[].                                      *
     ***********************************************************************/
-  public Value inVal;           // the in value or the real set
+  public volatile Value inVal;  // the in value or the real set
   public final SemanticNode pred;     // the predicate
   public final ITool tool;             // null iff inVal is the real set
   /**
@@ -40,7 +40,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
    * might interfere.
    * MAK 07/18/2019
    */
-  private boolean converted = false; 
+  private volatile boolean converted = false;
   public final Context con;
   public final TLCState state;
   public final TLCState pstate;
@@ -86,9 +86,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int compareTo(Object obj) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-      return this.inVal.compareTo(obj);
+      return this.convertAndCache().compareTo(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -98,9 +96,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
 
   public final boolean equals(Object obj) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-      return this.inVal.equals(obj);
+      return this.convertAndCache().equals(obj);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -202,9 +198,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final int size() {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-      return this.inVal.size();
+      return this.convertAndCache().size();
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -218,11 +212,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   }
 
   private final void writeObject(ObjectOutputStream oos) throws IOException {
-    if (!this.converted) {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-    }
-    oos.writeObject(this.inVal);
+    oos.writeObject(this.convertAndCache());
   }
 
   /* This method normalizes (destructively) this set. */
@@ -270,9 +260,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final long fingerPrint(long fp) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-      return this.inVal.fingerPrint(fp);
+      return this.convertAndCache().fingerPrint(fp);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -283,9 +271,7 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
   @Override
   public final IValue permute(IMVPerm perm) {
     try {
-      this.inVal = this.toSetEnum();
-      this.converted = true;
-      return this.inVal.permute(perm);
+      return this.convertAndCache().permute(perm);
     }
     catch (RuntimeException | OutOfMemoryError e) {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
@@ -293,11 +279,25 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
     }
   }
 
+  private final SetEnumValue convertAndCache() {
+    if (!this.converted) {
+      final SetEnumValue val = (SetEnumValue) this.toSetEnum();
+      val.normalize();
+      this.inVal = val;
+      this.converted = true;
+      return val;
+    }
+    return (SetEnumValue) this.inVal;
+  }
+
   @Override
   public Value toSetEnum() {
       if (this.converted) {
     	  return (SetEnumValue) this.inVal;
       }
+      // Read before enumerating, because another worker may concurrently replace
+      // inVal with its (normalized) enumeration.
+      final boolean isNorm = this.isNormalized();
       ValueVec vals = new ValueVec();
       ValueEnumeration Enum = this.elements();
       Value  elem;
@@ -305,12 +305,12 @@ public class SetPredValue extends EnumerableValue implements Enumerable {
         vals.addElement(elem);
       }
       if (coverage) {cm.incSecondary(vals.size());}
-      return new SetEnumValue(vals, this.isNormalized(), cm);
+      return new SetEnumValue(vals, isNorm, cm);
   }
 
   @Override
   public void write(final IValueOutputStream vos) throws IOException {
-	  inVal.write(vos);
+	  this.convertAndCache().write(vos);
   }
 
   /* The string representation of the value. */

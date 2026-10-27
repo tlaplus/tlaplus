@@ -632,8 +632,8 @@
 			release="${java.release}"
 			encoding="UTF-8"
 		>
-			<!-- Treat all warnings as errors. -->
-			<compilerarg value="-Werror" />
+			<!-- No -Werror: javac warns about sun.misc.Unsafe (LookupTool), and
+			     neither @SuppressWarnings nor -Xlint silences that warning. -->
 			<classpath refid="project.classpath" />
 			<classpath>
 				<pathelement location="lib/junit-4.12.jar" />
@@ -848,6 +848,7 @@
 					<exclude name="**/SuiteETestCase.java" />
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
+					<exclude name="**/Github1445TestCase.java" />
 					<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 					<exclude name="**/AbstractCoverageTest.java" />
 					<exclude name="**/InitEvalOrderTest.java" />
@@ -1278,6 +1279,7 @@
 						<exclude name="**/TLCServerTestCase.java" />
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
 						<exclude name="**/AbstractExampleTestCase.java" />
+						<exclude name="**/Github1445TestCase.java" />
 						<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 						<exclude name="**/AbstractCoverageTest.java" />
 						<exclude name="**/InitEvalOrderTest.java" />
@@ -1696,6 +1698,137 @@
 			<arg value="4" />
 		</jbmc>
 
+	</target>
+
+	<target name="test-lincheck" depends="compile"
+		description="Run the Lincheck concurrency tests in test-lincheck (requires Lincheck in target/lincheck/lib)">
+		<!-- Override this property to check classes built from another revision
+		     while retaining the current tests. -->
+		<property name="lincheck.production.classpath" location="${class.dir}" />
+		<!-- Lincheck instruments the JDK's classes too, and its ASM cannot read
+		     class files newer than those of the JDK it was released for. -->
+		<property name="lincheck.java.home" location="${java.home}" />
+		<!-- Lincheck and its dependencies, which test-lincheck/pom.xml resolves. -->
+		<property name="lincheck.lib.dir" location="target/lincheck/lib" />
+		<fail message="Lincheck is missing from ${lincheck.lib.dir}. Run: mvn -f test-lincheck/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=${lincheck.lib.dir}">
+			<condition>
+				<not>
+					<available file="${lincheck.lib.dir}" type="dir" />
+				</not>
+			</condition>
+		</fail>
+		<delete dir="target/lincheck/classes" />
+		<mkdir dir="target/lincheck/classes" />
+		<path id="lincheck.classpath">
+			<fileset dir="${lincheck.lib.dir}" includes="*.jar" />
+			<pathelement location="lib/junit-4.12.jar" />
+			<pathelement location="lib/hamcrest-core-1.3.jar" />
+			<pathelement location="lib/gson/gson-2.14.0.jar" />
+		</path>
+		<!-- javac compiles only the classes in test that the tests use, such as
+		     tlc2.tool.TLCStates, instead of all of test and its dependencies. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-lincheck/"
+			sourcepath="test"
+			destdir="target/lincheck/classes"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<path refid="lincheck.classpath" />
+			</classpath>
+		</javac>
+		<junit fork="yes" jvm="${lincheck.java.home}/bin/java" printsummary="yes" failureproperty="lincheck.failed" errorproperty="lincheck.failed" showoutput="yes">
+			<!-- Lincheck attaches its instrumentation agent to the running JVM. -->
+			<jvmarg value="-XX:+IgnoreUnrecognizedVMOptions" />
+			<jvmarg value="-XX:+EnableDynamicAgentLoading" />
+			<jvmarg value="-Djdk.attach.allowAttachSelf=true" />
+			<classpath>
+				<pathelement path="target/lincheck/classes" />
+				<pathelement path="${lincheck.production.classpath}" />
+				<path refid="lincheck.classpath" />
+			</classpath>
+			<formatter type="plain" usefile="false" />
+			<batchtest>
+				<fileset dir="test-lincheck" includes="**/*Test.java" />
+			</batchtest>
+		</junit>
+		<fail if="lincheck.failed" message="Lincheck tests failed" />
+	</target>
+
+	<target name="test-jcstress" depends="compile"
+		description="Run the jcstress concurrency tests in test-jcstress (requires jcstress in target/jcstress/lib)">
+		<!-- Override this property to check classes built from another revision
+		     while retaining the current tests. -->
+		<property name="jcstress.production.classpath" location="${class.dir}" />
+		<!-- The JIT and the memory model differ between JDKs, and so do the races
+		     jcstress observes: those of Github issue #439 show up on JDK 11 and 17. -->
+		<property name="jcstress.java.home" location="${java.home}" />
+		<!-- sanity, quick, default, tough, or stress; see jcstress -h. On JDK 11,
+		     default takes 15 minutes and showed every race of TLC as of 932d35ec2.
+		     quick takes two minutes and missed that of SetOfTuplesValueNullCacheTest. -->
+		<property name="jcstress.mode" value="default" />
+		<!-- jcstress and its dependencies, which test-jcstress/pom.xml resolves. -->
+		<property name="jcstress.lib.dir" location="target/jcstress/lib" />
+		<fail message="jcstress is missing from ${jcstress.lib.dir}. Run: mvn -f test-jcstress/pom.xml dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=${jcstress.lib.dir}">
+			<condition>
+				<not>
+					<available file="${jcstress.lib.dir}" type="dir" />
+				</not>
+			</condition>
+		</fail>
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="target/jcstress" excludes="lib/**" />
+		</delete>
+		<mkdir dir="target/jcstress/classes" />
+		<path id="jcstress.classpath">
+			<fileset dir="${jcstress.lib.dir}" includes="*.jar" />
+		</path>
+		<!-- jcstress's annotation processor generates the test harnesses. As with
+		     test-lincheck, javac compiles only the classes in test that the tests use. -->
+		<javac
+			includeantruntime="false"
+			srcdir="test-jcstress/"
+			sourcepath="test"
+			destdir="target/jcstress/classes"
+			release="${java.release}"
+			encoding="UTF-8"
+		>
+			<compilerarg value="-processorpath" />
+			<compilerarg pathref="jcstress.classpath" />
+			<compilerarg value="-implicit:class" />
+			<classpath>
+				<pathelement path="${class.dir}" />
+				<path refid="jcstress.classpath" />
+			</classpath>
+		</javac>
+		<java classname="org.openjdk.jcstress.Main" fork="yes" jvm="${jcstress.java.home}/bin/java"
+			dir="target/jcstress" failonerror="true" output="target/jcstress/jcstress.log" logError="true">
+			<classpath>
+				<pathelement path="target/jcstress/classes" />
+				<pathelement path="${jcstress.production.classpath}" />
+				<path refid="jcstress.classpath" />
+			</classpath>
+			<arg value="-t" />
+			<arg value="tlc2.jcstress" />
+			<arg value="-m" />
+			<arg value="${jcstress.mode}" />
+			<arg value="-r" />
+			<arg file="target/jcstress/results" />
+		</java>
+		<!-- jcstress exits with 0 even if tests fail, so check its summary. -->
+		<fail message="jcstress tests failed; see target/jcstress/jcstress.log and target/jcstress/results/index.html">
+			<condition>
+				<not>
+					<and>
+						<resourcecontains resource="${basedir}/target/jcstress/jcstress.log" substring="Failed tests: No matches." />
+						<resourcecontains resource="${basedir}/target/jcstress/jcstress.log" substring="Error tests: No matches." />
+					</and>
+				</not>
+			</condition>
+		</fail>
 	</target>
 
 	<!-- http://hg.openjdk.java.net/code-tools/jmh/file/3769055ad883/jmh-ant-sample/build.xml -->
