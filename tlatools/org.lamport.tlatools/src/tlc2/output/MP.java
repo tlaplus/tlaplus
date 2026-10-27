@@ -1261,17 +1261,19 @@ public class MP
                     + "The checkpoint was created with -seed %1% -fp %2% -workers %3% (fingerprint %4%).\n"
                     + "This run is using -seed %5% -fp %6% -workers %7% (fingerprint %8%).\n"
                     + "Changed: %9%.\n"
-                    + "To match the checkpoint, rerun with -seed %1% -fp %2% -workers %3%.");
+                    + "To match the checkpoint, rerun with -seed %1% -fp %2% -workers %3%.\n"
+                    + "Recovery will continue with the current settings at your own risk.");
             break;
         case EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE:
             b.append("Checkpoint settings metadata could not be verified (%1%). Results may be unreliable. States may be skipped and counterexamples may contain missing or incorrect states.\n"
                     + "The metadata is truncated or malformed, so TLC cannot confirm that -seed, -fp, and -workers match the checkpoint.\n"
-                    + "Recovery will continue with the current settings.");
+                    + "Recovery will continue with the current settings at your own risk.");
             break;
         case EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH:
             b.append("This checkpoint was created by TLC revision %1%, but this run is TLC revision %2%. "
                     + "Recovering a checkpoint with a different TLC version is not supported: "
-                    + "states may be skipped and counterexamples may contain missing or incorrect states.");
+                    + "states may be skipped and counterexamples may contain missing or incorrect states.\n"
+                    + "Recovery will continue with this TLC version at your own risk.");
             break;
 
         case EC.TLC_STATS:
