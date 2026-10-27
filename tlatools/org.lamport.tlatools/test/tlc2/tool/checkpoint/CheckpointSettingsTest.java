@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2026, Oracle and/or its affiliates.
+ * Copyright (c) 2026 Matt Van Horn.
  *
  * The MIT License (MIT)
  *
