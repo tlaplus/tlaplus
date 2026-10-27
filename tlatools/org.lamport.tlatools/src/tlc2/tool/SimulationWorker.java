@@ -85,13 +85,15 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	public static final String PROBABILISTIC_KEY = "tlc2.tool.impl.Tool.probabilistic";
 	public static final String FAST_KEY = "tlc2.tool.SimulationWorker.fast";
 	private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
-	private static final boolean FAST = Boolean.getBoolean(FAST_KEY);
 
 	public static boolean isProbabilistic() {
 		return PROBABILISTIC;
 	}
 
 	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
+
+	// Snapshot the option for each run, rather than caching it across TLC invocations.
+	private final boolean fast = Boolean.getBoolean(FAST_KEY);
 
 	// This worker's local source of randomness.
 	protected final RandomGenerator localRng;
@@ -654,7 +656,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 
 	@Override
 	public boolean isFirstSuccessorOnly() {
-		return isProbabilistic() && FAST;
+		return isProbabilistic() && fast;
 	}
 	
 	@Override
