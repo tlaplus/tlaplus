@@ -160,10 +160,11 @@ public class CheckpointSettingsTest {
 		final String legacy = text(SEED, FP, WORKERS).split("revision=")[0];
 		Files.write(file(dir, "chkpt").toPath(), legacy.getBytes(StandardCharsets.UTF_8));
 		assertValues(settings.recover(), SEED, FP, WORKERS);
-		assertFalse(recorder.recorded(EC.GENERAL));
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
 		Files.write(file(dir, "chkpt").toPath(), (legacy + "revision=other-build\n").getBytes(StandardCharsets.UTF_8));
 		assertValues(settings.recover(), SEED, FP, WORKERS);
-		assertTrue(recorder.recorded(EC.GENERAL));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
+				"other-build", TLCGlobals.Version.revisionOrDev()));
 	}
 
 	private void install(long seed, int fp) {
@@ -176,7 +177,7 @@ public class CheckpointSettingsTest {
 	}
 
 	private void assertNoSettingsWarning() {
-		assertFalse(recorder.recorded(EC.GENERAL));
+		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
 		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH));
 		assertFalse(recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
 	}

@@ -1268,6 +1268,11 @@ public class MP
                     + "The metadata is truncated, malformed, or uses an unsupported version, so TLC cannot confirm that -seed, -fp, and -workers match the checkpoint.\n"
                     + "Recovery will continue with the current settings.");
             break;
+        case EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH:
+            b.append("This checkpoint was created by TLC revision %1%, but this run is TLC revision %2%. "
+                    + "Recovering a checkpoint with a different TLC version is not supported: "
+                    + "states may be skipped and counterexamples may contain missing or incorrect states.");
+            break;
 
         case EC.TLC_STATS:
             b.append("%1% states generated, %2% distinct states found, %3% states left on queue.");

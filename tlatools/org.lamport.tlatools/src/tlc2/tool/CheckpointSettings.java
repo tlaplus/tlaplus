@@ -221,10 +221,8 @@ public class CheckpointSettings {
 			final String checkpointRevision = rawLines[5].trim().substring("revision=".length());
 			final String currentRevision = TLCGlobals.Version.revisionOrDev();
 			if (!checkpointRevision.equals(currentRevision)) {
-				MP.printWarning(EC.GENERAL, "This checkpoint was created by TLC revision " + checkpointRevision
-						+ ", but this run is TLC revision " + currentRevision
-						+ ". Recovering a checkpoint with a different TLC version is not supported:"
-						+ " states may be skipped and counterexamples may contain missing or incorrect states.");
+				MP.printWarning(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH,
+						new String[] { checkpointRevision, currentRevision });
 			}
 		}
 		return new Values(seed.longValue(), fpIndex.intValue(), fp.longValue(), parsedWorkers.intValue());

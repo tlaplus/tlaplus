@@ -107,7 +107,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 		assertEquals(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, created.errorCode);
 		assertTrue(created.recorder.recorded(EC.TLC_CHECKPOINT_END));
 		assertTrue(created.recorder.recorded(EC.TLC_STATE_PRINT2));
-		assertFalse(created.recorder.recorded(EC.GENERAL));
+		assertFalse(created.recorder.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
 		assertCommittedSettings(created.checkpoint, SEED, FP, WORKERS);
 		assertFalse(settingsFile(created.checkpoint, "tmp").exists());
 		final String[] stats = stats(created);
@@ -119,7 +119,6 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 		// The checkpoint is taken after the first counterexample, so recovery
 		// continues and reports the next violation rather than that same trace.
 		assertFalse(trace(matching).isEmpty());
-		assertFalse(matching.recorder.recorded(EC.GENERAL));
 
 		assertMismatch(recover(created.checkpoint, "seed", 99L, FP, WORKERS),
 				SEED, FP, WORKERS, 99L, FP, WORKERS, "seed");
@@ -273,6 +272,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 	}
 
 	private static void assertNoSettingsWarning(TestMPRecorder rec) {
+		assertFalse(rec.recorded(EC.TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH));
 		assertFalse(rec.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_MISMATCH));
 		assertFalse(rec.recorded(EC.TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE));
 	}

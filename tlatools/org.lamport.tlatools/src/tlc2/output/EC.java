@@ -257,6 +257,11 @@ public interface EC
      * continued because the metadata could not be checked.
      */
     public static final int TLC_CHECKPOINT_RECOVER_SETTINGS_UNVERIFIABLE = 2286;
+    /**
+     * The checkpoint was created by a different TLC revision. Cross-version
+     * recovery is not supported; recovery continued anyway.
+     */
+    public static final int TLC_CHECKPOINT_RECOVER_REVISION_MISMATCH = 2287;
     public static final int TLC_STATS = 2199;
     public static final int TLC_STATS_DFID = 2204;
     public static final int TLC_STATS_SIMU = 2210;
