@@ -150,7 +150,7 @@ public class LiveCheck1 implements ILiveCheck {
 				BEGraphNode destNode = (BEGraphNode) allNodes.get(destFP);
 				if (destNode == null) {
 					destNode = new BEGraphNode(destFP);
-					destNode.setCheckState(os.checkState(tool, srcState));
+					destNode.setCheckState(os.checkState(tool, destState));
 					destNode.addTransition(destNode, slen, alen, os.checkAction(tool, destState, destState));
 					srcNode.addTransition(destNode, slen, alen, os.checkAction(tool, srcState, destState));
 					allNodes.put(destFP, destNode);
