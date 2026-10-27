@@ -95,8 +95,11 @@ public class CheckpointSettings {
 	public void commitChkpt() throws IOException {
 		final File oldChkpt = checkpointSettingsFile(this.metadir, "chkpt");
 		final File newChkpt = checkpointSettingsFile(this.metadir, "tmp");
-		if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt)) {
-			throw new IOException("ModelChecker.commitChkpt: cannot delete " + oldChkpt);
+		if (oldChkpt.exists() && !oldChkpt.delete()) {
+			throw new IOException("CheckpointSettings.commitChkpt: cannot delete " + oldChkpt);
+		}
+		if (!newChkpt.renameTo(oldChkpt)) {
+			throw new IOException("CheckpointSettings.commitChkpt: cannot rename " + newChkpt + " to " + oldChkpt);
 		}
 	}
 
