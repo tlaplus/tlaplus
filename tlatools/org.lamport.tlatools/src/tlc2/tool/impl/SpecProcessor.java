@@ -151,6 +151,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
     private Vect<Action> initPredVec; // The initial state predicate.
     private Action nextPred; // The next state predicate.
+    private OpDefNode specDef; // The SPECIFICATION, if any.
     private Action[] temporals; // Fairness specifications...
     private String[] temporalNames; // ... and their names
     private Action[] impliedTemporals; // Liveness conds to check...
@@ -804,6 +805,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { specName });
                 }
+                this.specDef = opDef;
                 this.processConfigSpec(opDef.getBody(), Context.Empty, List.Empty, new ArrayList<>());
             } else if (spec == null)
             {
@@ -1019,6 +1021,39 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns true iff def under the substitutions subs, innermost first, is the
+     * SPECIFICATION. When the SPECIFICATION comes from an INSTANCE, its body is
+     * the original body under SANY's substitutions for that INSTANCE.
+     */
+    private boolean isSpecification(final Object def, List subs)
+    {
+        if (def == this.specDef && subs.isEmpty())
+        {
+            return true;
+        }
+        if (!(def instanceof OpDefNode))
+        {
+            return false;
+        }
+        final ArrayList<Subst[]> specSubsts = new ArrayList<>();
+        ExprNode body = this.specDef.getBody();
+        while (body instanceof SubstInNode)
+        {
+            specSubsts.add(((SubstInNode) body).getSubsts());
+            body = ((SubstInNode) body).getBody();
+        }
+        for (int i = specSubsts.size() - 1; i >= 0; i--)
+        {
+            if (subs.isEmpty() || ((SubstInNode) subs.car()).getSubsts() != specSubsts.get(i))
+            {
+                return false;
+            }
+            subs = subs.cdr();
+        }
+        return subs.isEmpty() && body == ((OpDefNode) def).getBody();
     }
 
     private static boolean isConfigDef(final Object def)
@@ -1593,6 +1628,14 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					return;
 				}
 			}
+            if (opcode == OPCODE_implies && this.specDef != null && args[0] instanceof OpApplNode
+                    && ((OpApplNode) args[0]).getArgs().length == 0
+                    && this.isSpecification(symbolNodeValueLookupProvider.lookup(((OpApplNode) args[0]).getOperator(), c, false, toolId), subs))
+            {
+                // Spec => P where Spec is the SPECIFICATION holds iff P holds of every behavior of Spec.
+                this.processConfigProps(name, configName, (ExprNode) args[1], c, subs);
+                return;
+            }
             if (opcode == OPCODE_cl || opcode == OPCODE_land)
             {
                 for (int i = 0; i < args.length; i++)
