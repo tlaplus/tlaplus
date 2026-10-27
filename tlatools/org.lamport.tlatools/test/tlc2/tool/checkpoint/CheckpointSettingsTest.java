@@ -202,7 +202,7 @@ public class CheckpointSettingsTest {
 	}
 
 	private static File file(File dir, String ext) {
-		return new File(dir, "settings." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
+		return new File(dir, "tmp".equals(ext) ? "settings.tmp.chkpt" : "settings.chkpt");
 	}
 
 	private File scratchDir() throws Exception {

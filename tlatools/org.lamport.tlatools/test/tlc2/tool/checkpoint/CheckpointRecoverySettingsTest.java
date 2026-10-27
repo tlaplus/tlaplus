@@ -413,7 +413,7 @@ public class CheckpointRecoverySettingsTest extends CommonTestCase {
 	}
 
 	private static File settingsFile(File dir, String ext) {
-		return new File(dir, "settings." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
+		return new File(dir, "tmp".equals(ext) ? "settings.tmp.chkpt" : "settings.chkpt");
 	}
 
 	private static String settings(int version, long seed, int fpIndex, long fp, int workers) {

@@ -48,7 +48,8 @@ import tlc2.value.RandomEnumerableValues;
 public class CheckpointSettings {
 
 	private static final int CHECKPOINT_SETTINGS_VERSION = 1;
-	private static final String CHECKPOINT_SETTINGS_PREFIX = "settings";
+	private static final String CHECKPOINT_SETTINGS_FILE = "settings.chkpt";
+	private static final String CHECKPOINT_SETTINGS_TMP_FILE = "settings.tmp.chkpt";
 	/** Larger than any settings file this version writes; anything bigger is not metadata. */
 	private static final int CHECKPOINT_SETTINGS_MAX_BYTES = 4096;
 
@@ -71,7 +72,7 @@ public class CheckpointSettings {
 	 * sidecar. {@link #commitChkpt()} publishes it.
 	 */
 	public void beginChkpt() throws IOException {
-		final File tmp = checkpointSettingsFile(this.metadir, "tmp");
+		final File tmp = new File(this.metadir, CHECKPOINT_SETTINGS_TMP_FILE);
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(tmp), StandardCharsets.UTF_8)) {
 			writer.write(checkpointSettingsText());
 		} catch (IOException e) {
@@ -93,18 +94,14 @@ public class CheckpointSettings {
 	}
 
 	public void commitChkpt() throws IOException {
-		final File oldChkpt = checkpointSettingsFile(this.metadir, "chkpt");
-		final File newChkpt = checkpointSettingsFile(this.metadir, "tmp");
+		final File oldChkpt = new File(this.metadir, CHECKPOINT_SETTINGS_FILE);
+		final File newChkpt = new File(this.metadir, CHECKPOINT_SETTINGS_TMP_FILE);
 		if (oldChkpt.exists() && !oldChkpt.delete()) {
 			throw new IOException("CheckpointSettings.commitChkpt: cannot delete " + oldChkpt);
 		}
 		if (!newChkpt.renameTo(oldChkpt)) {
 			throw new IOException("CheckpointSettings.commitChkpt: cannot rename " + newChkpt + " to " + oldChkpt);
 		}
-	}
-
-	private static File checkpointSettingsFile(String dir, String ext) {
-		return new File(dir, CHECKPOINT_SETTINGS_PREFIX + "." + ("tmp".equals(ext) ? "tmp.chkpt" : ext));
 	}
 
 	/** @return the {@link FP64#Polys} index of {@code poly}, or -1 if it is not in the table */
@@ -126,7 +123,7 @@ public class CheckpointSettings {
 	 * @return the stored settings, or null when the sidecar is absent or could not be checked
 	 */
 	public Values recover() throws IOException {
-		final File file = checkpointSettingsFile(this.fromChkpt, "chkpt");
+		final File file = new File(this.fromChkpt, CHECKPOINT_SETTINGS_FILE);
 		if (!file.isFile()) {
 			return null;
 		}
