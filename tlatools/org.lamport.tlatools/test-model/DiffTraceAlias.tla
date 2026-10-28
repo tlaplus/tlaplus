@@ -13,4 +13,8 @@ MixedAlias == IF c = 0 THEN [a |-> IF a = 0 THEN "none" ELSE a, ab |-> a * b] EL
 Spec == Init /\ [][Next]_<<a, b, c, d>> /\ WF_<<a, b, c, d>>(Next)
 
 Liveness == []<>(d = 0)
+
+\* Violated by the fifth state. TLC finds the violation in the behavior graph,
+\* like a safety property.
+SafetyProp == [](c = 1 => [](d = 0))
 ====
