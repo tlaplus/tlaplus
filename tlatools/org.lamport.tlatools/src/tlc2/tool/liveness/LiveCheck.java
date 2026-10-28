@@ -837,7 +837,10 @@ public class LiveCheck implements ILiveCheck {
 				MP.printError(EC.TLC_COUNTER_EXAMPLE);
 
 				for (int i = 0; i < states.size(); i++) {
-					StatePrinter.printInvariantViolationStateTraceState(states.get(i));
+					final TLCStateInfo printable = states.get(i);
+					StatePrinter.printInvariantViolationStateTraceState(printable,
+							StatePrinter.getPreviousState(printable, i == 0 ? null : states.get(i - 1)),
+							(int) printable.stateNumber);
 				}
 				
 				// Stop subsequent state-space exploration.
