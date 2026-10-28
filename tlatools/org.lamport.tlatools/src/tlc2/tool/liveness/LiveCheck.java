@@ -832,7 +832,7 @@ public class LiveCheck implements ILiveCheck {
 				// Post-hoc property attribution: treat the safety-like
 				// violation as a lasso where the last state stutters forever.
 				final Set<String> violated = Liveness.findViolatedProperties(tool,
-						states.stream().map(s -> s.state).collect(Collectors.toList()), states.size() - 1);
+						states.stream().map(s -> s.getOriginalState()).collect(Collectors.toList()), states.size() - 1);
 				MP.printError(EC.TLC_TEMPORAL_PROPERTY_VIOLATED, violated.toArray(String[]::new));
 				MP.printError(EC.TLC_COUNTER_EXAMPLE);
 

@@ -72,6 +72,10 @@ Alias == IF TLCGet("config").mode = "simulate" THEN
 \* Omits x, which Prop refers to.
 YAlias == [y |-> y]
 
+\* Violated by the step from x = 3 to x = 4. TLC finds the violation in the
+\* behavior graph, like a safety property.
+SafetyProp == [](x >= 3 => [](x < 4))
+
 PostCondition ==
 	/\ TLCGet("config").mode = "bfs" => TLCSet(42, TLCGet("generated"))
   	/\ CounterExample = 
