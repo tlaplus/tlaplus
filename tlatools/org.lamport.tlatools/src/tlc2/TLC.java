@@ -1476,7 +1476,8 @@ public class TLC {
 		TLC_PLAIN("tlcplain", "_TLCTracePlain", "_TLCTrace", "_TLCTraceFile"),
 		TLC_TE_SPEC("tlcTESpec", "_TLCTESpec", "_TLCTrace", "_TLCTraceFile"),
 		TLC_ACTION("tlcaction", "_TLCActionTrace", "_TLCTrace", "_TLCTraceFile"),
-		DOT("dot", "_DotTrace", "_DotTrace", "_DotTraceFile");
+		DOT("dot", "_DotTrace", "_DotTrace", "_DotTraceFile"),
+		CBOR("cbor", "_CBORTrace", "_CBORTrace", "_CBORTraceFile");
 
 		final String flag;
 		final String module;
@@ -1752,9 +1753,12 @@ public class TLC {
 														"in case of a property violation, formats the TLA+ error trace\n"
     													+ "as the given format and dumps the output to the specified\n"
 														+ "file.  The file is relative to the same directory as the\n"
-														+ "main spec. At the time of writing, TLC supports the \"tla\"\n"
-														+ "and the \"json\" formats.  To dump to multiple formats, the\n"
-														+ "-dumpTrace parameter may appear multiple times.\n"
+														+ "main spec. The formats are \"json\", \"tlc\", \"tla\",\n"
+														+ "\"tlcplain\", \"tlcTESpec\", \"tlcaction\", \"dot\", and \"cbor\".\n"
+														+ "All but \"json\" and \"tlc\" require the CommunityModules\n"
+														+ "(https://github.com/tlaplus/CommunityModules) on the\n"
+														+ "classpath.  To dump to multiple formats, the -dumpTrace\n"
+														+ "parameter may appear multiple times.\n"
 														+ "The git commits 1eb815620 and 386eaa19f show that adding new\n"
 														+ "formats is easy.\n", true));
     	sharedArguments.add(new UsageGenerator.Argument("-inv", "expr", 
