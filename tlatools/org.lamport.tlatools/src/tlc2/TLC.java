@@ -61,6 +61,7 @@ import tlc2.util.NoopStateWriter;
 import tlc2.util.RandomGenerator;
 import tlc2.util.StateWriter;
 import tlc2.value.RandomEnumerableValues;
+import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.DebugPrinter;
 import util.ExecutionStatisticsCollector;
@@ -176,6 +177,7 @@ public class TLC {
      */
     private int traceDepth;
     private FilenameToStream resolver;
+    private final List<DumpTraceFormat> dumpTraceFormats = new ArrayList<>();
 
     /**
 	 * Whether welcome message has already been printed.
@@ -773,6 +775,7 @@ public class TLC {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
 						return false;
 					}
+					dumpTraceFormats.add(format);
 					@SuppressWarnings("unchecked")
 					final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
 							ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
@@ -1350,6 +1353,7 @@ public class TLC {
                 UniqueString.internTbl.recover(fromChkpt);
             }
             FP64.Init(fpIndex);
+            checkDumpTraceModules();
     		
     		final RandomGenerator rng = new RandomGenerator();
             // Start checking:
@@ -1469,26 +1473,48 @@ public class TLC {
         }
     }
     
+	// Checks with the resolver SANY will use, so modules supplied via TLA-Library
+	// count too, and fails before SANY reports only the module it cannot find.
+	private void checkDumpTraceModules() {
+		final FilenameToStream r = resolver != null ? resolver : ToolIO.getDefaultResolver();
+		for (final DumpTraceFormat format : dumpTraceFormats) {
+			if (format.communityModule == null) {
+				continue;
+			}
+			final File file = r.resolve(format.communityModule + TLAConstants.Files.TLA_EXTENSION, true);
+			if (file == null || !file.exists()) {
+				Assert.fail(EC.TLC_PARSING_FAILED2, String.format(
+						"%n-dumpTrace %s requires the CommunityModules (https://github.com/tlaplus/CommunityModules)"
+								+ " on the classpath, but TLC cannot find its module %s.",
+						format.flag, format.communityModule));
+			}
+		}
+	}
+
 	private enum DumpTraceFormat {
-		JSON("json", "_JsonTrace", "_JsonTrace", "_JsonTraceFile"),
-		TLA("tla", "_TLAPlusCounterExample", "_TLAPlusCounterExample", "_TLAPlusCounterExampleFile"),
-		TLC("tlc", "_TLCTrace", "_TLCTrace", "_TLCTraceFile"),
-		TLC_PLAIN("tlcplain", "_TLCTracePlain", "_TLCTrace", "_TLCTraceFile"),
-		TLC_TE_SPEC("tlcTESpec", "_TLCTESpec", "_TLCTrace", "_TLCTraceFile"),
-		TLC_ACTION("tlcaction", "_TLCActionTrace", "_TLCTrace", "_TLCTraceFile"),
-		DOT("dot", "_DotTrace", "_DotTrace", "_DotTraceFile"),
-		CBOR("cbor", "_CBORTrace", "_CBORTrace", "_CBORTraceFile");
+		JSON("json", "_JsonTrace", "_JsonTrace", "_JsonTraceFile", null),
+		TLA("tla", "_TLAPlusCounterExample", "_TLAPlusCounterExample", "_TLAPlusCounterExampleFile", "IOUtils"),
+		TLC("tlc", "_TLCTrace", "_TLCTrace", "_TLCTraceFile", null),
+		TLC_PLAIN("tlcplain", "_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", "IOUtils"),
+		TLC_TE_SPEC("tlcTESpec", "_TLCTESpec", "_TLCTrace", "_TLCTraceFile", "IOUtils"),
+		TLC_ACTION("tlcaction", "_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", "IOUtils"),
+		DOT("dot", "_DotTrace", "_DotTrace", "_DotTraceFile", "GraphViz"),
+		CBOR("cbor", "_CBORTrace", "_CBORTrace", "_CBORTraceFile", "CBOR");
 
 		final String flag;
 		final String module;
 		final String operator;
 		final String constant;
+		// The first CommunityModules module that the format's module imports, or null.
+		final String communityModule;
 
-		DumpTraceFormat(final String flag, final String module, final String operator, final String constant) {
+		DumpTraceFormat(final String flag, final String module, final String operator, final String constant,
+				final String communityModule) {
 			this.flag = flag;
 			this.module = module;
 			this.operator = operator;
 			this.constant = constant;
+			this.communityModule = communityModule;
 		}
 
 		static DumpTraceFormat of(final String flag) {
