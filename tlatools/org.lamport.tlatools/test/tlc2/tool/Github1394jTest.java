@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// INVARIANT BoxTypeOK where THEOREM BoxTypeOK == []TypeOK
 public class Github1394jTest extends ModelCheckerTestCase {
 
 	public Github1394jTest() {
-		super("Github1394", new String[] { "-config", "Github1394j.cfg" }, EC.ExitStatus.FAILURE_SAFETY_EVAL);
+		super("Github1394", new String[] { "-config", "Github1394j.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -26,6 +25,7 @@ public class Github1394jTest extends ModelCheckerTestCase {
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_LEVEL, "BoxTypeOK"));
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "invariant", "SpecTypeOK"));
 	}
 }

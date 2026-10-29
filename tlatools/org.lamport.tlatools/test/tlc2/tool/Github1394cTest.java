@@ -7,7 +7,6 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecSmall where THEOREM SpecSmall == Spec => [](x < 2)
 public class Github1394cTest extends ModelCheckerTestCase {
 
 	public Github1394cTest() {

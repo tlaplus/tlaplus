@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY A!SpecSmall where A substitutes x + 1 for x: A!Spec is not the configured SPECIFICATION
 public class Github1394nTest extends ModelCheckerTestCase {
 
 	public Github1394nTest() {
-		super("Github1394Ext", new String[] { "-config", "Github1394n.cfg" }, EC.ExitStatus.ERROR);
+		super("Github1394", new String[] { "-config", "Github1394n.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -26,6 +25,7 @@ public class Github1394nTest extends ModelCheckerTestCase {
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_LIVE_WRONG_FORMULA_FORMAT));
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "property", "SmallAP"));
 	}
 }

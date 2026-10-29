@@ -7,7 +7,6 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecReachesTwo where THEOREM SpecReachesTwo == Spec => <>(x = 2)
 public class Github1394dTest extends ModelCheckerTestCase {
 
 	public Github1394dTest() {

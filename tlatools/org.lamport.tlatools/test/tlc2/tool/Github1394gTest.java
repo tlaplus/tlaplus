@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// INVARIANT Small where LEMMA Small == x < 2
 public class Github1394gTest extends ModelCheckerTestCase {
 
 	public Github1394gTest() {
-		super("Github1394", new String[] { "-config", "Github1394g.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
+		super("Github1394", new String[] { "-config", "Github1394g.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -27,6 +26,6 @@ public class Github1394gTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "Small"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "invariant", "Small"));
 	}
 }

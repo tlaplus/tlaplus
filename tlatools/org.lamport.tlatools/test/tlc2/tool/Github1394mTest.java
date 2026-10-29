@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecSmall where the theorem and Spec come from INSTANCE Github1394
 public class Github1394mTest extends ModelCheckerTestCase {
 
 	public Github1394mTest() {
-		super("Github1394Inst", new String[] { "-config", "Github1394m.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
+		super("Github1394Ext", new String[] { "-config", "Github1394m.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -27,6 +26,6 @@ public class Github1394mTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "SpecSmall"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "property", "A!SpecSmall"));
 	}
 }

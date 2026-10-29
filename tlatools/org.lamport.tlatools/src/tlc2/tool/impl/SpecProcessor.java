@@ -38,7 +38,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -152,8 +151,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
     private Vect<Action> initPredVec; // The initial state predicate.
     private Action nextPred; // The next state predicate.
-    private OpDefNode specDef; // The SPECIFICATION, if any.
-    private final Map<ThmOrAssumpDefNode, ExprNode> theoremExprs = new IdentityHashMap<>();
+    private OpDefNode specDef;
     private Action[] temporals; // Fairness specifications...
     private String[] temporalNames; // ... and their names
     private Action[] impliedTemporals; // Liveness conds to check...
@@ -823,10 +821,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         for (int i = 0; i < propNames.size(); i++)
         {
             String propName = (String) propNames.elementAt(i);
-            Object prop = this.lookupConfigDef(propName);
-            if (isConfigDef(prop))
+            Object prop = this.lookupDefOrTheorem(propName);
+            if (prop instanceof OpDefNode)
             {
-                SymbolNode opDef = (SymbolNode) prop;
+                OpDefNode opDef = (OpDefNode) prop;
                 if (opDef.getArity() != 0)
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { propName });
@@ -834,13 +832,13 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 				if (opDef.getLevel() == LevelNode.VariableLevel) {
 					MP.printWarning(EC.TLC_LIVE_FORMULA_STATE_LEVEL, new String[] { propName });
 				}
-                this.processConfigProps(propName, propName, getConfigDefBody(opDef), Context.Empty, List.Empty);
+                this.processConfigProps(propName, propName, opDef.getBody(), Context.Empty, List.Empty);
+            } else if (prop instanceof ThmOrAssumpDefNode)
+            {
+                this.processConfigTheorem(propName, propName, (ThmOrAssumpDefNode) prop, Context.Empty, List.Empty);
             } else if (prop == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "property", propName });
-            } else if (prop instanceof ThmOrAssumpDefNode)
-            {
-                Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_EXPRESSION, new String[] { "property", propName });
             } else if (!(prop instanceof IBoolValue) || !(((BoolValue) prop).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "property", propName, prop.toString() });
@@ -915,7 +913,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 			// Resolve PROPERTY L 
 			final String liveName = (String) this.config.getProperties().elementAt(0);
 			// This cast is safe because of code above.
-			final SymbolNode opDefNode = (SymbolNode) this.lookupConfigDef(liveName);
+			final SymbolNode opDefNode = (SymbolNode) this.lookupDefOrTheorem(liveName);
 			// Raise a warning if a (novice) user checks S /\ L => L, where L is a liveness
 			// property (and S is the safety part of Spec). Note that we only handle a small
 			// subset of the syntactic variants of S /\ L => L.
@@ -1007,11 +1005,7 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         }
     }
 
-    /**
-     * Returns the definition of name or, if there is none, the named theorem
-     * that is visible from the root module.
-     */
-    private Object lookupConfigDef(final String name)
+    private Object lookupDefOrTheorem(final String name)
     {
         final Object def = this.defns.get(name);
         if (def != null)
@@ -1028,11 +1022,6 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         return null;
     }
 
-    /**
-     * Returns true iff def under the substitutions subs, innermost first, is the
-     * SPECIFICATION. When the SPECIFICATION comes from an INSTANCE, its body is
-     * the original body under SANY's substitutions for that INSTANCE.
-     */
     private boolean isSpecification(final Object def, List subs)
     {
         if (def == this.specDef && subs.isEmpty())
@@ -1061,26 +1050,33 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         return subs.isEmpty() && body == ((OpDefNode) def).getBody();
     }
 
-    private boolean isConfigDef(final Object def)
+    private boolean isSpecImplication(final OpApplNode pred, final Context c, final List subs)
     {
-        return def instanceof OpDefNode
-                || (def instanceof ThmOrAssumpDefNode && getTheoremExpr((ThmOrAssumpDefNode) def) != null);
-    }
-
-    private ExprNode getConfigDefBody(final SymbolNode def)
-    {
-        return def instanceof OpDefNode ? ((OpDefNode) def).getBody()
-                : getTheoremExpr((ThmOrAssumpDefNode) def);
+        final ExprOrOpArgNode[] args = pred.getArgs();
+        return this.specDef != null && BuiltInOPs.getOpCode(pred.getOperator().getName()) == OPCODE_implies
+                && args[0] instanceof OpApplNode && ((OpApplNode) args[0]).getArgs().length == 0
+                && this.isSpecification(symbolNodeValueLookupProvider.lookup(((OpApplNode) args[0]).getOperator(), c, false, toolId), subs);
     }
 
     /**
-     * Returns the expression a theorem asserts, or null for ASSUME/PROVE. SANY
-     * wraps the body of a theorem obtained through INSTANCE in an APSubstInNode,
-     * which becomes a SubstInNode as it does when an expression names the theorem.
+     * A theorem asserts that its formula holds of every behavior, but TLC checks a
+     * property only of the behaviors of the SPECIFICATION. The two agree only for a
+     * theorem that asserts Spec => P, where Spec is the SPECIFICATION.
      */
-    private ExprNode getTheoremExpr(final ThmOrAssumpDefNode thm)
+    private void processConfigTheorem(final String name, final String configName, final ThmOrAssumpDefNode thm,
+            final Context c, List subs)
     {
-        return this.theoremExprs.computeIfAbsent(thm, t -> toTheoremExpr(t.getBody()));
+        ExprNode expr = toTheoremExpr(thm.getBody());
+        while (expr instanceof SubstInNode)
+        {
+            subs = subs.cons(expr);
+            expr = ((SubstInNode) expr).getBody();
+        }
+        if (!(expr instanceof OpApplNode) || !this.isSpecImplication((OpApplNode) expr, c, subs))
+        {
+            Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, new String[] { "property", thm.getName().toString() });
+        }
+        this.processConfigProps(name, configName, (ExprNode) ((OpApplNode) expr).getArgs()[1], c, subs);
     }
 
     private static ExprNode toTheoremExpr(final LevelNode body)
@@ -1114,11 +1110,10 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
         for (int i = 0; i < invs.size(); i++)
         {
             String name = (String) invs.elementAt(i);
-            Object inv = this.lookupConfigDef(name);
-            if (isConfigDef(inv))
+            Object inv = this.lookupDefOrTheorem(name);
+            if (inv instanceof OpDefNode)
             {
-                SymbolNode def = (SymbolNode) inv;
-                ExprNode body = getConfigDefBody(def);
+                OpDefNode def = (OpDefNode) inv;
                 if (def.getArity() != 0)
                 {
                     Assert.fail(EC.TLC_CONFIG_ID_REQUIRES_NO_ARG, new String[] { "invariant", name });
@@ -1132,20 +1127,19 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
                 // for more context.
                 if (def.getLevel() >= 2)
                 {
-               		if (!body.levelParams.isEmpty()) {
+               		if (!def.getBody().levelParams.isEmpty()) {
                         Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, new String[] { def.getName().toString(), "includeWarning" });
                		}
                 	Assert.fail(EC.TLC_INVARIANT_VIOLATED_LEVEL, def.getName().toString());
                 }
                 this.invNameVec.addElement(name);
-                this.invVec.addElement(def instanceof OpDefNode ? new Action(body, Context.Empty, (OpDefNode) def)
-                        : new Action(body, Context.Empty, name));
+                this.invVec.addElement(new Action(def.getBody(), Context.Empty, def));
+            } else if (inv instanceof ThmOrAssumpDefNode)
+            {
+                Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, new String[] { "invariant", name });
             } else if (inv == null)
             {
                 Assert.fail(EC.TLC_CONFIG_SPECIFIED_NOT_DEFINED, new String[] { "invariant", name });
-            } else if (inv instanceof ThmOrAssumpDefNode)
-            {
-                Assert.fail(EC.TLC_CONFIG_THEOREM_NOT_EXPRESSION, new String[] { "invariant", name });
             } else if (!(inv instanceof IBoolValue) || !(((BoolValue) inv).val))
             {
                 Assert.fail(EC.TLC_CONFIG_ID_HAS_VALUE, new String[] { "invariant", name, inv.toString() });
@@ -1530,13 +1524,16 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 
             if (args.length == 0 && opNode.getKind() != VariableDeclKind)
             {
-                if (isConfigDef(val))
+                if (val instanceof OpDefNode)
                 {
-                    if (((SymbolNode) val).getArity() != 0)
+                    if (((OpDefNode) val).getArity() != 0)
                     {
                         Assert.fail(EC.TLC_CONFIG_OP_NO_ARGS, opNode.getName().toString());
                     }
-                    this.processConfigProps(opNode.getName().toString(), configName, getConfigDefBody((SymbolNode) val), c, subs);
+                    this.processConfigProps(opNode.getName().toString(), configName, ((OpDefNode) val).getBody(), c, subs);
+                } else if (val instanceof ThmOrAssumpDefNode)
+                {
+                    this.processConfigTheorem(opNode.getName().toString(), configName, (ThmOrAssumpDefNode) val, c, subs);
                 } else if (val == null)
                 {
                     Assert.fail(EC.TLC_CONFIG_OP_NOT_IN_SPEC, opNode.getName().toString());
@@ -1641,11 +1638,8 @@ public class SpecProcessor implements ValueConstants, ToolGlobals {
 					return;
 				}
 			}
-            if (opcode == OPCODE_implies && this.specDef != null && args[0] instanceof OpApplNode
-                    && ((OpApplNode) args[0]).getArgs().length == 0
-                    && this.isSpecification(symbolNodeValueLookupProvider.lookup(((OpApplNode) args[0]).getOperator(), c, false, toolId), subs))
+            if (this.isSpecImplication(pred1, c, subs))
             {
-                // Spec => P where Spec is the SPECIFICATION holds iff P holds of every behavior of Spec.
                 this.processConfigProps(name, configName, (ExprNode) args[1], c, subs);
                 return;
             }

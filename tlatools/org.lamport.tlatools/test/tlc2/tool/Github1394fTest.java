@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// INVARIANT StateInv BaseInv where BaseInv is a THEOREM of the EXTENDed Github1394Base
 public class Github1394fTest extends ModelCheckerTestCase {
 
 	public Github1394fTest() {
-		super("Github1394", new String[] { "-config", "Github1394f.cfg" }, EC.ExitStatus.SUCCESS);
+		super("Github1394Ext", new String[] { "-config", "Github1394f.cfg" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Override

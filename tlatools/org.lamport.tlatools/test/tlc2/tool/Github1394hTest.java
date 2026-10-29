@@ -7,7 +7,6 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY Props where Props refers to the theorems BoxTypeOK and StateInv
 public class Github1394hTest extends ModelCheckerTestCase {
 
 	public Github1394hTest() {

@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecTypeOK where the theorem and Spec come from INSTANCE Github1394
 public class Github1394lTest extends ModelCheckerTestCase {
 
 	public Github1394lTest() {
-		super("Github1394Inst", new String[] { "-config", "Github1394l.cfg" }, EC.ExitStatus.SUCCESS);
+		super("Github1394Inst", new String[] { "-config", "Github1394l.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
 	}
 
 	@Override
@@ -27,7 +26,6 @@ public class Github1394lTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "3", "0"));
+		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "SpecSmall"));
 	}
 }

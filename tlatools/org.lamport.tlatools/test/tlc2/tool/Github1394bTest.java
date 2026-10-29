@@ -7,7 +7,6 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecTypeOK where THEOREM SpecTypeOK == Spec => []TypeOK
 public class Github1394bTest extends ModelCheckerTestCase {
 
 	public Github1394bTest() {

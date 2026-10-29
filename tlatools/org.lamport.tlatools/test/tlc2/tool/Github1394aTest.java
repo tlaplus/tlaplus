@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY BoxTypeOK where THEOREM BoxTypeOK == []TypeOK
 public class Github1394aTest extends ModelCheckerTestCase {
 
 	public Github1394aTest() {
-		super("Github1394", new String[] { "-config", "Github1394a.cfg" }, EC.ExitStatus.SUCCESS);
+		super("Github1394", new String[] { "-config", "Github1394a.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -27,7 +26,6 @@ public class Github1394aTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
-		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "3", "0"));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "property", "BoxTypeOK"));
 	}
 }

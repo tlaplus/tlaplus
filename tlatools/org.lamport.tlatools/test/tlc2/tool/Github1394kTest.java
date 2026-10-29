@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY BoxSmall where THEOREM BoxSmall == [](x < 2)
 public class Github1394kTest extends ModelCheckerTestCase {
 
 	public Github1394kTest() {
-		super("Github1394", new String[] { "-config", "Github1394k.cfg" }, EC.ExitStatus.VIOLATION_SAFETY);
+		super("Github1394Inst", new String[] { "-config", "Github1394k.cfg" }, EC.ExitStatus.SUCCESS);
 	}
 
 	@Override
@@ -27,6 +26,7 @@ public class Github1394kTest extends ModelCheckerTestCase {
 	@Test
 	public void testSpec() {
 		assertTrue(recorder.recorded(EC.TLC_FINISHED));
-		assertTrue(recorder.recordedWithStringValue(EC.TLC_INVARIANT_VIOLATED_BEHAVIOR, "BoxSmall"));
+		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_STATS, "4", "3", "0"));
 	}
 }

@@ -7,11 +7,10 @@ import org.junit.Test;
 import tlc2.output.EC;
 import tlc2.tool.liveness.ModelCheckerTestCase;
 
-// PROPERTY SpecTypeOK under INIT/NEXT: Spec is not the configured SPECIFICATION
 public class Github1394iTest extends ModelCheckerTestCase {
 
 	public Github1394iTest() {
-		super("Github1394", new String[] { "-config", "Github1394i.cfg" }, EC.ExitStatus.ERROR);
+		super("Github1394", new String[] { "-config", "Github1394i.cfg" }, EC.ExitStatus.ERROR_CONFIG_PARSE);
 	}
 
 	@Override
@@ -26,6 +25,7 @@ public class Github1394iTest extends ModelCheckerTestCase {
 
 	@Test
 	public void testSpec() {
-		assertTrue(recorder.recorded(EC.TLC_LIVE_WRONG_FORMULA_FORMAT));
+		assertTrue(recorder.recorded(EC.TLC_FINISHED));
+		assertTrue(recorder.recordedWithStringValues(EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE, "property", "SpecTypeOK"));
 	}
 }
