@@ -768,48 +768,15 @@ public class TLC {
 				index++; // consume "-dumpTrace".
 				if ((index + 1) < args.length) {
 					final String fmt = args[index++];
-					if ("json".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_JsonTrace", "_JsonTrace", "_JsonTraceFile", args[index++]));
-					} else if ("tla".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLAPlusCounterExample", "_TLAPlusCounterExample",
-								"_TLAPlusCounterExampleFile", args[index++]));
-					} else if ("tlc".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
-					} else if ("tlcplain".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTracePlain", "_TLCTrace", "_TLCTraceFile", args[index++]));
-					} else if ("tlcTESpec".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCTESpec", "_TLCTrace", "_TLCTraceFile", args[index++]));
-					} else if ("tlcaction".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_TLCActionTrace", "_TLCTrace", "_TLCTraceFile", args[index++]));
-					} else if ("dot".equalsIgnoreCase(fmt)) {
-						@SuppressWarnings("unchecked")
-						final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
-								ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
-						pcs.add(new PostCondition("_DotTrace", "_DotTrace", "_DotTraceFile", args[index++]));
-					} else if ("Tomorrow's most favorite format".equalsIgnoreCase(fmt)) {
-						//Add your new dumpTrace formats here!
-					} else {
+					final DumpTraceFormat format = DumpTraceFormat.of(fmt);
+					if (format == null) {
 						printErrorMsg("Error: Unknown format " + fmt + " given to -dumpTrace.");
 						return false;
 					}
+					@SuppressWarnings("unchecked")
+					final List<PostCondition> pcs = (List<PostCondition>) params.computeIfAbsent(
+							ParameterizedSpecObj.POST_CONDITIONS, k -> new ArrayList<PostCondition>());
+					pcs.add(new PostCondition(format.module, format.operator, format.constant, args[index++]));
 				} else {
 					printErrorMsg("Error: A format and a file name for dumping traces required.");
 					return false;
@@ -1502,6 +1469,37 @@ public class TLC {
         }
     }
     
+	private enum DumpTraceFormat {
+		JSON("json", "_JsonTrace", "_JsonTrace", "_JsonTraceFile"),
+		TLA("tla", "_TLAPlusCounterExample", "_TLAPlusCounterExample", "_TLAPlusCounterExampleFile"),
+		TLC("tlc", "_TLCTrace", "_TLCTrace", "_TLCTraceFile"),
+		TLC_PLAIN("tlcplain", "_TLCTracePlain", "_TLCTrace", "_TLCTraceFile"),
+		TLC_TE_SPEC("tlcTESpec", "_TLCTESpec", "_TLCTrace", "_TLCTraceFile"),
+		TLC_ACTION("tlcaction", "_TLCActionTrace", "_TLCTrace", "_TLCTraceFile"),
+		DOT("dot", "_DotTrace", "_DotTrace", "_DotTraceFile");
+
+		final String flag;
+		final String module;
+		final String operator;
+		final String constant;
+
+		DumpTraceFormat(final String flag, final String module, final String operator, final String constant) {
+			this.flag = flag;
+			this.module = module;
+			this.operator = operator;
+			this.constant = constant;
+		}
+
+		static DumpTraceFormat of(final String flag) {
+			for (final DumpTraceFormat format : values()) {
+				if (format.flag.equalsIgnoreCase(flag)) {
+					return format;
+				}
+			}
+			return null;
+		}
+	}
+
 	private static boolean isBFS() {
 		return TLCGlobals.DFIDMax == -1;
 	}
