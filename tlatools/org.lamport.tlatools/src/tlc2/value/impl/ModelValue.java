@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import tlc2.output.EC;
 import tlc2.tool.FingerprintException;
 import tlc2.util.FP64;
 import tlc2.value.IMVPerm;
@@ -83,6 +84,10 @@ public class ModelValue extends Value implements IModelValue {
   /* Constructor */
   private ModelValue(String val) {
     // SZ 11.04.2009: changed access method
+    if (count > Short.MAX_VALUE) {
+      Assert.fail(EC.TLC_FEATURE_UNSUPPORTED, "TLC supports at most " + (Short.MAX_VALUE + 1)
+          + " model values, but model value " + val + " exceeds this limit.");
+    }
     this.val = UniqueString.uniqueStringOf(val);
     this.index = count++;
     if (   (val.length() > 2)
