@@ -1380,6 +1380,11 @@ public class MP
         case EC.TLC_CONFIG_ID_HAS_VALUE:
             b.append("The %1% of %2% is equal to %3%");
             break;
+        case EC.TLC_CONFIG_THEOREM_NOT_CHECKABLE:
+            b.append("The %1% %2% is a theorem that TLC cannot check."
+                    + "\nTLC checks a theorem only as a property of the form Spec => P, where Spec is the SPECIFICATION."
+                    + "\nFor any other theorem, TLC would check only that it holds of the behaviors of Spec, not that it is valid.");
+            break;
         case EC.TLC_CONFIG_MISSING_INIT:
             b.append("The configuration file did not specify the initial state predicate.");
             break;
