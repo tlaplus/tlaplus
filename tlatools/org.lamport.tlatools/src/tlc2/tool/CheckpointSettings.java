@@ -1,4 +1,4 @@
-// Copyright (c) 2026, Oracle and/or its affiliates.
+// Copyright (c) 2026 Matt Van Horn.
 
 package tlc2.tool;
 
@@ -14,6 +14,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.StandardCopyOption;
 
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
@@ -75,9 +76,8 @@ public class CheckpointSettings {
 	public void commitChkpt() throws IOException {
 		final File oldChkpt = checkpointSettingsFile(this.metadir, "chkpt");
 		final File newChkpt = checkpointSettingsFile(this.metadir, "tmp");
-		if ((oldChkpt.exists() && !oldChkpt.delete()) || !newChkpt.renameTo(oldChkpt)) {
-			throw new IOException("ModelChecker.commitChkpt: cannot delete " + oldChkpt);
-		}
+		// A failed move leaves the previous sidecar in place and reports its own cause.
+		Files.move(newChkpt.toPath(), oldChkpt.toPath(), StandardCopyOption.ATOMIC_MOVE);
 	}
 
 	private static File checkpointSettingsFile(String dir, String ext) {

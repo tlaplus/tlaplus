@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2026, Oracle and/or its affiliates.
+ * Copyright (c) 2026 Matt Van Horn.
  *
  * The MIT License (MIT)
  *
@@ -26,8 +26,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -103,6 +105,23 @@ public class CheckpointSettingsTest {
 		assertEquals(text(99L, FP + 1, WORKERS), read(file(dir, "chkpt")));
 		assertValues(settings.recover(), 99L, FP + 1, WORKERS);
 		assertNoSettingsWarning();
+	}
+
+	@Test
+	public void testFailedCommitKeepsPreviousSettings() throws Exception {
+		final File dir = scratchDir();
+		install(SEED, FP);
+		final CheckpointSettings settings = new CheckpointSettings(dir.getAbsolutePath(), WORKERS);
+		settings.beginChkpt();
+		settings.commitChkpt();
+
+		// No temporary sidecar is left to move, so this commit fails.
+		try {
+			settings.commitChkpt();
+			fail("commit without a temporary sidecar must fail");
+		} catch (IOException expected) {
+			assertEquals(text(SEED, FP, WORKERS), read(file(dir, "chkpt")));
+		}
 	}
 
 	@Test
