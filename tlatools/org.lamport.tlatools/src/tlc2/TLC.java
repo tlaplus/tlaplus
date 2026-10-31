@@ -39,6 +39,7 @@ import tlc2.output.Messages;
 import tlc2.tool.DFIDModelChecker;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.Simulator;
+import tlc2.tool.SimulationWorker;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
@@ -464,8 +465,10 @@ public class TLC {
         {
             if (args[index].equals("-simulate") || args[index].equals("-generate"))
             {
-            	if (args[index].equals("-generate")) {
-					System.setProperty(Tool.class.getName() + ".probabilistic", Boolean.TRUE.toString());
+                final boolean generate = args[index].equals("-generate");
+                if (generate) {
+					System.setProperty(SimulationWorker.PROBABILISTIC_KEY, Boolean.TRUE.toString());
+					System.setProperty(SimulationWorker.FAST_KEY, Boolean.FALSE.toString());
             	}
             	runMode = RunMode.SIMULATE;
                 index++;
@@ -476,7 +479,8 @@ public class TLC {
 				// "file=..." and "num=..." are only relevant for simulation which is why they
 				// are args to "-simulate".
 				if ((index < args.length) && (args[index].contains("stats=") || args[index].contains("file=")
-						|| args[index].contains("num=") ||args[index].contains("sched"))) {
+						|| args[index].contains("num=") ||args[index].contains("sched")
+						|| args[index].contains("sampling="))) {
 					final String[] simArgs = args[index].split(",");
 					index++; // consume simulate args
 					for (String arg : simArgs) {
@@ -492,6 +496,13 @@ public class TLC {
 							System.setProperty(Simulator.class.getName() + ".rl", Boolean.TRUE.toString());
 						} else if (arg.equals("sched=rlaction")) {
 							System.setProperty(Simulator.class.getName() + ".rlaction", Boolean.TRUE.toString());
+						} else if (arg.startsWith("sampling=")) {
+							if (!generate || !(arg.equals("sampling=uniform") || arg.equals("sampling=fast"))) {
+								printErrorMsg("Error: -generate sampling must be uniform or fast.");
+								return false;
+							}
+							System.setProperty(SimulationWorker.FAST_KEY,
+									Boolean.toString(arg.equals("sampling=fast")));
 						}
 					}
                     if(traceNum == Long.MAX_VALUE && traceFile != null) {
@@ -1906,6 +1917,16 @@ public class TLC {
     	// implies workers 1
     	// bfs and simulation only (no iddfs)
     	commandVariants.add(simulateVariant);
+
+		final List<UsageGenerator.Argument> generateVariant = new ArrayList<>(simulateVariant);
+		generateVariant.remove(generateVariant.size() - 1);
+		generateVariant.add(new UsageGenerator.Argument("-generate", null,
+				"generate traces; accepts the -simulate parameters and\n"
+				+ "'sampling=uniform' (default), which enumerates all successors,\n"
+				+ "or 'sampling=fast', which takes the first successor found in\n"
+				+ "randomized traversal. Fast sampling can be biased and checks\n"
+				+ "properties only on candidates visited before selection.", false, "num=X,sampling=fast"));
+		commandVariants.add(generateVariant);
 
     	
     	final List<String> tips = new ArrayList<String>();

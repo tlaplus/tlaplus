@@ -42,6 +42,11 @@ public interface INextStateFunctor extends IStateFunctor {
 	default void incrementStatesGenerated(long sz) {
 	}
 
+	/** Requests randomized traversal that stops when {@link #hasStates()} is true. */
+	default boolean isFirstSuccessorOnly() {
+		return false;
+	}
+
 	default boolean halt() {
 		//no-op
 		return false;		
