@@ -469,7 +469,12 @@ public class Json {
     else if (node.isJsonPrimitive()) {
       JsonPrimitive primitive = node.getAsJsonPrimitive();
       if (primitive.isNumber()) {
-        return IntValue.gen(primitive.getAsInt());
+        final String literal = primitive.getAsString();
+        try {
+          return IntValue.gen(Integer.parseInt(literal));
+        } catch (NumberFormatException e) {
+          throw new IOException("Cannot convert value: expected a 32-bit integer JSON number, but found " + literal, e);
+        }
       }
       else if (primitive.isBoolean()) {
         return new BoolValue(primitive.getAsBoolean());
