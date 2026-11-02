@@ -537,7 +537,13 @@ public class ModelConfig implements ValueConstants, Serializable {
         } else if (tt.kind == TLAplusParserConstants.STRING_LITERAL)
         {
             String tval = tt.image;
-            return new StringValue(tval.substring(1, tval.length() - 1));
+            final String contents = tval.substring(1, tval.length() - 1);
+            if (contents.indexOf('\\') >= 0)
+            {
+                throw new ConfigFileException(EC.CFG_LEXICAL_ERROR, new String[] {
+                        "escape sequences are not supported in strings at line " + tt.beginLine });
+            }
+            return new StringValue(contents);
         } else if (tt.image.equals("TRUE"))
         {
             return BoolValue.ValTrue;

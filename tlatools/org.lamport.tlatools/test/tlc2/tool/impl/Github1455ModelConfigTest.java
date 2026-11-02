@@ -41,10 +41,13 @@ import org.junit.rules.TemporaryFolder;
 import tlc2.output.EC;
 import tlc2.tool.ConfigFileException;
 import tlc2.util.Vect;
+import tlc2.value.impl.StringValue;
 
 /**
  * https://github.com/tlaplus/tlaplus/issues/1455: a lexical error in a model
  * configuration must not be taken for the end of the file.
+ * https://github.com/tlaplus/tlaplus/issues/1503: string constants in a model
+ * configuration must not silently keep escape sequences.
  */
 public class Github1455ModelConfigTest {
 
@@ -52,7 +55,7 @@ public class Github1455ModelConfigTest {
 	public final TemporaryFolder folder = new TemporaryFolder();
 
 	private ModelConfig parse(final String contents) throws IOException {
-		final File cfg = folder.newFile("Github1455.cfg");
+		final File cfg = folder.newFile();
 		Files.write(cfg.toPath(), contents.getBytes(StandardCharsets.UTF_8));
 		final ModelConfig config = new ModelConfig(cfg.getAbsolutePath(), null);
 		config.parse();
@@ -145,5 +148,43 @@ public class Github1455ModelConfigTest {
 	@Test
 	public void testIllegalCharacterAfterConstant() throws IOException {
 		assertLexicalError("INIT Init\nNEXT Next\nCONSTANT N = 1\n`\nINVARIANT Never\n", 4);
+	}
+
+	private String constantValue(final String literal) throws IOException {
+		final ModelConfig config = parse("INIT Init\nNEXT Next\nCONSTANT C = " + literal + "\nINVARIANT Never\n");
+		final Vect<?> constants = config.getConstants();
+		assertEquals(1, constants.size());
+		final Vect<?> assignment = (Vect<?>) constants.elementAt(0);
+		return ((StringValue) assignment.elementAt(1)).val.toString();
+	}
+
+	@Test
+	public void testPlainStringConstantValue() throws IOException {
+		assertEquals("abc", constantValue("\"abc\""));
+	}
+
+	@Test
+	public void testEscapeSequencesRejected() throws IOException {
+		for (final String escape : new String[] { "\\\"", "\\\\", "\\t", "\\n", "\\r", "\\f", "\\q" }) {
+			assertLexicalError("INIT Init\nNEXT Next\nCONSTANT C = \"a" + escape + "b\"\nINVARIANT Never\n", 3);
+		}
+	}
+
+	// Verify escape sequences are rejected in nested sets.
+	@Test
+	public void testEscapeSequenceInNestedSetRejected() throws IOException {
+		assertLexicalError("INIT Init\n" + "NEXT Next\n" + "CONSTANT C = {\"ok\", {\"a\\nb\"}}\n" + "INVARIANT Never\n", 3);
+	}
+
+	// Verify escape sequences are rejected in module-specific constants.
+	@Test
+	public void testEscapeSequenceInModuleConstantRejected() throws IOException {
+		assertLexicalError("INIT Init\n" + "NEXT Next\n" + "CONSTANT C = [M] \"a\\nb\"\n" + "INVARIANT Never\n", 3);
+	}
+
+	// Verify escape sequences are rejected in parameterized constant arguments.
+	@Test
+	public void testEscapeSequenceInParameterizedConstantRejected() throws IOException {
+		assertLexicalError("INIT Init\n" + "NEXT Next\n" + "CONSTANT C(\"a\\nb\") = 1\n" + "INVARIANT Never\n", 3);
 	}
 }
