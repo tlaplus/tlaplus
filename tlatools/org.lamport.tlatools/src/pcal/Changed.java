@@ -38,6 +38,12 @@ public class Changed {
 	    count[i] = c.count[i];
     }
 
+	public void AllChanged() {
+		for (int i = 0; i < count.length; i++) {
+			count[i] = 1;
+		}
+	}
+ 
     public String toString () {
 	String s = "[";
 	for (int i = 0; i < count.length; i++)
