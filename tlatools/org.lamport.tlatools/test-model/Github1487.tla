@@ -8,9 +8,9 @@ VARIABLES sub, uni, cup, cap, dif, fcns, rcds, tups, pred, fcn, i, k
 \* right away.
 Init == /\ sub = SUBSET {0, 1}
         /\ uni = UNION SUBSET {0, 1}
-        /\ cup = SUBSET {0, 1} \cup SUBSET {2}
-        /\ cap = SUBSET {0, 1} \cap SUBSET {1, 2}
-        /\ dif = SUBSET {0, 1} \ SUBSET {1}
+        /\ cup = (SUBSET {0, 1}) \cup SUBSET {2}
+        /\ cap = (SUBSET {0, 1}) \cap SUBSET {1, 2}
+        /\ dif = (SUBSET {0, 1}) \ SUBSET {1}
         /\ fcns = [{0, 1} -> {0, 1}]
         /\ rcds = [a : {0, 1}]
         /\ tups = {0, 1} \X {0, 1}
