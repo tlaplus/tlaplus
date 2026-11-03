@@ -54,7 +54,7 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
 
   (* Initialize A and B with all possible combination of sorted sequences. *)
   init:           
-    with (r \in SUBSET Nat \ {{}}) {
+    with (r \in (SUBSET Nat) \ {{}}) {
        with (s \in ((SUBSET (Nat)) \ {{}})) {
            with (t \in OrderedSequences(s) \cup {<<>>}) {
                B := t;
@@ -123,7 +123,7 @@ OrderedSequences(set) == UNION {{perm \in [1..Cardinality(set) -> set]:
 }
 
 ***     this ends the comment containg the pluscal code      **********)
-\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "8099c642")
+\* BEGIN TRANSLATION (chksum(pcal) = "7c28162a" /\ chksum(tla) = "d7db263c")
 VARIABLES pc, history, a, aLength, A, b, bLength, B, O
 
 (* define statement *)
@@ -146,7 +146,7 @@ Init == (* Global variables *)
         /\ pc = "init"
 
 init == /\ pc = "init"
-        /\ \E r \in SUBSET Nat \ {{}}:
+        /\ \E r \in (SUBSET Nat) \ {{}}:
              \E s \in ((SUBSET (Nat)) \ {{}}):
                \E t \in OrderedSequences(s) \cup {<<>>}:
                  /\ B' = t

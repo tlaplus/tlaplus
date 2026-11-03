@@ -164,11 +164,7 @@ public class OperatorPrecedenceTests {
 
   /**
    * All these operator precedence values are taken from the PDF "Summary
-   * of TLA+" (https://lamport.azurewebsites.net/tla/summary-standalone.pdf)
-   * with the exception of SUBSET, UNION, and DOMAIN which were incorrectly
-   * documented as having precedences 8-8, 8-8, and 9-9 respectively; SANY
-   * sets their precedences as 10-13. See this GitHub issue:
-   * https://github.com/tlaplus/tlaplus/issues/892
+   * of TLA+" (https://lamport.azurewebsites.net/tla/summary-standalone.pdf).
    *
    * The very first string symbol in the array is the canonical symbol for
    * that operator.
@@ -179,9 +175,9 @@ public class OperatorPrecedenceTests {
     new Operator(FixKind.PREFIX, new String[] {"UNCHANGED"}, 4, 15, false),
     new Operator(FixKind.PREFIX, new String[] {"[]"}, 4, 15, false),
     new Operator(FixKind.PREFIX, new String[] {"<>"}, 4, 15, false),
-    new Operator(FixKind.PREFIX, new String[] {"SUBSET"}, 10, 13, false),
-    new Operator(FixKind.PREFIX, new String[] {"UNION"}, 10, 13, false),
-    new Operator(FixKind.PREFIX, new String[] {"DOMAIN"}, 10, 13, false),
+    new Operator(FixKind.PREFIX, new String[] {"SUBSET"}, 8, 8, false),
+    new Operator(FixKind.PREFIX, new String[] {"UNION"}, 8, 8, false),
+    new Operator(FixKind.PREFIX, new String[] {"DOMAIN"}, 9, 9, false),
     new Operator(FixKind.PREFIX, new String[] {"-"}, 12, 12, false),
     new Operator(FixKind.INFIX, new String[] {"=>"}, 1, 1, false),
     new Operator(FixKind.INFIX, new String[] {"-+->"}, 2, 2, false),

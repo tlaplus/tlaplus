@@ -82,7 +82,7 @@ SetEnumMember   == {1} \in {{1}, {"a"}}
 \* SUBSET, Seq, Cartesian products, function sets, and record sets.
 
 SubsetMixedMember    == {1} \in SUBSET {1, "a"}
-SubsetMixedCupMember == {1} \in SUBSET {1, "a"} \cup {}
+SubsetMixedCupMember == {1} \in (SUBSET {1, "a"}) \cup {}
 SeqMixedMember       == <<1>> \in Seq({1, "a"})
 SeqMixedPairMember   == <<1, "a">> \in Seq({1, "a"})
 ProductMixedMember   == <<1, 2>> \in {1, "a"} \X {2}
