@@ -128,7 +128,9 @@ public class StateMonitor {
 				.newProxyInstance(mbeanServerConnection, mbeanName, TLCStatisticsMXBean.class, true);
 
 		while (true) {
-			System.out.printf("############ %s ############\n%s", SDF.format(new Date()), mbeanProxy.getCurrentState());
+			System.out.printf("############ %s ############\nStates generated: %d, queue size: %d, depth: %d%n",
+					SDF.format(new Date()), mbeanProxy.getStatesGenerated(), mbeanProxy.getStateQueueSize(),
+					mbeanProxy.getProgress());
 			Thread.sleep(interval * 1000L);
 		}
 		
