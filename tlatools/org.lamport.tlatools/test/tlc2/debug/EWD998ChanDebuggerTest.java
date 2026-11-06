@@ -150,7 +150,7 @@ public class EWD998ChanDebuggerTest extends TLCDebuggerTestCase {
 		
 		assertEquals("Message", consts[2].getName());
 		assertEquals("SetCupValue: a set of the form S \\cup T", consts[2].getType());
-		assertEquals("[color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int] \\cup {[type |-> \"pl\"]}", consts[2].getValue());
+		assertEquals("([color: {\"white\", \"black\"}, type: {\"tok\"}, q: Int]) \\cup ({[type |-> \"pl\"]})", consts[2].getValue());
 		
 		assertEquals("N", consts[3].getName());
 		assertEquals(IntValue.ValZero.getTypeString(), consts[3].getType());

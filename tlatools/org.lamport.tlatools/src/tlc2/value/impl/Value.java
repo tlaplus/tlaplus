@@ -406,6 +406,11 @@ public abstract class Value implements ValueConstants, Serializable, IValue {
         else { throw e; }
       }
   }
+
+  /* Write this value as an operand of \cup, \cap, or \. */
+  public StringBuffer toStringForCupCapDiff(StringBuffer sb, int offset, boolean swallow) {
+    return this.toString(sb, offset, swallow);
+  }
   
 	public TLCVariable toTLCVariable(final TLCVariable variable, Random rnd) {
 		variable.setInstance(this);

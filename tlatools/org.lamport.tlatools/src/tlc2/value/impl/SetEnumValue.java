@@ -65,7 +65,15 @@ public static final SetEnumValue EmptySet = new SetEnumValue(new ValueVec(0), tr
 	  this();
 	  this.cm = cm;
   }
-  
+
+  public static SetEnumValue ints(int... elements) {
+    final Value[] values = new Value[elements.length];
+    for (int i = 0; i < elements.length; i++) {
+      values[i] = IntValue.gen(elements[i]);
+    }
+    return new SetEnumValue(values, false);
+  }
+
   // See IValue#isAtom except that this is for sets of atoms.
   public final boolean isSetOfAtoms() {
       final ValueVec elems = this.elems;

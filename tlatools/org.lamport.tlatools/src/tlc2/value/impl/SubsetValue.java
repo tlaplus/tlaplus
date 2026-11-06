@@ -44,6 +44,10 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  public static SubsetValue subset(int... elements) {
+    return new SubsetValue(SetEnumValue.ints(elements));
+  }
+
   @Override
   public final byte getKind() { return SUBSETVALUE; }
 
@@ -326,17 +330,7 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       }
       else {
         sb = sb.append("SUBSET ");
-        if (this.set instanceof IntervalValue) {
-        	// MAK 07/2021:
-			// SUBSET has higher precedence than the .. (infix) operator appearing in
-			// interval definitions (see tla2sany.semantic.BuiltInLevel). Thus, printing
-        	//   SUBSET 1..2
-        	// is wrong because its meaning is
-        	//   ((SUBSET 1)..2)
-        	//
-        	// We can correct this easily here by adding parenthesis:
-        	//   SUBSET (1..2)
-        	//   SUBSET (1+2..42)
+        if (this.set instanceof ParenthesizedSubset) {
         	sb.append(TLAConstants.L_PAREN);
         	sb = this.set.toString(sb, offset, swallow);
         	sb.append(TLAConstants.R_PAREN);
@@ -350,8 +344,8 @@ public class SubsetValue extends EnumerableValue implements Enumerable {
       if (hasSource()) { throw FingerprintException.getNewHead(this, e); }
       else { throw e; }
     }
-  }  
-  
+  }
+
   	public Unrank getUnrank(final int kSubset) {
 		// Convert outer set only once.
 		final SetEnumValue convert = (SetEnumValue) set.toSetEnum();
