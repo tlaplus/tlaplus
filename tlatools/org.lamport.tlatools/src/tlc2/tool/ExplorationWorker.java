@@ -93,7 +93,7 @@ public class ExplorationWorker extends SimulationWorker {
 			checkForInterrupt();
 
 			// b) Get the current state's successor states.
-			nextStates.clear();
+			clearNextStates();
 
 			try {
 				this.tool.getNextStates(this, curState);

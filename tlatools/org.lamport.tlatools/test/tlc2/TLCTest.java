@@ -143,4 +143,33 @@ public class TLCTest {
 		assertEquals("2d 23h", TLC.convertRuntimeToHumanReadable(255600000L));
 		assertEquals("99d 23h", TLC.convertRuntimeToHumanReadable(8636400000L));
 	}
+
+	@Test
+	public void testGenerateSamplingParameters() {
+		final String generateKey = "tlc2.tool.impl.Tool.probabilistic";
+		final String fastKey = "tlc2.tool.SimulationWorker.fast";
+		final String oldGenerate = System.getProperty(generateKey);
+		final String oldFast = System.getProperty(fastKey);
+		try {
+			assertTrue(new TLC().handleParameters(new String[] { "-generate", "num=1,sampling=fast", "MC" }));
+			assertEquals("true", System.getProperty(fastKey));
+			assertTrue(new TLC().handleParameters(new String[] { "-generate", "num=1,sampling=uniform", "MC" }));
+			assertEquals("false", System.getProperty(fastKey));
+			assertTrue(new TLC().handleParameters(new String[] { "-generate", "num=1", "MC" }));
+			assertEquals("false", System.getProperty(fastKey));
+			assertFalse(new TLC().handleParameters(new String[] { "-generate", "sampling=invalid", "MC" }));
+			assertFalse(new TLC().handleParameters(new String[] { "-simulate", "sampling=fast", "MC" }));
+		} finally {
+			if (oldGenerate == null) {
+				System.clearProperty(generateKey);
+			} else {
+				System.setProperty(generateKey, oldGenerate);
+			}
+			if (oldFast == null) {
+				System.clearProperty(fastKey);
+			} else {
+				System.setProperty(fastKey, oldFast);
+			}
+		}
+	}
 }

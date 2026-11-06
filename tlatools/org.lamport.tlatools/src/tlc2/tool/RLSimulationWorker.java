@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 import tlc2.tool.liveness.ILiveCheck;
+import tlc2.util.Context;
 import tlc2.util.RandomGenerator;
 
 // See https://www.microsoft.com/en-us/research/uploads/prod/2019/12/QL-OOPSLA-2020.pdf
@@ -89,7 +90,15 @@ public class RLSimulationWorker extends SimulationWorker {
 	protected long getHash(TLCState state) {
 		return state.fingerPrint();
 	}
-	
+
+	@Override
+	protected boolean isUniformSuccessorSelection() {
+		// The behavior policy of this worker selects the action itself (softmax
+		// over the Q values in getNextActionIndex below), i.e. it must not
+		// evaluate the remaining actions after the first one succeeded.
+		return false;
+	}
+
 	@Override
 	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState curState) {
 		if (!ENABLED_ONLY) {
@@ -175,8 +184,12 @@ public class RLSimulationWorker extends SimulationWorker {
 			// Crude: Evaluate all actions and keep the enabled ones.
 			final List<Action> l = new ArrayList<>();
 			for (int i = 0; i < actions.length; i++) {
-				final StateVec ns = this.tool.getNextStates(actions[i], curState);
-				if (!ns.empty()) {
+				// In -generate, an ENABLED witness avoids retaining the entire successor set.
+				final boolean enabled = isProbabilistic()
+						? this.tool.enabled(actions[i].pred, Context.branch(actions[i].con), curState,
+								TLCStateFun.Empty) != null
+						: !this.tool.getNextStates(actions[i], curState).empty();
+				if (enabled) {
 					l.add(actions[i]);
 				}
 			}

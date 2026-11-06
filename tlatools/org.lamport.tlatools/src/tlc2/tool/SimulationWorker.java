@@ -45,7 +45,6 @@ import tlc2.TLCGlobals;
 import tlc2.module.TLCGetSet;
 import tlc2.output.EC;
 import tlc2.output.MP;
-import tlc2.tool.impl.Tool;
 import tlc2.tool.liveness.ILiveCheck;
 import tlc2.tool.liveness.LiveCounterExampleException;
 import tlc2.util.IdThread;
@@ -82,7 +81,19 @@ import util.UniqueString;
  */
 public class SimulationWorker extends IdThread implements INextStateFunctor {
 
+	// Keep the existing system property compatible with command-line users.
+	public static final String PROBABILISTIC_KEY = "tlc2.tool.impl.Tool.probabilistic";
+	public static final String FAST_KEY = "tlc2.tool.SimulationWorker.fast";
+	private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
+
+	public static boolean isProbabilistic() {
+		return PROBABILISTIC;
+	}
+
 	protected static final boolean coverage = TLCGlobals.Coverage.isActionEnabled();
+
+	// Snapshot the option for each run, rather than caching it across TLC invocations.
+	private final boolean fast = Boolean.getBoolean(FAST_KEY);
 
 	// This worker's local source of randomness.
 	protected final RandomGenerator localRng;
@@ -545,7 +556,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	@Override
 	public Object setElement(final TLCState s) {
-		this.nextStates.clear();
+		clearNextStates();
 		this.nextStates.addElement(s);
 		return this;
 	}
@@ -615,6 +626,22 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 		
 		if ((tool.isInModel(t) && tool.isInActions(s, t))) {
 			if (coverage) {	a.cm.incSecondary(); }
+			if (isProbabilistic() || isUniformSuccessorSelection()) {
+				// Reservoir sampling (Algorithm R) over the successors reported for this
+				// step: all actions for the random scheduler, or the chosen action for RL.
+				// Each reported transition is picked with equal
+				// probability. This is uniform over the *transitions* in this candidate
+				// pool: a successor state that can be generated through two distinct
+				// disjuncts is twice as likely to be selected as one generated through a
+				// single disjunct. Using the local RNG keeps selection deterministic
+				// for a given seed.
+				this.successorCnt++;
+				if (this.successorCnt == 1 || this.localRng.nextDouble() * this.successorCnt < 1d) {
+					this.nextStates.clear();
+					this.nextStates.addElement(t);
+				}
+				return this;
+			}
 			return nextStates.addElement(t);
 		}
 
@@ -623,8 +650,13 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	
 	@Override
 	public boolean hasStates() {
-		assert Tool.isProbabilistic();
+		assert isProbabilistic();
 		return !nextStates.isEmpty();
+	}
+
+	@Override
+	public boolean isFirstSuccessorOnly() {
+		return isProbabilistic() && fast;
 	}
 	
 	@Override
@@ -633,7 +665,47 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 	}
 
 	protected final StateVec nextStates = new StateVec(1);
-	
+
+	// The number of successor states that SimulationWorker#addElement below has
+	// seen for the state currently being processed. It is the counter of the
+	// reservoir sampling from which the next state of the behavior gets picked.
+	// Long because a single step of a behavior can theoretically generate more
+	// successor states than an int can count, e.g. x' \in SUBSET S for a large S.
+	private long successorCnt = 0;
+
+	/**
+	 * Removes all successor states generated for curState, e.g. at the beginning
+	 * of a step of a behavior, and resets the reservoir sampling counter.
+	 */
+	protected final void clearNextStates() {
+		this.nextStates.clear();
+		this.successorCnt = 0;
+	}
+
+	/**
+	 * Whether the next state of a behavior gets selected uniformly at random from
+	 * all successor states of all enabled actions (see
+	 * https://github.com/tlaplus/tlaplus/issues/1485), or whether the actions are
+	 * tried one after another -- starting at a pseudo-random index with a
+	 * pseudo-random stride -- until the first one generates successor states, of
+	 * which one gets selected at random. Since this "first" action is not
+	 * uniformly distributed among the enabled actions, the resulting distribution
+	 * over successor states is biased. It depends on how the spec is written,
+	 * e.g. semantically equivalent next-state relations such as Next and
+	 * Next /\ TRUE yield different distributions.
+	 *
+	 * Uniform selection requires the complete next-state relation of curState to
+	 * be evaluated, which is why SimulationWorker#addElement below receives every
+	 * successor state and picks one of them uniformly at random via reservoir
+	 * sampling, i.e. without materializing all of them.
+	 *
+	 * Subclasses that select the action as part of their behavior policy, such as
+	 * the RL workers, override this to preserve their semantics.
+	 */
+	protected boolean isUniformSuccessorSelection() {
+		return isProbabilistic() && !isFirstSuccessorOnly();
+	}
+
 	protected int getNextActionIndex(RandomGenerator rng, Action[] actions, TLCState curState) {
 		return (int) Math.floor(this.localRng.nextDouble() * actions.length);
 	}
@@ -673,7 +745,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			checkForInterrupt();
 
 			// b) Get the current state's successor states.
-			nextStates.clear();
+			clearNextStates();
 			final Action[] actions = filterActions(allActions, curState);
 			int index = getNextActionIndex(this.localRng, actions, curState);
 			final int p = this.localRng.nextPrime();
@@ -684,7 +756,7 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 					// getNextState doesn't throw SWE unless SimulationWorker#addElement above throws it.
 					return Optional.of(swe);
 				}
-				if (!nextStates.empty()) {
+				if (!isUniformSuccessorSelection() && !nextStates.empty()) {
 					break;
 				}
 				index = getNextActionAltIndex(index, p, actions, curState);
@@ -708,7 +780,9 @@ public class SimulationWorker extends IdThread implements INextStateFunctor {
 			// states.  See TLCExt!TLCDefer operator for context.
 			s1.execCallable();
 			
-			statistics.collectPostSuccessor(curState, actions[index], s1);
+			// With uniform successor selection, s1 can originate from any of the
+			// actions evaluated above, not just actions[index].
+			statistics.collectPostSuccessor(curState, s1.getAction(), s1);
 			
 			curState = s1;
 			setCurrentState(curState);
