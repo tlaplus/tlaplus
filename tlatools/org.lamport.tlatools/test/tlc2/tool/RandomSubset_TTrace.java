@@ -70,8 +70,8 @@ public abstract class RandomSubset_TTrace extends TTraceModelCheckerTestCase {
 	}
 
 	private String state(final String z) {
-		return "/\\ p = " + p + "\n" + "/\\ q = " + q + "\n" + "/\\ x = " + x + "\n" + "/\\ y = " + y + "\n"
-				+ "/\\ z = " + z;
+		return "/\\ x = " + x + "\n" + "/\\ y = " + y + "\n" + "/\\ z = " + z + "\n" + "/\\ p = " + p + "\n"
+				+ "/\\ q = " + q;
 	}
 
 }

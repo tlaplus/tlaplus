@@ -1,7 +1,6 @@
 package tla2sany.semantic;
 
 import java.util.Arrays;
-import java.util.Enumeration;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,8 +47,8 @@ public class TestBuiltInOperatorInitialization {
 
     // Ensure we are checking all built-in operators
     int builtInCount = 0;
-    for (Enumeration<Context.Pair> e = Context.getGlobalContext().content(); e.hasMoreElements();) {
-      UniqueString builtInName = e.nextElement().getSymbol().getName();
+    for (final Context.Pair p : Context.getGlobalContext().content()) {
+      UniqueString builtInName = p.getSymbol().getName();
       Assert.assertTrue(builtInName.toString(), Arrays.stream(BuiltInOperators.Properties).anyMatch(op -> op.Name == builtInName));
       builtInCount++;
     }
