@@ -14,7 +14,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState0() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		final StateVec trace = sw.getTrace(null);
 		assertEquals(0, trace.size());
@@ -22,7 +22,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState1() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 
@@ -36,7 +36,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState2() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 		TLCState b = new EqualityDummyTLCState(0, 0, a);
@@ -51,7 +51,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState3() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 		TLCState b = new EqualityDummyTLCState(0, 0, a);
@@ -67,7 +67,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState4() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 		TLCState b = new EqualityDummyTLCState(0, 0, a);
@@ -87,7 +87,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState5() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 		TLCState b = new EqualityDummyTLCState(0, 0, a);
@@ -111,7 +111,7 @@ public class SimulationWorkerTest {
 
 	@Test
 	public void testGetTraceTLCState6() {
-		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null, null);
+		SimulationWorker sw = new SimulationWorker(0, null, null, 0, 0, 0, null, false, null, null, null, null);
 
 		TLCState a = new EqualityDummyTLCState(0, 0);
 		TLCState b = new EqualityDummyTLCState(0, 0, a);
