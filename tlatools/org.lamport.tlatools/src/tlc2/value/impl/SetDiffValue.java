@@ -17,7 +17,7 @@ import tlc2.value.IValueOutputStream;
 import tlc2.value.Values;
 import util.Assert;
 
-public class SetDiffValue extends EnumerableValue implements Enumerable {
+public class SetDiffValue extends EnumerableValue implements Enumerable, ParenthesizedSubset {
   public final Value set1;
   public final Value set2;
   protected volatile SetEnumValue diffSet;
@@ -254,9 +254,9 @@ public class SetDiffValue extends EnumerableValue implements Enumerable {
       }
       catch (Throwable e) { if (!swallow) throw e; }
 
-      sb = this.set1.toString(sb, offset, swallow);
+      sb = this.set1.toStringForCupCapDiff(sb, offset, swallow);
       sb = sb.append(" \\ ");
-      sb = this.set2.toString(sb, offset, swallow);
+      sb = this.set2.toStringForCupCapDiff(sb, offset, swallow);
       return sb;
     }
     catch (RuntimeException | OutOfMemoryError e) {

@@ -33,6 +33,14 @@ public class UnionValue extends EnumerableValue implements Enumerable {
 	  this.cm = cm;
   }
 
+  public static UnionValue union(int... elements) {
+    final Value[] sets = new Value[elements.length];
+    for (int i = 0; i < elements.length; i++) {
+      sets[i] = SetEnumValue.ints(elements[i]);
+    }
+    return new UnionValue(new SetEnumValue(sets, false));
+  }
+
   @Override
   public byte getKind() { return UNIONVALUE; }
 

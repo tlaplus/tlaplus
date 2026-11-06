@@ -246,6 +246,15 @@ public abstract class EnumerableValue extends Value implements Enumerable {
 		// Unfortunately, Java doesn't have tuples/pairs.
 		return new long[] {n, a};
 	}
+
+	/* Parenthesize this value as an operand of \cup, \cap, or \. */
+	@Override
+	public StringBuffer toStringForCupCapDiff(StringBuffer sb, int offset, boolean swallow) {
+		sb.append("(");
+		sb = this.toString(sb, offset, swallow);
+		sb.append(")");
+		return sb;
+	}
 }
 
 /*

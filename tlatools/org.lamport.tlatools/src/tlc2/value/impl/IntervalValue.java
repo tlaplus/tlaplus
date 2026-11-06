@@ -19,7 +19,7 @@ import tlc2.value.Values;
 import util.Assert;
 
 public class IntervalValue extends EnumerableValue
-implements Enumerable, Reducible {
+implements Enumerable, Reducible, ParenthesizedSubset {
   public final int low, high;   // the integer interval [low, high]
 
   /* Constructor */
