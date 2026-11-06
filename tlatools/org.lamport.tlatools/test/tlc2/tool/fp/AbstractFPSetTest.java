@@ -4,6 +4,7 @@ package tlc2.tool.fp;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.util.Date;
 
@@ -14,8 +15,7 @@ public abstract class AbstractFPSetTest {
 
 	protected static final long RNG_SEED = 15041980L;
 
-	protected static final String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + "FPSetTest"
-					+ System.currentTimeMillis();
+	protected String tmpdir;
 	protected static final String filename = "FPSetTestTest";
 	protected static final DecimalFormat df = new DecimalFormat("###,###.###");
 	protected static final DecimalFormat pf = new DecimalFormat("#.##");
@@ -33,9 +33,8 @@ public abstract class AbstractFPSetTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		// create temp folder
-		dir = new File(tmpdir);
-		dir.mkdirs();
+		dir = Files.createTempDirectory("FPSetTest").toFile();
+		tmpdir = dir.getAbsolutePath();
 		
 		previousTimestamp = startTimestamp = System.currentTimeMillis();
 		previousSize = 0L;
@@ -55,9 +54,11 @@ public abstract class AbstractFPSetTest {
 		
 		// delete all nested files
 		final File[] listFiles = dir.listFiles();
-		for (int i = 0; i < listFiles.length; i++) {
-			final File aFile = listFiles[i];
-			aFile.delete();
+		if (listFiles != null) {
+			for (int i = 0; i < listFiles.length; i++) {
+				final File aFile = listFiles[i];
+				aFile.delete();
+			}
 		}
 		dir.delete();
 	}
