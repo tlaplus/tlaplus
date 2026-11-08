@@ -35,6 +35,7 @@ public class IdThread extends Thread {
 	}
 	
     private final int id;
+	private final Object localValuesLock = new Object();
 	private IValue[] localValues = new IValue[4];
 	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
@@ -77,23 +78,32 @@ public class IdThread extends Thread {
     }
     
 	public IValue getLocalValue(int idx) {
-		if (idx < this.localValues.length) {
-			return this.localValues[idx];
+		synchronized (this.localValuesLock) {
+			if (idx < this.localValues.length) {
+				return this.localValues[idx];
+			}
+			return null;
 		}
-		return null;
 	}
 	
 	public IValue[] getLocalValues() {
-		return this.localValues;
+		synchronized (this.localValuesLock) {
+			return this.localValues;
+		}
 	}
 
 	public void setLocalValue(int idx, IValue val) {
-		if (idx >= this.localValues.length) {
-			IValue[] vals = new IValue[idx + 1];
-			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
-			this.localValues = vals;
+		// Registers may be written concurrently by other threads (e.g. TLCSet in
+		// PERIODIC during simulation, see Simulator#setAllValues), so growing the
+		// array and writing the slot has to be atomic.
+		synchronized (this.localValuesLock) {
+			if (idx >= this.localValues.length) {
+				IValue[] vals = new IValue[idx + 1];
+				System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
+				this.localValues = vals;
+			}
+			this.localValues[idx] = val;
 		}
-		this.localValues[idx] = val;
 	}
 
 	public IValue getNamedRegister(UniqueString name) {
