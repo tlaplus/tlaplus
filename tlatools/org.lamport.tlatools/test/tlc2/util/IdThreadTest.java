@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
+import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
 
 public class IdThreadTest {
@@ -56,6 +57,69 @@ public class IdThreadTest {
 					f.get();
 				}
 				for (int idx = 0; idx < threads * perThread; idx++) {
+					final IntValue v = (IntValue) target.getLocalValue(idx);
+					assertNotNull("Lost write at index " + idx, v);
+					assertEquals(idx, v.val);
+				}
+			}
+		} finally {
+			pool.shutdownNow();
+		}
+	}
+
+	@Test
+	public void testConcurrentReadWhileGrowing() throws Exception {
+		final int writers = 4;
+		final int readers = 4;
+		final int perThread = 64;
+		final int size = writers * perThread;
+		final ExecutorService pool = Executors.newFixedThreadPool(writers + readers);
+		try {
+			for (int iter = 0; iter < 200; iter++) {
+				final IdThread target = new IdThread(0);
+				final CountDownLatch start = new CountDownLatch(1);
+				final CountDownLatch written = new CountDownLatch(writers);
+				final List<Future<?>> futures = new ArrayList<>();
+				for (int t = 0; t < writers; t++) {
+					final int offset = t;
+					futures.add(pool.submit(() -> {
+						start.await();
+						try {
+							for (int i = 0; i < perThread; i++) {
+								final int idx = i * writers + offset;
+								target.setLocalValue(idx, IntValue.gen(idx));
+							}
+						} finally {
+							written.countDown();
+						}
+						return null;
+					}));
+				}
+				for (int t = 0; t < readers; t++) {
+					futures.add(pool.submit(() -> {
+						start.await();
+						while (written.getCount() > 0) {
+							for (int idx = 0; idx < size; idx++) {
+								final IntValue v = (IntValue) target.getLocalValue(idx);
+								if (v != null) {
+									assertEquals(idx, v.val);
+								}
+							}
+							final IValue[] snapshot = target.getLocalValues();
+							for (int idx = 0; idx < snapshot.length; idx++) {
+								if (snapshot[idx] != null) {
+									assertEquals(idx, ((IntValue) snapshot[idx]).val);
+								}
+							}
+						}
+						return null;
+					}));
+				}
+				start.countDown();
+				for (Future<?> f : futures) {
+					f.get();
+				}
+				for (int idx = 0; idx < size; idx++) {
 					final IntValue v = (IntValue) target.getLocalValue(idx);
 					assertNotNull("Lost write at index " + idx, v);
 					assertEquals(idx, v.val);

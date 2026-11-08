@@ -2,6 +2,8 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,8 +37,15 @@ public class IdThread extends Thread {
 	}
 	
     private final int id;
+	// Registers are written by other threads too (TLCSet in PERIODIC, see
+	// Simulator#setAllValues) and read by other threads (TLCGet("all")). Reads
+	// and steady-state writes are lock-free. The lock is only taken to grow the
+	// array; growth seals every old slot so a concurrent write is either carried
+	// over to the new array or retried on it, never lost.
+	private static final VarHandle SLOTS = MethodHandles.arrayElementVarHandle(Object[].class);
+	private static final Object SEALED = new Object();
 	private final Object localValuesLock = new Object();
-	private IValue[] localValues = new IValue[4];
+	private volatile Object[] localValues = new Object[4];
 	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
     /** Create a new thread with ID <code>id</code>. */
@@ -78,31 +87,60 @@ public class IdThread extends Thread {
     }
     
 	public IValue getLocalValue(int idx) {
-		synchronized (this.localValuesLock) {
-			if (idx < this.localValues.length) {
-				return this.localValues[idx];
-			}
+		final Object[] vals = this.localValues;
+		if (idx >= vals.length) {
 			return null;
 		}
+		final Object v = SLOTS.getAcquire(vals, idx);
+		if (v != SEALED) {
+			return (IValue) v;
+		}
+		// The array is being grown. Wait for the new one, which never holds SEALED.
+		synchronized (this.localValuesLock) {
+			final Object[] grown = this.localValues;
+			return idx < grown.length ? (IValue) SLOTS.getAcquire(grown, idx) : null;
+		}
 	}
-	
+
+	/**
+	 * @return A snapshot of this thread's registers.
+	 */
 	public IValue[] getLocalValues() {
 		synchronized (this.localValuesLock) {
-			return this.localValues;
+			final Object[] vals = this.localValues;
+			final IValue[] copy = new IValue[vals.length];
+			for (int i = 0; i < vals.length; i++) {
+				copy[i] = (IValue) SLOTS.getAcquire(vals, i);
+			}
+			return copy;
 		}
 	}
 
 	public void setLocalValue(int idx, IValue val) {
-		// Registers may be written concurrently by other threads (e.g. TLCSet in
-		// PERIODIC during simulation, see Simulator#setAllValues), so growing the
-		// array and writing the slot has to be atomic.
-		synchronized (this.localValuesLock) {
-			if (idx >= this.localValues.length) {
-				IValue[] vals = new IValue[idx + 1];
-				System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
-				this.localValues = vals;
+		while (true) {
+			final Object[] vals = this.localValues;
+			if (idx >= vals.length) {
+				break;
 			}
-			this.localValues[idx] = val;
+			final Object cur = SLOTS.getAcquire(vals, idx);
+			if (cur == SEALED) {
+				break;
+			}
+			if (SLOTS.compareAndSet(vals, idx, cur, val)) {
+				return;
+			}
+		}
+		synchronized (this.localValuesLock) {
+			Object[] vals = this.localValues;
+			if (idx >= vals.length) {
+				final Object[] grown = new Object[idx + 1];
+				for (int i = 0; i < vals.length; i++) {
+					grown[i] = SLOTS.getAndSet(vals, i, SEALED);
+				}
+				this.localValues = grown;
+				vals = grown;
+			}
+			SLOTS.setRelease(vals, idx, val);
 		}
 	}
 
