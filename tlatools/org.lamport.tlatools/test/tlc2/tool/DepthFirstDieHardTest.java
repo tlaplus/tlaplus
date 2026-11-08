@@ -55,15 +55,15 @@ public class DepthFirstDieHardTest extends ModelCheckerTestCase {
 		assertFalse(recorder.recorded(EC.TLC_STATE_PRINT1));
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(7);
-		expectedTrace.add("/\\ action = \"nondet\"\n/\\ smallBucket = 0\n/\\ bigBucket = 0\n/\\ water_to_pour = 0");
-		expectedTrace.add("/\\ action = \"fill big\"\n/\\ smallBucket = 0\n/\\ bigBucket = 5\n/\\ water_to_pour = 0");
-		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 2\n/\\ water_to_pour = 3");
-		expectedTrace.add("/\\ action = \"empty small\"\n/\\ smallBucket = 0\n/\\ bigBucket = 2\n/\\ water_to_pour = 3");
-		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 2\n/\\ bigBucket = 0\n/\\ water_to_pour = 2");
+		expectedTrace.add("/\\ bigBucket = 0\n/\\ smallBucket = 0\n/\\ action = \"nondet\"\n/\\ water_to_pour = 0");
+		expectedTrace.add("/\\ bigBucket = 5\n/\\ smallBucket = 0\n/\\ action = \"fill big\"\n/\\ water_to_pour = 0");
+		expectedTrace.add("/\\ bigBucket = 2\n/\\ smallBucket = 3\n/\\ action = \"pour big to small\"\n/\\ water_to_pour = 3");
+		expectedTrace.add("/\\ bigBucket = 2\n/\\ smallBucket = 0\n/\\ action = \"empty small\"\n/\\ water_to_pour = 3");
+		expectedTrace.add("/\\ bigBucket = 0\n/\\ smallBucket = 2\n/\\ action = \"pour big to small\"\n/\\ water_to_pour = 2");
 		
-		expectedTrace.add("/\\ action = \"fill big\"\n/\\ smallBucket = 2\n/\\ bigBucket = 5\n/\\ water_to_pour = 2");
+		expectedTrace.add("/\\ bigBucket = 5\n/\\ smallBucket = 2\n/\\ action = \"fill big\"\n/\\ water_to_pour = 2");
 		
-		expectedTrace.add("/\\ action = \"pour big to small\"\n/\\ smallBucket = 3\n/\\ bigBucket = 4\n/\\ water_to_pour = 1");
+		expectedTrace.add("/\\ bigBucket = 4\n/\\ smallBucket = 3\n/\\ action = \"pour big to small\"\n/\\ water_to_pour = 1");
 		// DFID doesn't show names for the initial predicate or the sub-actions of the next-state relation.
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace,
 				Collections.nCopies(expectedTrace.size(), ""));
