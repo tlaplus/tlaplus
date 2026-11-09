@@ -26,7 +26,10 @@
 package tla2sany.linter;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import tla2sany.semantic.ErrorCode;
@@ -42,6 +45,7 @@ import tla2sany.semantic.SemanticNode;
 import tla2sany.semantic.SemanticNode.ChildrenVisitor;
 import tla2sany.semantic.StringNode;
 import tla2sany.semantic.SymbolNode;
+import tla2sany.st.Location;
 import util.UniqueString;
 
 public class Linter {
@@ -74,8 +78,56 @@ public class Linter {
 
 	}
 
-	public void lint(ModuleNode m, ExternalModuleTable moduleTable, Errors errors) {
+	// A linter is scoped to one front-end pass across all external modules.
+	private final Set<SemanticNode> visited = new HashSet<>();
+	private final Set<Location> assertLocations = new HashSet<>();
+
+	public void lint(ModuleNode m, ExternalModuleTable moduleTable, Errors errors,
+			Predicate<Location> inPlusCalModule) {
 		lintRecords(m, errors);
+		lintAssertApplications(m, errors, inPlusCalModule);
+	}
+
+	private void lintAssertApplications(SemanticNode node, Errors errors, Predicate<Location> inPlusCalModule) {
+		if (!visited.add(node)) {
+			return;
+		}
+		if (node instanceof OpDefNode) {
+			final ModuleNode origin = ((OpDefNode) node).getSource().getOriginallyDefinedInModuleNode();
+			if (origin != null && origin.isStandard()) {
+				return;
+			}
+		}
+		if (node instanceof OpApplNode) {
+			final SymbolNode operator = ((OpApplNode) node).getOperator();
+			if (operator instanceof OpDefNode) {
+				final OpDefNode source = ((OpDefNode) operator).getSource();
+				final ModuleNode origin = source.getOriginallyDefinedInModuleNode();
+				final Location location = node.getLocation();
+				if (source.getName() == UniqueString.of("Assert") && origin != null && origin.isStandard()
+						&& origin.getName() == UniqueString.of("TLC") && !inPlusCalModule.test(location)
+						&& assertLocations.add(location)) {
+					errors.addMessage(ErrorCode.TLC_ASSERT_APPLICATION, location,
+							"TLC!Assert relies on TLC's Java override and evaluation order; it is not a mathematical assertion.\n"
+							+ "Use an invariant, action property, or temporal property to check the specification,\n"
+							+ "or use the TLA+ debugger to investigate evaluation.");
+				}
+			}
+		}
+		// getChildren visits expression operands and LET definitions, but does not
+		// follow an application's operator into its definition body.
+		if (node instanceof ModuleNode) {
+			// getChildren requires the lazy top-level array even without level checking.
+			((ModuleNode) node).getTopLevel();
+		}
+		for (SemanticNode child : node.getListOfChildren()) {
+			lintAssertApplications(child, errors, inPlusCalModule);
+		}
+		if (node instanceof ModuleNode) {
+			for (ModuleNode inner : ((ModuleNode) node).getInnerModules()) {
+				lintAssertApplications(inner, errors, inPlusCalModule);
+			}
+		}
 	}
 
 	// Raise a warning if SANY encounters the following construct, which suggests

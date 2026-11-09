@@ -64,6 +64,14 @@ public class Validator {
 
 	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
 
+	/**
+	 * @return true iff the lines contain "--algorithm" or "--fair", found by the
+	 *         same search the translator uses to locate a PlusCal algorithm.
+	 */
+	public static boolean containsAlgorithm(final List<String> lines) {
+		return trans.findAlgorithmBegin(lines) != null;
+	}
+
 	public static Set<ValidationResult> validate(ParseUnit parseUnit, InputStream inputStream)
 			throws IOException {
 		final BufferedReader reader = new BufferedReader(
@@ -106,13 +114,14 @@ public class Validator {
 		}
 		
 		if (!seenAlgo) {
+			parseUnit.setContainsPlusCalAlgorithm(false);
 			// No "algorithm" string in the input => No PlusCal algorithm.
 			// The appearance of "algorithm", however, might be a false
 			// positive of which validate will take care of (I don't have
 			// time to move the logic up here).
 			return setOf(ValidationResult.NO_PLUSCAL_EXISTS);
 		}
-		return validate(lines);
+		return validate(parseUnit, lines);
 	}
 	
 	/**
@@ -122,7 +131,7 @@ public class Validator {
 	 * @param specificationText the entire specification, line by line - for historical reasons.
 	 * @return the result of the validation, as enumerated by the inner enum of this class.
 	 */
-	private static Set<ValidationResult>  validate(final List<String> specificationText) {
+	private static Set<ValidationResult> validate(final ParseUnit parseUnit, final List<String> specificationText) {
         final Vector<String> deTabbedSpecification = trans.removeTabs(specificationText);
 		
         final IntPair searchLoc = new IntPair(0, 0);
@@ -193,6 +202,7 @@ public class Validator {
             	} 
             }
         }
+		parseUnit.setContainsPlusCalAlgorithm(foundBegin);
 	       
 		final Set<ValidationResult> res = new HashSet<>();
 
