@@ -64,6 +64,14 @@ public class Validator {
 
 	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
 
+	/**
+	 * @return true iff the lines contain "--algorithm" or "--fair", found by the
+	 *         same search the translator uses to locate a PlusCal algorithm.
+	 */
+	public static boolean containsAlgorithm(final List<String> lines) {
+		return trans.findAlgorithmBegin(lines) != null;
+	}
+
 	public static Set<ValidationResult> validate(ParseUnit parseUnit, InputStream inputStream)
 			throws IOException {
 		final BufferedReader reader = new BufferedReader(

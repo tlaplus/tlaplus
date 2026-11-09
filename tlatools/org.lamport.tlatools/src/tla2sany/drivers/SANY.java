@@ -8,17 +8,13 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import pcal.PcalParams;
+import pcal.Validator;
 import tla2sany.explorer.Explorer;
 import tla2sany.explorer.ExplorerQuitException;
 import tla2sany.linter.Linter;
@@ -538,18 +534,20 @@ public class SANY {
 	public static void frontEndLinting(final SpecObj spec, final SanyOutput out) {
 		final ExternalModuleTable externalModuleTable = spec.getExternalModuleTable();
 		final Errors semanticErrors = spec.semanticErrors;
-		final Map<String, List<int[]>> translations = new HashMap<>();
+		// Warning 4806 is not raised for modules containing a PlusCal algorithm.
+		final Set<String> plusCalModules = new HashSet<>();
 		for (Map.Entry<String, ParseUnit> entry : spec.parseUnitContext.entrySet()) {
 			if (spec.getResolver().isStandardModule(entry.getKey())) {
 				continue;
 			}
 			try {
 				// Match the parser's replacement of malformed UTF-8 input.
-				translations.put(entry.getKey(), translationRanges(entry.getValue().getParseTree(),
-						new String(Files.readAllBytes(entry.getValue().getNis().sourceFile().toPath()),
-								StandardCharsets.UTF_8).lines().collect(Collectors.toList())));
+				if (Validator.containsAlgorithm(new String(Files.readAllBytes(entry.getValue().getNis().sourceFile().toPath()),
+						StandardCharsets.UTF_8).lines().collect(Collectors.toList()))) {
+					plusCalModules.add(entry.getKey());
+				}
 			} catch (IOException e) {
-				out.log(LogLevel.ERROR, "Cannot read source for PlusCal translation ranges in module %s: %s",
+				out.log(LogLevel.ERROR, "Cannot read source to detect PlusCal in module %s: %s",
 						entry.getKey(), e.getMessage());
 			}
 		}
@@ -562,89 +560,8 @@ public class SANY {
 				continue; // skip standard modules
 			}
 			out.log(LogLevel.INFO, "Linting of module %s", module.getName());
-			linter.lint(module, externalModuleTable, semanticErrors, location -> {
-				final List<int[]> ranges = translations.get(location.source());
-				return ranges != null && ranges.stream().anyMatch(range ->
-						range[0] < location.beginLine() && location.endLine() < range[1]);
-			});
-		}
-	}
-
-	// Use the parser's comments rather than lexing strings and comments again.
-	// Source text supplies positions, which getPreComments does not retain.
-	private static List<int[]> translationRanges(final TreeNode tree, final List<String> lines) throws IOException {
-		final String source = String.join("\n", lines) + "\n";
-		final int[] lineOffsets = new int[lines.size()];
-		for (int i = 1; i < lines.size(); i++) {
-			lineOffsets[i] = lineOffsets[i - 1] + lines.get(i - 1).length() + 1;
-		}
-		final Map<Integer, String> comments = new TreeMap<>();
-		collectComments(tree, source, lineOffsets, comments);
-		final Pattern beginMarker = Pattern.compile("\\\\\\*\\s*" + Pattern.quote(PcalParams.BeginXlation1)
-				+ "\\s+" + Pattern.quote(PcalParams.BeginXlation2) + "(?:\\s.*)?");
-		final Pattern endMarker = Pattern.compile("\\\\\\*\\s*" + Pattern.quote(PcalParams.EndXlation1)
-				+ "\\s+" + Pattern.quote(PcalParams.EndXlation2) + "(?:\\s.*)?");
-		final List<int[]> ranges = new ArrayList<>();
-		int blockDepth = 0;
-		int begin = 0;
-		int translationDepth = 0;
-		boolean balanced = true;
-		for (Map.Entry<Integer, String> entry : comments.entrySet()) {
-			final String comment = entry.getValue().trim();
-			// The parser splits nested block comments at each opening/closing token.
-			if (blockDepth > 0) {
-				blockDepth += comment.endsWith("(*") || comment.endsWith("(*.") ? 1 : -1;
-			} else if (comment.startsWith("(*")) {
-				blockDepth = comment.endsWith("*)") ? 0 : 2;
-			} else {
-				final int offsetIndex = Arrays.binarySearch(lineOffsets, entry.getKey());
-				final int lineNumber = offsetIndex >= 0 ? offsetIndex + 1 : -offsetIndex - 1;
-				if (beginMarker.matcher(comment).matches()) {
-					if (translationDepth++ == 0) {
-						begin = lineNumber;
-						balanced = true;
-					} else {
-						balanced = false;
-					}
-				} else if (endMarker.matcher(comment).matches() && translationDepth > 0) {
-					if (--translationDepth == 0 && balanced) {
-						ranges.add(new int[] { begin, lineNumber });
-					}
-				}
-			}
-		}
-		return ranges;
-	}
-
-	private static void collectComments(final TreeNode node, final String source, final int[] lineOffsets,
-			final Map<Integer, String> comments) throws IOException {
-		final String[] preceding = node.getPreComments();
-		if (preceding.length > 0) {
-			final int lineIndex = node.getLocation().beginLine() - 1;
-			if (lineIndex < 0 || lineIndex >= lineOffsets.length) {
-				throw new IOException("Parsed comment location is outside current source");
-			}
-			int offset = lineOffsets[lineIndex];
-			final int lineEnd = lineIndex + 1 < lineOffsets.length
-					? lineOffsets[lineIndex + 1] - 1 : source.length() - 1;
-			// Parser columns expand tabs to eight-column tab stops.
-			for (int column = 1; column < node.getLocation().beginColumn(); offset++) {
-				if (offset >= lineEnd) {
-					throw new IOException("Parsed comment location is outside current source line");
-				}
-				column += source.charAt(offset) == '\t' ? 8 - (column - 1) % 8 : 1;
-			}
-			for (int i = preceding.length - 1; i >= 0; i--) {
-				final String comment = preceding[i].replace("\r\n", "\n").replace('\r', '\n');
-				offset = source.lastIndexOf(comment, offset - comment.length());
-				if (offset < 0) {
-					throw new IOException("Cannot locate parsed comment in source");
-				}
-				comments.put(offset, comment);
-			}
-		}
-		for (TreeNode child : node.heirs()) {
-			collectComments(child, source, lineOffsets, comments);
+			linter.lint(module, externalModuleTable, semanticErrors,
+					location -> plusCalModules.contains(location.source()));
 		}
 	}
 

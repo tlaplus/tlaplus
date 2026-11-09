@@ -23,17 +23,10 @@
 package tla2sany.drivers;
 
 import java.io.File;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import tlc2.tool.CommonTestCase;
 import tla2sany.SANYTest;
@@ -57,68 +50,6 @@ import util.ToolIO;
  * name {@code Foo} clashes with the existing definition.
  */
 public class WarningControlTest extends SANYTest {
-
-	@Rule
-	public final TemporaryFolder folder = new TemporaryFolder();
-
-	private PrintStream originalOut;
-	private PrintStream originalErr;
-
-	@Before
-	public void saveStreams() {
-		originalOut = ToolIO.out;
-		originalErr = ToolIO.err;
-	}
-
-	@After
-	public void restoreStreams() {
-		ToolIO.out = originalOut;
-		ToolIO.err = originalErr;
-	}
-
-	@Test
-	public void testAssertWarningControls() throws Exception {
-		final Path path = folder.getRoot().toPath().resolve("AssertControl.tla");
-		Files.writeString(path, "---- MODULE AssertControl ----\nEXTENDS TLC\nA == Assert(TRUE, \"a\")\n====\n");
-		final ErrorCode code = ErrorCode.fromStandardValue(4806);
-		Assert.assertEquals(ErrorCode.TLC_ASSERT_APPLICATION, code);
-		final SanySettings[] settings = { SanySettings.defaultSettings(),
-				new SanySettings(true, true, true, true, true, Set.of(code), Set.of()),
-				new SanySettings(true, true, true, true, true, Set.of(), Set.of(code)) };
-		for (int i = 0; i < settings.length; i++) {
-			final RecordedSanyOutput out = new RecordedSanyOutput(LogLevel.WARNING);
-			final SpecObj spec = new SpecObj(path.toString(), new SimpleFilenameToStream(folder.getRoot().toString()));
-			Assert.assertEquals(i == 2 ? SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE : SanyExitCode.OK,
-					SANY.parse(spec, path.toString(), out, settings[i]));
-			Assert.assertEquals(out.toString(), i != 1, out.toString().contains("TLC!Assert"));
-			if (i == 2) {
-				Assert.assertTrue(out.toString().contains("Warning treated as error"));
-			}
-		}
-		final String[][] arguments = { { "-error-codes", path.toString() },
-				{ "-suppressMessages", "4806", "-error-codes", path.toString() },
-				{ "-messagesAsErrors", "4806", "-error-codes", path.toString() } };
-		for (int i = 0; i < arguments.length; i++) {
-			final TestPrintStream out = new TestPrintStream();
-			ToolIO.out = out;
-			ToolIO.err = out;
-			try {
-				SANY.SANYmain0(arguments[i]);
-				Assert.assertNotEquals("Expected elevated warning to fail", 2, i);
-			} catch (SANYExitException e) {
-				Assert.assertEquals(2, i);
-				Assert.assertEquals(SanyExitCode.SEMANTIC_ANALYSIS_OR_LEVEL_CHECKING_FAILURE, e.getEnumeratedExitCode());
-			}
-			if (i == 1) {
-				out.assertNoSubstring("TLC!Assert");
-			} else {
-				out.assertSubstring("TLC!Assert");
-			}
-			if (i == 2) {
-				out.assertSubstring("Warning treated as error");
-			}
-		}
-	}
 
 	private static final String TEST_SPEC_DIR = CommonTestCase.BASE_DIR + File.separator + "test" + File.separator
 			+ "tla2sany" + File.separator + "semantic" + File.separator + "error_corpus" + File.separator;

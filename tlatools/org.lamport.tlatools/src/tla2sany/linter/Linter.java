@@ -83,12 +83,12 @@ public class Linter {
 	private final Set<Location> assertLocations = new HashSet<>();
 
 	public void lint(ModuleNode m, ExternalModuleTable moduleTable, Errors errors,
-			Predicate<Location> isTranslation) {
+			Predicate<Location> inPlusCalModule) {
 		lintRecords(m, errors);
-		lintAssertApplications(m, errors, isTranslation);
+		lintAssertApplications(m, errors, inPlusCalModule);
 	}
 
-	private void lintAssertApplications(SemanticNode node, Errors errors, Predicate<Location> isTranslation) {
+	private void lintAssertApplications(SemanticNode node, Errors errors, Predicate<Location> inPlusCalModule) {
 		if (!visited.add(node)) {
 			return;
 		}
@@ -105,7 +105,7 @@ public class Linter {
 				final ModuleNode origin = source.getOriginallyDefinedInModuleNode();
 				final Location location = node.getLocation();
 				if (source.getName() == UniqueString.of("Assert") && origin != null && origin.isStandard()
-						&& origin.getName() == UniqueString.of("TLC") && !isTranslation.test(location)
+						&& origin.getName() == UniqueString.of("TLC") && !inPlusCalModule.test(location)
 						&& assertLocations.add(location)) {
 					errors.addMessage(ErrorCode.TLC_ASSERT_APPLICATION, location,
 							"TLC!Assert relies on TLC's Java override and evaluation order; it is not a mathematical assertion.\n"
@@ -121,11 +121,11 @@ public class Linter {
 			((ModuleNode) node).getTopLevel();
 		}
 		for (SemanticNode child : node.getListOfChildren()) {
-			lintAssertApplications(child, errors, isTranslation);
+			lintAssertApplications(child, errors, inPlusCalModule);
 		}
 		if (node instanceof ModuleNode) {
 			for (ModuleNode inner : ((ModuleNode) node).getInnerModules()) {
-				lintAssertApplications(inner, errors, isTranslation);
+				lintAssertApplications(inner, errors, inPlusCalModule);
 			}
 		}
 	}
