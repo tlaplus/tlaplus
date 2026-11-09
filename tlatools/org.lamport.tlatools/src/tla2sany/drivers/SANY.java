@@ -540,6 +540,15 @@ public class SANY {
 			if (spec.getResolver().isStandardModule(entry.getKey())) {
 				continue;
 			}
+			// Validator.validate already decided this while checking the checksums.
+			final Boolean validated = entry.getValue().containsPlusCalAlgorithm();
+			if (validated != null) {
+				if (validated) {
+					plusCalModules.add(entry.getKey());
+				}
+				continue;
+			}
+			// PlusCal translation validation was turned off, so read the source.
 			try {
 				// Match the parser's replacement of malformed UTF-8 input.
 				if (Validator.containsAlgorithm(new String(Files.readAllBytes(entry.getValue().getNis().sourceFile().toPath()),
