@@ -124,7 +124,9 @@ public class Validator {
 			// put the options into a comment inside the module, which I
 			// believe to be the choice for most users anyway.
 			if (loc.beginLine() <= cnt && cnt <= loc.endLine()) {
-				if (line.indexOf(PcalParams.BeginAlg.substring(2)) > 0) {
+				// Column zero counts. A fair algorithm may put "--fair" on one
+				// line and "algorithm" at the start of the next.
+				if (line.indexOf(PcalParams.BeginAlg.substring(2)) >= 0) {
 					seenAlgo = true;
 				}
 				lines.add(line);

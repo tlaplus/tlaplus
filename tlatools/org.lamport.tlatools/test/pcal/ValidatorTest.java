@@ -77,6 +77,8 @@ public class ValidatorTest extends SANYTest {
 				{ "test-model/pcal/Factorial2.tla", true, true },
 				{ "test-model/pcal/FairSeq.tla", true, true },
 				{ "test-model/pcal/FairSeq2.tla", true, true },
+				// "--fair" and "algorithm" are on successive lines, with "algorithm" at column zero.
+				{ "test-model/pcal/SplitFairHeader.tla", true, true },
 				{ "test-model/pcal/FastMutex.tla", true, true },
 				{ "test-model/pcal/FastMutex2.tla", true, true },
 				{ "test-model/pcal/FastMutex3.tla", true, true },
