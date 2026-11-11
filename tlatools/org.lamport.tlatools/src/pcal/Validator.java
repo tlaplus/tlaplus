@@ -225,7 +225,10 @@ public class Validator {
             	} 
             }
         }
-		parseUnit.setContainsPlusCalAlgorithm(foundBegin);
+		// foundBegin stops at the first "====", including a nested module's
+		// closing delimiter, so an algorithm later in the module is missed.
+		// Record the module-wide marker scan instead.
+		parseUnit.setContainsPlusCalAlgorithm(containsAlgorithm(specificationText));
 	       
 		final Set<ValidationResult> res = new HashSet<>();
 
