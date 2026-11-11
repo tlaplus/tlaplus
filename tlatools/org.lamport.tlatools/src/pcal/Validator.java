@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 
 import pcal.exception.ParseAlgorithmException;
@@ -64,6 +66,33 @@ public class Validator {
 
 	private static final Pattern MODULE_CLOSING_PATTERN = Pattern.compile(TLAConstants.MODULE_CLOSING_REGEX);
 
+	/**
+	 * Reuse checksum validation's result, or scan the source if validation was disabled.
+	 *
+	 * Known limitation: checksum validation only searches within the module, so its
+	 * cached result misses algorithms before or after the module. The fallback scans
+	 * the entire file and can therefore return a different result. Such placement is
+	 * legal but discouraged by the PlusCal C-syntax manual, section 2.2, "The TLA+
+	 * Module": https://lamport.azurewebsites.net/tla/c-manual.pdf
+	 */
+	public static boolean containsAlgorithm(final ParseUnit parseUnit) throws IOException {
+		final Boolean validated = parseUnit.containsPlusCalAlgorithm();
+		if (validated != null) {
+			return validated;
+		}
+		// Match the parser's replacement of malformed UTF-8 input.
+		return containsAlgorithm(new String(Files.readAllBytes(parseUnit.getNis().sourceFile().toPath()),
+				StandardCharsets.UTF_8).lines().collect(Collectors.toList()));
+	}
+
+	/**
+	 * Test for the same algorithm markers that the translator searches for.
+	 */
+	public static boolean containsAlgorithm(final List<String> lines) {
+		return lines.stream().anyMatch(line -> line.contains(PcalParams.BeginAlg)
+				|| line.contains(PcalParams.BeginFairAlg));
+	}
+
 	public static Set<ValidationResult> validate(ParseUnit parseUnit, InputStream inputStream)
 			throws IOException {
 		final BufferedReader reader = new BufferedReader(
@@ -95,7 +124,9 @@ public class Validator {
 			// put the options into a comment inside the module, which I
 			// believe to be the choice for most users anyway.
 			if (loc.beginLine() <= cnt && cnt <= loc.endLine()) {
-				if (line.indexOf(PcalParams.BeginAlg.substring(2)) > 0) {
+				// Column zero counts. A fair algorithm may put "--fair" on one
+				// line and "algorithm" at the start of the next.
+				if (line.indexOf(PcalParams.BeginAlg.substring(2)) >= 0) {
 					seenAlgo = true;
 				}
 				lines.add(line);
@@ -106,13 +137,14 @@ public class Validator {
 		}
 		
 		if (!seenAlgo) {
+			parseUnit.setContainsPlusCalAlgorithm(false);
 			// No "algorithm" string in the input => No PlusCal algorithm.
 			// The appearance of "algorithm", however, might be a false
 			// positive of which validate will take care of (I don't have
 			// time to move the logic up here).
 			return setOf(ValidationResult.NO_PLUSCAL_EXISTS);
 		}
-		return validate(lines);
+		return validate(parseUnit, lines);
 	}
 	
 	/**
@@ -122,7 +154,7 @@ public class Validator {
 	 * @param specificationText the entire specification, line by line - for historical reasons.
 	 * @return the result of the validation, as enumerated by the inner enum of this class.
 	 */
-	private static Set<ValidationResult>  validate(final List<String> specificationText) {
+	private static Set<ValidationResult> validate(final ParseUnit parseUnit, final List<String> specificationText) {
         final Vector<String> deTabbedSpecification = trans.removeTabs(specificationText);
 		
         final IntPair searchLoc = new IntPair(0, 0);
@@ -193,6 +225,10 @@ public class Validator {
             	} 
             }
         }
+		// foundBegin stops at the first "====", including a nested module's
+		// closing delimiter, so an algorithm later in the module is missed.
+		// Record the module-wide marker scan instead.
+		parseUnit.setContainsPlusCalAlgorithm(containsAlgorithm(specificationText));
 	       
 		final Set<ValidationResult> res = new HashSet<>();
 
