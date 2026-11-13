@@ -39,9 +39,10 @@ public class IdThread extends Thread {
     private final int id;
 	// Registers are written by other threads too (TLCSet in PERIODIC, see
 	// Simulator#setAllValues) and read by other threads (TLCGet("all")). Reads
-	// and steady-state writes are lock-free. The lock is only taken to grow the
-	// array; growth seals every old slot so a concurrent write is either carried
-	// over to the new array or retried on it, never lost.
+	// and steady-state writes are lock-free. The lock is taken to grow the
+	// array, by getLocalValues, and by a reader that runs into a sealed slot;
+	// growth seals every old slot so a concurrent write is either carried over
+	// to the new array or retried on it, never lost.
 	private static final VarHandle SLOTS = MethodHandles.arrayElementVarHandle(Object[].class);
 	private static final Object SEALED = new Object();
 	private final Object localValuesLock = new Object();
@@ -103,7 +104,10 @@ public class IdThread extends Thread {
 	}
 
 	/**
-	 * @return A snapshot of this thread's registers.
+	 * @return A copy of this thread's registers. The lock keeps growth from
+	 *         sealing slots under the copy, but writes to existing slots are
+	 *         lock-free, so the copy is not an atomic snapshot when the owner
+	 *         keeps writing (see TLCGet("all") in TLC.tla).
 	 */
 	public IValue[] getLocalValues() {
 		synchronized (this.localValuesLock) {
