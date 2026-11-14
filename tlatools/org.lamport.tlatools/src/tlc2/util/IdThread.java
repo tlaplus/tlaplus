@@ -46,6 +46,13 @@ public class IdThread extends Thread {
 	private static final VarHandle SLOTS = MethodHandles.arrayElementVarHandle(Object[].class);
 	private static final Object SEALED = new Object();
 	private final Object localValuesLock = new Object();
+	// Each slot of localValues holds one of:
+	//  - null, until the register at that index is first written,
+	//  - the IValue last stored by setLocalValue,
+	//  - SEALED, once growth has copied the slot into a larger array. Only a
+	//    retired array holds SEALED, which fences out readers and writers that
+	//    still see the old array and sends them to the new one.
+	// The array is typed Object[] rather than IValue[] so it can hold SEALED.
 	private volatile Object[] localValues = new Object[4];
 	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
