@@ -2,8 +2,6 @@
 // Portions Copyright (c) 2003 Microsoft Corporation.  All rights reserved.
 package tlc2.util;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,22 +36,9 @@ public class IdThread extends Thread {
 	
     private final int id;
 	// Registers are written by other threads too (TLCSet in PERIODIC, see
-	// Simulator#setAllValues) and read by other threads (TLCGet("all")). Reads
-	// and steady-state writes are lock-free. The lock is taken to grow the
-	// array, by getLocalValues, and by a reader that runs into a sealed slot;
-	// growth seals every old slot so a concurrent write is either carried over
-	// to the new array or retried on it, never lost.
-	private static final VarHandle SLOTS = MethodHandles.arrayElementVarHandle(Object[].class);
-	private static final Object SEALED = new Object();
-	private final Object localValuesLock = new Object();
-	// Each slot of localValues holds one of:
-	//  - null, until the register at that index is first written,
-	//  - the IValue last stored by setLocalValue,
-	//  - SEALED, once growth has copied the slot into a larger array. Only a
-	//    retired array holds SEALED, which fences out readers and writers that
-	//    still see the old array and sends them to the new one.
-	// The array is typed Object[] rather than IValue[] so it can hold SEALED.
-	private volatile Object[] localValues = new Object[4];
+	// Simulator#setAllValues) and read by other threads (TLCGet("all")), so
+	// they live in a concurrent map rather than a plain array.
+	private final Map<Integer, IValue> localValues = new ConcurrentHashMap<>();
 	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
     /** Create a new thread with ID <code>id</code>. */
@@ -95,63 +80,34 @@ public class IdThread extends Thread {
     }
     
 	public IValue getLocalValue(int idx) {
-		final Object[] vals = this.localValues;
-		if (idx >= vals.length) {
-			return null;
-		}
-		final Object v = SLOTS.getAcquire(vals, idx);
-		if (v != SEALED) {
-			return (IValue) v;
-		}
-		// The array is being grown. Wait for the new one, which never holds SEALED.
-		synchronized (this.localValuesLock) {
-			final Object[] grown = this.localValues;
-			return idx < grown.length ? (IValue) SLOTS.getAcquire(grown, idx) : null;
-		}
+		return this.localValues.get(idx);
 	}
 
 	/**
-	 * @return A copy of this thread's registers. The lock keeps growth from
-	 *         sealing slots under the copy, but writes to existing slots are
-	 *         lock-free, so the copy is not an atomic snapshot when the owner
-	 *         keeps writing (see TLCGet("all") in TLC.tla).
+	 * @return A copy of this thread's registers, indexed by register. Writes
+	 *         are not blocked while the copy is made, so it is not an atomic
+	 *         snapshot when the owner keeps writing (see TLCGet("all") in
+	 *         TLC.tla).
 	 */
 	public IValue[] getLocalValues() {
-		synchronized (this.localValuesLock) {
-			final Object[] vals = this.localValues;
-			final IValue[] copy = new IValue[vals.length];
-			for (int i = 0; i < vals.length; i++) {
-				copy[i] = (IValue) SLOTS.getAcquire(vals, i);
-			}
-			return copy;
+		int length = 0;
+		for (final int idx : this.localValues.keySet()) {
+			length = Math.max(length, idx + 1);
 		}
+		final IValue[] copy = new IValue[length];
+		this.localValues.forEach((idx, val) -> {
+			if (idx < copy.length) {
+				copy[idx] = val;
+			}
+		});
+		return copy;
 	}
 
 	public void setLocalValue(int idx, IValue val) {
-		while (true) {
-			final Object[] vals = this.localValues;
-			if (idx >= vals.length) {
-				break;
-			}
-			final Object cur = SLOTS.getAcquire(vals, idx);
-			if (cur == SEALED) {
-				break;
-			}
-			if (SLOTS.compareAndSet(vals, idx, cur, val)) {
-				return;
-			}
-		}
-		synchronized (this.localValuesLock) {
-			Object[] vals = this.localValues;
-			if (idx >= vals.length) {
-				final Object[] grown = new Object[idx + 1];
-				for (int i = 0; i < vals.length; i++) {
-					grown[i] = SLOTS.getAndSet(vals, i, SEALED);
-				}
-				this.localValues = grown;
-				vals = grown;
-			}
-			SLOTS.setRelease(vals, idx, val);
+		if (val == null) {
+			this.localValues.remove(idx);
+		} else {
+			this.localValues.put(idx, val);
 		}
 	}
 

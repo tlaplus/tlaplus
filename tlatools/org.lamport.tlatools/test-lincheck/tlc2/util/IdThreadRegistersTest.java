@@ -37,11 +37,11 @@ import tlc2.value.IValue;
 import tlc2.value.impl.IntValue;
 
 /**
- * The registers of an IdThread, which start with four slots. TLCSet in
- * PERIODIC writes them from another thread (Simulator#setAllValues) while
- * the worker writes them too, and TLCGet("all") reads them. A write to a
- * register that the array already holds must not get lost when another
- * write grows the array at the same time.
+ * The registers of an IdThread. TLCSet in PERIODIC writes them from another
+ * thread (Simulator#setAllValues) while the worker writes them too, and
+ * TLCGet("all") reads them. A write to a low register must not get lost when
+ * another thread writes a higher register at the same time, which used to
+ * grow (and copy) the register array under the first write.
  * 
  * @see https://github.com/tlaplus/tlaplus/issues/1486
  */
@@ -63,13 +63,13 @@ public class IdThreadRegistersTest {
 		thread.setLocalValue(LOW, IntValue.gen(LOW));
 	}
 
-	// Grows the array to five slots.
+	// Used to grow the array from four to five slots.
 	@Operation
 	public void setHigh() {
 		thread.setLocalValue(HIGH, IntValue.gen(HIGH));
 	}
 
-	// Grows the array to ten slots.
+	// Used to grow the array to ten slots.
 	@Operation
 	public void setHigher() {
 		thread.setLocalValue(HIGHER, IntValue.gen(HIGHER));
