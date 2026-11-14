@@ -71,6 +71,11 @@ JavaTime == CHOOSE n : n \in Nat
 (* maintained by all threads.  Thus, the lists of all the worker threads   *)
 (* can be initialized by putting the appropriate TLCSet expression in an   *)
 (* ASSUME expression or in the initial predicate.                          *)
+(*                                                                         *)
+(* TLCGet("all") collects the values of every worker thread, indexed by i  *)
+(* and then by worker.  The other workers keep running while it does so,   *)
+(* so the result is not an atomic snapshot: it may combine values that     *)
+(* were never current at the same time.                                    *)
 (***************************************************************************)
 TLCGet(i) == CHOOSE n : TRUE
 TLCSet(i, v) == TRUE

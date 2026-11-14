@@ -35,7 +35,9 @@ public class IdThread extends Thread {
 	}
 	
     private final int id;
-	private IValue[] localValues = new IValue[4];
+	// Registers are written (e.g. TLCSet in PERIODIC, see Simulator#setAllValues)
+	// and read (TLCGet("all")) concurrently.
+	private final Map<Integer, IValue> localValues = new ConcurrentHashMap<>();
 	private final Map<UniqueString, IValue> namedRegisters = new ConcurrentHashMap<>();
    
     /** Create a new thread with ID <code>id</code>. */
@@ -77,23 +79,35 @@ public class IdThread extends Thread {
     }
     
 	public IValue getLocalValue(int idx) {
-		if (idx < this.localValues.length) {
-			return this.localValues[idx];
-		}
-		return null;
+		return this.localValues.get(idx);
 	}
-	
+
+	/**
+	 * Returns a weakly consistent copy of this thread's registers, indexed by
+	 * register number. Concurrent writes are not blocked, so the result is not
+	 * an atomic snapshot: it may combine values from different points in time
+	 * and omit registers added during copying (e.g. see TLC!TLCGet("all")).
+	 */
 	public IValue[] getLocalValues() {
-		return this.localValues;
+		int length = 0;
+		for (final int idx : this.localValues.keySet()) {
+			length = Math.max(length, idx + 1);
+		}
+		final IValue[] copy = new IValue[length];
+		this.localValues.forEach((idx, val) -> {
+			if (idx < copy.length) {
+				copy[idx] = val;
+			}
+		});
+		return copy;
 	}
 
 	public void setLocalValue(int idx, IValue val) {
-		if (idx >= this.localValues.length) {
-			IValue[] vals = new IValue[idx + 1];
-			System.arraycopy(this.localValues, 0, vals, 0, this.localValues.length);
-			this.localValues = vals;
+		if (val == null) {
+			this.localValues.remove(idx);
+		} else {
+			this.localValues.put(idx, val);
 		}
-		this.localValues[idx] = val;
 	}
 
 	public IValue getNamedRegister(UniqueString name) {
