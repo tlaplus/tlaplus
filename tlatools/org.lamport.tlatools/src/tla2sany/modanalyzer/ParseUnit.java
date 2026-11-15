@@ -65,7 +65,10 @@ public class ParseUnit {
     // Parse tree for the contents of "nis"; ParseTree is an 
     // interface.  This is how one gets at the root of the 
     // parse tree for a ParseUnit
-  private long               parseStamp = 0;         
+  private long               parseStamp = 0;
+  // Whether the module contains a PlusCal algorithm, as decided by
+  // pcal.Validator during PlusCal translation validation; null until then.
+  private Boolean            containsPlusCalAlgorithm = null;         
     // time stamp of the source file last parsed.
   private ModulePointer      rootModule = null;      
     // The ModulePointer for the top level module of this ParseUnit 
@@ -113,6 +116,14 @@ public class ParseUnit {
   public final TreeNode      getParseTree()   { return (parseTree != null ? parseTree.rootNode() : null); }
 
   public final ModulePointer getRootModule()  { return rootModule; }
+
+  /**
+   * @return whether pcal.Validator found a PlusCal algorithm in this module, or
+   *         null if the module has not been validated.
+   */
+  public final Boolean       containsPlusCalAlgorithm() { return containsPlusCalAlgorithm; }
+
+  public final void setContainsPlusCalAlgorithm(final boolean b) { containsPlusCalAlgorithm = b; }
 
   final        Vector<ParseUnit> getExtendees()   { return parseUnitRelatives.extendees; }
 
