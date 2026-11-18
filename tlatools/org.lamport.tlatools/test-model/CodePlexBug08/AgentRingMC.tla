@@ -42,7 +42,7 @@ PostCondition ==
 			                   endColumn |-> 35,
 			                   module |-> "AgentRing" ] ],
 			           << 2,
-			              [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			              [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			                Agent |->
 			                    [ Loc |-> 0,
 			                      LastLoad |-> 0,
@@ -50,7 +50,7 @@ PostCondition ==
 			                      Task |-> 0 ],
 			                CanCreate |-> TRUE ] >> >>,
 			        << << 2,
-			              [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			              [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			                Agent |->
 			                    [ Loc |-> 0,
 			                      LastLoad |-> 0,
@@ -65,7 +65,7 @@ PostCondition ==
 			                   endColumn |-> 35,
 			                   module |-> "AgentRing" ] ],
 			           << 3,
-			              [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			              [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			                Agent |->
 			                    [ Loc |-> 1,
 			                      LastLoad |-> 0,
@@ -73,7 +73,7 @@ PostCondition ==
 			                      Task |-> 0 ],
 			                CanCreate |-> TRUE ] >> >>,
 			        << << 3,
-			              [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			              [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			                Agent |->
 			                    [ Loc |-> 1,
 			                      LastLoad |-> 0,
@@ -332,12 +332,12 @@ PostCondition ==
 			                 [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
 			             CanCreate |-> TRUE ] >>,
 			        << 2,
-			           [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			           [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			             Agent |->
 			                 [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
 			             CanCreate |-> TRUE ] >>,
 			        << 3,
-			           [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
+			           [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 2]),
 			             Agent |->
 			                 [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
 			             CanCreate |-> TRUE ] >>,
@@ -391,47 +391,6 @@ PostCondition ==
 			             Agent |->
 			                 [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0],
 			             CanCreate |-> FALSE ] >> } ]
-	/\ ToTrace(CounterExample) =
-			<< [ Nodes |-> (0 :> [Load |-> 0] @@ 1 :> [Load |-> 0]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
-			     CanCreate |-> TRUE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 0, ReadyToMove |-> TRUE, Task |-> 0],
-			     CanCreate |-> TRUE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 0]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
-			     CanCreate |-> TRUE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
-			     CanCreate |-> TRUE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 0, ReadyToMove |-> FALSE, Task |-> 0],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 1, ReadyToMove |-> TRUE, Task |-> 1],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 1, ReadyToMove |-> FALSE, Task |-> 1],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 1],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 1]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 1],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 0, LastLoad |-> 2, ReadyToMove |-> TRUE, Task |-> 0],
-			     CanCreate |-> FALSE ],
-			   [ Nodes |-> (0 :> [Load |-> 2] @@ 1 :> [Load |-> 2]),
-			     Agent |-> [Loc |-> 1, LastLoad |-> 2, ReadyToMove |-> FALSE, Task |-> 0],
-			     CanCreate |-> FALSE ] >>
-
 =============================================================================
 \* Modification History
 \* Created Fri Mar 27 12:31:27 CET 2015 by makuppe

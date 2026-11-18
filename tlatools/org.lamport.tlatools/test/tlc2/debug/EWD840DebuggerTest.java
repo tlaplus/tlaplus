@@ -94,9 +94,9 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 			assertTLCInitStatesFrame(stackFrames[5], 20, 3, 23, 21, RM, Context.Empty, -1);
 			assertTLCStateFrame(stackFrames[4], 20, 23, RM, vars);
 			assertTLCStateFrame(stackFrames[3], 20, 20, RM, vars);
-			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[0], vars[2], vars[3]);
-			assertTLCStateFrame(stackFrames[1], 22, 22, RM, vars[0], vars[2]);
-			assertTLCStateFrame(stackFrames[0], 23, 23, RM, vars[2]);
+			assertTLCStateFrame(stackFrames[2], 21, 21, RM, vars[1], vars[2], vars[3]);
+			assertTLCStateFrame(stackFrames[1], 22, 22, RM, vars[2], vars[3]);
+			assertTLCStateFrame(stackFrames[0], 23, 23, RM, vars[3]);
 		}
 
 		// Debug the InitiateProbe action of the next-state relation.
@@ -183,7 +183,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		 */
 		stackFrames = debugger.stepIn(5);
 		assertEquals(9, stackFrames.length);
-		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[0], vars[2], vars[3]);
+		assertTLCActionFrame(stackFrames[0], 47, 47, RM, context, vars[1], vars[2], vars[3]);
 
 		/*
   				/\ UNCHANGED <<tpos, tcolor>>
@@ -191,7 +191,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		stackFrames = debugger.stepIn(8);
 		assertEquals(9, stackFrames.length);
 		context = Context.Empty.cons(null, IntValue.ValOne).cons(null, IntValue.ValOne);
-		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[0], vars[2]);
+		assertTLCActionFrame(stackFrames[0], 48, 48, RM, context, vars[2], vars[3]);
 		
 		// 8888888888888888888 State Constraint 8888888888888888888 //
 		debugger.replaceAllBreakpointsWith(MDL, 16);
@@ -243,7 +243,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 			// null context to ignore TLCExt!Trace in context added via Tool#evalAlias.
 			assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL, (Context) null);
 			assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL, (Context) null);
-			assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
+			assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context, vars[1], vars[2], vars[3]);
 			assertTLCActionFrame(stackFrames[3], 52, 6, 52, 43, RM, context, vars);
 			assertTLCActionFrame(stackFrames[4], 51, 6, 51, 14, RM, context, vars);
 			assertTLCActionFrame(stackFrames[5], 51, 3, 53, 38, RM, context, vars);
@@ -252,7 +252,7 @@ public class EWD840DebuggerTest extends TLCDebuggerTestCase {
 		assertEquals(11, stackFrames.length);
 		assertTLCActionFrame(stackFrames[0], 33, 20, 33, 49, MDL, (Context) null);
 		assertTLCActionFrame(stackFrames[1], 28, 5, 34, 5, MDL, (Context) null);
-		assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context, vars[0], vars[2], vars[3]);
+		assertTLCActionFrame(stackFrames[2], 53, 6, 53, 38, RM, context, vars[1], vars[2], vars[3]);
 		assertTLCActionFrame(stackFrames[3], 52, 6, 52, 43, RM, context, vars);
 		assertTLCActionFrame(stackFrames[4], 51, 6, 51, 14, RM, context, vars);
 		assertTLCActionFrame(stackFrames[5], 51, 3, 53, 38, RM, context, vars);

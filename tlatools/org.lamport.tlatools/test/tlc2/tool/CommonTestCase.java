@@ -108,7 +108,7 @@ public abstract class CommonTestCase {
 				assertNotEquals("<Initial predicate>", info);
 				assertFalse(info.startsWith("<Action"));
 			}
-			assertEquals(expectedTrace.get(i), 
+			assertEquals(expectedTrace.get(i),
 					   stateInfo.toString().trim()); // trimmed to remove any newlines or whitespace
 			assertEquals(i+1, objs[1]);
 		}
