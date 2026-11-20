@@ -56,11 +56,11 @@ import tlc2.tool.coverage.CostModel;
 import tlc2.util.Context;
 import tlc2.util.ExpectInlined;
 import tlc2.util.IdThread;
-import tlc2.util.RandomGenerator;
 import tlc2.util.Vect;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IMVPerm;
 import tlc2.value.IValue;
+import tlc2.value.RandomEnumerableValues;
 import tlc2.value.ValueConstants;
 import tlc2.value.Values;
 import tlc2.value.impl.BoolValue;
@@ -136,28 +136,6 @@ public abstract class Tool
 	 */
 	public static final String CDOT_KEY = Tool.class.getName() + ".cdot";
 	
-  	public static final String PROBABILISTIC_KEY = Tool.class.getName() + ".probabilistic";
-    /*
-	 * Prototype, do *not* activate when checking safety or liveness!!!:
-	 * For simulation that is not meant as a substitute of exhaustive checking for too
-	 * large models, it can be useful to generate behaviors as quickly as possible,
-	 * i.e. without checking all successor states along the states of the behavior.
-	 * This flag activates the code path that efficiently generate only a single 
-	 * successor state during simulation.  It does not let the user parameterize
-	 * the code with a particular distribution, but instead draws from the uniform
-	 * distribution.  
-	 * 
-	 * In its current form, it only handles non-determinism expressed with opcode
-	 * OPCODE_be (bounded exist), i.e. (which simply happened to be the primary
-	 * expression that we encountered in the SWIM spec during this work):
-	 * 
-	 * VARIABLE x
-	 * \E n \in S: x' = n
-	 * 
-	 * Activate with: -Dtlc2.tool.impl.Tool.probabilistic=true
-	 */
-  private static final boolean PROBABILISTIC = Boolean.getBoolean(PROBABILISTIC_KEY);
-
   public enum Mode {
 	  Simulation, MC, MC_DEBUG, Executor;
   }
@@ -904,7 +882,6 @@ public abstract class Tool
     StateVec nss = new StateVec(0);
     this.getNextStates(action, action.pred, acts, ctx, state, s1.setPredecessor(state).setAction(action), nss, action.cm);
     if (coverage) { action.cm.incInvocations(nss.size()); }
-    if (PROBABILISTIC && nss.size() > 1) {System.err.println("Simulator generated more than one next state");}
     return nss;
   }
   
@@ -1198,47 +1175,30 @@ public abstract class Tool
 	case OPCODE_dl:     // DisjList
 	case OPCODE_lor:
 	  {
-		if (PROBABILISTIC) {
-			// probabilistic (return after a state has been generated, ordered is randomized)
-			final RandomGenerator rng = TLCGlobals.simulator.getRNG();
-			int index = (int) Math.floor(rng.nextDouble() * alen);
-			final int p = rng.nextPrime();
-		    for (int i = 0; i < alen; i++) {
-			      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
-				  if (nss.hasStates()) {
-						return resState;
-				  }
-				  index = (index + p) % alen;
-			}
-		} else {
-		    for (int i = 0; i < alen; i++) {
-		      resState = this.getNextStates(action, args[i], acts, c, s0, resState, nss, cm);
-		    }
-		}
+		int index = nss.isFirstSuccessorOnly() && alen > 0 ? RandomEnumerableValues.get().nextInt(alen) : 0;
+	    for (int i = 0; i < alen; i++) {
+	      resState = this.getNextStates(action, args[index], acts, c, s0, resState, nss, cm);
+	      if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	        return resState;
+	      }
+	      index = (index + 1) % alen;
+	    }
 	    return resState;
 	  }
 	case OPCODE_be:     // BoundedExists
 	  {
 	    SemanticNode body = args[0];
-	    
-	    if (PROBABILISTIC) {
-		    // probabilistic (return after a state has been generated, ordered is randomized)
-			final ContextEnumerator Enum = this.contexts(Ordering.RANDOMIZED, pred, c, s0, s1, EvalControl.Clear, cm);
-			Context c1;
-		    while ((c1 = Enum.nextElement()) != null) {
-				resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
-				if (nss.hasStates()) {
-					return resState;
-				}
-		    }
-	    } else {
-	    	// non-deterministically generate successor states (potentially many)
-	    	ContextEnumerator Enum = this.contexts(pred, c, s0, s1, EvalControl.Clear, cm);
-	    	Context c1;
-	    	while ((c1 = Enum.nextElement()) != null) {
-	    		resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
-	    	}
-	    }
+
+            // non-deterministically generate successor states (potentially many)
+            ContextEnumerator Enum = this.contexts(nss.isFirstSuccessorOnly() ? Ordering.RANDOMIZED : Ordering.NORMALIZED,
+                    pred, c, s0, s1, EvalControl.Clear, cm);
+            Context c1;
+            while ((c1 = Enum.nextElement()) != null) {
+              resState = this.getNextStates(action, body, acts, c1, s0, resState, nss, cm);
+              if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+                return resState;
+              }
+            }
 
 	    return resState;
 	  }
@@ -1321,11 +1281,6 @@ public abstract class Tool
 	case OPCODE_case:   // Case
 	  {
 	    SemanticNode other = null;
-		if (PROBABILISTIC) {
-			// See Bounded exists above!
-			throw new UnsupportedOperationException(
-							"Probabilistic evaluation of next-state relation not implemented for CASE yet.");
-		}
 	    for (int i = 0; i < alen; i++) {
 	      OpApplNode pair = (OpApplNode)args[i];
 	      ExprOrOpArgNode[] pairArgs = pair.getArgs();
@@ -1391,25 +1346,15 @@ public abstract class Tool
 	      Value rset = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
 	      SubsetValue rval = (SubsetValue)setSource(args[1], new SubsetValue(rset, cm));
 	      if (lval == null) {
-	        if (PROBABILISTIC) {
-	          final ValueEnumeration Enum = rval.elements(Ordering.RANDOMIZED);
-	          Value elem;
-	          while ((elem = Enum.nextElement()) != null) {
-	            resState.bind(varName, elem);
-	            resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-	            resState.unbind(varName);
-	            if (nss.hasStates()) {
-	              return resState;
-	            }
-	          }
-	        }
-
-	        ValueEnumeration Enum = rval.elements();
+	        ValueEnumeration Enum = nss.isFirstSuccessorOnly() ? rval.elements(Ordering.RANDOMIZED) : rval.elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
 	          resState.bind(varName, elem);
 	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
 	          resState.unbind(varName);
+	          if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	            return resState;
+	          }
 	        }
 	        return resState;
 	      }
@@ -1438,26 +1383,17 @@ public abstract class Tool
 	          Assert.fail("In computing next states, the right side of \\IN" +
 	                      " is not enumerable.\n" + pred, pred, c);
 	        }
-	        
-			if (PROBABILISTIC) {
-				final ValueEnumeration Enum = ((Enumerable)rval).elements(Ordering.RANDOMIZED);
-				Value elem;
-			    while ((elem = Enum.nextElement()) != null) {
-			        resState.bind(varName, elem);
-			        resState = this.getNextStates(action, acts, s0, resState, nss, cm);
-			        resState.unbind(varName);
-					if (nss.hasStates()) {
-						return resState;
-					}
-			    }
-			}
 
-	        ValueEnumeration Enum = ((Enumerable)rval).elements();
+	        ValueEnumeration Enum = nss.isFirstSuccessorOnly()
+	                ? ((Enumerable)rval).elements(Ordering.RANDOMIZED) : ((Enumerable)rval).elements();
 	        Value elem;
 	        while ((elem = Enum.nextElement()) != null) {
 	          resState.bind(varName, elem);
 	          resState = this.getNextStates(action, acts, s0, resState, nss, cm);
 	          resState.unbind(varName);
+	          if (nss.isFirstSuccessorOnly() && nss.hasStates()) {
+	            return resState;
+	          }
 	        }
 	        return resState;
 	      }
@@ -4130,7 +4066,4 @@ public abstract class Tool
 		return getVal(expr, con, b, toolId);
 	}
 
-	public static boolean isProbabilistic() {
-		return PROBABILISTIC;
-	}
 }
