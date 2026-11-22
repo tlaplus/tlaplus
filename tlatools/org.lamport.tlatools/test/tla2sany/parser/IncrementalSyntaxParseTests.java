@@ -71,4 +71,22 @@ public class IncrementalSyntaxParseTests {
     Assert.assertEquals(SyntaxTreeConstants.N_ConjList, result.getKind());
     Assert.assertEquals(3, result.getHeirs().length);
   }
+
+  @Test
+  public void testTupleBoundLookahead() throws ParseException {
+    final String definition = "Inv == << [<< ENABLED <<x' = 1 - x>>_x >> EXCEPT ![1] = FALSE] >> \\in {<<<<FALSE>>>>}";
+    parser(definition).OperatorOrFunctionDefinition();
+    new TLAplusParser(new SilentSanyOutput(), ("---- MODULE EnabledTuple ----\n" + definition
+        + "\n====").getBytes(StandardCharsets.UTF_8)).CompilationUnit();
+    parser("<< {<< ENABLED <<x' = 1 - x>>_x >>} >> \\in {<<<<FALSE>>>>}").Expression();
+    parser("<< [<<x, <<Next>>_x>> EXCEPT ![1] = y] >> \\in S").Expression();
+    parser("<< f[<<Next>>_x] >> \\in S").Expression();
+    parser("⟨[⟨ENABLED ⟨x' = 1 - x⟩_x⟩ EXCEPT ![1] = FALSE]⟩ ∈ {⟨⟨FALSE⟩⟩}").Expression();
+    parser("{<<1, 2>> \\in S}").Expression();
+    parser("[<<x', y'>> \\in R]_<<x, y>>").Expression();
+    for (String input : new String[] {"[<<x, y>> \\in S |-> x + y]", "[⟨x, y⟩ ∈ S ↦ x]", "[<<>> \\in S |-> TRUE]"}) {
+      Assert.assertEquals(SyntaxTreeConstants.N_FcnConst, parser(input).Expression().getKind());
+    }
+    Assert.assertEquals(SyntaxTreeConstants.N_SubsetOf, parser("{<<x, y, z>> \\in S : P(x, y, z)}").Expression().getKind());
+  }
 }
