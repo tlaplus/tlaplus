@@ -2460,7 +2460,8 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 
 	private final void processParameters(TreeNode treeNodes[], ModuleNode cm) {
 		for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
-			if (treeNodes[lvi].getUS() == S_at) {
+			OpDeclNode odn = buildParameter(treeNodes[lvi], ConstantDeclKind, ConstantLevel, cm, true);
+			if (odn.getName() == S_at) {
 				// Should be enforced at syntax level
 				errors.addMessage(
 					ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
@@ -2468,8 +2469,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 					"Attempted to declare '@' as a constant."
 				);
 			}
-			;
-			OpDeclNode odn = buildParameter(treeNodes[lvi], ConstantDeclKind, ConstantLevel, cm, true);
 			/*******************************************************************
 			 * We throw away the OpDeclNode because, when it was constructed, * it was added
 			 * to symbolTable, whose top context should be the * top-level context of the
@@ -2551,6 +2550,14 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				params = new FormalParamNode[0];
 			}
 			name = ss[0].getUS();
+			if (name == S_at) {
+				// Should be enforced at syntax level
+				errors.addMessage(
+					ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
+					ss[0].getLocation(),
+					"Attempted to define '@' as an operator."
+				);
+			}
 		} else if (children[0].isKind(N_PrefixLHS)) { // operator is a prefix operator
 			// Process the parameter
 			params = new FormalParamNode[1];
