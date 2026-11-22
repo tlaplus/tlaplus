@@ -72,18 +72,44 @@ public class IncrementalSyntaxParseTests {
     Assert.assertEquals(3, result.getHeirs().length);
   }
 
+  /**
+   * Asserts that the expression parses as an infix expression whose left
+   * operand is a tuple with a single element of the given kind.
+   */
+  private static void assertTupleInfix(final SyntaxTreeNode result, final int elementKind) {
+    Assert.assertEquals(SyntaxTreeConstants.N_InfixExpr, result.getKind());
+    final SyntaxTreeNode tuple = result.getHeirs()[0];
+    Assert.assertEquals(SyntaxTreeConstants.N_Tuple, tuple.getKind());
+    Assert.assertEquals(elementKind, tuple.getHeirs()[1].getKind());
+  }
+
   @Test
   public void testTupleBoundLookahead() throws ParseException {
     final String definition = "Inv == << [<< ENABLED <<x' = 1 - x>>_x >> EXCEPT ![1] = FALSE] >> \\in {<<<<FALSE>>>>}";
-    parser(definition).OperatorOrFunctionDefinition();
-    new TLAplusParser(new SilentSanyOutput(), ("---- MODULE EnabledTuple ----\n" + definition
+    final SyntaxTreeNode def = parser(definition).OperatorOrFunctionDefinition();
+    Assert.assertEquals(SyntaxTreeConstants.N_OperatorDefinition, def.getKind());
+    assertTupleInfix(def.getHeirs()[2], SyntaxTreeConstants.N_Except);
+
+    final SyntaxTreeNode module = new TLAplusParser(new SilentSanyOutput(), ("---- MODULE EnabledTuple ----\n" + definition
         + "\n====").getBytes(StandardCharsets.UTF_8)).CompilationUnit();
-    parser("<< {<< ENABLED <<x' = 1 - x>>_x >>} >> \\in {<<<<FALSE>>>>}").Expression();
-    parser("<< [<<x, <<Next>>_x>> EXCEPT ![1] = y] >> \\in S").Expression();
-    parser("<< f[<<Next>>_x] >> \\in S").Expression();
-    parser("⟨[⟨ENABLED ⟨x' = 1 - x⟩_x⟩ EXCEPT ![1] = FALSE]⟩ ∈ {⟨⟨FALSE⟩⟩}").Expression();
-    parser("{<<1, 2>> \\in S}").Expression();
-    parser("[<<x', y'>> \\in R]_<<x, y>>").Expression();
+    Assert.assertEquals(SyntaxTreeConstants.N_Module, module.getKind());
+
+    assertTupleInfix(parser("<< {<< ENABLED <<x' = 1 - x>>_x >>} >> \\in {<<<<FALSE>>>>}").Expression(),
+        SyntaxTreeConstants.N_SetEnumerate);
+    assertTupleInfix(parser("<< [<<x, <<Next>>_x>> EXCEPT ![1] = y] >> \\in S").Expression(),
+        SyntaxTreeConstants.N_Except);
+    assertTupleInfix(parser("<< f[<<Next>>_x] >> \\in S").Expression(), SyntaxTreeConstants.N_FcnAppl);
+    assertTupleInfix(parser("⟨[⟨ENABLED ⟨x' = 1 - x⟩_x⟩ EXCEPT ![1] = FALSE]⟩ ∈ {⟨⟨FALSE⟩⟩}").Expression(),
+        SyntaxTreeConstants.N_Except);
+
+    final SyntaxTreeNode setEnum = parser("{<<1, 2>> \\in S}").Expression();
+    Assert.assertEquals(SyntaxTreeConstants.N_SetEnumerate, setEnum.getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_InfixExpr, setEnum.getHeirs()[1].getKind());
+
+    final SyntaxTreeNode action = parser("[<<x', y'>> \\in R]_<<x, y>>").Expression();
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr, action.getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_InfixExpr, action.getHeirs()[1].getKind());
+
     for (String input : new String[] {"[<<x, y>> \\in S |-> x + y]", "[⟨x, y⟩ ∈ S ↦ x]", "[<<>> \\in S |-> TRUE]"}) {
       Assert.assertEquals(SyntaxTreeConstants.N_FcnConst, parser(input).Expression().getKind());
     }
