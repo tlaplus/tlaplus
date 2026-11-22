@@ -110,9 +110,15 @@ public class IncrementalSyntaxParseTests {
     Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr, action.getKind());
     Assert.assertEquals(SyntaxTreeConstants.N_InfixExpr, action.getHeirs()[1].getKind());
 
-    for (String input : new String[] {"[<<x, y>> \\in S |-> x + y]", "[⟨x, y⟩ ∈ S ↦ x]", "[<<>> \\in S |-> TRUE]"}) {
+    for (String input : new String[] {"[⟨x, y⟩ ∈ S ↦ x]", "[<<>> \\in S |-> TRUE]"}) {
       Assert.assertEquals(SyntaxTreeConstants.N_FcnConst, parser(input).Expression().getKind());
     }
     Assert.assertEquals(SyntaxTreeConstants.N_SubsetOf, parser("{<<x, y, z>> \\in S : P(x, y, z)}").Expression().getKind());
+  }
+
+  @Test
+  public void testTupleMembershipFunctionConstructor() throws ParseException {
+    final SyntaxTreeNode result = parser("[<<x, y>> \\in S |-> x + y]").Expression();
+    Assert.assertEquals(SyntaxTreeConstants.N_FcnConst, result.getKind());
   }
 }
