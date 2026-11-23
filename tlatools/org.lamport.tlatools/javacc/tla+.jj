@@ -585,7 +585,7 @@ Operator lastOp;
       && junctionListCtx.isAboveCurrent( t.beginColumn );
   }
 
-  boolean matchFcnConst () {
+  private Token previewBoundMembership() {
     // Preview a tuple or list of bound identifiers followed by a membership token.
     Token t = getNextPreviewToken( initPreviewToken() );
     boolean tuple = t.kind == LAB;
@@ -594,21 +594,55 @@ Operator lastOp;
       /*******************************************************************
       * @ is not a bindable name, so @ \in is an ordinary expression.    *
       *******************************************************************/
-      if (At.equals(t.image)) return false;
+      if (At.equals(t.image)) return null;
       t = getNextPreviewToken( t );
       while ( t.kind == COMMA ) {
         t = getNextPreviewToken( t );
-        if (t.kind != IDENTIFIER || At.equals(t.image)) return false;
+        if (t.kind != IDENTIFIER || At.equals(t.image)) return null;
         t = getNextPreviewToken( t );
       }
     } else if (!tuple) {
-      return false;
+      return null;
     }
     if (tuple) {
-      if (t.kind != RAB) return false;
+      if (t.kind != RAB) return null;
       t = getNextPreviewToken( t );
     }
-    return t.kind == IN;
+    return t.kind == IN ? t : null;
+  }
+
+  boolean matchFcnConst () {
+    Token t = previewBoundMembership();
+    if (t == null) return false;
+
+    int depth = 0;
+    while (true) {
+      t = getNextPreviewToken( t );
+      switch (t.kind) {
+        case EOF:
+          return false;
+        case MAPTO:
+          if (depth == 0) return true;
+          break;
+        case LSB:
+        case LBR:
+        case LBC:
+        case LAB:
+          depth++;
+          break;
+        case RSB:
+        case ARSB:
+        case RBR:
+        case RBC:
+        case RAB:
+        case ARAB:
+          if (depth == 0) return false;
+          depth--;
+          break;
+        default:
+          break;
+      }
+    }
   }
 
 //  int numberFromStep( String step ) {
@@ -3362,7 +3396,7 @@ BraceCases() : {
   bpa("Some { } form");
 } {
   t = <LBC>  { addHeir( new SyntaxTreeNode(mn, t) ); }
-  [ LOOKAHEAD({ matchFcnConst() }) 
+  [ LOOKAHEAD({ previewBoundMembership() != null })
     ( tn = IdentifierTuple() | tn = Identifier() ) {
       tn_0 = tn;
       expecting = "\\in"; }

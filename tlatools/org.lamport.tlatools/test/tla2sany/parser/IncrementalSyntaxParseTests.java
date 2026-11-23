@@ -117,8 +117,22 @@ public class IncrementalSyntaxParseTests {
   }
 
   @Test
+  public void testTupleMembershipActionLookahead() throws ParseException {
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr,
+        parser("[<<x, y>> \\in S]_<<x, y>>").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr,
+        parser("[x \\in S]_x").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr,
+        parser("[x \\in [a |-> S]]_x").Expression().getKind());
+  }
+
+  @Test
   public void testTupleMembershipFunctionConstructor() throws ParseException {
     final SyntaxTreeNode result = parser("[<<x, y>> \\in S |-> x + y]").Expression();
     Assert.assertEquals(SyntaxTreeConstants.N_FcnConst, result.getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_FcnConst,
+        parser("[x \\in S, y \\in T |-> x]").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_FcnConst,
+        parser("[x \\in [a : S] |-> x]").Expression().getKind());
   }
 }

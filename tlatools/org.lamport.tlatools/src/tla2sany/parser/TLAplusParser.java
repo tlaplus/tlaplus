@@ -496,7 +496,7 @@ Operator lastOp;
       && junctionListCtx.isAboveCurrent( t.beginColumn );
   }
 
-  boolean matchFcnConst () {
+  private Token previewBoundMembership() {
     // Preview a tuple or list of bound identifiers followed by a membership token.
     Token t = getNextPreviewToken( initPreviewToken() );
     boolean tuple = t.kind == LAB;
@@ -505,21 +505,55 @@ Operator lastOp;
       /*******************************************************************
       * @ is not a bindable name, so @ \in is an ordinary expression.    *
       *******************************************************************/
-      if (At.equals(t.image)) return false;
+      if (At.equals(t.image)) return null;
       t = getNextPreviewToken( t );
       while ( t.kind == COMMA ) {
         t = getNextPreviewToken( t );
-        if (t.kind != IDENTIFIER || At.equals(t.image)) return false;
+        if (t.kind != IDENTIFIER || At.equals(t.image)) return null;
         t = getNextPreviewToken( t );
       }
     } else if (!tuple) {
-      return false;
+      return null;
     }
     if (tuple) {
-      if (t.kind != RAB) return false;
+      if (t.kind != RAB) return null;
       t = getNextPreviewToken( t );
     }
-    return t.kind == IN;
+    return t.kind == IN ? t : null;
+  }
+
+  boolean matchFcnConst () {
+    Token t = previewBoundMembership();
+    if (t == null) return false;
+
+    int depth = 0;
+    while (true) {
+      t = getNextPreviewToken( t );
+      switch (t.kind) {
+        case EOF:
+          return false;
+        case MAPTO:
+          if (depth == 0) return true;
+          break;
+        case LSB:
+        case LBR:
+        case LBC:
+        case LAB:
+          depth++;
+          break;
+        case RSB:
+        case ARSB:
+        case RBR:
+        case RBC:
+        case RAB:
+        case ARAB:
+          if (depth == 0) return false;
+          depth--;
+          break;
+        default:
+          break;
+      }
+    }
   }
 
 //  int numberFromStep( String step ) {
@@ -4899,7 +4933,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(LBC);
                addHeir( new SyntaxTreeNode(mn, t) );
     if (jj_2_45(1)) {
-      if (matchFcnConst()) {
+      if (previewBoundMembership() != null) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LAB:
           tn = IdentifierTuple();
@@ -7830,75 +7864,6 @@ SyntaxTreeNode tn;
     finally { jj_save(73, xla); }
   }
 
-  final private boolean jj_3R_205() {
-    if (jj_3R_212()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_198() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_205()) {
-    jj_scanpos = xsp;
-    if (jj_3R_206()) {
-    jj_scanpos = xsp;
-    if (jj_3R_207()) {
-    jj_scanpos = xsp;
-    if (jj_3R_208()) {
-    jj_scanpos = xsp;
-    if (jj_3R_209()) return true;
-    }
-    }
-    }
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_190() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_139() {
-    if (jj_3R_76()) return true;
-    return false;
-  }
-
-  final private boolean jj_3_36() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_138() {
-    if (jj_scan_token(SUFFICES)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_80() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_138()) jj_scanpos = xsp;
-    xsp = jj_scanpos;
-    if (jj_3_36()) {
-    jj_scanpos = xsp;
-    lookingAhead = true;
-    jj_semLA = getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME;
-    lookingAhead = false;
-    if (!jj_semLA || jj_3R_139()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_65() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_219() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_99() {
     if (jj_3R_62()) return true;
     return false;
@@ -9380,7 +9345,7 @@ SyntaxTreeNode tn;
     Token xsp;
     xsp = jj_scanpos;
     lookingAhead = true;
-    jj_semLA = matchFcnConst();
+    jj_semLA = previewBoundMembership() != null;
     lookingAhead = false;
     if (!jj_semLA || jj_3R_89()) {
     jj_scanpos = xsp;
@@ -10433,6 +10398,75 @@ SyntaxTreeNode tn;
 
   final private boolean jj_3R_208() {
     if (jj_3R_214()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_205() {
+    if (jj_3R_212()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_198() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_205()) {
+    jj_scanpos = xsp;
+    if (jj_3R_206()) {
+    jj_scanpos = xsp;
+    if (jj_3R_207()) {
+    jj_scanpos = xsp;
+    if (jj_3R_208()) {
+    jj_scanpos = xsp;
+    if (jj_3R_209()) return true;
+    }
+    }
+    }
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_190() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_139() {
+    if (jj_3R_76()) return true;
+    return false;
+  }
+
+  final private boolean jj_3_36() {
+    if (jj_3R_61()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_138() {
+    if (jj_scan_token(SUFFICES)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_80() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_138()) jj_scanpos = xsp;
+    xsp = jj_scanpos;
+    if (jj_3_36()) {
+    jj_scanpos = xsp;
+    lookingAhead = true;
+    jj_semLA = getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME;
+    lookingAhead = false;
+    if (!jj_semLA || jj_3R_139()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_65() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_219() {
+    if (jj_3R_61()) return true;
     return false;
   }
 
