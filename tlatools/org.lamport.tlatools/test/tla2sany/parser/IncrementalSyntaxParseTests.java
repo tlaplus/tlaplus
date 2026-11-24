@@ -135,4 +135,16 @@ public class IncrementalSyntaxParseTests {
     Assert.assertEquals(SyntaxTreeConstants.N_FcnConst,
         parser("[x \\in [a : S] |-> x]").Expression().getKind());
   }
+
+  @Test
+  public void testSubexpressionSelectorInBoundSet() throws ParseException {
+    Assert.assertEquals(SyntaxTreeConstants.N_FcnConst,
+        parser("[x \\in S!<< |-> x]").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_FcnConst,
+        parser("[x \\in S!>> |-> x]").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr,
+        parser("[x \\in S!<<]_x").Expression().getKind());
+    Assert.assertEquals(SyntaxTreeConstants.N_ActionExpr,
+        parser("[x \\in S!>>]_x").Expression().getKind());
+  }
 }

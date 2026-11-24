@@ -616,8 +616,16 @@ Operator lastOp;
     if (t == null) return false;
 
     int depth = 0;
+    int previous = -1;
     while (true) {
       t = getNextPreviewToken( t );
+      // After "!", << and >> are structural subexpression selectors
+      // (e.g. S!<< or S!>>), not tuple brackets.
+      if (previous == BANG && (t.kind == LAB || t.kind == RAB)) {
+        previous = t.kind;
+        continue;
+      }
+      previous = t.kind;
       switch (t.kind) {
         case EOF:
           return false;

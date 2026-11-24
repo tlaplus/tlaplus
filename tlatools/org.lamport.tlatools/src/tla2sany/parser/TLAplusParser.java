@@ -527,8 +527,16 @@ Operator lastOp;
     if (t == null) return false;
 
     int depth = 0;
+    int previous = -1;
     while (true) {
       t = getNextPreviewToken( t );
+      // After "!", << and >> are structural subexpression selectors
+      // (e.g. S!<< or S!>>), not tuple brackets.
+      if (previous == BANG && (t.kind == LAB || t.kind == RAB)) {
+        previous = t.kind;
+        continue;
+      }
+      previous = t.kind;
       switch (t.kind) {
         case EOF:
           return false;
@@ -7864,11 +7872,6 @@ SyntaxTreeNode tn;
     finally { jj_save(73, xla); }
   }
 
-  final private boolean jj_3R_99() {
-    if (jj_3R_62()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_63() {
     Token xsp;
     xsp = jj_scanpos;
@@ -10467,6 +10470,11 @@ SyntaxTreeNode tn;
 
   final private boolean jj_3R_219() {
     if (jj_3R_61()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_99() {
+    if (jj_3R_62()) return true;
     return false;
   }
 
