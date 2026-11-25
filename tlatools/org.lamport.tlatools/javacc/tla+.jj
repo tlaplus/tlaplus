@@ -556,20 +556,30 @@ Operator lastOp;
     t = getNextPreviewToken( t );
    if (t.kind == LAB) {
       int count = 1;
+      boolean at = false;
       while (count != 0 ) {
         t = getNextPreviewToken( t );
         if (t.kind == LAB) count++;
         if (t.kind == RAB) count--;
+        if (t.kind == IDENTIFIER && At.equals(t.image)) at = true;
         if (t.kind == EOF) return false;
       }
+      /*******************************************************************
+      * @ is not a bindable name, so <<@>> \in is an ordinary expression. *
+      *******************************************************************/
+      if (at) return false;
       t = getNextPreviewToken( t );
       return (t.kind == IN );
     } else
     if (t.kind == IDENTIFIER) {
+      /*******************************************************************
+      * @ is not a bindable name, so @ \in is an ordinary expression.    *
+      *******************************************************************/
+      if (At.equals(t.image)) return false;
       t = getNextPreviewToken( t );
       while ( t.kind == COMMA ) {
         t = getNextPreviewToken( t );
-        if (t.kind != IDENTIFIER) return false;
+        if (t.kind != IDENTIFIER || At.equals(t.image)) return false;
         t = getNextPreviewToken( t );
       }
       return (t.kind == IN );
@@ -2233,6 +2243,30 @@ SyntaxTreeNode
 Identifier() : {
   Token t;
 }{
+  t = <IDENTIFIER> {
+    /***********************************************************************
+    * !@ never reaches this action. BangExt's lookahead rejects @ as an   *
+    * identifier alternative, and StructOp consumes it. Syntactic          *
+    * lookahead scans the IDENTIFIER token and does not execute this      *
+    * action.                                                              *
+    ***********************************************************************/
+    if (At.equals(t.image)) {
+      throw new ParseException(
+          "The @ symbol has special syntactic meaning and cannot be used as an ordinary declared identifier at line "
+          + t.beginLine + ", column " + t.beginColumn + ".");
+    }
+    return new SyntaxTreeNode(mn, t);
+  }
+}
+
+/***************************************************************************
+* An identifier used as an expression, including @. Binding positions call *
+* Identifier(), which rejects @.                                           *
+***************************************************************************/
+SyntaxTreeNode
+ExprIdentifier() : {
+  Token t;
+}{
   t = <IDENTIFIER> { return new SyntaxTreeNode(mn, t); }
 }
 
@@ -3541,7 +3575,7 @@ ExceptComponent () : {
                 if (isFieldNameToken( next )) next.kind = IDENTIFIER;
               }
     
-    tn = Identifier() {
+    tn = ExprIdentifier() {
       if (tn.getUS().equals(At) ) {
         PErrors.push( new ParseError("@ used in !.@") );
       }
@@ -3586,7 +3620,7 @@ NoOpExtension() : {
   last = null; top = null;
   Token t = null;
 } {
-  ( tid = Identifier()
+  ( tid = ExprIdentifier()
     [ LOOKAHEAD(2)
       top = OpArgs() ]
 // ^^^
@@ -4101,7 +4135,7 @@ PrimitiveExp() : {
  | LOOKAHEAD (<NUMBER_LITERAL>, 
                {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
    tn = Number() 
- | ( ( ( tn0 = Identifier() 
+ | ( ( ( tn0 = ExprIdentifier() 
         | (t = <ProofStepLexeme> | t = <ProofImplicitStepLexeme>)
                 { tn0 = new SyntaxTreeNode(mn, t); 
                   if ((getProofLevel() < 0) && (proofDepth <= 0)) {

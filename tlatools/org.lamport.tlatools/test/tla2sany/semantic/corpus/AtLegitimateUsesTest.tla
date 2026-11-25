@@ -17,6 +17,40 @@ Arithmetic == [f EXCEPT ![1] = @ + 1]
 THEOREM RefersTo(Arithmetic, "Arithmetic")
 THEOREM IsLevel(Arithmetic, ConstantLevel)
 
+(* ID: Enumeration *)
+Enumeration == [f EXCEPT ![1] = {@ \in {1}}]
+THEOREM RefersTo(Enumeration, "Enumeration")
+THEOREM IsLevel(Enumeration, ConstantLevel)
+
+(* ID: Enumeration2 *)
+Enumeration2 ==
+    [f EXCEPT ![1] = {@ \in {1}, FALSE}]
+THEOREM RefersTo(Enumeration2, "Enumeration2")
+THEOREM IsLevel(Enumeration2, ConstantLevel)
+
+(* ID: EnumerationTuple *)
+EnumerationTuple == [f EXCEPT ![1] = {<<@>> \in {<<1>>}}]
+THEOREM RefersTo(EnumerationTuple, "EnumerationTuple")
+THEOREM IsLevel(EnumerationTuple, ConstantLevel)
+
+(* ID: EnumerationMixed *)
+EnumerationMixed ==
+    [f EXCEPT ![1] = {FALSE, @ \in {1}}]
+THEOREM RefersTo(EnumerationMixed, "EnumerationMixed")
+THEOREM IsLevel(EnumerationMixed, ConstantLevel)
+
+(* ID: EnumerationTupleMixed *)
+EnumerationTupleMixed ==
+    [f EXCEPT ![1] = {<<0, @>> \in {<<0, 1>>}}]
+THEOREM RefersTo(EnumerationTupleMixed, "EnumerationTupleMixed")
+THEOREM IsLevel(EnumerationTupleMixed, ConstantLevel)
+
+(* ID: EnumerationNestedTuple *)
+EnumerationNestedTuple ==
+    [f EXCEPT ![1] = {<<0, <<@>>>> \in {<<0, <<1>>>>}}]
+THEOREM RefersTo(EnumerationNestedTuple, "EnumerationNestedTuple")
+THEOREM IsLevel(EnumerationNestedTuple, ConstantLevel)
+
 (* ID: Apply *)
 Apply(P(_)) == P(1)
 
