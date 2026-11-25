@@ -489,7 +489,38 @@ Operator lastOp;
       if (genId.heirs()[0].heirs().length != 0){return false;}
      } // for
     return true;
-   }
+  }
+
+  void rejectAtLabel(SyntaxTreeNode node) throws ParseException {
+    /***********************************************************************
+    * The lexer classifies @ as an IDENTIFIER token, but @ is not a legal  *
+    * TLA+ identifier. It is not a legal label name or label parameter.    *
+    * !@ is the positional selector.                                       *
+    ***********************************************************************/
+    SyntaxTreeNode genId = node;
+    if (node.isKind(N_OpApplication)) {
+      genId = (SyntaxTreeNode) node.heirs()[0];
+      SyntaxTreeNode opArgs = (SyntaxTreeNode) node.heirs()[1];
+      for (int i = 1; i < opArgs.heirs().length; i = i + 2) {
+        SyntaxTreeNode arg = (SyntaxTreeNode) opArgs.heirs()[i];
+        if (!arg.isKind(N_GeneralId)) {
+          continue;
+        }
+        SyntaxTreeNode argId = (SyntaxTreeNode) arg.heirs()[1];
+        if (argId.getUS().equals(At)) {
+          throw new ParseException(
+              "The @ symbol has special syntactic meaning and cannot be used as a label parameter at "
+              + argId.getLocation().toString() + ".");
+        }
+      }
+    }
+    SyntaxTreeNode id = (SyntaxTreeNode) genId.heirs()[1];
+    if (id.getUS().equals(At)) {
+      throw new ParseException(
+          "The @ symbol has special syntactic meaning and cannot be used as a label name at "
+          + id.getLocation().toString() + ".");
+    }
+  }
 
   boolean labelDoesNotChangeParse(SyntaxTreeNode labeledExpr, 
                                   Operator labelOp) {
@@ -4100,6 +4131,7 @@ ExtendableExpr() : {
        throw new ParseException("`::' at " + tn1.getLocation().toString()
                                  + " does not follow a label.") ;
       } ;
+     rejectAtLabel(tn0);
      OperatorStack.popCurrentTop() ;
    } // t = <COLONCOLON>
   tn2 = Expression() 

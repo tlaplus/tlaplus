@@ -1,5 +1,6 @@
 ----------------------- MODULE AtLegitimateUsesTest -----------------------
 \* @ is the previous value in EXCEPT, and !@ is the positional selector.
+\* A label may still be named and selected when its name is not @.
 EXTENDS Semantics, Naturals
 
 (* ID: f *)
@@ -63,5 +64,15 @@ THEOREM IsLevel(Quantified, ConstantLevel)
 Selected == Apply(Quantified!@)
 THEOREM RefersTo(Selected, "Selected")
 THEOREM IsLevel(Selected, ConstantLevel)
+
+(* ID: Labeled *)
+Labeled == \A x \in {1} : lab(x) :: x = 1
+THEOREM RefersTo(Labeled, "Labeled")
+THEOREM IsLevel(Labeled, ConstantLevel)
+
+(* ID: LabelSelected *)
+LabelSelected == Apply(Labeled!lab)
+THEOREM RefersTo(LabelSelected, "LabelSelected")
+THEOREM IsLevel(LabelSelected, ConstantLevel)
 
 =============================================================================
