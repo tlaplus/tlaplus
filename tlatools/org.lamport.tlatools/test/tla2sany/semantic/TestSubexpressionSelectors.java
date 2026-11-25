@@ -137,4 +137,43 @@ public class TestSubexpressionSelectors {
 		Assert.assertEquals("Unknown operator: `op'.", error.getMessage());
 		Assert.assertEquals("line 2, col 13 to line 2, col 14 of module Test", error.getLocation().toString());
 	}
+
+	/**
+	 * @ is a positional selector. On a binding construct it names the body as an
+	 * operator and keeps the bound identifiers as parameters, so op!@ is
+	 * LAMBDA x : x = 0. That operator is legal where an operator argument is
+	 * expected. The value form, which instantiates the bound identifier, is op!(0).
+	 */
+	@Test
+	public void testAtPositionalSelector() throws ParseException, AbortException {
+		final String moduleName = "Test";
+		final String module = "---- MODULE " + moduleName + " ----\n"
+				+ "op == \\E x \\in {0} : x = 0\n"
+				+ "Foo(Op(_)) == Op(0)\n"
+				+ "e == Foo(op!@)\n"
+				+ "====\n";
+		final Frontend parser = new SANYFrontend();
+		final Resolver resolver = new StringResolver(moduleName, module);
+		final ModuleSyntaxTree syntaxTree = parser.processSyntax(moduleName, resolver);
+		final Errors log = new Errors();
+		final ExternalModuleTable modules = parser.processSemantics(
+				parser.resolveDependencies(syntaxTree, resolver, log), log);
+		Assert.assertFalse(log.toString(), log.isFailure());
+
+		final OpApplNode applied = (OpApplNode) modules.getRootModule().getOpDef("e").getBody();
+		Assert.assertEquals("Foo", applied.getOperator().getName().toString());
+		final OpArgNode selected = (OpArgNode) applied.getArgs()[0];
+		Assert.assertEquals("LAMBDA", selected.getName().toString());
+		Assert.assertEquals(1, selected.getArity());
+
+		final OpDefNode lambda = (OpDefNode) selected.getOp();
+		Assert.assertEquals(1, lambda.getParams().length);
+		Assert.assertEquals("x", lambda.getParams()[0].getName().toString());
+		final OpApplNode body = (OpApplNode) lambda.getBody();
+		Assert.assertEquals("=", body.getOperator().getName().toString());
+		final OpApplNode bound = (OpApplNode) body.getArgs()[0];
+		Assert.assertSame(lambda.getParams()[0], bound.getOperator());
+		Assert.assertEquals(0, bound.getArgs().length);
+		Assert.assertEquals(0, ((NumeralNode) body.getArgs()[1]).val());
+	}
 }
