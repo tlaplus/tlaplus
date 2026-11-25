@@ -40,6 +40,9 @@ import tlc2.util.Vect;
 import tlc2.value.IBoolValue;
 import tlc2.value.IFcnLambdaValue;
 import tlc2.value.IValue;
+import tlc2.value.impl.BoolValue;
+import tlc2.value.impl.FcnLambdaValue;
+import tlc2.value.impl.Value;
 import util.Assert;
 import util.Assert.TLCRuntimeException;
 import util.ToolIO;
@@ -400,13 +403,38 @@ public class Liveness implements ToolGlobals, ASTConstants {
 				if (fval instanceof IFcnLambdaValue) {
 					IFcnLambdaValue fcn = (IFcnLambdaValue) fval;
 					if (!fcn.hasRcd()) {
-						// this could be a bug, since con1 is created but not
-						// used
-						// SZ Jul 13, 2009: removed to kill the warning
-						// SZ Feb 20, 2009: variable never read locally
-						// Context con1 =
-						tool.getFcnContext(fcn, args, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
-						return astToLive(tool, (ExprNode) fcn.getBody(), con);
+						boolean fallThrough = false;
+						if (fcn instanceof FcnLambdaValue) {
+							FcnLambdaValue flv = (FcnLambdaValue) fcn;
+							IValue argVal = tool.eval(args[1], con, TLCState.Empty);
+							if (argVal instanceof Value) {
+								FcnLambdaValue.ExceptMatch match = flv.matchExcepts((Value) argVal);
+								if (!match.isEmpty()) {
+									Value res;
+									if (match.replacement != null) {
+										res = match.applyTo(null);
+									} else {
+										Context con1 = tool.getFcnContext(fcn, args, con, TLCState.Empty,
+												TLCState.Empty, EvalControl.Clear);
+										Value base = (Value) tool.eval(fcn.getBody(), con1, TLCState.Empty);
+										res = match.applyTo(base);
+									}
+									if (res instanceof BoolValue) {
+										return ((BoolValue) res).val ? LNBool.TRUE : LNBool.FALSE;
+									}
+									fallThrough = true;
+								}
+							}
+						}
+						if (!fallThrough) {
+							// this could be a bug, since con1 is created but not
+							// used
+							// SZ Jul 13, 2009: removed to kill the warning
+							// SZ Feb 20, 2009: variable never read locally
+							// Context con1 =
+							tool.getFcnContext(fcn, args, con, TLCState.Empty, TLCState.Empty, EvalControl.Clear);
+							return astToLive(tool, (ExprNode) fcn.getBody(), con);
+						}
 					}
 				}
 			} catch (Exception e) { /* SKIP */
