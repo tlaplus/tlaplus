@@ -2378,28 +2378,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		cm.createExtendeeArray(extendeeVector);
 	} // processExtendsList
 
-	/**
-	 * @ names the previous value inside [f EXCEPT ![x] = @]. It is not a
-	 * legal declared or defined name. This should be enforced at the syntax level.
-	 */
-	private void rejectAtAsName(UniqueString name, TreeNode node, String message) {
-		if (name == S_at) {
-			errors.addMessage(
-				ErrorCode.FUNCTION_EXCEPT_AT_USED_WHERE_UNDEFINED,
-				node.getLocation(),
-				message
-			);
-		}
-	}
-
 	// This method must be extended so that the variable declarations list
 	// hangs off of the module node to support the getVariableDecls method
 	// of the API.
 	private final void processVariables(TreeNode treeNodes[], ModuleNode cm) {
 		for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
 			UniqueString us = treeNodes[lvi].getUS();
-
-			rejectAtAsName(us, treeNodes[lvi], "Attempted to declare '@' as a variable.");
 
 			// The next line has its side-effects in the constructor; in particular,
 			// the new OpDeclNode is placed in the symbolTble there.
@@ -2468,7 +2452,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 	private final void processParameters(TreeNode treeNodes[], ModuleNode cm) {
 		for (int lvi = 1; lvi < treeNodes.length; lvi += 2) {
 			OpDeclNode odn = buildParameter(treeNodes[lvi], ConstantDeclKind, ConstantLevel, cm, true);
-			rejectAtAsName(odn.getName(), treeNodes[lvi], "Attempted to declare '@' as a constant.");
 			/*******************************************************************
 			 * We throw away the OpDeclNode because, when it was constructed, * it was added
 			 * to symbolTable, whose top context should be the * top-level context of the
@@ -2543,7 +2526,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 						name = sss[1].getUS();
 						arity = 1;
 					}
-					rejectAtAsName(name, ss[lvi], "Attempted to declare '@' as a formal parameter.");
 					params[(lvi - 2) / 2] = new FormalParamNode(name, arity, ss[lvi], symbolTable, cm);
 				}
 			} else {
@@ -2551,11 +2533,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				params = new FormalParamNode[0];
 			}
 			name = ss[0].getUS();
-			rejectAtAsName(name, ss[0], "Attempted to define '@' as an operator.");
 		} else if (children[0].isKind(N_PrefixLHS)) { // operator is a prefix operator
 			// Process the parameter
 			params = new FormalParamNode[1];
-			rejectAtAsName(ss[1].getUS(), ss[1], "Attempted to declare '@' as a formal parameter.");
 			params[0] = new FormalParamNode(ss[1].getUS(), 0, ss[1], symbolTable, cm);
 
 			// Process the operator
@@ -2563,11 +2543,9 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		} else if (children[0].isKind(N_InfixLHS)) { // operator is an infix operator
 			params = new FormalParamNode[2];
 			// Process the first param
-			rejectAtAsName(ss[0].getUS(), ss[0], "Attempted to declare '@' as a formal parameter.");
 			params[0] = new FormalParamNode(ss[0].getUS(), 0, ss[0], symbolTable, cm);
 
 			// Process the second param
-			rejectAtAsName(ss[2].getUS(), ss[2], "Attempted to declare '@' as a formal parameter.");
 			params[1] = new FormalParamNode(ss[2].getUS(), 0, ss[2], symbolTable, cm);
 
 			// Process the operator
@@ -2575,7 +2553,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		} else if (children[0].isKind(N_PostfixLHS)) { // operator is a postfix operator
 			// Process the parameter
 			params = new FormalParamNode[1];
-			rejectAtAsName(ss[0].getUS(), ss[0], "Attempted to declare '@' as a formal parameter.");
 			params[0] = new FormalParamNode(ss[0].getUS(), 0, ss[0], symbolTable, cm);
 
 			// Process the operator
@@ -2749,18 +2726,15 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				odna[lvi] = new FormalParamNode[sss.length / 2];
 
 				for (int lvj = 0; lvj < sss.length / 2; lvj++) {
-					UniqueString quantName = sss[2 * lvj + 1].getUS();
-					rejectAtAsName(quantName, sss[2 * lvj + 1], "Attempted to bind '@' as a quantified variable.");
-					odna[lvi][lvj] = new FormalParamNode(quantName, 0, sss[2 * lvj + 1], symbolTable, cm);
+					odna[lvi][lvj] = new FormalParamNode(sss[2 * lvj + 1].getUS(), 0, sss[2 * lvj + 1], symbolTable,
+							cm);
 				}
 			} else { // gotta be N_Identifier
 				bt[lvi] = false;
 				odna[lvi] = new FormalParamNode[(ss.length - 1) / 2];
 
 				for (int lvj = 0; lvj < (ss.length - 1) / 2; lvj++) {
-					UniqueString quantName = ss[2 * lvj].getUS();
-					rejectAtAsName(quantName, ss[2 * lvj], "Attempted to bind '@' as a quantified variable.");
-					odna[lvi][lvj] = new FormalParamNode(quantName, 0, ss[2 * lvj], symbolTable, cm);
+					odna[lvi][lvj] = new FormalParamNode(ss[2 * lvj].getUS(), 0, ss[2 * lvj], symbolTable, cm);
 				}
 			}
 		}
@@ -2799,7 +2773,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		processQuantBoundArgs(ss, 2, quants, tuples, domains, cm);
 
 		UniqueString name = ss[0].getUS();
-		rejectAtAsName(name, ss[0], "Attempted to define '@' as a function.");
 		SymbolNode symbolNode = symbolTable.resolveSymbol(name);
 
 		// This is in anticipation of the possibility that the function is
@@ -3826,9 +3799,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			i = 0;
 		}
 		; // switch
-		OpDeclNode decl = buildParameter(children[i + 1], declKind, declLevel, cm, true);
-		rejectAtAsName(decl.getName(), children[i + 1], "Attempted to declare '@' in a NEW declaration.");
-		return new NewSymbNode(decl, set, treeNode);
+		return new NewSymbNode(buildParameter(children[i + 1], declKind, declLevel, cm, true), set, treeNode);
 	}
 
 	private final ExprNode processChoose(TreeNode treeNode, TreeNode[] children, ModuleNode cm) throws AbortException {
@@ -3848,16 +3819,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				syntaxTreeNode = children[1].heirs();
 				odn = new FormalParamNode[syntaxTreeNode.length / 2];
 				for (int lvj = 0; lvj < syntaxTreeNode.length / 2; lvj++) {
-					UniqueString chooseName = syntaxTreeNode[2 * lvj + 1].getUS();
-					rejectAtAsName(chooseName, syntaxTreeNode[2 * lvj + 1],
-							"Attempted to bind '@' in a CHOOSE expression.");
-					odn[lvj] = new FormalParamNode(chooseName, 0, syntaxTreeNode[2 * lvj + 1],
+					odn[lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getUS(), 0, syntaxTreeNode[2 * lvj + 1],
 							symbolTable, cm);
 				}
 				tuple = true;
 			} else {
 				odn = new FormalParamNode[1];
-				rejectAtAsName(children[1].getUS(), children[1], "Attempted to bind '@' in a CHOOSE expression.");
 				odn[0] = new FormalParamNode(children[1].getUS(), 0, children[0], symbolTable, cm);
 				tuple = false;
 			}
@@ -3882,16 +3849,12 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 				syntaxTreeNode = children[1].heirs();
 				odna[0] = new FormalParamNode[syntaxTreeNode.length / 2];
 				for (int lvj = 0; lvj < syntaxTreeNode.length / 2; lvj++) {
-					UniqueString chooseName = syntaxTreeNode[2 * lvj + 1].getUS();
-					rejectAtAsName(chooseName, syntaxTreeNode[2 * lvj + 1],
-							"Attempted to bind '@' in a CHOOSE expression.");
-					odna[0][lvj] = new FormalParamNode(chooseName, 0,
+					odna[0][lvj] = new FormalParamNode(syntaxTreeNode[2 * lvj + 1].getUS(), 0,
 							syntaxTreeNode[2 * lvj + 1], symbolTable, cm);
 				}
 				tuples[0] = true;
 			} else {
 				odna[0] = new FormalParamNode[1];
-				rejectAtAsName(children[1].getUS(), children[1], "Attempted to bind '@' in a CHOOSE expression.");
 				odna[0][0] = new FormalParamNode(children[1].getUS(), 0, children[1], symbolTable, cm);
 				tuples[0] = false;
 			}
@@ -3982,9 +3945,7 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		symbolTable.pushContext(new Context(moduleTable));
 
 		for (int lvi = 0; lvi < length; lvi++) {
-			UniqueString quantName = children[2 * lvi + 1].getUS();
-			rejectAtAsName(quantName, children[2 * lvi + 1], "Attempted to bind '@' as a quantified variable.");
-			odn[lvi] = new FormalParamNode(quantName, 0, children[2 * lvi + 1], symbolTable, cm);
+			odn[lvi] = new FormalParamNode(children[2 * lvi + 1].getUS(), 0, children[2 * lvi + 1], symbolTable, cm);
 		}
 
 		// now the expression
@@ -4036,14 +3997,11 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			TreeNode[] ss = children[1].heirs();
 			odna[0] = new FormalParamNode[ss.length / 2];
 			for (int lvj = 0; lvj < ss.length / 2; lvj++) {
-				UniqueString boundName = ss[2 * lvj + 1].getUS();
-				rejectAtAsName(boundName, ss[2 * lvj + 1], "Attempted to bind '@' in a set comprehension.");
-				odna[0][lvj] = new FormalParamNode(boundName, 0, ss[2 * lvj + 1], symbolTable, cm);
+				odna[0][lvj] = new FormalParamNode(ss[2 * lvj + 1].getUS(), 0, ss[2 * lvj + 1], symbolTable, cm);
 			}
 			tuples[0] = true;
 		} else {
 			odna[0] = new FormalParamNode[1];
-			rejectAtAsName(children[1].getUS(), children[1], "Attempted to bind '@' in a set comprehension.");
 			odna[0][0] = new FormalParamNode(children[1].getUS(), 0, children[1], symbolTable, cm);
 			tuples[0] = false;
 		}
@@ -4615,8 +4573,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 			/*********************************************************************
 			 * Set params[i] to the FormalParamNode for the i-th formal * parameter. *
 			 *********************************************************************/
-			rejectAtAsName(children[argPos].getUS(), children[argPos],
-					"Attempted to bind '@' as a LAMBDA parameter.");
 			params[i] = new FormalParamNode(children[argPos].getUS(), 0, // parameters of a lambda expression
 																			// have arity 0.
 					children[argPos], symbolTable, cm);
@@ -4790,7 +4746,6 @@ public class Generator implements ASTConstants, SyntaxTreeConstants, LevelConsta
 		boolean localness = treeNode.zero() != null;
 		TreeNode[] children = treeNode.one()[0].heirs(); // heirs of IdentLHS
 		UniqueString name = children[0].getUS();
-		rejectAtAsName(name, children[0], "Attempted to define '@' as an instance.");
 
 		// processing of LHS of the definition, i.e. the name and parameters
 		FormalParamNode[] args = nullParam;

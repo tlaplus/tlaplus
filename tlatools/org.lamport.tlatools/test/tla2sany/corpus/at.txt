@@ -1,0 +1,383 @@
+=============|||
+@ as a Constant
+:error
+=============|||
+
+---- MODULE Test ----
+CONSTANT @
+====
+
+-------------|||
+
+=============|||
+@ as an Operator Constant
+:error
+=============|||
+
+---- MODULE Test ----
+CONSTANT @(_)
+====
+
+-------------|||
+
+=============|||
+@ as a Variable
+:error
+=============|||
+
+---- MODULE Test ----
+VARIABLE @
+====
+
+-------------|||
+
+=============|||
+@ as an Operator
+:error
+=============|||
+
+---- MODULE Test ----
+@ == 0
+====
+
+-------------|||
+
+=============|||
+@ as an Operator with Parameters
+:error
+=============|||
+
+---- MODULE Test ----
+@(x) == x
+====
+
+-------------|||
+
+=============|||
+@ as a Function
+:error
+=============|||
+
+---- MODULE Test ----
+@[x \in {0}] == 0
+====
+
+-------------|||
+
+=============|||
+@ as a Formal Parameter
+:error
+=============|||
+
+---- MODULE Test ----
+Foo(@) == 42
+====
+
+-------------|||
+
+=============|||
+@ Defined in a LET
+:error
+=============|||
+
+---- MODULE Test ----
+op == LET @ == 0 IN TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound by a Quantifier
+:error
+=============|||
+
+---- MODULE Test ----
+op == \E @ \in {0} : TRUE
+====
+
+-------------|||
+
+=============|||
+@ as an Instance Name
+:error
+=============|||
+
+---- MODULE Test ----
+@ == INSTANCE Naturals
+====
+
+-------------|||
+
+=============|||
+@ Declared by NEW
+:error
+=============|||
+
+---- MODULE Test ----
+THEOREM ASSUME NEW CONSTANT @
+        PROVE TRUE
+====
+
+-------------|||
+
+=============|||
+@ as a LAMBDA Parameter
+:error
+=============|||
+
+---- MODULE Test ----
+Foo(Op(_)) == Op(0)
+op == Foo(LAMBDA @ : 42)
+====
+
+-------------|||
+
+=============|||
+@ Bound by CHOOSE
+:error
+=============|||
+
+---- MODULE Test ----
+op == CHOOSE @ : TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound by a Bounded CHOOSE
+:error
+=============|||
+
+---- MODULE Test ----
+op == CHOOSE @ \in {0} : TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound in a Set Comprehension
+:error
+=============|||
+
+---- MODULE Test ----
+op == {@ \in {0} : TRUE}
+====
+
+-------------|||
+
+=============|||
+@ Bound by Unbounded Forall
+:error
+=============|||
+
+---- MODULE Test ----
+op == \A @ : TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound by Unbounded Exists
+:error
+=============|||
+
+---- MODULE Test ----
+op == \E @ : TRUE
+====
+
+-------------|||
+
+=============|||
+@ as a Recursive Declaration
+:error
+=============|||
+
+---- MODULE Test ----
+RECURSIVE @(_)
+====
+
+-------------|||
+
+=============|||
+@ Bound in a Tuple Quantifier
+:error
+=============|||
+
+---- MODULE Test ----
+op == \E <<x, @>> \in S : TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound in a Function Constructor
+:error
+=============|||
+
+---- MODULE Test ----
+op == [@ \in S |-> TRUE]
+====
+
+-------------|||
+
+=============|||
+@ Bound in a Set Constructor
+:error
+=============|||
+
+---- MODULE Test ----
+op == {TRUE : @ \in S}
+====
+
+-------------|||
+
+=============|||
+@ as a Theorem Name
+:error
+=============|||
+
+---- MODULE Test ----
+THEOREM @ == TRUE
+====
+
+-------------|||
+
+=============|||
+@ as an Assumption Name
+:error
+=============|||
+
+---- MODULE Test ----
+ASSUME @ == TRUE
+====
+
+-------------|||
+
+=============|||
+@ as an Extended Module
+:error
+=============|||
+
+---- MODULE Test ----
+EXTENDS @
+====
+
+-------------|||
+
+=============|||
+@ as an Instantiated Module
+:error
+=============|||
+
+---- MODULE Test ----
+INSTANCE @
+====
+
+-------------|||
+
+=============|||
+@ Bound by TAKE
+:error
+=============|||
+
+---- MODULE Test ----
+THEOREM TRUE
+PROOF
+<1>1. TAKE @
+<1> QED
+====
+
+-------------|||
+
+=============|||
+@ Bound by PICK
+:error
+=============|||
+
+---- MODULE Test ----
+THEOREM TRUE
+PROOF
+<1>1. PICK @ : TRUE
+<1> QED
+====
+
+-------------|||
+
+=============|||
+@ Bound by Temporal Exists
+:error
+=============|||
+
+---- MODULE Test ----
+op == \EE @ : TRUE
+====
+
+-------------|||
+
+=============|||
+@ Bound by Temporal Forall
+:error
+=============|||
+
+---- MODULE Test ----
+op == \AA @ : TRUE
+====
+
+-------------|||
+
+=============|||
+@ in an EXCEPT replacement set
+=============|||
+
+---- MODULE Test ----
+
+f == <<1>>
+
+op == [f EXCEPT ![1] = {@ \in {1}}]
+
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (tuple_literal (langle_bracket) (nat_number) (rangle_bracket)))
+  (operator_definition name: (identifier) (def_eq)
+    definition: (except expr_to_update: (identifier_ref)
+      (except_update
+        update_specifier: (except_update_specifier
+          (except_update_fn_appl (nat_number)))
+        new_val: (finite_set_literal
+          (bound_infix_op lhs: (prev_func_val) symbol: (in)
+            rhs: (finite_set_literal (nat_number)))))))
+(double_line)))
+
+=============|||
+@ in an EXCEPT replacement tuple set
+=============|||
+
+---- MODULE Test ----
+
+f == <<1>>
+
+op == [f EXCEPT ![1] = {<<@>> \in {<<1>>}}]
+
+====
+
+-------------|||
+
+(source_file (module (header_line) name: (identifier) (header_line)
+  (operator_definition name: (identifier) (def_eq)
+    definition: (tuple_literal (langle_bracket) (nat_number) (rangle_bracket)))
+  (operator_definition name: (identifier) (def_eq)
+    definition: (except expr_to_update: (identifier_ref)
+      (except_update
+        update_specifier: (except_update_specifier
+          (except_update_fn_appl (nat_number)))
+        new_val: (finite_set_literal
+          (bound_infix_op
+            lhs: (tuple_literal (langle_bracket) (prev_func_val) (rangle_bracket))
+            symbol: (in)
+            rhs: (finite_set_literal
+              (tuple_literal (langle_bracket) (nat_number) (rangle_bracket))))))))
+(double_line)))
