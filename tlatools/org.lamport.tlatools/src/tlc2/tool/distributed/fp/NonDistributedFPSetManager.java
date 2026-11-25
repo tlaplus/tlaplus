@@ -221,9 +221,9 @@ public class NonDistributedFPSetManager implements IFPSetManager {
 	 * @see tlc2.tool.distributed.fp.FPSetManager#close(boolean)
 	 */
 	public void close(boolean cleanup) throws IOException {
+		// This FPSet runs in the server JVM. Its exit method can terminate
+		// that JVM before TLCServer reports the model checking result.
 		this.fpSet.close();
-		// Correspond with the existing impl in FPSetManager#exit(boolean) and
-		// exit the FPSet
-		this.fpSet.exit(cleanup);
+		MP.printMessage(EC.TLC_FP_COMPLETED, hostname);
 	}
 }

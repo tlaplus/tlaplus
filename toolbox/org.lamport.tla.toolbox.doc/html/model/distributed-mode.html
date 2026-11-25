@@ -157,6 +157,13 @@ and the Toolbox's installation directory in /opt, the command line will look lik
 -->
 </p>
 
+<p>
+When the model check completes successfully, the <code>TLCServer</code> process
+exits with status 0. A reported invariant violation exits with status 12, and a
+deadlock exits with status 11, as in ordinary TLC. Check the server's exit
+status and output when running distributed TLC from a script.
+</p>
+
 <a name="running-workers"></a><h2>Running the Slave Computers</h2>
 
 <p>

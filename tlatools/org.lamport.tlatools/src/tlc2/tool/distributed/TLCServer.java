@@ -34,12 +34,14 @@ import model.ModelInJar;
 import tlc2.TLC;
 import tlc2.TLCGlobals;
 import tlc2.output.EC;
+import tlc2.output.EC.ExitStatus;
 import tlc2.output.MP;
 import tlc2.tool.EvalException;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ModelChecker;
 import tlc2.tool.TLCState;
 import tlc2.tool.TLCTrace;
+import tlc2.tool.WorkerException;
 import tlc2.tool.distributed.fp.FPSetManager;
 import tlc2.tool.distributed.fp.FPSetRMI;
 import tlc2.tool.distributed.fp.IFPSetManager;
@@ -134,6 +136,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	private final String filename;
 
 	private TLCState errState = null;
+	private int errorCode = EC.NO_ERROR;
 	private boolean done = false;
 	private boolean keepCallStack = false;
 	
@@ -306,12 +309,17 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	 *         calls by other workers will be ignored. This implies that other
 	 *         error states are ignored.
 	 */
-	public synchronized final boolean setErrState(TLCState s, boolean keep) {
+	public final boolean setErrState(TLCState s, boolean keep) {
+		return setErrState(s, keep, EC.GENERAL);
+	}
+
+	synchronized final boolean setErrState(TLCState s, boolean keep, int errorCode) {
 		if (this.done) {
 			return false;
 		}
 		this.done = true;
 		this.errState = s;
+		this.errorCode = errorCode;
 		this.keepCallStack = keep;
 		return true;
 	}
@@ -447,6 +455,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 			} catch (Throwable e) {
 				// Assert.printStack(e);
 				done = true;
+				errorCode = errorCodeOf(e);
 				
 				// Distributed TLC does not support TLCGet/TLCSet operator. It
 				// would require synchronization among all (distributed)
@@ -456,14 +465,14 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 						&& (((EvalException) e).getMessage().contains("TLCSet")
 								|| ((EvalException) e).getMessage().contains("TLCGet"))
 						|| (e instanceof TLCRuntimeException && ((TLCRuntimeException) e).errorCode == EC.TLC_MODULE_VALUE_JAVA_METHOD_OVERRIDE)) {
-					MP.printError(EC.TLC_FEATURE_UNSUPPORTED,
+					errorCode = MP.printError(EC.TLC_FEATURE_UNSUPPORTED,
 							"TLCSet & TLCGet operators not supported by distributed TLC.");
 				} else {
 					String msg = e.getMessage();
 					if (msg == null) {
 						msg = e.toString();
 					}
-					if (!this.hasNoErrors()) {
+					if (this.errState != null) {
 						MP.printError(EC.TLC_INITIAL_STATE, new String[] { msg, this.errState.toString() });
 					} else {
 						MP.printError(EC.GENERAL, msg);
@@ -653,10 +662,23 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 	}
 	
 	/**
-	 * @return true iff model checking has not found an error state
+	 * @return true iff model checking has not recorded an error
 	 */
 	private boolean hasNoErrors() {
-		return errState == null;
+		return errorCode == EC.NO_ERROR;
+	}
+
+	static int errorCodeOf(Throwable error) {
+		if (error instanceof WorkerException) {
+			return ((WorkerException) error).getErrorCode();
+		}
+		if (error instanceof EvalException) {
+			return ((EvalException) error).getErrorCode();
+		}
+		if (error instanceof TLCRuntimeException) {
+			return ((TLCRuntimeException) error).errorCode;
+		}
+		return EC.GENERAL;
 	}
 
 	/**
@@ -706,26 +728,29 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 		MailSender mail = null;
 		TLCServer server = null;
 		TLCApp app = null;
+		int exitStatus = ExitStatus.ERROR;
 		try {
 			TLCGlobals.setNumWorkers(0);
 			// Create MS before TLCApp to capture the parsing output.
 			mail = new MailSender();
 
 			app = TLCApp.create(argv);
-			mail.setModelName(System.getProperty(MailSender.MODEL_NAME, app.getFileName()));
-			mail.setSpecName(System.getProperty(MailSender.SPEC_NAME, app.getFileName()));
-			
-			if (expectedFPSetCount > 0) {
-				server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
-			} else {
-				server = new TLCServer(app);
-			}
-			tlcServerMXWrapper = new TLCServerMXWrapper(server);
-			if(server != null) {
+			if (app != null) {
+				mail.setModelName(System.getProperty(MailSender.MODEL_NAME, app.getFileName()));
+				mail.setSpecName(System.getProperty(MailSender.SPEC_NAME, app.getFileName()));
+
+				if (expectedFPSetCount > 0) {
+					server = new DistributedFPSetTLCServer(app, expectedFPSetCount);
+				} else {
+					server = new TLCServer(app);
+				}
+				tlcServerMXWrapper = new TLCServerMXWrapper(server);
 				Runtime.getRuntime().addShutdownHook(new Thread(new WorkerShutdownHook(server)));
 				server.modelCheck();
+				exitStatus = ExitStatus.errorConstantToExitStatus(server.errorCode);
 			}
 		} catch (Throwable e) {
+			exitStatus = ExitStatus.errorConstantToExitStatus(errorCodeOf(e));
 			System.gc();
 			// Assert.printStack(e);
 			if (e instanceof StackOverflowError) {
@@ -743,7 +768,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				}
 			}
 		} finally {
-			if (!server.es.isShutdown()) {
+			if (server != null && !server.es.isShutdown()) {
 				server.es.shutdownNow();
 			}
 			tlcServerMXWrapper.unregister();
@@ -764,10 +789,11 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				// the email has failed, the result would be lost.
 				if (!send) {
 					MP.printMessage(EC.GENERAL, "Sending result mail failed.");
-					System.exit(1);
+					exitStatus = 1;
 				}
 			}
 		}
+		System.exit(exitStatus);
 	}
 
 	/**
@@ -885,7 +911,7 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 					work.checkState(null, curState);
 				}
 			} catch (Exception e) {
-				if (setErrState(curState, true)) {
+				if (setErrState(curState, true, errorCodeOf(e))) {
 					this.e = e;
 				}
 			}
