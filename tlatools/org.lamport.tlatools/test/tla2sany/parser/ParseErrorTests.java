@@ -66,7 +66,9 @@ public class ParseErrorTests {
 	@Parameters(name = "{index}: {0}")
 	public static ParseErrorTest[] getTestCases() {
 	  return new ParseErrorTest[] {
-	      new ParseErrorTest("x = 0", "Was expecting \"==== or more Module body\"\nEncountered \"x\" at line")
+	      new ParseErrorTest("x = 0", "Was expecting \"==== or more Module body\"\nEncountered \"x\" at line"),
+	      new ParseErrorTest("op == @ :: 1", "cannot be used as a label name"),
+	      new ParseErrorTest("op == lab(@) :: TRUE", "cannot be used as a label parameter")
 	  };
 	}
 
