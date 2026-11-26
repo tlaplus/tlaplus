@@ -64,12 +64,12 @@ public class CodePlexBug08Test extends ModelCheckerTestCase {
 		// Assert the error trace
 		assertTrue(recorder.recorded(EC.TLC_STATE_PRINT2));
 		final List<String> expectedTrace = new ArrayList<String>(4);
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 2");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 3");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 3");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 4");
-		expectedTrace.add("/\\ b = FALSE\n/\\ x = 4");
-		expectedTrace.add("/\\ b = TRUE\n/\\ x = 5");
+		expectedTrace.add("/\\ x = 2\n/\\ b = FALSE");
+		expectedTrace.add("/\\ x = 3\n/\\ b = TRUE");
+		expectedTrace.add("/\\ x = 3\n/\\ b = FALSE");
+		expectedTrace.add("/\\ x = 4\n/\\ b = TRUE");
+		expectedTrace.add("/\\ x = 4\n/\\ b = FALSE");
+		expectedTrace.add("/\\ x = 5\n/\\ b = TRUE");
 		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), expectedTrace);
 
 		assertStuttering(7);

@@ -121,7 +121,7 @@ PendingInfOften == <>[][DetectTermination]_vars
 
 PostCondition ==
   CounterExample =
-   [ action |->
+[ action |->
       { << << 1,
               [ active |->
                     (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
@@ -134,17 +134,17 @@ PostCondition ==
                    endLine |-> 49,
                    endColumn |-> 46,
                    module |-> "AsyncTerminationDetection" ],
-             context |-> [i |-> 3, j |-> 3],
+             context |-> [i |-> 3, j |-> 2],
              parameters |-> <<"i", "j">> ],
            << 2,
               [ active |->
                     (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
-                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 1 @@ 3 :> 0),
                 terminationDetected |-> FALSE ] >> >>,
         << << 2,
               [ active |->
                     (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
-                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 1 @@ 3 :> 0),
                 terminationDetected |-> FALSE ] >>,
            [ name |-> "RcvMsg",
              location |->
@@ -153,7 +153,24 @@ PostCondition ==
                    endLine |-> 55,
                    endColumn |-> 34,
                    module |-> "AsyncTerminationDetection" ],
-             context |-> [i |-> 3],
+             context |-> [i |-> 2],
+             parameters |-> <<"i">> ],
+           << 3,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
+                terminationDetected |-> FALSE ] >> >>,
+        << << 3,
+              [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+                pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
+                terminationDetected |-> FALSE ] >>,
+           [ name |-> "Terminate",
+             location |->
+                 [ beginLine |-> 40,
+                   beginColumn |-> 3,
+                   endLine |-> 44,
+                   endColumn |-> 64,
+                   module |-> "AsyncTerminationDetection" ],
+             context |-> [i |-> 2],
              parameters |-> <<"i">> ],
            << 1,
               [ active |->
@@ -167,9 +184,12 @@ PostCondition ==
              terminationDetected |-> FALSE ] >>,
         << 2,
            [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> FALSE @@ 3 :> TRUE),
-             pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 1),
+             pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 1 @@ 3 :> 0),
+             terminationDetected |-> FALSE ] >>,
+        << 3,
+           [ active |-> (0 :> FALSE @@ 1 :> FALSE @@ 2 :> TRUE @@ 3 :> TRUE),
+             pending |-> (0 :> 0 @@ 1 :> 0 @@ 2 :> 0 @@ 3 :> 0),
              terminationDetected |-> FALSE ] >> } ]
-
 =============================================================================
 \* Modification History
 \* Last modified Tue Apr 12 15:04:08 CEST 2022 by merz
