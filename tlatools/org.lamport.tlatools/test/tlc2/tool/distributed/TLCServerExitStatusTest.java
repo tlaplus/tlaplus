@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -25,11 +26,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
-import tlc2.tool.distributed.fp.FPSetRMI;
+import tlc2.tool.WorkerException;
+import tlc2.tool.distributed.fp.NonDistributedFPSetManager;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
+import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.fp.MSBDiskFPSet;
+import tlc2.tool.fp.MemFPSet;
+import util.Assert.TLCRuntimeException;
 
 public class TLCServerExitStatusTest {
 	private static final String HOST = "127.0.0.1";
@@ -55,9 +61,22 @@ public class TLCServerExitStatusTest {
 	}
 
 	@Test
+	public void workerAssertionFailure() throws Exception {
+		runDistributed("AssertNext", false, ExitStatus.VIOLATION_ASSERT, "x = 0");
+	}
+
+	@Test
+	public void workerExceptionUsesRuntimeCauseCode() {
+		final TLCRuntimeException cause = new TLCRuntimeException(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT,
+				"successor state is incomplete");
+		final WorkerException error = new WorkerException(cause.getMessage(), cause, null, null, true);
+		assertEquals(cause.errorCode, error.getErrorCode());
+	}
+
+	@Test
 	public void initialInvariantViolationWithLocalFPSet() throws Exception {
 		final Path dir = model("BadInit");
-		final Process server = start(dir, "server", freePort(), 0, TLCServer.class, "-config", "BadInit", SPEC);
+		final Process server = start(dir, "server", freePort(), MSBDiskFPSet.class, TLCServer.class, "-config", "BadInit", SPEC);
 		try {
 			assertResult(dir, server, ExitStatus.VIOLATION_SAFETY, "Invariant Inv is violated", "x = 2", "Finished");
 		} finally {
@@ -68,7 +87,7 @@ public class TLCServerExitStatusTest {
 	@Test
 	public void invalidArguments() throws Exception {
 		final Path dir = tmp.getRoot().toPath();
-		final Process server = start(dir, "server", freePort(), 0, TLCServer.class, "-config");
+		final Process server = start(dir, "server", freePort(), MSBDiskFPSet.class, TLCServer.class, "-config");
 		try {
 			assertResult(dir, server, ExitStatus.ERROR, "configuration file required");
 		} finally {
@@ -80,33 +99,24 @@ public class TLCServerExitStatusTest {
 			throws Exception {
 		final Path dir = model(config);
 		final int port = freePort();
-		final List<String> args = new ArrayList<>(List.of("-config", config));
+		final List<String> args = new ArrayList<>(List.of("-config", config, "-fpbits", "0"));
 		if (!checkDeadlock) {
 			args.add("-deadlock");
 		}
 		args.add(SPEC);
 
-		// The CLI status belongs to the server JVM. Use the real worker CLI and a
-		// single loopback FPSet to exercise the same RMI path as a distributed run.
-		final Process server = start(dir, "server", port, 1, TLCServer.class, args.toArray(new String[0]));
+		final Process server = start(dir, "server", port, ExportedMemFPSet.class, TLCServer.class, args.toArray(new String[0]));
 		Process worker = null;
-		FPSet fpSet = null;
 		try {
 			final TLCServerRMI master = awaitServer(dir, server, port);
-			fpSet = new TLCServerTestCase.DummyFPSet(new FPSetConfiguration()).init(1, dir.toString(), "fpset");
-			final FPSetRMI stub = (FPSetRMI) UnicastRemoteObject.exportObject(fpSet, 0);
-			master.registerFPSet(stub, HOST);
-			worker = start(dir, "worker", port, 0, TLCWorker.class, HOST);
+			assertTrue(master.getFPSetManager() instanceof NonDistributedFPSetManager);
+			worker = start(dir, "worker", port, MSBDiskFPSet.class, TLCWorker.class, HOST);
 			final String[] completedMessages = Arrays.copyOf(messages, messages.length + 1);
 			completedMessages[messages.length] = "Finished";
 			assertResult(dir, server, status, completedMessages);
 		} finally {
 			stop(worker);
 			stop(server);
-			if (fpSet != null) {
-				UnicastRemoteObject.unexportObject(fpSet, true);
-				fpSet.close();
-			}
 		}
 	}
 
@@ -126,7 +136,8 @@ public class TLCServerExitStatusTest {
 		}
 	}
 
-	private static Process start(Path dir, String name, int port, int fpSets, Class<?> main, String... args) throws IOException {
+	private static Process start(Path dir, String name, int port, Class<? extends FPSet> fpSetImpl,
+			Class<?> main, String... args) throws IOException {
 		final String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
 		final String[] classPath = System.getProperty("java.class.path").split(File.pathSeparator);
 		for (int i = 0; i < classPath.length; i++) {
@@ -135,8 +146,7 @@ public class TLCServerExitStatusTest {
 		final List<String> command = new ArrayList<>(List.of(java, "-ea", "-Xmx128m",
 				"-Djava.rmi.server.hostname=" + HOST, "-Dtlc2.tool.distributed.TLCServer.port=" + port,
 				"-Dtlc2.tool.distributed.TLCServer.report=1000", "-Dtlc2.tool.distributed.TLCWorker.threadCount=1",
-				"-Dtlc2.tool.distributed.TLCServer.expectedFPSetCount=" + fpSets,
-				"-Dtlc2.tool.fp.FPSet.impl=" + MSBDiskFPSet.class.getName(),
+				"-D" + FPSetFactory.IMPL_PROPERTY + "=" + fpSetImpl.getName(),
 				"--add-exports=java.rmi/sun.rmi.server=ALL-UNNAMED",
 				"--add-exports=java.rmi/sun.rmi.transport=ALL-UNNAMED",
 				"-cp", String.join(File.pathSeparator, classPath), main.getName()));
@@ -150,7 +160,7 @@ public class TLCServerExitStatusTest {
 		final long start = System.nanoTime();
 		while (server.isAlive() && System.nanoTime() - start < TimeUnit.SECONDS.toNanos(TIMEOUT_SECONDS)) {
 			try {
-				return (TLCServerRMI) registry.lookup(TLCServer.SERVER_NAME);
+				return (TLCServerRMI) registry.lookup(TLCServer.SERVER_WORKER_NAME);
 			} catch (ConnectException | NotBoundException e) {
 				Thread.sleep(50);
 			}
@@ -177,6 +187,14 @@ public class TLCServerExitStatusTest {
 		if (process != null && process.isAlive()) {
 			process.destroyForcibly();
 			process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+		}
+	}
+
+	public static final class ExportedMemFPSet extends MemFPSet {
+		public ExportedMemFPSet(FPSetConfiguration config) throws RemoteException {
+			super(config);
+			// Export the server's local fingerprint set so the loopback worker can use it over RMI.
+			UnicastRemoteObject.exportObject(this, 0);
 		}
 	}
 }

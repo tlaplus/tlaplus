@@ -6,6 +6,7 @@
 package tlc2.tool;
 
 import tlc2.output.EC;
+import util.Assert.TLCRuntimeException;
 
 public class WorkerException extends Exception {
 
@@ -43,7 +44,19 @@ public class WorkerException extends Exception {
 	}
 
 	public int getErrorCode() {
-		// A serialized exception from an older worker has no error code.
-		return errorCode == EC.NO_ERROR ? EC.GENERAL : errorCode;
+		if (errorCode != EC.NO_ERROR && errorCode != EC.GENERAL) {
+			return errorCode;
+		}
+		// The worker may omit a specific code while still carrying a typed cause.
+		final Throwable cause = getCause();
+		final int code;
+		if (cause instanceof EvalException) {
+			code = ((EvalException) cause).getErrorCode();
+		} else if (cause instanceof TLCRuntimeException) {
+			code = ((TLCRuntimeException) cause).errorCode;
+		} else {
+			return EC.GENERAL;
+		}
+		return code == EC.NO_ERROR ? EC.GENERAL : code;
 	}
 }
