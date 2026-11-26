@@ -417,6 +417,50 @@ op == 1 :: 2
 -------------|||
 
 =============|||
+@ as a Record Selection
+:error
+=============|||
+
+---- MODULE Test ----
+op == r.@
+====
+
+-------------|||
+
+=============|||
+@ as an EXCEPT Field
+:error
+=============|||
+
+---- MODULE Test ----
+op == [f EXCEPT !.@ = 0]
+====
+
+-------------|||
+
+=============|||
+@ as a Record Constructor
+:error
+=============|||
+
+---- MODULE Test ----
+op == [@ |-> 1]
+====
+
+-------------|||
+
+=============|||
+@ as a Record Set Constructor
+:error
+=============|||
+
+---- MODULE Test ----
+op == [@ : {1}]
+====
+
+-------------|||
+
+=============|||
 @ in an EXCEPT replacement set
 =============|||
 

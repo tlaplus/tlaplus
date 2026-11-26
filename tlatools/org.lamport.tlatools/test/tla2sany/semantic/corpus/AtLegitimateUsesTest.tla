@@ -1,6 +1,8 @@
 ----------------------- MODULE AtLegitimateUsesTest -----------------------
-\* @ is the previous value in EXCEPT, and !@ is the positional selector.
-\* A label may still be named and selected when its name is not @.
+\* Legitimate uses of @ that must survive the restrictions on @ as a name.
+\* @ is the previous value in EXCEPT, !@ is the positional selector, a
+\* label may be named and selected, and "@" may be a string or a field
+\* spelled with a keyword.
 EXTENDS Semantics, Naturals
 
 (* ID: f *)
@@ -51,6 +53,51 @@ EnumerationNestedTuple ==
     [f EXCEPT ![1] = {<<0, <<@>>>> \in {<<0, <<1>>>>}}]
 THEOREM RefersTo(EnumerationNestedTuple, "EnumerationNestedTuple")
 THEOREM IsLevel(EnumerationNestedTuple, ConstantLevel)
+
+(* ID: r *)
+r == [foo |-> 1]
+THEOREM RefersTo(r, "r")
+THEOREM IsLevel(r, ConstantLevel)
+
+(* ID: Selection *)
+Selection == r.foo
+THEOREM RefersTo(Selection, "Selection")
+THEOREM IsLevel(Selection, ConstantLevel)
+
+(* ID: Update *)
+Update == [r EXCEPT !.foo = @ + 1]
+THEOREM RefersTo(Update, "Update")
+THEOREM IsLevel(Update, ConstantLevel)
+
+(* ID: KeywordField *)
+KeywordField == [THEN |-> 1]
+THEOREM RefersTo(KeywordField, "KeywordField")
+THEOREM IsLevel(KeywordField, ConstantLevel)
+
+(* ID: KeywordSelection *)
+KeywordSelection == KeywordField.THEN
+THEOREM RefersTo(KeywordSelection, "KeywordSelection")
+THEOREM IsLevel(KeywordSelection, ConstantLevel)
+
+(* ID: KeywordUpdate *)
+KeywordUpdate == [KeywordField EXCEPT !.THEN = @]
+THEOREM RefersTo(KeywordUpdate, "KeywordUpdate")
+THEOREM IsLevel(KeywordUpdate, ConstantLevel)
+
+(* ID: StringKey *)
+StringKey == [x \in {"@"} |-> 1]
+THEOREM RefersTo(StringKey, "StringKey")
+THEOREM IsLevel(StringKey, ConstantLevel)
+
+(* ID: StringSelection *)
+StringSelection == StringKey["@"]
+THEOREM RefersTo(StringSelection, "StringSelection")
+THEOREM IsLevel(StringSelection, ConstantLevel)
+
+(* ID: StringUpdate *)
+StringUpdate == [StringKey EXCEPT !["@"] = @]
+THEOREM RefersTo(StringUpdate, "StringUpdate")
+THEOREM IsLevel(StringUpdate, ConstantLevel)
 
 (* ID: Apply *)
 Apply(P(_)) == P(1)
