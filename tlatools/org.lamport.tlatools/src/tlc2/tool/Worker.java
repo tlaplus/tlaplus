@@ -184,7 +184,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 		// originate, and c) there is no global exception handling.
 		try {
 			this.tlc.liveCheck.addNextState(tlc.tool.noDebug(), curState, curStateFP, liveNextStates);
-		} catch (EvalException | TLCRuntimeException origExp) {
+		} catch (EvalException | TLCRuntimeException | FingerprintException origExp) {
 			synchronized (this.tlc) {
 				if (this.tlc.printedLivenessErrorStack) {
 					// Another worker beat us to printing an error trace.
@@ -206,7 +206,7 @@ public final class Worker extends IdThread implements IWorker, INextStateFunctor
 					// Regular evaluation with tlc.tool.getLiveness failed but CallStackTool
 					// succeeded. This should never happen!
 					Assert.fail(EC.GENERAL, origExp);
-				} catch (EvalException | TLCRuntimeException rerunExp) {
+				} catch (EvalException | TLCRuntimeException | FingerprintException rerunExp) {
 					// liveCheck#addNextState is not side-effect free. For example, the behavior
 					// (liveness) graph might have been changed and new GraphNodes been added. If
 					// that's the case, calling addNextStates with the same parameters again causes
