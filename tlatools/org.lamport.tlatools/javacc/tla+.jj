@@ -197,7 +197,7 @@ public class TLAplusParser implements tla2sany.st.SyntaxTreeConstants, ParseTree
       * An error has been pushed onto PErrors.  It might have been done    *
       * when an exception was caught, or by detecting an error during the  *
       * parsing without throwing an exception.  This happens in            *
-      * ExceptComponent() if it finds "!.@", and in FairnessExpr().        *
+      * FairnessExpr().                                                     *
       *********************************************************************/
       tla2sany.st.ParseError  list[] = PErrors.errors();
       for (int i = 0; i < list.length; i++ ) {
@@ -518,6 +518,18 @@ Operator lastOp;
     if (id.getUS().equals(At)) {
       throw new ParseException(
           "The @ symbol has special syntactic meaning and cannot be used as a label name at "
+          + id.getLocation().toString() + ".");
+    }
+  }
+
+  void rejectAtField(SyntaxTreeNode id) throws ParseException {
+    /***********************************************************************
+    * The lexer classifies @ as an IDENTIFIER token, but @ is not a legal  *
+    * TLA+ identifier. It is not a legal record field selector.            *
+    ***********************************************************************/
+    if (id.getUS().equals(At)) {
+      throw new ParseException(
+          "The @ symbol has special syntactic meaning and cannot be used as a record field selector at "
           + id.getLocation().toString() + ".");
     }
   }
@@ -3607,9 +3619,7 @@ ExceptComponent () : {
               }
     
     tn = ExprIdentifier() {
-      if (tn.getUS().equals(At) ) {
-        PErrors.push( new ParseError("@ used in !.@") );
-      }
+      rejectAtField(tn);
       addHeir( tn );
     }
   |
@@ -4061,8 +4071,9 @@ ExtendableExpr() : {
        if (isFieldNameToken( next )) next.kind = IDENTIFIER;
      }
    LOOKAHEAD({junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
-   tn = Identifier()
-       { OperatorStack.reduceRecord(  new SyntaxTreeNode(mn, t) , tn ); }
+   tn = ExprIdentifier()
+       { rejectAtField(tn);
+         OperatorStack.reduceRecord(  new SyntaxTreeNode(mn, t) , tn ); }
  | LOOKAHEAD(<LSB>, {junctionListCtx.isAboveCurrent( getToken(1).beginColumn)})
      /**********************************************************************
      * Next token is "[", so this must be function application.            *
