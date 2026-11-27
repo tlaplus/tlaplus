@@ -403,7 +403,14 @@ public class PcalFixIDs {
          *   goto L;
          * L: ...
          * ast.after is the label L, where the call resumes. ast.to is the procedure P.
+         * L must be a label in this context, as for a goto. Done is not in the
+         * symbol table.
          */
+        if (st.FindSym(PcalSymTab.LABEL, ast.after, context) == st.symtab.size()
+              && ! ast.after.equals("Done")) {
+            throw new PcalFixIDException("goto to non-existent label `" + ast.after +
+                    "' at line " + ast.line + ", column " + ast.col);
+        }
         ast.after = st.UseThis(PcalSymTab.LABEL, ast.after, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
