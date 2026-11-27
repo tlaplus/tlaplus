@@ -240,6 +240,41 @@ public class TableauNodePtrTableTest {
 		assertTrue(tbl.isDone(fp));	
 	}
 
+	@Test
+	public void testGetLocDoesNotResizeEmptyOrFullTable() {
+		final TableauNodePtrTable table = new TableauNodePtrTable(0);
+		assertEquals(-1, table.getLoc(42L, 1));
+		assertEquals(0, table.getSize());
+
+		table.put(42L, 1, 123L);
+		assertEquals(1, table.getSize());
+		assertEquals(0, table.getLoc(42L, 1));
+		assertEquals(-1, table.getLoc(43L, 1));
+		assertEquals(1, table.getSize());
+	}
+
+	@Test
+	public void testGetLocDoesNotResizeAtThreshold() {
+		final TableauNodePtrTable table = new TableauNodePtrTable(4);
+
+		table.put(4L, 1, 100L);
+		table.put(8L, 1, 200L);
+		table.put(12L, 1, 300L);
+
+		assertEquals(4, table.getSize());
+		assertEquals(0, table.getLoc(4L, 1));
+		assertEquals(1, table.getLoc(8L, 1));
+		assertEquals(2, table.getLoc(12L, 1));
+
+		// Missing tableau index for an existing fingerprint.
+		assertEquals(-1, table.getLoc(4L, 2));
+
+		// Missing fingerprint with a hash collision.
+		assertEquals(-1, table.getLoc(16L, 1));
+
+		assertEquals(4, table.getSize());
+	}
+
 	// Test various methods which apparently all yield pretty much the same result
 	@Test
 	public void testRedundantMethodYieldSameResult() {
