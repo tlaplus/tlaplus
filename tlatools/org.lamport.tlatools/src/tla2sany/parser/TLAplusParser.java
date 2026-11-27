@@ -496,49 +496,72 @@ Operator lastOp;
       && junctionListCtx.isAboveCurrent( t.beginColumn );
   }
 
-  boolean matchFcnConst () {
-    /***********************************************************************
-    * Seems to return true iff the next current token sequence begins      *
-    * with "<< ...  >> \in" or "Identifier [, Identifier] \in".  It is     *
-    * used after a "{" to see if this is a subset expression such as "{x   *
-    * \in S : exp}" and after a "[" to see if it is a function expression  *
-    * such as "[x \in S |-> exp]".  This leads to the bug that it starts   *
-    * incorrectly interpreting the expressions "{x \in S}" and             *
-    * "{<<1, 2>> \in {}}" as a subset expression and reports an error.     *
-    ***********************************************************************/
-    Token t = initPreviewToken();
-    t = getNextPreviewToken( t );
-   if (t.kind == LAB) {
-      int count = 1;
-      boolean at = false;
-      while (count != 0 ) {
-        t = getNextPreviewToken( t );
-        if (t.kind == LAB) count++;
-        if (t.kind == RAB) count--;
-        if (t.kind == IDENTIFIER && At.equals(t.image)) at = true;
-        if (t.kind == EOF) return false;
-      }
-      /*******************************************************************
-      * @ is not a bindable name, so <<@>> \in is an ordinary expression. *
-      *******************************************************************/
-      if (at) return false;
-      t = getNextPreviewToken( t );
-      return (t.kind == IN );
-    } else
+  private Token previewBoundMembership() {
+    // Preview a tuple or list of bound identifiers followed by a membership token.
+    Token t = getNextPreviewToken( initPreviewToken() );
+    boolean tuple = t.kind == LAB;
+    if (tuple) t = getNextPreviewToken( t );
     if (t.kind == IDENTIFIER) {
       /*******************************************************************
       * @ is not a bindable name, so @ \in is an ordinary expression.    *
       *******************************************************************/
-      if (At.equals(t.image)) return false;
+      if (At.equals(t.image)) return null;
       t = getNextPreviewToken( t );
       while ( t.kind == COMMA ) {
         t = getNextPreviewToken( t );
-        if (t.kind != IDENTIFIER || At.equals(t.image)) return false;
+        if (t.kind != IDENTIFIER || At.equals(t.image)) return null;
         t = getNextPreviewToken( t );
       }
-      return (t.kind == IN );
-    } else
-      return false;
+    } else if (!tuple) {
+      return null;
+    }
+    if (tuple) {
+      if (t.kind != RAB) return null;
+      t = getNextPreviewToken( t );
+    }
+    return t.kind == IN ? t : null;
+  }
+
+  boolean matchFcnConst () {
+    Token t = previewBoundMembership();
+    if (t == null) return false;
+
+    int depth = 0;
+    int previous = -1;
+    while (true) {
+      t = getNextPreviewToken( t );
+      // After "!", << and >> are structural subexpression selectors
+      // (e.g. S!<< or S!>>), not tuple brackets.
+      if (previous == BANG && (t.kind == LAB || t.kind == RAB)) {
+        previous = t.kind;
+        continue;
+      }
+      previous = t.kind;
+      switch (t.kind) {
+        case EOF:
+          return false;
+        case MAPTO:
+          if (depth == 0) return true;
+          break;
+        case LSB:
+        case LBR:
+        case LBC:
+        case LAB:
+          depth++;
+          break;
+        case RSB:
+        case ARSB:
+        case RBR:
+        case RBC:
+        case RAB:
+        case ARAB:
+          if (depth == 0) return false;
+          depth--;
+          break;
+        default:
+          break;
+      }
+    }
   }
 
 //  int numberFromStep( String step ) {
@@ -4918,7 +4941,7 @@ SyntaxTreeNode tn;
     t = jj_consume_token(LBC);
                addHeir( new SyntaxTreeNode(mn, t) );
     if (jj_2_45(1)) {
-      if (matchFcnConst()) {
+      if (previewBoundMembership() != null) {
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
         case LAB:
           tn = IdentifierTuple();
@@ -7849,41 +7872,6 @@ SyntaxTreeNode tn;
     finally { jj_save(73, xla); }
   }
 
-  final private boolean jj_3R_138() {
-    if (jj_scan_token(SUFFICES)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_80() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_138()) jj_scanpos = xsp;
-    xsp = jj_scanpos;
-    if (jj_3_36()) {
-    jj_scanpos = xsp;
-    lookingAhead = true;
-    jj_semLA = getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME;
-    lookingAhead = false;
-    if (!jj_semLA || jj_3R_139()) return true;
-    }
-    return false;
-  }
-
-  final private boolean jj_3R_65() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_219() {
-    if (jj_3R_61()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_99() {
-    if (jj_3R_62()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_63() {
     Token xsp;
     xsp = jj_scanpos;
@@ -9360,7 +9348,7 @@ SyntaxTreeNode tn;
     Token xsp;
     xsp = jj_scanpos;
     lookingAhead = true;
-    jj_semLA = matchFcnConst();
+    jj_semLA = previewBoundMembership() != null;
     lookingAhead = false;
     if (!jj_semLA || jj_3R_89()) {
     jj_scanpos = xsp;
@@ -10452,6 +10440,41 @@ SyntaxTreeNode tn;
 
   final private boolean jj_3_36() {
     if (jj_3R_61()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_138() {
+    if (jj_scan_token(SUFFICES)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_80() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_138()) jj_scanpos = xsp;
+    xsp = jj_scanpos;
+    if (jj_3_36()) {
+    jj_scanpos = xsp;
+    lookingAhead = true;
+    jj_semLA = getToken(1).kind == ASSUME || getToken(1).kind == BOXASSUME;
+    lookingAhead = false;
+    if (!jj_semLA || jj_3R_139()) return true;
+    }
+    return false;
+  }
+
+  final private boolean jj_3R_65() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_219() {
+    if (jj_3R_61()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_99() {
+    if (jj_3R_62()) return true;
     return false;
   }
 

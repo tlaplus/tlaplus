@@ -92,9 +92,6 @@ public class TlaPlusSyntaxCorpusTests {
 				"Invalid Use of LOCAL in LET/IN",
 				"Invalid Use of LOCAL in Proof",
 
-				// https://github.com/tlaplus/tlaplus/issues/737
-				"Step Expression Requiring Lookahead",
-
 				// https://github.com/tlaplus/tlaplus/issues/812
 				"String with comment start",
 
