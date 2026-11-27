@@ -850,6 +850,7 @@
 					<exclude name="**/SuccessfulSimulationTestCase.java" />
 					<exclude name="**/AbstractExampleTestCase.java" />
 					<exclude name="**/Github1445TestCase.java" />
+					<exclude name="**/Github1521SemanticsTestCase.java" />
 					<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 					<exclude name="**/AbstractCoverageTest.java" />
 					<exclude name="**/InitEvalOrderTest.java" />
@@ -1282,6 +1283,7 @@
 						<exclude name="**/SuccessfulSimulationTestCase.java" />
 						<exclude name="**/AbstractExampleTestCase.java" />
 						<exclude name="**/Github1445TestCase.java" />
+						<exclude name="**/Github1521SemanticsTestCase.java" />
 						<exclude name="**/OffHeapIndexerParameterizedTest.java"/>
 						<exclude name="**/AbstractCoverageTest.java" />
 						<exclude name="**/InitEvalOrderTest.java" />
