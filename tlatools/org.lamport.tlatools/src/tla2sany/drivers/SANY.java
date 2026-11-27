@@ -3,13 +3,18 @@
 // Copyright (c) 2003 Compaq Corporation.  All rights reserved.
 package tla2sany.drivers;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import pcal.Validator;
 import tla2sany.explorer.Explorer;
 import tla2sany.explorer.ExplorerQuitException;
 import tla2sany.linter.Linter;
@@ -529,6 +534,32 @@ public class SANY {
 	public static void frontEndLinting(final SpecObj spec, final SanyOutput out) {
 		final ExternalModuleTable externalModuleTable = spec.getExternalModuleTable();
 		final Errors semanticErrors = spec.semanticErrors;
+		// Warning 4806 is not raised for modules containing a PlusCal algorithm.
+		final Set<String> plusCalModules = new HashSet<>();
+		for (Map.Entry<String, ParseUnit> entry : spec.parseUnitContext.entrySet()) {
+			if (spec.getResolver().isStandardModule(entry.getKey())) {
+				continue;
+			}
+			// Validator.validate already decided this while checking the checksums.
+			final Boolean validated = entry.getValue().containsPlusCalAlgorithm();
+			if (validated != null) {
+				if (validated) {
+					plusCalModules.add(entry.getKey());
+				}
+				continue;
+			}
+			// PlusCal translation validation was turned off, so read the source.
+			try {
+				// Match the parser's replacement of malformed UTF-8 input.
+				if (Validator.containsAlgorithm(new String(Files.readAllBytes(entry.getValue().getNis().sourceFile().toPath()),
+						StandardCharsets.UTF_8).lines().collect(Collectors.toList()))) {
+					plusCalModules.add(entry.getKey());
+				}
+			} catch (IOException e) {
+				out.log(LogLevel.ERROR, "Cannot read source to detect PlusCal in module %s: %s",
+						entry.getKey(), e.getMessage());
+			}
+		}
 
 		// If the semantic analysis was successful, run linting on all non-standard
 		// modules.
@@ -538,7 +569,8 @@ public class SANY {
 				continue; // skip standard modules
 			}
 			out.log(LogLevel.INFO, "Linting of module %s", module.getName());
-			linter.lint(module, externalModuleTable, semanticErrors);
+			linter.lint(module, externalModuleTable, semanticErrors,
+					location -> plusCalModules.contains(location.source()));
 		}
 	}
 

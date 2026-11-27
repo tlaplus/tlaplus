@@ -710,46 +710,17 @@ class trans {
             }
         }
 
-        // Search for "--algorithm" or "--fair".
-        // If found set algLine and algCol right after the last char,
-        // set foundBegin true, and set foundFairBegin true iff it
-        // was "--fair".  Otherwise, set foundBegin false.
-        boolean foundBegin = false;
-        boolean foundFairBegin = false;
-        while ((algLine < untabInputVec.size()) && !foundBegin)
-        {
-            String line = untabInputVec.elementAt(algLine);
-            algCol = line.indexOf(PcalParams.BeginAlg);
-            if (algCol != -1)
-            {
-                algCol = algCol + PcalParams.BeginAlg.length();
-                foundBegin = true;
-            } else
-            {
-            	algCol = line.indexOf(PcalParams.BeginFairAlg);
-            	if (algCol != -1) {
-            		// Found the "--fair".  The more structurally nice thing to
-            		// do here would be to move past the following "algorithm".
-            		// However, it's easier to pass a parameter to the ParseAlgorithm
-            		// class's GetAlgorithm method that tells it to go past the
-            		// "algorithm" token.
-            		 algCol = algCol + PcalParams.BeginFairAlg.length();
-                     foundBegin = true;
-                     foundFairBegin = true;
-            		
-            	} else {
-            		algLine = algLine + 1;
-            	} 
-            }
-            ;
-        }
-        ;
-        if (!foundBegin)
+        // Search for "--algorithm" or "--fair" and set algLine and algCol
+        // right after the last char.
+        final int[] algBegin = findAlgorithmBegin(untabInputVec);
+        if (algBegin == null)
         {
             PcalDebug.reportError("Beginning of algorithm string " + PcalParams.BeginAlg + " not found.");
             return null;
         }
-        ;
+        algLine = algBegin[0];
+        algCol = algBegin[1];
+        final boolean foundFairBegin = algBegin[2] == 1;
         
         /*
          * Set the algColumn and algLine fields of the mapping object.
@@ -1882,6 +1853,31 @@ class trans {
 //        ToolIO.out.println("Command-line error: " + msg + ".");
 //        ToolIO.out.println("Use -help option for more information.");
         return STATUS_EXIT_WITH_ERRORS;
+    }
+
+    static int[] findAlgorithmBegin(final List<String> lines)
+    /*********************************************************************
+    * Returns the line and the column just after the first               *
+    * "--algorithm" or "--fair" in lines, followed by 1 iff it was       *
+    * "--fair", which tells the caller to skip the following             *
+    * "algorithm" token.  Returns null if neither string is found.       *
+    *********************************************************************/
+    {
+        for (int i = 0; i < lines.size(); i++)
+        {
+            final String line = lines.get(i);
+            int col = line.indexOf(PcalParams.BeginAlg);
+            if (col != -1)
+            {
+                return new int[] { i, col + PcalParams.BeginAlg.length(), 0 };
+            }
+            col = line.indexOf(PcalParams.BeginFairAlg);
+            if (col != -1)
+            {
+                return new int[] { i, col + PcalParams.BeginFairAlg.length(), 1 };
+            }
+        }
+        return null;
     }
 
     static int findTokenPair(Vector<String> vec, int lineNum, String tok1, String tok2)
