@@ -398,7 +398,13 @@ public class PcalFixIDs {
     }
 
     private static void FixCallGoto(AST.CallGoto ast, String context) throws PcalFixIDException {
-        ast.after = st.UseThis(PcalSymTab.PROCEDURE, ast.after, context);
+        /*
+         *   call P();
+         *   goto L;
+         * L: ...
+         * ast.after is the label L, where the call resumes. ast.to is the procedure P.
+         */
+        ast.after = st.UseThis(PcalSymTab.LABEL, ast.after, context);
         ast.to = st.UseThis(PcalSymTab.PROCEDURE, ast.to, context);
         for (int i = 0; i < ast.args.size(); i++)
             FixExpr((TLAExpr) ast.args.elementAt(i), context);
