@@ -219,13 +219,18 @@ public class TableauNodePtrTable {
 	/**
 	 * Return k's location if the table contains <k, tidx>. Otherwise, return
 	 * -1.
+	 *
+	 * This method must not resize or rehash the table because
+	 * LiveWorker.checkComponent relies on stable bucket
+	 * locations throughout the SCC acceptance scan.
 	 */
 	public final int getLoc(long k, int tidx) {
 		assert tidx >= -1;
-		if (count >= thresh) {
-			this.grow();
+		if (this.length == 0) {
+			return -1;
 		}
 		int loc = ((int) k & 0x7FFFFFFF) % this.length;
+		final int start = loc;
 		while (true) {
 			int[] node = this.nodes[loc];
 			if (node == null) {
@@ -238,6 +243,11 @@ public class TableauNodePtrTable {
 				return loc;
 			}
 			loc = (loc + 1) % this.length;
+			// A full table has no empty bucket. If the key is absent,
+			// stop after probing every bucket once.
+			if (loc == start) {
+				return -1;
+			}
 		}
 	}
 
