@@ -46,6 +46,12 @@ public class RLActionSimulationWorker extends RLSimulationWorker {
 	}
 
 	@Override
+	protected boolean isUniformSuccessorSelection() {
+		// See RLSimulationWorker#isUniformSuccessorSelection().
+		return false;
+	}
+
+	@Override
 	protected int getNextActionAltIndex(final int index, final int p, final Action[] actions, final TLCState t) {
 		// Action at state is not enabled; assign a negative weight/reward.
 		final TLCState s = t.getPredecessor();
