@@ -27,6 +27,7 @@ package tlc2.tool.distributed;
 
 import java.security.Permission;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -44,7 +45,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	protected final String[] arguments;
 	protected final int fpSets;
 	
-	private SecurityManager securityManager;
+	private NoExitSecurityManager noExit;
 	
 	public DistributedTLCTestCase(String spec, String path) {
 		this(spec, path, new String[] {});
@@ -66,47 +67,46 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 	@Before
 	public void setUp() {
 		Assume.assumeTrue("DistributedTLCTestCase broken with OffHeapDiskFPSet.", false);
-		// Remember the original security manager and have it replaced with this
-		// custom one. Contrary to the original, this security manager
-		// intercepts calls to System.exit(int) and throws an exception instead
-		// of terminating the VM. This is done to prevent TLCWorker/TLCServer/...
-		// from terminating the JUnit test itself. To allow the JUnit test to
-		// later terminate the VM after test completion, we have to reinstate
-		// the original security manager again (see tearDown).
-		securityManager = System.getSecurityManager();
-		System.setSecurityManager(new NoExitSecurityManager());
+		runDistributed(arguments, true);
+	}
 
-		MP.setRecorder(recorder);
+	protected int runDistributed(String[] serverArguments, boolean startWorker) {
+		// Wait for all launchers to return before making assertions.
+		final CountDownLatch latch = new CountDownLatch(1 + (startWorker ? 1 : 0) + (fpSets > 0 ? 1 : 0));
 		
-		// Wait for all processes to terminate before the setup itself is done
-		final CountDownLatch latch = new CountDownLatch(fpSets + 2);
-		
-		// Workers
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					TLCWorker.main(new String[] { "localhost" });
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					latch.countDown();
-				}
+		final Thread worker = new Thread(() -> {
+			try {
+				TLCWorker.main(new String[] { "localhost" });
+			} finally {
+				latch.countDown();
 			}
-		}, "Worker").start();
+		}, "Worker");
 
 		// master
-		new Thread(new Runnable() {
+		final Thread master = new Thread(new Runnable() {
 			public void run() {
 				try {
 					System.setProperty(TLCServer.class.getName() + ".expectedFPSetCount", Integer.toString(fpSets));
-					TLCServer.main(arguments);
+					TLCServer.main(serverArguments);
+				} catch (NoExitException e) {
+					// The security manager has captured the server's exit status.
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
 					latch.countDown();
 				}
 			}
-		}, "Master").start();
+		}, "Master");
+
+		final SecurityManager previous = System.getSecurityManager();
+		Assert.assertFalse("An earlier distributed TLC run did not finish", previous instanceof NoExitSecurityManager);
+		noExit = new NoExitSecurityManager(previous, master, latch);
+		System.setSecurityManager(noExit);
+		MP.setRecorder(recorder);
+		if (startWorker) {
+			worker.start();
+		}
+		master.start();
 
 		// FPSet
 		if (fpSets > 0) {
@@ -124,18 +124,46 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 		}
 
 		try {
-			latch.await();
+			Assert.assertTrue("Distributed TLC did not finish", latch.await(30, TimeUnit.SECONDS));
 		} catch (InterruptedException e) {
-			Assert.fail();
+			Thread.currentThread().interrupt();
+			throw new AssertionError(e);
+		} finally {
+			master.interrupt();
+			worker.interrupt();
 		}
+		Assert.assertNotNull("TLCServer did not call System.exit", noExit.exitStatus);
+		return noExit.exitStatus;
 	}
 	
 	@After
 	public void tearDown() {
-		System.setSecurityManager(securityManager);
+		if (noExit == null) {
+			return;
+		}
+		if (noExit.launchers.getCount() == 0) {
+			System.setSecurityManager(noExit.previous);
+			MP.unsubscribeRecorder(recorder);
+		} else {
+			// A timed-out launcher can still call System.exit. Let Ant finish this fork.
+			noExit.runnerMayExit = true;
+		}
 	}
 	
 	private static class NoExitSecurityManager extends SecurityManager {
+		private final SecurityManager previous;
+		private final Thread runner = Thread.currentThread();
+		private final Thread master;
+		private final CountDownLatch launchers;
+		private volatile boolean runnerMayExit;
+		private Integer exitStatus;
+
+		NoExitSecurityManager(SecurityManager previous, Thread master, CountDownLatch launchers) {
+			this.previous = previous;
+			this.master = master;
+			this.launchers = launchers;
+		}
+
 		/* (non-Javadoc)
 		 * @see java.lang.SecurityManager#checkPermission(java.security.Permission)
 		 */
@@ -155,6 +183,16 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 		 */
 		public void checkExit(int status) {
 			super.checkExit(status);
+			if (runnerMayExit && Thread.currentThread() == runner) {
+				if (previous != null) {
+					previous.checkExit(status);
+				}
+				return;
+			}
+			// An intercepted early exit can be caught by TLCServer.main, but would end the CLI.
+			if (Thread.currentThread() == master && exitStatus == null) {
+				exitStatus = status;
+			}
 			throw new NoExitException();
 		}
 	}
@@ -168,7 +206,7 @@ public abstract class DistributedTLCTestCase extends CommonTestCase {
 		/* (non-Javadoc)
 		 * @see tlc2.TestMPRecorder#record(int, java.lang.Object[])
 		 */
-		public void record(int code, Object... objects) {
+		public synchronized void record(int code, Object... objects) {
 			if (EC.GENERAL == code && objects instanceof String[]) {
 				// GENERAL errors contain the exceptions thrown because of the
 				// intercepted System.exit(int) calls. Remove them so that 

@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import model.InJarFilenameToStream;
 import model.ModelInJar;
 import tlc2.TLCGlobals;
+import tlc2.output.EC;
 import tlc2.tool.Action;
 import tlc2.tool.IStateFunctor;
 import tlc2.tool.ITool;
@@ -163,8 +164,7 @@ public class TLCApp extends DistApp {
 		}
 		int len = nextStates.size();
 		if (len == 0 && this.checkDeadlock) {
-			throw new WorkerException("Error: deadlock reached.", curState,
-					null, false);
+			throw new WorkerException(EC.TLC_DEADLOCK_REACHED, "Error: deadlock reached.", curState, null, false);
 		}
 		TLCState[] res = new TLCState[nextStates.size()];
 		for (int i = 0; i < nextStates.size(); i++) {
@@ -172,7 +172,7 @@ public class TLCApp extends DistApp {
 			if (!this.tool.isGoodState(succState)) {
 				String msg = "Error: Successor state is not completely specified by"
 						+ " the next-state action.";
-				throw new WorkerException(msg, curState, succState, false);
+				throw new WorkerException(EC.TLC_STATE_NOT_COMPLETELY_SPECIFIED_NEXT, msg, curState, succState, false);
 			}
 			// isInModel, isInAction and invariant and implied action checks are
 			// carried out later in TLCWorker#getNextStates(..) and below in
@@ -194,7 +194,8 @@ public class TLCApp extends DistApp {
 				// We get here because of invariant violation:
 				String msg = "Error: Invariant " + this.tool.getInvNames()[i]
 						+ " is violated.";
-				throw new WorkerException(msg, s1, s2, false);
+				final int code = s1 == null ? EC.TLC_INVARIANT_VIOLATED_INITIAL : EC.TLC_INVARIANT_VIOLATED_BEHAVIOR;
+				throw new WorkerException(code, msg, s1, s2, false);
 			}
 		}
 		if (s1 == null) {
@@ -204,7 +205,7 @@ public class TLCApp extends DistApp {
 					String msg = "Error: Implied-init "
 							+ this.tool.getImpliedInitNames()[i]
 							+ " is violated.";
-					throw new WorkerException(msg, s1, s2, false);
+					throw new WorkerException(EC.TLC_PROPERTY_VIOLATED_INITIAL, msg, s1, s2, false);
 				}
 			}
 		} else {
@@ -215,7 +216,7 @@ public class TLCApp extends DistApp {
 					String msg = "Error: Implied-action "
 							+ this.tool.getImpliedActNames()[i]
 							+ " is violated.";
-					throw new WorkerException(msg, s1, s2, false);
+					throw new WorkerException(EC.TLC_ACTION_PROPERTY_VIOLATED_BEHAVIOR, msg, s1, s2, false);
 				}
 			}
 		}
