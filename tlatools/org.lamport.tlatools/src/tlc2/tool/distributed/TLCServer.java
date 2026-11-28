@@ -750,7 +750,9 @@ public class TLCServer extends UnicastRemoteObject implements TLCServerRMI,
 				exitStatus = ExitStatus.errorConstantToExitStatus(server.errorCode);
 			}
 		} catch (Throwable e) {
-			exitStatus = ExitStatus.errorConstantToExitStatus(errorCodeOf(e));
+			// modelCheck may fail during cleanup after recording a model-checking error.
+			final int errorCode = server != null && !server.hasNoErrors() ? server.errorCode : errorCodeOf(e);
+			exitStatus = ExitStatus.errorConstantToExitStatus(errorCode);
 			System.gc();
 			// Assert.printStack(e);
 			if (e instanceof StackOverflowError) {

@@ -1,68 +1,94 @@
-// Copyright (c) 2026 TLA+ contributors. All rights reserved.
-// SPDX-License-Identifier: MIT
 package tlc2.tool.distributed;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.rmi.ConnectException;
-import java.rmi.NotBoundException;
+import java.rmi.NoSuchObjectException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import tlc2.output.EC;
 import tlc2.output.EC.ExitStatus;
 import tlc2.tool.WorkerException;
-import tlc2.tool.distributed.fp.NonDistributedFPSetManager;
 import tlc2.tool.fp.FPSet;
 import tlc2.tool.fp.FPSetConfiguration;
 import tlc2.tool.fp.FPSetFactory;
 import tlc2.tool.fp.MSBDiskFPSet;
 import tlc2.tool.fp.MemFPSet;
 import util.Assert.TLCRuntimeException;
+import util.ToolIO;
+import util.UniqueString;
 
-public class TLCServerExitStatusTest {
-	private static final String HOST = "127.0.0.1";
+@RunWith(JUnit4.class)
+public class TLCServerExitStatusTest extends DistributedTLCTestCase {
 	private static final String SPEC = "ExitStatus";
-	private static final int TIMEOUT_SECONDS = 30;
+	private static final String CLOSE_FAILURE = "test fingerprint set failed to close";
+	private static final String WORKER_COUNT_PROPERTY = TLCWorker.class.getName() + ".threadCount";
+	private static final String REPORT_INTERVAL_PROPERTY = TLCServer.class.getName() + ".report";
+
+	private String workerCount;
+	private String reportInterval;
 
 	@Rule
 	public final TemporaryFolder tmp = new TemporaryFolder();
 
+	public TLCServerExitStatusTest() {
+		super(SPEC, "");
+	}
+
+	@Before
+	@Override
+	public void setUp() {
+		workerCount = System.setProperty(WORKER_COUNT_PROPERTY, "1");
+		reportInterval = System.setProperty(REPORT_INTERVAL_PROPERTY, "1000");
+	}
+
+	@After
+	public void restoreProperties() {
+		restoreProperty(WORKER_COUNT_PROPERTY, workerCount);
+		restoreProperty(REPORT_INTERVAL_PROPERTY, reportInterval);
+	}
+
 	@Test
 	public void successfulSearch() throws Exception {
-		runDistributed("Safe", false, ExitStatus.SUCCESS, "No error has been found", "2 distinct states found");
+		assertEquals(ExitStatus.SUCCESS, checkModel("Safe", false, ExportedMemFPSet.class, true));
+		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
+		assertTrue(recorder.recordedWithStringValueAt(EC.TLC_STATS, "2", 1));
 	}
 
 	@Test
 	public void successorInvariantViolation() throws Exception {
-		runDistributed("BadNext", false, ExitStatus.VIOLATION_SAFETY, "x = 0", "x = 2");
+		assertEquals(ExitStatus.VIOLATION_SAFETY, checkModel("BadNext", false, ExportedMemFPSet.class, true));
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), List.of("x = 0", "x = 2"));
 	}
 
 	@Test
 	public void deadlock() throws Exception {
-		runDistributed("Safe", true, ExitStatus.VIOLATION_DEADLOCK, "x = 0", "x = 1");
+		assertEquals(ExitStatus.VIOLATION_DEADLOCK, checkModel("Safe", true, ExportedMemFPSet.class, true));
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), List.of("x = 0", "x = 1"));
 	}
 
 	@Test
 	public void workerAssertionFailure() throws Exception {
-		runDistributed("AssertNext", false, ExitStatus.VIOLATION_ASSERT, "x = 0");
+		assertEquals(ExitStatus.VIOLATION_ASSERT, checkModel("AssertNext", false, ExportedMemFPSet.class, true));
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), List.of("x = 0"));
 	}
 
 	@Test
@@ -75,126 +101,114 @@ public class TLCServerExitStatusTest {
 
 	@Test
 	public void initialInvariantViolationWithLocalFPSet() throws Exception {
-		final Path dir = model("BadInit");
-		final Process server = start(dir, "server", freePort(), MSBDiskFPSet.class, TLCServer.class, "-config", "BadInit", SPEC);
+		assertEquals(ExitStatus.VIOLATION_SAFETY, checkModel("BadInit", true, MSBDiskFPSet.class, false));
+		assertTrue(recorder.recordedWithSubStringValue(EC.TLC_INITIAL_STATE, "Invariant Inv is violated"));
+		assertTrue(recorder.recordedWithSubStringValue(EC.TLC_INITIAL_STATE, "x = 2"));
+	}
+
+	@Test
+	public void invalidArguments() {
+		final int previousMode = ToolIO.getMode();
+		ToolIO.setMode(ToolIO.TOOL);
+		ToolIO.reset();
 		try {
-			assertResult(dir, server, ExitStatus.VIOLATION_SAFETY, "Invariant Inv is violated", "x = 2", "Finished");
+			assertEquals(ExitStatus.ERROR, runDistributed(new String[] { "-config" }, false));
+			final List<String> messages = List.of(ToolIO.getAllMessages());
+			assertTrue(messages.toString(), messages.contains("Error: configuration file required."));
+			assertFalse(recorder.recorded(EC.TLC_FINISHED));
 		} finally {
-			stop(server);
+			ToolIO.reset();
+			ToolIO.setMode(previousMode);
 		}
 	}
 
 	@Test
-	public void invalidArguments() throws Exception {
-		final Path dir = tmp.getRoot().toPath();
-		final Process server = start(dir, "server", freePort(), MSBDiskFPSet.class, TLCServer.class, "-config");
-		try {
-			assertResult(dir, server, ExitStatus.ERROR, "configuration file required");
-		} finally {
-			stop(server);
-		}
+	public void cleanupFailurePreservesInvariantViolation() throws Exception {
+		final int exitStatus = checkModel("BadNext", false, FailingCloseFPSet.class, true);
+		assertTraceWith(recorder.getRecords(EC.TLC_STATE_PRINT2), List.of("x = 0", "x = 2"));
+		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL, CLOSE_FAILURE));
+		assertEquals(ExitStatus.VIOLATION_SAFETY, exitStatus);
 	}
 
-	private void runDistributed(String config, boolean checkDeadlock, int status, String... messages)
-			throws Exception {
-		final Path dir = model(config);
-		final int port = freePort();
-		final List<String> args = new ArrayList<>(List.of("-config", config, "-fpbits", "0"));
-		if (!checkDeadlock) {
-			args.add("-deadlock");
-		}
-		args.add(SPEC);
-
-		final Process server = start(dir, "server", port, ExportedMemFPSet.class, TLCServer.class, args.toArray(new String[0]));
-		Process worker = null;
-		try {
-			final TLCServerRMI master = awaitServer(dir, server, port);
-			assertTrue(master.getFPSetManager() instanceof NonDistributedFPSetManager);
-			worker = start(dir, "worker", port, MSBDiskFPSet.class, TLCWorker.class, HOST);
-			final String[] completedMessages = Arrays.copyOf(messages, messages.length + 1);
-			completedMessages[messages.length] = "Finished";
-			assertResult(dir, server, status, completedMessages);
-		} finally {
-			stop(worker);
-			stop(server);
-		}
+	@Test
+	public void cleanupFailureAfterSuccessfulSearch() throws Exception {
+		final int exitStatus = checkModel("Safe", false, FailingCloseFPSet.class, true);
+		assertTrue(recorder.recorded(EC.TLC_SUCCESS));
+		assertTrue(recorder.recordedWithSubStringValue(EC.GENERAL, CLOSE_FAILURE));
+		assertEquals(ExitStatus.ERROR, exitStatus);
 	}
 
-	private Path model(String config) throws IOException {
+	private int checkModel(String config, boolean checkDeadlock, Class<? extends FPSet> fpSetImpl, boolean startWorker)
+			throws IOException {
 		final Path dir = tmp.newFolder().toPath();
 		for (String file : List.of(SPEC + ".tla", config + ".cfg")) {
 			try (InputStream source = getClass().getResourceAsStream("/TLCServerExitStatus/" + file)) {
 				Files.copy(source, dir.resolve(file));
 			}
 		}
-		return dir;
-	}
-
-	private static int freePort() throws IOException {
-		try (ServerSocket socket = new ServerSocket(0)) {
-			return socket.getLocalPort();
+		final List<String> args = new ArrayList<>(List.of("-config", config, "-fpbits", "0"));
+		if (!checkDeadlock) {
+			args.add("-deadlock");
 		}
-	}
+		args.add(dir.resolve(SPEC).toString());
 
-	private static Process start(Path dir, String name, int port, Class<? extends FPSet> fpSetImpl,
-			Class<?> main, String... args) throws IOException {
-		final String java = Path.of(System.getProperty("java.home"), "bin", "java").toString();
-		final String[] classPath = System.getProperty("java.class.path").split(File.pathSeparator);
-		for (int i = 0; i < classPath.length; i++) {
-			classPath[i] = Path.of(classPath[i]).toAbsolutePath().toString();
-		}
-		final List<String> command = new ArrayList<>(List.of(java, "-ea", "-Xmx128m",
-				"-Djava.rmi.server.hostname=" + HOST, "-Dtlc2.tool.distributed.TLCServer.port=" + port,
-				"-Dtlc2.tool.distributed.TLCServer.report=1000", "-Dtlc2.tool.distributed.TLCWorker.threadCount=1",
-				"-D" + FPSetFactory.IMPL_PROPERTY + "=" + fpSetImpl.getName(),
-				"--add-exports=java.rmi/sun.rmi.server=ALL-UNNAMED",
-				"--add-exports=java.rmi/sun.rmi.transport=ALL-UNNAMED",
-				"-cp", String.join(File.pathSeparator, classPath), main.getName()));
-		command.addAll(Arrays.asList(args));
-		return new ProcessBuilder(command).directory(dir.toFile()).redirectErrorStream(true)
-				.redirectOutput(dir.resolve(name + ".log").toFile()).start();
-	}
-
-	private static TLCServerRMI awaitServer(Path dir, Process server, int port) throws Exception {
-		final Registry registry = LocateRegistry.getRegistry(HOST, port);
-		final long start = System.nanoTime();
-		while (server.isAlive() && System.nanoTime() - start < TimeUnit.SECONDS.toNanos(TIMEOUT_SECONDS)) {
-			try {
-				return (TLCServerRMI) registry.lookup(TLCServer.SERVER_WORKER_NAME);
-			} catch (ConnectException | NotBoundException e) {
-				Thread.sleep(50);
+		final String fpSetProperty = System.setProperty(FPSetFactory.IMPL_PROPERTY, fpSetImpl.getName());
+		final String userDir = ToolIO.getUserDir();
+		final int port = TLCServer.Port;
+		try {
+			// TLCServer creates a registry per run, so use a fresh port for each case.
+			try (ServerSocket socket = new ServerSocket(0)) {
+				TLCServer.Port = socket.getLocalPort();
 			}
-		}
-		throw new AssertionError("Server did not register:\n" + output(dir, "server"));
-	}
-
-	private static void assertResult(Path dir, Process server, int status, String... messages) throws Exception {
-		final boolean finished = server.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-		final String log = output(dir, "server");
-		assertTrue("Server did not exit:\n" + log + output(dir, "worker"), finished);
-		for (String message : messages) {
-			assertTrue(log, log.contains(message));
-		}
-		assertEquals(log, status, server.exitValue());
-	}
-
-	private static String output(Path dir, String name) throws IOException {
-		final Path log = dir.resolve(name + ".log");
-		return Files.exists(log) ? Files.readString(log) : "";
-	}
-
-	private static void stop(Process process) throws InterruptedException {
-		if (process != null && process.isAlive()) {
-			process.destroyForcibly();
-			process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+			ToolIO.setUserDir(dir.toString());
+			final int exitStatus = runDistributed(args.toArray(new String[0]), startWorker);
+			assertTrue(recorder.recorded(EC.TLC_FINISHED));
+			return exitStatus;
+		} finally {
+			if (startWorker) {
+				TLCWorker.shutdown();
+				UniqueString.setSource(null);
+			}
+			TLCServer.Port = port;
+			ToolIO.setUserDir(userDir);
+			restoreProperty(FPSetFactory.IMPL_PROPERTY, fpSetProperty);
 		}
 	}
 
-	public static final class ExportedMemFPSet extends MemFPSet {
+	private static void restoreProperty(String key, String value) {
+		if (value == null) {
+			System.clearProperty(key);
+		} else {
+			System.setProperty(key, value);
+		}
+	}
+
+	public static class ExportedMemFPSet extends MemFPSet {
 		public ExportedMemFPSet(FPSetConfiguration config) throws RemoteException {
 			super(config);
 			// Export the server's local fingerprint set so the loopback worker can use it over RMI.
 			UnicastRemoteObject.exportObject(this, 0);
+		}
+
+		@Override
+		public void close() {
+			try {
+				UnicastRemoteObject.unexportObject(this, true);
+			} catch (NoSuchObjectException e) {
+				// Already closed.
+			}
+		}
+	}
+
+	public static final class FailingCloseFPSet extends ExportedMemFPSet {
+		public FailingCloseFPSet(FPSetConfiguration config) throws RemoteException {
+			super(config);
+		}
+
+		@Override
+		public void close() {
+			super.close();
+			throw new UncheckedIOException(new IOException(CLOSE_FAILURE));
 		}
 	}
 }
