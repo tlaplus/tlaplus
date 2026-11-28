@@ -148,6 +148,64 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
     }
   }
 
+  public static final class ExceptMatch {
+    public static final ExceptMatch EMPTY = new ExceptMatch(null, null);
+
+    public final Value replacement;
+    public final ValueExcept[] suffixes;
+
+    private ExceptMatch(Value replacement, ValueExcept[] suffixes) {
+      this.replacement = replacement;
+      this.suffixes = suffixes;
+    }
+
+    public boolean isEmpty() {
+      return this.replacement == null && this.suffixes == null;
+    }
+
+    public Value applyTo(Value base) {
+      Value res = (this.replacement != null) ? this.replacement : base;
+      if (this.suffixes == null) {
+        return res;
+      }
+      return res.takeExcept(this.suffixes);
+    }
+  }
+
+  public final ExceptMatch matchExcepts(Value arg) {
+    if (this.excepts == null) {
+      return ExceptMatch.EMPTY;
+    }
+    Value res = null;
+    int num = 0;
+    ValueExcept[] excepts1 = null;
+    int exlen = this.excepts.length;
+    for (int i = exlen - 1; i >= 0; i--) {
+      ValueExcept ex = this.excepts[i];
+      if (ex.current().equals(arg)) {
+        if (ex.isLast()) {
+          res = ex.value;
+          break;
+        }
+        if (excepts1 == null) {
+          excepts1 = new ValueExcept[exlen];
+        }
+        excepts1[num++] = new ValueExcept(ex, ex.idx + 1);
+      }
+    }
+    if (res == null && num == 0) {
+      return ExceptMatch.EMPTY;
+    }
+    ValueExcept[] suffixes = null;
+    if (num != 0) {
+      suffixes = new ValueExcept[num];
+      for (int i = 0; i < num; i++) {
+        suffixes[num - 1 - i] = excepts1[i];
+      }
+    }
+    return new ExceptMatch(res, suffixes);
+  }
+
   /* Apply this function to the arguments given by args.  */
   @Override
   public final Value apply(Value args, int control) throws EvalException {
@@ -158,23 +216,8 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       }
 
       // First, find all the excepts that match args.
-      Value  res = null;
-      int num = 0;
-      ValueExcept[] excepts1 = null;
-      if (this.excepts != null) {
-        int exlen = this.excepts.length;
-        for (int i = exlen-1; i >= 0; i--) {
-          ValueExcept ex = this.excepts[i];
-          Value  arg = ex.current();
-          boolean inExcept = true;
-          inExcept = arg.equals(args);
-          if (inExcept) {
-            if (ex.isLast()) { res = ex.value; break; }
-            if (excepts1 == null) excepts1 = new ValueExcept[exlen];
-            excepts1[num++] = new ValueExcept(ex, ex.idx+1);
-          }
-        }
-      }
+      final ExceptMatch match = matchExcepts(args);
+      Value res = match.replacement;
 
       // Second, evaluate the function application.
       if (res == null) {
@@ -255,12 +298,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       }
 
       // Finally, apply the matching excepts on the result.
-      if (num == 0) return res;
-      ValueExcept[] excepts2 = new ValueExcept[num];
-      for (int i = 0; i < num; i++) {
-        excepts2[num-1-i] = excepts1[i];
-      }
-      return res.takeExcept(excepts2);
+      return match.applyTo(res);
 
     }
     catch (RuntimeException | OutOfMemoryError e) {
@@ -278,22 +316,8 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       }
 
       // First, find all the excepts that match arg.
-      Value res = null;
-      int num = 0;
-      ValueExcept[] excepts1 = null;
-      if (this.excepts != null) {
-        int exlen = this.excepts.length;
-        for (int i = exlen-1; i >= 0; i--) {
-          ValueExcept ex = this.excepts[i];
-          Value exArg = ex.current();
-          boolean inExcept = exArg.equals(arg);
-          if (inExcept) {
-            if (ex.isLast()) { res = ex.value; break; }
-            if (excepts1 == null) excepts1 = new ValueExcept[exlen];
-            excepts1[num++] = new ValueExcept(ex, ex.idx+1);
-          }
-        }
-      }
+      final ExceptMatch match = matchExcepts(arg);
+      Value res = match.replacement;
 
       // Second, evaluate the function application.
       if (res == null) {
@@ -365,12 +389,7 @@ public class FcnLambdaValue extends Value implements FunctionValue, IFcnLambdaVa
       }
 
       // Finally, apply the matching excepts on the result.
-      if (num == 0) return res;
-      ValueExcept[] excepts2 = new ValueExcept[num];
-      for (int i = 0; i < num; i++) {
-        excepts2[num-1-i] = excepts1[i];
-      }
-      return res.takeExcept(excepts2);
+      return match.applyTo(res);
 
     }
     catch (RuntimeException | OutOfMemoryError e) {

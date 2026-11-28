@@ -727,22 +727,35 @@ public abstract class Tool
         case OPCODE_fa:     // FcnApply
           {
             Value fval = this.eval(args[0], c, ps, TLCState.Empty, EvalControl.Init, cm);
+            final Value bval;
             if (fval instanceof FcnLambdaValue) {
-              FcnLambdaValue fcn = (FcnLambdaValue)fval;
-              if (fcn.fcnRcd == null) {
-                Context c1 = this.getFcnContext(fcn, args, c, ps, TLCState.Empty, EvalControl.Init, cm);
-                this.getInitStates(fcn.body, acts, c1, ps, states, cm);
-                return;
+              FcnLambdaValue fcn = (FcnLambdaValue) fval;
+              FcnRcdValue rcd = fcn.fcnRcd;
+              if (rcd == null) {
+                Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+                FcnLambdaValue.ExceptMatch match = fcn.matchExcepts(argVal);
+                if (match.isEmpty()) {
+                  Context c1 = this.getFcnContext(fcn, args, argVal, c);
+                  this.getInitStates(fcn.body, acts, c1, ps, states, cm);
+                  return;
+                }
+                bval = this.evalLazyFcnExcept(fcn, match, args, argVal, c, ps, TLCState.Empty, EvalControl.Init, cm);
               }
-              fval = fcn.fcnRcd;
+              else {
+                Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+                bval = rcd.apply(argVal, EvalControl.Init);
+              }
             }
-            else if (!(fval instanceof FunctionValue)) {
+            else if (fval instanceof FunctionValue) {
+              FunctionValue fcn = (FunctionValue) fval;
+              Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
+              bval = fcn.apply(argVal, EvalControl.Init);
+            }
+            else {
               Assert.fail("In computing initial states, a non-function (" +
                           fval.getKindString() + ") was applied as a function.\n" + init, init, c);
+              return;
             }
-            FunctionValue fcn = (FunctionValue) fval;
-            Value argVal = this.eval(args[1], c, ps, TLCState.Empty, EvalControl.Init, cm);
-            Value bval = fcn.apply(argVal, EvalControl.Init);
             if (!(bval instanceof BoolValue))
             {
               Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "initial states", "boolean",
@@ -1263,21 +1276,34 @@ public abstract class Tool
 	case OPCODE_fa:     // FcnApply
 	  {
 	    Value fval = this.eval(args[0], c, s0, s1, EvalControl.KeepLazy, cm);
+	    final Value bval;
 	    if (fval instanceof FcnLambdaValue) {
-	      FcnLambdaValue fcn = (FcnLambdaValue)fval;
-	      if (fcn.fcnRcd == null) {
-	        Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Clear, cm);
-	        return this.getNextStates(action, fcn.body, acts, c1, s0, s1, nss, fcn.cm);
+	      FcnLambdaValue fcn = (FcnLambdaValue) fval;
+	      FcnRcdValue rcd = fcn.fcnRcd;
+	      if (rcd == null) {
+	        Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	        FcnLambdaValue.ExceptMatch match = fcn.matchExcepts(argVal);
+	        if (match.isEmpty()) {
+	          Context c1 = this.getFcnContext(fcn, args, argVal, c);
+	          return this.getNextStates(action, fcn.body, acts, c1, s0, s1, nss, fcn.cm);
+	        }
+	        bval = this.evalLazyFcnExcept(fcn, match, args, argVal, c, s0, s1, EvalControl.Clear, fcn.cm);
 	      }
-	      fval = fcn.fcnRcd;
+	      else {
+	        Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	        bval = rcd.apply(argVal, EvalControl.Clear);
+	      }
 	    }
-	    if (!(fval instanceof FunctionValue)) {
+	    else if (fval instanceof FunctionValue) {
+	      FunctionValue fcn = (FunctionValue) fval;
+	      Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
+	      bval = fcn.apply(argVal, EvalControl.Clear);
+	    }
+	    else {
 	      Assert.fail("In computing next states, a non-function (" +
 	                  fval.getKindString() + ") was applied as a function.\n" + pred, pred, c);
+	      return resState;
 	    }
-	    FunctionValue fcn = (FunctionValue)fval;
-	    Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Clear, cm);
-	    Value bval = fcn.apply(argVal, EvalControl.Clear);
 	    if (!(bval instanceof BoolValue)) {
 	      Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "next states", "boolean",
 	              pred.toString() }, args[1], c);
@@ -3230,33 +3256,48 @@ public abstract class Tool
         case OPCODE_fa: // FcnApply
           {
             Value fval = this.eval(args[0], c, s0, s1, EvalControl.setKeepLazy(EvalControl.Enabled), cm); // KeepLazy does not interfere with EvalControl.Enabled in this.evalAppl
+            final Value bval;
             if (fval instanceof FcnLambdaValue)
             {
               FcnLambdaValue fcn = (FcnLambdaValue) fval;
-              if (fcn.fcnRcd == null)
+              FcnRcdValue rcd = fcn.fcnRcd;
+              if (rcd == null)
               {
-                Context c1 = this.getFcnContext(fcn, args, c, s0, s1, EvalControl.Enabled, cm); // EvalControl.Enabled passed on to nested this.evalAppl
-                return this.enabled(fcn.body, acts, c1, s0, s1, cm);
+                int ctrl = EvalControl.setKeepLazy(EvalControl.Enabled);
+                Value argVal = this.eval(args[1], c, s0, s1, ctrl, cm);
+                FcnLambdaValue.ExceptMatch match = fcn.matchExcepts(argVal);
+                if (match.isEmpty())
+                {
+                  Context c1 = this.getFcnContext(fcn, args, argVal, c);
+                  return this.enabled(fcn.body, acts, c1, s0, s1, cm);
+                }
+                bval = this.evalLazyFcnExcept(fcn, match, args, argVal, c, s0, s1, ctrl, cm);
               }
-              fval = fcn.fcnRcd;
+              else
+              {
+                Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
+                bval = rcd.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
+              }
             }
-            if (fval instanceof FunctionValue)
+            else if (fval instanceof FunctionValue)
             {
               FunctionValue fcn = (FunctionValue) fval;
               Value argVal = this.eval(args[1], c, s0, s1, EvalControl.Enabled, cm);
-              Value bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
-              if (!(bval instanceof BoolValue))
-              {
-                Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
-                        pred.toString() }, args[1], c);
-              }
-              if (!((BoolValue) bval).val) {
-                return null;
-              }
-            } else
+              bval = fcn.apply(argVal, EvalControl.Enabled); // EvalControl.Enabled not taken into account by any subclass of Applicable
+            }
+            else
             {
               Assert.fail("In computing ENABLED, a non-function (" + fval.getKindString()
                       + ") was applied as a function.\n" + pred, pred, c);
+              return null;
+            }
+            if (!(bval instanceof BoolValue))
+            {
+              Assert.fail(EC.TLC_EXPECTED_EXPRESSION_IN_COMPUTING2, new String[] { "ENABLED", "boolean",
+                      pred.toString() }, args[1], c);
+            }
+            if (!((BoolValue) bval).val) {
+              return null;
             }
             return this.enabled(acts, s0, s1, cm);
           }
@@ -3989,12 +4030,28 @@ public abstract class Tool
   public final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
                                      Context c, TLCState s0, TLCState s1,
                                      final int control, CostModel cm) {
+    Value argVal = this.eval(args[1], c, s0, s1, control, cm);
+    return this.getFcnContext(fcn, args, argVal, c);
+  }
+
+  private final Value evalLazyFcnExcept(FcnLambdaValue fcn, FcnLambdaValue.ExceptMatch match,
+                                        ExprOrOpArgNode[] args, Value argVal, Context c,
+                                        TLCState s0, TLCState s1, final int control, CostModel cm) {
+    if (match.replacement != null) {
+      return match.applyTo(null);
+    }
+    Context c1 = this.getFcnContext(fcn, args, argVal, c);
+    Value base = this.eval(fcn.body, c1, s0, s1, control, cm);
+    return match.applyTo(base);
+  }
+
+  private final Context getFcnContext(IFcnLambdaValue fcn, ExprOrOpArgNode[] args,
+                                      Value argVal, Context c) {
     Context fcon = fcn.getCon();
     int plen = fcn.getParams().length();
     FormalParamNode[][] formals = fcn.getParams().getFormals();
     Value[] domains = (Value[]) fcn.getParams().getDomains();
     boolean[] isTuples = fcn.getParams().isTuples();
-    Value argVal = this.eval(args[1], c, s0, s1, control, cm);
 
     if (plen == 1) {
       if (!domains[0].member(argVal)) {

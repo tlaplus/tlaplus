@@ -28,7 +28,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import tlc2.output.EC;
@@ -38,7 +37,6 @@ import tlc2.tool.liveness.ModelCheckerTestCase;
 /**
  * https://github.com/tlaplus/tlaplus/issues/1515.
  */
-@Ignore("https://github.com/tlaplus/tlaplus/issues/1515")
 public class Github1515InitialTest extends ModelCheckerTestCase {
 
 	public Github1515InitialTest() {
